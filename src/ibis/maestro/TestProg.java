@@ -22,7 +22,7 @@ public class TestProg {
         ReceivePort receiver = myIbis.createReceivePort( portType, "server" );
         receiver.enableConnections();
         
-        // Read teh message.
+        // Read the message.
         ReadMessage r = receiver.receive();
         String s = r.readString();
         r.finish();
