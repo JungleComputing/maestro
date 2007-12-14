@@ -3,7 +3,8 @@ package ibis.maestro;
 /**
  * The interface of a job in the Maestro master/worker system.
  * @author Kees van Reeuwijk
- *
+
+ * @param <T> The type of the result of the job.
  */
 public interface Job<T> extends Comparable<Job<T>> {
     /**

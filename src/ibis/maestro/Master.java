@@ -10,7 +10,8 @@ import java.util.PriorityQueue;
  * A master in the Maestro master/worker framework.
  * 
  * @author Kees van Reeuwijk
- *
+ * 
+ * @param <R> The result type of the jobs.
  */
 @SuppressWarnings("synthetic-access")
 public class Master<R> implements Runnable {
@@ -23,8 +24,9 @@ public class Master<R> implements Runnable {
 
     private class JobRequestHandler implements PacketReceiveListener<JobRequest> {
         /**
-         * Handles job request message <code>message</code>.
-         * @param message The job request message.
+         * Handles job request message <code>request</code>.
+         * @param p The port on which the packet was received.
+         * @param request The job request message.
          * @throws ClassNotFoundException Thrown if one of the communicated classes was not found
          */
         public void packetReceived(PacketUpcallReceivePort<JobRequest> p, JobRequest request) {
@@ -140,9 +142,18 @@ public class Master<R> implements Runnable {
         }
     }
 
+    /** Runs this master. */
     @Override
     public void run() {
         // TODO Auto-generated method stub
 
+    }
+    
+    /** Stop this master.
+     * @throws IOException 
+     */
+    public void stop() throws IOException
+    {
+	requestPort.close();
     }
 }

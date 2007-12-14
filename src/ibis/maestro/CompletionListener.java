@@ -4,6 +4,8 @@ package ibis.maestro;
  * The interface of Maestro job completion listeners.
  * 
  * @author Kees van Reeuwijk
+ * 
+ * @param <T> The type of job results.
  *
  */
 public interface CompletionListener<T> {

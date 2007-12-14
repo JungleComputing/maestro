@@ -43,6 +43,9 @@ class JobQueueEntry<R> implements Comparable<JobQueueEntry<R>>{
         return res;
     }
 
+    /** Returns the port identifier of the master this job belongs to.
+     * @return The port identifier of the master of this job.
+     */
     public ReceivePortIdentifier getMaster() {
         return master;
     }

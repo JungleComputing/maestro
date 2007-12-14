@@ -8,12 +8,18 @@ import ibis.ipl.ReceivePort;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
-import java.util.LinkedList;
 
+/**
+ * A Receive port for packet reception.
+ * 
+ * @author Kees van Reeuwijk
+ *
+ * @param <T> The type of the packets that will be received on this port.
+ */
 public class PacketUpcallReceivePort<T> implements MessageUpcall {
     private static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.CONNECTION_MANY_TO_ONE );
     private ReceivePort port;
-    private LinkedList<PacketReceiveListener<T>> listeners = new LinkedList<PacketReceiveListener<T>>();
+    private PacketReceiveListener<T> listener;
 
     /**
      * Constructs a new PacketSendPort.
@@ -22,33 +28,21 @@ public class PacketUpcallReceivePort<T> implements MessageUpcall {
      * @throws IOException
      */
     PacketUpcallReceivePort( Ibis ibis, String name, PacketReceiveListener<T> listener ) throws IOException{
+	this.listener = listener;
         port = ibis.createReceivePort(portType, name, this );
-        addListener( listener );
     }
 
-    /** Add the given listener to the list of packet reception listeners.
+    /** Handle the upcall of the ipl port. Only public because the interface requires it.
      * 
-     * @param l The listener to add.
-     */
-    public void addListener( PacketReceiveListener<T> l )
-    {
-        synchronized( listeners ){
-            listeners.add( l );
-        }
-    }
-
-    /** Handle the upcall of the ipl port.
      * @param msg The message to handle.
+     * @throws IOException 
+     * @throws ClassNotFoundException 
      */
     @SuppressWarnings("unchecked")
     public void upcall(ReadMessage msg) throws IOException, ClassNotFoundException {
         T data = (T) msg.readObject();
         msg.finish();
-        synchronized( listeners ){
-            for( PacketReceiveListener<T> l: listeners ){
-                l.packetReceived( this, data );
-            }
-        }
+        listener.packetReceived( this, data );
     }
     
     /**
@@ -57,5 +51,13 @@ public class PacketUpcallReceivePort<T> implements MessageUpcall {
      */
     public ReceivePortIdentifier identifier() {
         return port.identifier();
+    }
+
+    /**
+     * Close this port.
+     * @throws IOException
+     */
+    public void close() throws IOException {
+	port.close();
     }
 }
