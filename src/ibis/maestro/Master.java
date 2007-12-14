@@ -38,6 +38,8 @@ public class Master {
 	/**
 	 * Handles job request message <code>message</code>.
 	 * @param message The job request message.
+	 * @throws IOException Thrown if there was some kind of I/O error
+	 * @throws ClassNotFoundException Thrown if one of the communicated classes was not found
 	 */
         public void upcall(ReadMessage message) throws IOException, ClassNotFoundException {
             Job j = getJob();
@@ -63,14 +65,21 @@ public class Master {
 	 * Handles job request message <code>message</code>.
 	 * @param message The job request message.
 	 */
+	@Override
         public void upcall(ReadMessage message) throws IOException, ClassNotFoundException {
-            // FIXME: implement this
+	    // FIXME: really implement this.
+	    synchronized( completionListeners) {
+		for( CompletionListener l: completionListeners ) {
+		    l.jobCompleted( null );
+		}
+	    }
         }
         
     }
 
     /** Creates a new master instance.
      * @param ibis The Ibis instance this master belongs to.
+     * @throws IOException Thrown if the master cannot be created.
      */
     public Master( Ibis ibis ) throws IOException
     {
@@ -101,12 +110,23 @@ public class Master {
 
     /**
      * Registers a completion listener with this master.
-     * @param l The completion listener.
+     * @param l The completion listener to register.
      */
     public void addCompletionListener( CompletionListener l )
     {
 	synchronized( completionListeners ) {
 	    completionListeners.add( l );
+	}
+    }
+
+    /**
+     * Unregisters a completion listener with this master.
+     * @param l The completion listener to unregister.
+     */
+    public void removeCompletionListener( CompletionListener l )
+    {
+	synchronized( completionListeners ) {
+	    completionListeners.remove( l );
 	}
     }
 }
