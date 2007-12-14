@@ -5,10 +5,10 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-public interface Job extends Comparable<Job> {
+public interface Job<T> extends Comparable<Job<T>> {
     /**
      * Runs the job.
      * @return The result of the job.
      */
-    JobResult run();
+    T run();
 }

@@ -1,14 +1,9 @@
 package ibis.maestro;
 
-import java.io.IOException;
-
 import ibis.ipl.Ibis;
-import ibis.ipl.PortType;
-import ibis.ipl.ReadMessage;
-import ibis.ipl.ReceivePort;
 import ibis.ipl.ReceivePortIdentifier;
-import ibis.ipl.SendPort;
-import ibis.ipl.WriteMessage;
+
+import java.io.IOException;
 
 /**
  * A worker in the Maestro master-worker system.
@@ -16,12 +11,10 @@ import ibis.ipl.WriteMessage;
  *
  */
 @SuppressWarnings("synthetic-access")
-public class Worker implements Runnable {
-    private static final PortType jobPortType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.RECEIVE_POLL, PortType.CONNECTION_ONE_TO_ONE );
-    private static final PortType resultPortType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.RECEIVE_POLL, PortType.CONNECTION_ONE_TO_ONE );
-    private ReceivePort jobPort;
-    private SendPort resultPort;
-    private SendPort jobRequestPort;
+public class Worker<R> implements Runnable {
+    private PacketBlockingReceivePort<JobQueueEntry<R>> jobPort;
+    private PacketSendPort<JobResult<R>> resultPort;
+    private PacketSendPort<JobRequest> jobRequestPort;
     private static final long BACKOFF_DELAY = 10;  // In ms.
     private boolean stopped;
 
@@ -33,10 +26,9 @@ public class Worker implements Runnable {
 	return stopped;
     }
 
-    private void sendWorkRequest() throws IOException
+    private void sendWorkRequest( ReceivePortIdentifier receiver ) throws IOException
     {
-        WriteMessage msg = jobRequestPort.newMessage();
-        msg.writeObject( jobPort.identifier() );
+        jobRequestPort.send( new JobRequest( jobPort.identifier() ), receiver );
     }
 
     /**
@@ -46,49 +38,41 @@ public class Worker implements Runnable {
      */
     public Worker( Ibis ibis ) throws IOException
     {
-        jobPort = ibis.createReceivePort(jobPortType, "jobPort" );
-        resultPort = ibis.createSendPort(resultPortType, "resultPort" );
+        jobPort = new PacketBlockingReceivePort<JobQueueEntry<R>>( ibis, "jobPort" );
+        resultPort = new PacketSendPort<JobResult<R>>( ibis, "resultPort" );
+        jobRequestPort = new PacketSendPort<JobRequest>( ibis, "requestPort" );
     }
 
     /** Runs this worker.
      */
     public void run()
     {
-	try {
-	setStopped( false );
-	while( !isStopped() ) {
-	    ReadMessage msg = jobPort.receive();
-            ReceivePortIdentifier master = (ReceivePortIdentifier) msg.readObject();
-            Object jobID = msg.readObject();
-	    Object job = msg.readObject();
-	    msg.finish();
-	    if( job == null ) {
-		try {
-		    // TODO: more sophistication.
-		    Thread.sleep( BACKOFF_DELAY );
-		}
-		catch( InterruptedException e ) {
-		    // Somebody woke us, but we don't care.
-		}
-	    }
-	    else {
-		Job j = (Job) job;
-		JobResult r = j.run();
-		resultPort.connect( master );
-		WriteMessage reply = resultPort.newMessage();
-		reply.writeObject( jobID );
-		reply.writeObject( r );
-		reply.finish();
-		resultPort.close();
-	    }
-	}
-	}
-	catch( ClassNotFoundException x ) {
-	    
-	}
-	catch( IOException  x ) {
-	    
-	}
+        setStopped( false );
+        while( !isStopped() ) {
+            try {
+                JobQueueEntry<R> msg = jobPort.receive();
+                Job<R> job = msg.getJob();
+                if( job == null ) {
+                    try {
+                        // FIXME: more sophistication.
+                        Thread.sleep( BACKOFF_DELAY );
+                    }
+                    catch( InterruptedException e ) {
+                        // Somebody woke us, but we don't care.
+                    }
+                }
+                else {
+                    R r = job.run();
+                    resultPort.send( new JobResult<R>( r, msg.getId() ), msg.getMaster() );
+                }
+            }
+            catch( ClassNotFoundException x ){
+
+            }
+            catch( IOException x ){
+
+            }
+        }
     }
     
     /**

@@ -6,11 +6,11 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-public interface CompletionListener {
+public interface CompletionListener<T> {
     /**
      * Registers that a job is completed.
      * @param j The Maestro job that was completed.
      * @param result The result of the job.
      */
-    void jobCompleted( Job j, JobResult result );
+    void jobCompleted( Job<T> j, T result );
 }
