@@ -10,6 +10,7 @@ public interface CompletionListener {
     /**
      * Registers that a job is completed.
      * @param j The Maestro job that was completed.
+     * @param result The result of the job.
      */
-    void jobCompleted( Job j );
+    void jobCompleted( Job j, JobResult result );
 }

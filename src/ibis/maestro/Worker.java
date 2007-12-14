@@ -10,14 +10,28 @@ import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.SendPort;
 import ibis.ipl.WriteMessage;
 
+/**
+ * A worker in the Maestro master-worker system.
+ * @author Kees van Reeuwijk
+ *
+ */
 @SuppressWarnings("synthetic-access")
-public class Worker {
-    private static PortType jobPortType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.RECEIVE_POLL, PortType.CONNECTION_ONE_TO_ONE );
-    private static PortType resultPortType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.RECEIVE_POLL, PortType.CONNECTION_ONE_TO_ONE );
+public class Worker implements Runnable {
+    private static final PortType jobPortType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.RECEIVE_POLL, PortType.CONNECTION_ONE_TO_ONE );
+    private static final PortType resultPortType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.RECEIVE_POLL, PortType.CONNECTION_ONE_TO_ONE );
     private ReceivePort jobPort;
     private SendPort resultPort;
     private SendPort jobRequestPort;
     private static final long BACKOFF_DELAY = 10;  // In ms.
+    private boolean stopped;
+
+    private synchronized void setStopped( boolean val ) {
+	stopped = val;
+    }
+    
+    private synchronized boolean isStopped() {
+	return stopped;
+    }
 
     private void sendWorkRequest() throws IOException
     {
@@ -33,17 +47,16 @@ public class Worker {
     public Worker( Ibis ibis ) throws IOException
     {
         jobPort = ibis.createReceivePort(jobPortType, "jobPort" );
-        resultPort = ibis.createSendPort(jobPortType, "resultPort" );
+        resultPort = ibis.createSendPort(resultPortType, "resultPort" );
     }
 
     /** Runs this worker.
-     * This method only terminates due to an exception.
-     * @throws IOException
-     * @throws ClassNotFoundException
      */
-    public void run() throws IOException, ClassNotFoundException
+    public void run()
     {
-	while( true ) {
+	try {
+	setStopped( false );
+	while( !isStopped() ) {
 	    ReadMessage msg = jobPort.receive();
             ReceivePortIdentifier master = (ReceivePortIdentifier) msg.readObject();
             Object jobID = msg.readObject();
@@ -69,5 +82,20 @@ public class Worker {
 		resultPort.close();
 	    }
 	}
+	}
+	catch( ClassNotFoundException x ) {
+	    
+	}
+	catch( IOException  x ) {
+	    
+	}
+    }
+    
+    /**
+     * Stop this worker.
+     */
+    public void stop()
+    {
+	setStopped( true );
     }
 }

@@ -6,5 +6,5 @@ package ibis.maestro;
  *
  */
 public interface JobResult {
-
+    // Nothing.
 }

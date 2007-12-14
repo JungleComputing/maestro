@@ -12,6 +12,11 @@ import ibis.ipl.ReceivePort;
 import ibis.ipl.SendPort;
 import ibis.ipl.WriteMessage;
 
+/**
+ * Small test program.
+ * @author Kees van Reeuwijk
+ *
+ */
 public class TestProg {
     PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.RECEIVE_EXPLICIT, PortType.CONNECTION_ONE_TO_ONE );
 
@@ -31,7 +36,7 @@ public class TestProg {
         // Close receive port.
         receiver.close();
     }
-    
+
     private void client( Ibis myIbis, IbisIdentifier server ) throws IOException {
         // Create aa send port for sending requests and connect.
         SendPort sender = myIbis.createSendPort( portType );
@@ -63,7 +68,11 @@ public class TestProg {
         
         ibis.end();
     }
-    
+
+    /** The command-line interface of this program.
+     * 
+     * @param args The list of command-line parameters.
+     */
     public static void main( String args[] ){
         try {
             new TestProg().run();            
