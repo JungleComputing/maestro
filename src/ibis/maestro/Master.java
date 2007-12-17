@@ -62,7 +62,7 @@ public class Master<R> implements Runnable {
     private class JobResultHandler implements PacketReceiveListener<JobResult<R>> {
         /**
          * Handles job request message <code>message</code>.
-         * @param message The job request message.
+         * @param result The job request message.
          */
         @Override
         public void packetReceived(PacketUpcallReceivePort<JobResult<R>> p, JobResult<R> result) {
