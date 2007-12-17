@@ -30,6 +30,8 @@ public class PacketUpcallReceivePort<T> implements MessageUpcall {
     PacketUpcallReceivePort( Ibis ibis, String name, PacketReceiveListener<T> listener ) throws IOException{
 	this.listener = listener;
         port = ibis.createReceivePort(portType, name, this );
+        port.enableConnections();
+        port.enableMessageUpcalls();
     }
 
     /** Handle the upcall of the ipl port. Only public because the interface requires it.

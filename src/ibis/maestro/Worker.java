@@ -30,6 +30,7 @@ public class Worker<R> implements Runnable {
 
     private void sendWorkRequest() throws IOException
     {
+        System.err.println( "Asking for work" );
         jobRequestPort.send( new JobRequest( jobPort.identifier() ), master, "reqestPort" );
     }
 
@@ -52,9 +53,12 @@ public class Worker<R> implements Runnable {
     {
         setStopped( false );
         while( !isStopped() ) {
+            System.err.println( "Next round for worker" );
             try {
+                sendWorkRequest();
                 JobQueueEntry<R> msg = jobPort.receive();
                 Job<R> job = msg.getJob();
+                System.err.println( "Received job " + job );
                 if( job == null ) {
                     try {
                         // FIXME: more sophistication.
@@ -66,9 +70,9 @@ public class Worker<R> implements Runnable {
                 }
                 else {
                     R r = job.run();
+                    System.err.println( "Job " + job + " completed; result: " + r );
                     resultPort.send( new JobResult<R>( r, msg.getId() ), msg.getMaster() );
                 }
-                sendWorkRequest();
             }
             catch( ClassNotFoundException x ){
         	x.printStackTrace();

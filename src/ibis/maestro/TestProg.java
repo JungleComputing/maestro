@@ -4,7 +4,6 @@ import ibis.ipl.Ibis;
 import ibis.ipl.IbisCapabilities;
 import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisIdentifier;
-import ibis.ipl.PortType;
 import ibis.server.Server;
 
 import java.io.File;
@@ -76,12 +75,12 @@ public class TestProg {
         // If I am the server, run server, else run client.
         if( server.equals( ibis.identifier())){
             startMaster(ibis);
+            
+            submitJob( buildSeries( 3 ) );
+            submitJob( buildSeries( 12 ) );
         }
         startWorker(ibis,server);
 
-        
-        submitJob( buildSeries( 3 ) );
-        submitJob( buildSeries( 12 ) );
         ibis.end();
     }
 

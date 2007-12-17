@@ -29,6 +29,7 @@ public class Master<R> implements Runnable {
          * @throws ClassNotFoundException Thrown if one of the communicated classes was not found
          */
         public void packetReceived(PacketUpcallReceivePort<JobRequest> p, JobRequest request) {
+            System.err.println( "Recieved a job request " + request );
             JobQueueEntry<R> j = getJob();
             try {
                 submitPort.send(j, request.getPort());
@@ -67,6 +68,7 @@ public class Master<R> implements Runnable {
         public void packetReceived(PacketUpcallReceivePort<JobResult<R>> p, JobResult<R> result) {
             long id = result.getId();
 
+            System.err.println( "Received a job result " + result );
             JobQueueEntry<R> e = searchQueueEntry( id );
             if( e == null ) {
                 System.err.println( "Internal error: job with unknown id " + id + " reported a result" );
@@ -104,6 +106,7 @@ public class Master<R> implements Runnable {
         synchronized( this ) {
             id = jobno++;
         }
+        System.err.println( "Submitting job " + id );
         JobQueueEntry<R> e = new JobQueueEntry<R>( j, id, resultPort.identifier() );
         synchronized( queue ) {
             queue.add( e );
