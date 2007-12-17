@@ -25,6 +25,7 @@ public class FileContents {
     {
         File f = new File( dir, name );
         
-        Service.writeFile(f, contents);
+        // FIXME: enable again.
+        //Service.writeFile(f, contents);
     }
 }

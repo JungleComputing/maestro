@@ -7,6 +7,7 @@ import ibis.ipl.ReceivePort;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * @author Kees van Reeuwijk
@@ -15,8 +16,8 @@ import java.io.IOException;
  *
  * @param <T> The type of packets that are received over this port.
  */
-public class PacketBlockingReceivePort<T> {
-    static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_EXPLICIT );
+public class PacketBlockingReceivePort<T extends Serializable> {
+    static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
     private ReceivePort port;
 
     /**
@@ -27,7 +28,6 @@ public class PacketBlockingReceivePort<T> {
      */
     PacketBlockingReceivePort( Ibis ibis, String name ) throws IOException{
         port = ibis.createReceivePort(portType, name );
-        port.enableConnections();
     }
 
     /**
@@ -50,5 +50,12 @@ public class PacketBlockingReceivePort<T> {
      */
     public ReceivePortIdentifier identifier() {
         return port.identifier();
+    }
+
+    /** Enable this port. */
+    public void enable()
+    {
+	port.enableConnections();
+	System.err.println( "Enabled packet port " + port );
     }
 }

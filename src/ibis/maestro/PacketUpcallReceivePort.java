@@ -8,6 +8,7 @@ import ibis.ipl.ReceivePort;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * A Receive port for packet reception.
@@ -16,9 +17,9 @@ import java.io.IOException;
  *
  * @param <T> The type of the packets that will be received on this port.
  */
-public class PacketUpcallReceivePort<T> implements MessageUpcall {
-    static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.RECEIVE_AUTO_UPCALLS, PortType.CONNECTION_MANY_TO_ONE );
-    private ReceivePort port;
+public class PacketUpcallReceivePort<T extends Serializable> implements MessageUpcall {
+    static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
+    private final ReceivePort port;
     private PacketReceiveListener<T> listener;
 
     /**
@@ -30,8 +31,6 @@ public class PacketUpcallReceivePort<T> implements MessageUpcall {
     PacketUpcallReceivePort( Ibis ibis, String name, PacketReceiveListener<T> listener ) throws IOException{
 	this.listener = listener;
         port = ibis.createReceivePort(portType, name, this );
-        port.enableConnections();
-        port.enableMessageUpcalls();
     }
 
     /** Handle the upcall of the ipl port. Only public because the interface requires it.
@@ -43,7 +42,7 @@ public class PacketUpcallReceivePort<T> implements MessageUpcall {
     @SuppressWarnings("unchecked")
     public void upcall(ReadMessage msg) throws IOException, ClassNotFoundException {
         T data = (T) msg.readObject();
-        msg.finish();
+        //msg.finish();
         listener.packetReceived( this, data );
     }
     
@@ -61,5 +60,13 @@ public class PacketUpcallReceivePort<T> implements MessageUpcall {
      */
     public void close() throws IOException {
 	port.close();
+    }
+
+    /** Enable this port. */
+    public void enable()
+    {
+	port.enableMessageUpcalls();
+	port.enableConnections();
+	System.err.println( "Enabled packet port " + port );
     }
 }

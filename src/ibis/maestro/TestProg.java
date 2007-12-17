@@ -89,19 +89,6 @@ public class TestProg {
      * @param args The list of command-line parameters.
      */
     public static void main( String args[] ) throws Exception {
-        String ibis_home = System.getenv( "IBIS_HOME");
-        if( ibis_home == null ){
-            System.err.println( "Environment variable IBIS_HOME is not set" );
-        }
-        else {
-            File f = new File( ibis_home );
-            if( !f.exists() ){
-                System.err.println( "The specified IBIS_HOME [" + ibis_home + "] does not exist" );
-            }
-            else if( !f.isDirectory() ){
-                System.err.println( "The specified IBIS_HOME [" + ibis_home + "] is not a directory" );
-            }
-        }
         try {
             new TestProg().run();            
         }

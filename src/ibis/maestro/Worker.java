@@ -31,7 +31,7 @@ public class Worker<R> implements Runnable {
     private void sendWorkRequest() throws IOException
     {
         System.err.println( "Asking for work" );
-        jobRequestPort.send( new JobRequest( jobPort.identifier() ), master, "reqestPort" );
+        jobRequestPort.send( new JobRequest( jobPort.identifier() ), master, "requestPort" );
     }
 
     /**
@@ -46,6 +46,7 @@ public class Worker<R> implements Runnable {
         jobPort = new PacketBlockingReceivePort<JobQueueEntry<R>>( ibis, "jobPort" );
         resultPort = new PacketSendPort<JobResult<R>>( ibis );
         jobRequestPort = new PacketSendPort<JobRequest>( ibis );
+        jobPort.enable();
     }
 
     /** Runs this worker. */
@@ -76,9 +77,11 @@ public class Worker<R> implements Runnable {
             }
             catch( ClassNotFoundException x ){
         	x.printStackTrace();
+        	setStopped( true );
             }
             catch( IOException x ){
         	x.printStackTrace();
+        	setStopped( true );
             }
         }
     }

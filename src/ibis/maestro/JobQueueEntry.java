@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.io.Serializable;
+
 import ibis.ipl.ReceivePortIdentifier;
 
 /**
@@ -7,7 +9,9 @@ import ibis.ipl.ReceivePortIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-class JobQueueEntry<R> implements Comparable<JobQueueEntry<R>>{
+class JobQueueEntry<R> implements Comparable<JobQueueEntry<R>>, Serializable {
+    /** Contractual obligation. */
+    private static final long serialVersionUID = 1L;
     private final Job<R> job;
     private final long id;
     private ReceivePortIdentifier master;

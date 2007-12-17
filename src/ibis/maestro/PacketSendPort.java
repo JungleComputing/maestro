@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import java.io.IOException;
+import java.io.Serializable;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
@@ -16,8 +17,8 @@ import ibis.ipl.WriteMessage;
  * 
  * @param <T> The type of data that will be sent over this port.
  */
-public class PacketSendPort<T> {
-    static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.CONNECTION_ONE_TO_ONE );
+public class PacketSendPort<T extends Serializable> {
+    static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
     private SendPort port;
 
     /**
@@ -56,4 +57,5 @@ public class PacketSendPort<T> {
         msg.finish();
         port.close();
     }
+
 }
