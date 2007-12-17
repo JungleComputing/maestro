@@ -23,17 +23,17 @@ public class PacketSendPort<T> {
      * Constructs a new PacketSendPort.
      * @param ibis The ibis the port will belong to.
      * @param name The name of the port.
-     * @throws IOException
+     * @throws IOException Thrown if there is an error in the setup.
      */
     PacketSendPort( Ibis ibis, String name ) throws IOException{
         port = ibis.createSendPort(portType, name );
     }
 
     /**
-     * Sends
-     * @param data
-     * @param receiver
-     * @throws IOException
+     * Sends the given data to the given port.
+     * @param data The data to send.
+     * @param receiver The port to send it to.
+     * @throws IOException Thrown if there is a communication error.
      */
     public void send( T data, ReceivePortIdentifier receiver ) throws IOException {
         port.connect(receiver);

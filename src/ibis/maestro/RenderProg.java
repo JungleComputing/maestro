@@ -10,11 +10,11 @@ import ibis.ipl.ReceivePortIdentifier;
 import java.io.IOException;
 
 /**
- * Small test program.
+ * Test the master/worker framework by submitting render jobs.
  * @author Kees van Reeuwijk
  *
  */
-public class TestProg {
+public class RenderProg {
     private PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.RECEIVE_EXPLICIT, PortType.CONNECTION_ONE_TO_ONE );
 
     IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.ELECTIONS_STRICT );
@@ -84,7 +84,7 @@ public class TestProg {
      */
     public static void main( String args[] ){
         try {
-            new TestProg().run();            
+            new RenderProg().run();            
         }
         catch( Exception e ) {
             e.printStackTrace( System.err );

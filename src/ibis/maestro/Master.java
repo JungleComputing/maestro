@@ -3,7 +3,6 @@ package ibis.maestro;
 import ibis.ipl.Ibis;
 
 import java.io.IOException;
-import java.util.LinkedList;
 import java.util.PriorityQueue;
 
 /**
@@ -19,7 +18,7 @@ public class Master<R> implements Runnable {
     private final PacketSendPort<JobQueueEntry<R>> submitPort;
     private final PacketUpcallReceivePort<JobResult<R>> resultPort;
     private final PriorityQueue<JobQueueEntry<R>> queue = new PriorityQueue<JobQueueEntry<R>>();
-    private final LinkedList<CompletionListener<R>> completionListeners = new LinkedList<CompletionListener<R>>();
+    private CompletionListener<R> completionListener;
     private long jobno = 0;
 
     private class JobRequestHandler implements PacketReceiveListener<JobRequest> {
@@ -73,11 +72,7 @@ public class Master<R> implements Runnable {
                 System.err.println( "Internal error: job with unknown id " + id + " reported a result" );
                 return;
             }
-            synchronized( completionListeners) {
-                for( CompletionListener<R> l: completionListeners ) {
-                    l.jobCompleted( e.getJob(), result.getResult() );
-                }
-            }
+            completionListener.jobCompleted( e.getJob(), result.getResult() );
             synchronized( queue ) {
                 queue.remove( e );
             }
@@ -86,13 +81,15 @@ public class Master<R> implements Runnable {
 
     /** Creates a new master instance.
      * @param ibis The Ibis instance this master belongs to.
+     * @param l The completion listener to use.
      * @throws IOException Thrown if the master cannot be created.
      */
-    public Master( Ibis ibis ) throws IOException
+    public Master( Ibis ibis, CompletionListener<R> l ) throws IOException
     {
         requestPort = new PacketUpcallReceivePort<JobRequest>( ibis, "requestPort", new JobRequestHandler() );
         submitPort = new PacketSendPort<JobQueueEntry<R>>( ibis, "jobPort" );
         resultPort = new PacketUpcallReceivePort<JobResult<R>>( ibis, "resultPort", new JobResultHandler() );
+        completionListener = l;
     }
 
     /**
@@ -124,22 +121,9 @@ public class Master<R> implements Runnable {
      * Registers a completion listener with this master.
      * @param l The completion listener to register.
      */
-    public void addCompletionListener( CompletionListener<R> l )
+    public synchronized void setCompletionListener( CompletionListener<R> l )
     {
-        synchronized( completionListeners ) {
-            completionListeners.add( l );
-        }
-    }
-
-    /**
-     * Unregisters a completion listener with this master.
-     * @param l The completion listener to unregister.
-     */
-    public void removeCompletionListener( CompletionListener<R> l )
-    {
-        synchronized( completionListeners ) {
-            completionListeners.remove( l );
-        }
+	completionListener = l;
     }
 
     /** Runs this master. */
