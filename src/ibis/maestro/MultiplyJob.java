@@ -3,6 +3,8 @@ package ibis.maestro;
 /** A Maestro job that multiplies the array of values it is given. */
 public class MultiplyJob implements Job<Double> {
     private final double values[];
+    /** Contractual obligation. */
+    private static final long serialVersionUID = 1L;
 
     MultiplyJob( double values[] )
     {
