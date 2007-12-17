@@ -11,5 +11,18 @@ public class ExternalJob {
     private FileContents inputFiles[];
     private String outputFiles[];
     private String command;
+    
+    /** Constructs a new job.
+     * 
+     * @param inputFiles The files that should be present before the job is run.
+     * @param outputFiles The files to get after the job has finished.
+     * @param command The command to execute.
+     */
+    public ExternalJob(FileContents[] inputFiles, String[] outputFiles, String command) {
+        super();
+        this.inputFiles = inputFiles;
+        this.outputFiles = outputFiles;
+        this.command = command;
+    }
 }
 

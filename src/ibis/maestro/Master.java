@@ -87,7 +87,7 @@ public class Master<R> implements Runnable {
     public Master( Ibis ibis, CompletionListener<R> l ) throws IOException
     {
         requestPort = new PacketUpcallReceivePort<JobRequest>( ibis, "requestPort", new JobRequestHandler() );
-        submitPort = new PacketSendPort<JobQueueEntry<R>>( ibis, "jobPort" );
+        submitPort = new PacketSendPort<JobQueueEntry<R>>( ibis );
         resultPort = new PacketUpcallReceivePort<JobResult<R>>( ibis, "resultPort", new JobResultHandler() );
         completionListener = l;
     }

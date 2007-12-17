@@ -17,7 +17,7 @@ import java.io.IOException;
  * @param <T> The type of the packets that will be received on this port.
  */
 public class PacketUpcallReceivePort<T> implements MessageUpcall {
-    private static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.CONNECTION_MANY_TO_ONE );
+    static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.RECEIVE_AUTO_UPCALLS, PortType.CONNECTION_MANY_TO_ONE );
     private ReceivePort port;
     private PacketReceiveListener<T> listener;
 

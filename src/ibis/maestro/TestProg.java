@@ -5,9 +5,11 @@ import ibis.ipl.IbisCapabilities;
 import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.PortType;
-import ibis.ipl.ReceivePortIdentifier;
+import ibis.server.Server;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Properties;
 
 /**
  * Small test program.
@@ -15,8 +17,6 @@ import java.io.IOException;
  *
  */
 public class TestProg {
-    private PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.RECEIVE_EXPLICIT, PortType.CONNECTION_ONE_TO_ONE );
-
     IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.ELECTIONS_STRICT );
 
     private Master<Double> master;
@@ -33,13 +33,13 @@ public class TestProg {
 	}
 	
     }
-    private void startMaster( Ibis myIbis ) throws IOException {
+    @SuppressWarnings("synthetic-access")
+    private void startMaster( Ibis myIbis ) throws Exception {
 	master = new Master<Double>( myIbis, new Listener() );
     }
 
     private void startWorker( Ibis myIbis, IbisIdentifier server ) throws IOException {
-	ReceivePortIdentifier masterPort = null; // FIXME: 
-	Worker<MultiplyJob> worker = new Worker<MultiplyJob>( myIbis, masterPort );
+	Worker<MultiplyJob> worker = new Worker<MultiplyJob>( myIbis, server );
 	worker.run();
     }
     
@@ -61,7 +61,14 @@ public class TestProg {
 
     private void run() throws Exception {
         // Create an ibis instance.
-        Ibis ibis = IbisFactory.createIbis( ibisCapabilities, null, portType );
+        Properties serverProperties = new Properties();
+        //serverProperties.setProperty( "ibis.server.port", "12642" );
+        Server ibisServer = new Server( serverProperties );
+        String serveraddress = ibisServer.getLocalAddress();
+        Properties ibisProperties = new Properties();
+        ibisProperties.setProperty( "ibis.server.address", serveraddress );
+        ibisProperties.setProperty( "ibis.pool.name", "XXXpoolname" );
+        Ibis ibis = IbisFactory.createIbis(ibisCapabilities, ibisProperties, true, null, PacketSendPort.portType, PacketUpcallReceivePort.portType, PacketBlockingReceivePort.portType );
 
         // Elect a server
         IbisIdentifier server = ibis.registry().elect("Server");
@@ -82,7 +89,20 @@ public class TestProg {
      * 
      * @param args The list of command-line parameters.
      */
-    public static void main( String args[] ){
+    public static void main( String args[] ) throws Exception {
+        String ibis_home = System.getenv( "IBIS_HOME");
+        if( ibis_home == null ){
+            System.err.println( "Environment variable IBIS_HOME is not set" );
+        }
+        else {
+            File f = new File( ibis_home );
+            if( !f.exists() ){
+                System.err.println( "The specified IBIS_HOME [" + ibis_home + "] does not exist" );
+            }
+            else if( !f.isDirectory() ){
+                System.err.println( "The specified IBIS_HOME [" + ibis_home + "] is not a directory" );
+            }
+        }
         try {
             new TestProg().run();            
         }

@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * @author Kees van Reeuwijk
@@ -20,8 +21,10 @@ public class FileContents {
 	this.contents = contents;
     }
 
-    public void create( File dir )
+    public void create( File dir ) throws IOException
     {
-	// FIXME: implement this
+        File f = new File( dir, name );
+        
+        Service.writeFile(f, contents);
     }
 }

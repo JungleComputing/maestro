@@ -16,7 +16,7 @@ import java.io.IOException;
  * @param <T> The type of packets that are received over this port.
  */
 public class PacketBlockingReceivePort<T> {
-    private static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.CONNECTION_MANY_TO_ONE );
+    static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_EXPLICIT );
     private ReceivePort port;
 
     /**

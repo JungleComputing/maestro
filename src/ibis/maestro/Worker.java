@@ -1,7 +1,7 @@
 package ibis.maestro;
 
 import ibis.ipl.Ibis;
-import ibis.ipl.ReceivePortIdentifier;
+import ibis.ipl.IbisIdentifier;
 
 import java.io.IOException;
 
@@ -18,7 +18,7 @@ public class Worker<R> implements Runnable {
     private PacketSendPort<JobRequest> jobRequestPort;
     private static final long BACKOFF_DELAY = 10;  // In ms.
     private boolean stopped;
-    private final ReceivePortIdentifier master;
+    private final IbisIdentifier master;
 
     private synchronized void setStopped( boolean val ) {
 	stopped = val;
@@ -28,23 +28,23 @@ public class Worker<R> implements Runnable {
 	return stopped;
     }
 
-    private void sendWorkRequest( ReceivePortIdentifier receiver ) throws IOException
+    private void sendWorkRequest() throws IOException
     {
-        jobRequestPort.send( new JobRequest( jobPort.identifier() ), receiver );
+        jobRequestPort.send( new JobRequest( jobPort.identifier() ), master, "reqestPort" );
     }
 
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to
-     * @param master The (request port of) the master.
+     * @param server The (request port of) the master.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis, ReceivePortIdentifier master ) throws IOException
+    public Worker( Ibis ibis, IbisIdentifier server ) throws IOException
     {
-	this.master = master;
+	this.master = server;
         jobPort = new PacketBlockingReceivePort<JobQueueEntry<R>>( ibis, "jobPort" );
-        resultPort = new PacketSendPort<JobResult<R>>( ibis, "resultPort" );
-        jobRequestPort = new PacketSendPort<JobRequest>( ibis, "requestPort" );
+        resultPort = new PacketSendPort<JobResult<R>>( ibis );
+        jobRequestPort = new PacketSendPort<JobRequest>( ibis );
     }
 
     /** Runs this worker. */
@@ -68,7 +68,7 @@ public class Worker<R> implements Runnable {
                     R r = job.run();
                     resultPort.send( new JobResult<R>( r, msg.getId() ), msg.getMaster() );
                 }
-                sendWorkRequest( master );
+                sendWorkRequest();
             }
             catch( ClassNotFoundException x ){
         	x.printStackTrace();

@@ -5,7 +5,6 @@ import ibis.ipl.IbisCapabilities;
 import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.PortType;
-import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
 
@@ -33,13 +32,13 @@ public class RenderProg {
 	}
 	
     }
+    @SuppressWarnings("synthetic-access")
     private void startMaster( Ibis myIbis ) throws IOException {
 	master = new Master<Double>( myIbis, new Listener() );
     }
 
     private void startWorker( Ibis myIbis, IbisIdentifier server ) throws IOException {
-	ReceivePortIdentifier masterPort = null; // FIXME: 
-	Worker<MultiplyJob> worker = new Worker<MultiplyJob>( myIbis, masterPort );
+	Worker<MultiplyJob> worker = new Worker<MultiplyJob>( myIbis, server );
 	worker.run();
     }
     
