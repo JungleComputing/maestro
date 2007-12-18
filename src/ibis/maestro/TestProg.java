@@ -6,7 +6,6 @@ import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisIdentifier;
 import ibis.server.Server;
 
-import java.io.File;
 import java.io.IOException;
 import java.util.Properties;
 

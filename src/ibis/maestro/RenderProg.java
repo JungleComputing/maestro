@@ -4,7 +4,6 @@ import ibis.ipl.Ibis;
 import ibis.ipl.IbisCapabilities;
 import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisIdentifier;
-import ibis.ipl.PortType;
 
 import java.io.IOException;
 
@@ -14,8 +13,6 @@ import java.io.IOException;
  *
  */
 public class RenderProg {
-    private PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_DATA, PortType.RECEIVE_EXPLICIT, PortType.CONNECTION_ONE_TO_ONE );
-
     IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.ELECTIONS_STRICT );
 
     private Master<Double> master;
@@ -60,7 +57,7 @@ public class RenderProg {
 
     private void run() throws Exception {
         // Create an ibis instance.
-        Ibis ibis = IbisFactory.createIbis( ibisCapabilities, null, portType );
+        Ibis ibis = IbisFactory.createIbis( ibisCapabilities, null, PacketSendPort.portType, PacketBlockingReceivePort.portType, PacketUpcallReceivePort.portType );
 
         // Elect a server
         IbisIdentifier server = ibis.registry().elect("Server");

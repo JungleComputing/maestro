@@ -44,6 +44,7 @@ public class PacketSendPort<T extends Serializable> {
      * Sends the given data to the port with the given name on the given ibis.
      * @param data The data to send.
      * @param receiver The port to send it to.
+     * @param portname The name of the port to send to.
      * @throws IOException Thrown if there is a communication error.
      */
     public void send( T data, IbisIdentifier receiver, String portname ) throws IOException {

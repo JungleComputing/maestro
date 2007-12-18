@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 
 /**
@@ -21,11 +22,27 @@ public class FileContents {
 	this.contents = contents;
     }
 
+    /** Creates this file in the given directory.
+     * 
+     * @param dir The directory where the file should be created.
+     * @throws IOException Thrown if for some reason the file cannot be created.
+     */
     public void create( File dir ) throws IOException
     {
         File f = new File( dir, name );
         
-        // FIXME: enable again.
-        //Service.writeFile(f, contents);
+        f.delete();  // First make sure it doesn't exist.
+        FileWriter output = new FileWriter( f );
+        output.write( contents );
+        output.close();
+    }
+
+    /** Returns true iff this file has the given name.
+     * 
+     * @param nm The name to compare to.
+     * @return True iff the file has the given name.
+     */
+    public boolean hasName(String nm) {
+	return name.equals(nm);
     }
 }
