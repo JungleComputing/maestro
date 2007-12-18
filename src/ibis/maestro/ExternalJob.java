@@ -1,7 +1,13 @@
 package ibis.maestro;
 
+import ibis.util.RunProcess;
+
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
 
 /**
  * The information necessary to run an external job:
@@ -13,7 +19,7 @@ import java.io.IOException;
 public class ExternalJob {
     private FileContents inputFiles[];
     private String outputFiles[];
-    private String command;
+    private List<String> command;
     private static final boolean traceCommands = true;
     private static long label = 0L;
 
@@ -41,78 +47,79 @@ public class ExternalJob {
 	}
 	return false;
     }
-    
-    /** Given a command string, construct a script to execute it.
-     * 
-     * @param command The command to execute.
-     * @return The shell script to execute the command.
-     */
-    private static String buildScript( String command )
-    {
-	// FIXME: handle redirection.
-	return "#!/bin/sh\n" + command + "\n";
-    }
 
-    /**
-     * Given a bunch of bytes that represent a script, and a list of jobs to run, construct
-     * a sandbox, fill it with a script file, and execute it with the given jobs as parameters. 
-     * @param script The script text to executed.
-     * @param jobnames The jobs to to run in the script.
-     * @return Whether the script was executed sucesssfully.
-     */
-    public boolean run()
+    static class RunResult {
+        private final int exitcode;
+        private final byte out[];
+        private final byte err[];
+
+        public RunResult(final int exitcode, final byte[] out, final byte[] err) {
+            super();
+            this.exitcode = exitcode;
+            this.out = out;
+            this.err = err;
+        }
+
+        public byte[] getErr() {
+            return err;
+        }
+
+        public int getExitcode() {
+            return exitcode;
+        }
+
+        public byte[] getOut() {
+            return out;
+        }        
+    }
+    
+    private RunResult run()
     {
+        File sandbox;
+        ProcessBuilder builder;
+        if( traceCommands ) {
+            System.out.print( "Running job " + this );
+        }
         try {
-            if( traceCommands ) {
-                System.out.print( "Running job " + this );
-            }
             // FIXME: more robust sandbox creation.
-            File sandbox = new File( "/tmp/sandbox-" + label++ );
-            File scriptFile = new File( sandbox, "script" );
+            sandbox = new File( "/tmp/sandbox-" + label++ );
             sandbox.mkdir();
             for( FileContents c: inputFiles ) {
-        	c.create( sandbox );
+                c.create( sandbox );
             }
-            String script = buildScript(command);
-            writeFile( scriptFile, script );
-            RunProcess p = new RunProcess( new String[] { "chmod", "+x", scriptFile.getAbsolutePath() }, null );
-            int exitcode = p.getExitStatus();
-            if( exitcode != 0 ) {
-                System.err.println( "chmod execution returned exit code " + exitcode );
-                byte e[] = p.getStderr();
-                System.err.write( e );
-                return false;                
-            }
-            String cmd[] = new String[jobnames.length+1];
-            cmd[0] = scriptFile.getAbsolutePath();
-            for( int i = 0; i < jobnames.length; i++ ) {
-                cmd[i+1] = jobnames[i];
-            }
-            p = new RunProcess( cmd, null, sandbox );
-            exitcode = p.getExitStatus();
-            if( traceCommands ) {
-                System.out.println( " done" );
-            }
-            if( exitcode != 0 ){
-                if( traceCommands ){
-                    System.out.println( "Script execution returned exit code " + exitcode );
-                }
-                byte e[] = p.getStderr();
-                System.err.write( e );
-                byte o[] = p.getStdout();
-                System.err.write( o );
-                return false;
-            }
-            removeSandbox( sandbox );
-            return true;
+            builder = new ProcessBuilder( command );
+            builder.directory(sandbox);
+
         }
-        catch (IOException e) {
-            if( traceCommands ) {
-                System.out.println( "Script execution failed: " + e );
-                e.printStackTrace();
-            }
-            return false;
+        catch ( IOException x ){
+            // FIXME: more robust error handling.
+            x.printStackTrace();
+            return null;
         }
+        Map<String,String> env = System.getenv();
+        Set<String> keys = env.keySet();
+        String l[] = new String[keys.size()];
+        int ix = 0;
+        for( String k: env.keySet() ){
+            String v = env.get( k );
+            l[ix++] = k + "=" + v;
+        }
+        String a[] = new String[command.size()];
+        command.toArray(a);
+        RunProcess p = new RunProcess( a, l );
+        byte[] o = p.getStdout();
+        byte[] e = p.getStderr();
+        int exitcode = p.getExitStatus();
+        if( traceCommands ) {
+            System.out.println( " done" );
+        }
+        if( exitcode != 0 ){
+            if( traceCommands ){
+                System.out.println( "Script execution returned exit code " + exitcode );
+            }
+        }
+        removeSandbox( sandbox );
+        return new RunResult( exitcode, o, e );
     }
 
     /** Constructs a new job.
@@ -121,7 +128,7 @@ public class ExternalJob {
      * @param outputFiles The files to get after the job has finished.
      * @param command The command to execute.
      */
-    public ExternalJob(FileContents[] inputFiles, String[] outputFiles, String command) {
+    public ExternalJob(FileContents[] inputFiles, String[] outputFiles, List<String> command) {
         super();
         this.inputFiles = inputFiles;
         this.outputFiles = outputFiles;
