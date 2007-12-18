@@ -3,6 +3,7 @@ package ibis.maestro;
 import ibis.ipl.Ibis;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.PriorityQueue;
 
 /**
@@ -18,6 +19,7 @@ public class Master<R> implements Runnable {
     private final PacketSendPort<JobQueueEntry<R>> submitPort;
     private final PacketUpcallReceivePort<JobResult<R>> resultPort;
     private final PriorityQueue<JobQueueEntry<R>> queue = new PriorityQueue<JobQueueEntry<R>>();
+    private final LinkedList<JobQueueEntry<R>> activeJobs = new LinkedList<JobQueueEntry<R>>();
     private CompletionListener<R> completionListener;
     private long jobno = 0;
 
@@ -32,7 +34,10 @@ public class Master<R> implements Runnable {
             System.err.println( "Recieved a job request " + request );
             JobQueueEntry<R> j = getJob();
             try {
-                submitPort.send(j, request.getPort());
+                submitPort.send( j, request.getPort());
+                synchronized( activeJobs ) {
+                    activeJobs.add (j );
+                }
             } catch (IOException e) {
                 // FIXME Is there anything we can do???
                 e.printStackTrace();
@@ -49,8 +54,9 @@ public class Master<R> implements Runnable {
     {
         // Note that we blindly assume that there is only one entry with
         // the given id. Reasonable because we hand out the ids ourselves...
-        synchronized( queue ) {
-            for( JobQueueEntry<R> e: queue ) {
+        synchronized( activeJobs ) {
+            for( JobQueueEntry<R> e: activeJobs ) {
+        	System.err.println( "Has active job " + e + " id " + id + "?" );
                 if( e.getId() == id ) {
                     return e;
                 }
@@ -75,8 +81,8 @@ public class Master<R> implements Runnable {
                 return;
             }
             completionListener.jobCompleted( e.getJob(), result.getResult() );
-            synchronized( queue ) {
-                queue.remove( e );
+            synchronized( activeJobs ) {
+                activeJobs.remove( e );
             }
         }
     }

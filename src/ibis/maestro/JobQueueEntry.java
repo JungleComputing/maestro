@@ -53,4 +53,12 @@ class JobQueueEntry<R> implements Comparable<JobQueueEntry<R>>, Serializable {
     public ReceivePortIdentifier getMaster() {
         return master;
     }
+    
+    /**
+     * Returns a string representation of this job queue entry.
+     * @return The string.
+     */
+    public String toString() {
+	return "job queue entry [id=" + id + ",job=" + job + "]";
+    }
 }

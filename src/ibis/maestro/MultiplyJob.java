@@ -37,5 +37,14 @@ public class MultiplyJob implements Job<Double> {
 	}
 	return 0;
     }
+    
+    /**
+     * Returns a string representation of this multiply job.
+     * @return The string representation.
+     */
+    public String toString()
+    {
+	return "multiply job " + values;
+    }
 
 }

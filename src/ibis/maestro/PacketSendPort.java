@@ -19,15 +19,10 @@ import ibis.ipl.WriteMessage;
  */
 public class PacketSendPort<T extends Serializable> {
     static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
-    private SendPort port;
+    private final Ibis ibis;
 
-    /**
-     * Constructs a new PacketSendPort.
-     * @param ibis The ibis the port will belong to.
-     * @throws IOException Thrown if there is an error in the setup.
-     */
-    PacketSendPort( Ibis ibis ) throws IOException{
-        port = ibis.createSendPort(portType );
+    PacketSendPort( Ibis ibis ){
+	this.ibis = ibis;
     }
 
     /**
@@ -37,6 +32,7 @@ public class PacketSendPort<T extends Serializable> {
      * @throws IOException Thrown if there is a communication error.
      */
     public void send( T data, ReceivePortIdentifier receiver ) throws IOException {
+        SendPort port = ibis.createSendPort(portType );
         port.connect(receiver);
         WriteMessage msg = port.newMessage();
         msg.writeObject( data );
@@ -51,6 +47,7 @@ public class PacketSendPort<T extends Serializable> {
      * @throws IOException Thrown if there is a communication error.
      */
     public void send( T data, IbisIdentifier receiver, String portname ) throws IOException {
+        SendPort port = ibis.createSendPort(portType );
         port.connect( receiver, portname );
         WriteMessage msg = port.newMessage();
         msg.writeObject( data );
