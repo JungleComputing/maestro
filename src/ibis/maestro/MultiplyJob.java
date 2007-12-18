@@ -42,6 +42,7 @@ public class MultiplyJob implements Job<Double> {
      * Returns a string representation of this multiply job.
      * @return The string representation.
      */
+    @Override
     public String toString()
     {
 	return "multiply job " + values;

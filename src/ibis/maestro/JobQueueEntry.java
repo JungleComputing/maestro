@@ -1,8 +1,8 @@
 package ibis.maestro;
 
-import java.io.Serializable;
-
 import ibis.ipl.ReceivePortIdentifier;
+
+import java.io.Serializable;
 
 /**
  * An entry in our job queue.
@@ -58,6 +58,7 @@ class JobQueueEntry<R> implements Comparable<JobQueueEntry<R>>, Serializable {
      * Returns a string representation of this job queue entry.
      * @return The string.
      */
+    @Override
     public String toString() {
 	return "job queue entry [id=" + id + ",job=" + job + "]";
     }
