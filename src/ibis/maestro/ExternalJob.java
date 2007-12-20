@@ -5,8 +5,6 @@ import ibis.util.RunProcess;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 /**
  * The information necessary to run an external job:
@@ -111,17 +109,9 @@ public class ExternalJob {
             x.printStackTrace();
             return null;
         }
-        Map<String,String> env = System.getenv();
-        Set<String> keys = env.keySet();
-        String l[] = new String[keys.size()];
-        int ix = 0;
-        for( String k: env.keySet() ){
-            String v = env.get( k );
-            l[ix++] = k + "=" + v;
-        }
         String a[] = new String[command.size()];
         command.toArray(a);
-        RunProcess p = new RunProcess( a, l );
+        RunProcess p = new RunProcess( a, null, sandbox );
         byte[] o = p.getStdout();
         byte[] e = p.getStderr();
         int exitcode = p.getExitStatus();
