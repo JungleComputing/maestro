@@ -81,13 +81,14 @@ public class TestProg {
         startWorker(ibis,server);
 
         ibis.end();
+        System.out.println( "Testprogram has ended" );
     }
 
     /** The command-line interface of this program.
      * 
      * @param args The list of command-line parameters.
      */
-    public static void main( String args[] ) throws Exception {
+    public static void main( String args[] ) {
         try {
             new TestProg().run();            
         }

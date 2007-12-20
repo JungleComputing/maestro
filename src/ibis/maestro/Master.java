@@ -22,6 +22,7 @@ public class Master<R> implements Runnable {
     private final LinkedList<JobQueueEntry<R>> activeJobs = new LinkedList<JobQueueEntry<R>>();
     private CompletionListener<R> completionListener;
     private long jobno = 0;
+    private boolean stopped = false;
 
     private class JobRequestHandler implements PacketReceiveListener<JobRequest> {
         /**
@@ -63,6 +64,16 @@ public class Master<R> implements Runnable {
             }
         }
         return null;
+    }
+
+    private synchronized void setStopped( boolean val ) {
+	stopped = val;
+	this.notify();
+    }
+
+    private synchronized boolean isStopped()
+    {
+	return stopped;
     }
 
     private class JobResultHandler implements PacketReceiveListener<JobResult<R>> {
@@ -140,15 +151,30 @@ public class Master<R> implements Runnable {
     /** Runs this master. */
     @Override
     public void run() {
-        // TODO Auto-generated method stub
-
+	// We simply wait until we have reached the stop state.
+	// and there are no outstanding jobs.
+	//
+	// FIXME: at the moment this wrong, since we don't
+	// actually wait for the outstanding jobs to stop.
+	while( !isStopped() ) {
+	    try {
+		wait();
+	    }
+	    catch( InterruptedException x ) {
+		// Nothing to do.
+	    }
+	}
+	try {
+	    requestPort.close();
+	}
+	catch( IOException x ) {
+	    // Nothing we can do about it.
+	}
     }
     
-    /** Stop this master.
-     * @throws IOException 
-     */
-    public void stop() throws IOException
+    /** Stops  this master.   */
+    public void stop()
     {
-	requestPort.close();
+	setStopped( true );
     }
 }

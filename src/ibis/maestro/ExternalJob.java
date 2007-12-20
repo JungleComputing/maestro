@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
 
 /**
  * The information necessary to run an external job:
@@ -53,6 +52,12 @@ public class ExternalJob {
         private final byte out[];
         private final byte err[];
 
+        /**
+         * Constructs a new run result with the given information.
+         * @param exitcode The exit code of the process
+         * @param out The text from stdout of the process
+         * @param err The text from stderr of the process
+         */
         public RunResult(final int exitcode, final byte[] out, final byte[] err) {
             super();
             this.exitcode = exitcode;
@@ -60,14 +65,23 @@ public class ExternalJob {
             this.err = err;
         }
 
+        /** Returns the error text of this run result.
+         * @return The error text.
+         */
         public byte[] getErr() {
             return err;
         }
 
+        /** Returns the exit code of this run result.
+         * @return the exit code.
+         */
         public int getExitcode() {
             return exitcode;
         }
 
+        /** Returns the output text of this run result.
+         * @return The output text.
+         */
         public byte[] getOut() {
             return out;
         }        
@@ -77,6 +91,7 @@ public class ExternalJob {
     {
         File sandbox;
         ProcessBuilder builder;
+
         if( traceCommands ) {
             System.out.print( "Running job " + this );
         }
