@@ -95,6 +95,7 @@ public class Master<R> implements Runnable {
             completionListener.jobCompleted( e.getJob(), result.getResult() );
             synchronized( activeJobs ) {
                 activeJobs.remove( e );
+                this.notify();
             }
         }
     }
@@ -139,7 +140,27 @@ public class Master<R> implements Runnable {
     private JobQueueEntry<R> getJob()
     {
         synchronized( queue ) {
-            return queue.remove();
+            return queue.poll();
+        }
+    }
+    
+    private void sendJobKill( JobQueueEntry<R> j )
+    {
+        // FIXME: implement this.
+    }
+
+    /**
+     * Kill all queued and running jobs.
+     * This does not stop this master, it `just' kills current jobs.
+     */
+    public void killJobs()
+    {
+        synchronized( queue ){
+            queue.clear();
+        }
+        // FIXME: take a lock on the activeJobs list.
+        for( JobQueueEntry<R> j: activeJobs ){
+            sendJobKill( j );
         }
     }
 
@@ -151,16 +172,27 @@ public class Master<R> implements Runnable {
     {
 	completionListener = l;
     }
+    
+    /**
+     * Returns true iff there are active jobs.
+     * @return True iff there are active jobs.
+     */
+    private boolean areActiveJobs()
+    {
+        boolean res;
+
+        synchronized( activeJobs ){
+            res = !activeJobs.isEmpty();
+        }
+        return res;
+    }
 
     /** Runs this master. */
     @Override
     public void run() {
 	// We simply wait until we have reached the stop state.
 	// and there are no outstanding jobs.
-	//
-	// FIXME: at the moment this wrong, since we don't
-	// actually wait for the outstanding jobs to stop.
-	while( !isStopped() ) {
+	while( !isStopped() && !areActiveJobs() ) {
 	    try {
 		wait();
 	    }
