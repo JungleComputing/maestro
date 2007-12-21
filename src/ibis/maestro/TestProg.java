@@ -4,6 +4,7 @@ import ibis.ipl.Ibis;
 import ibis.ipl.IbisCapabilities;
 import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.Registry;
 import ibis.server.Server;
 
 import java.io.IOException;
@@ -69,7 +70,8 @@ public class TestProg {
         Ibis ibis = IbisFactory.createIbis(ibisCapabilities, ibisProperties, true, null, PacketSendPort.portType, PacketUpcallReceivePort.portType, PacketBlockingReceivePort.portType );
 
         // Elect a server
-        IbisIdentifier server = ibis.registry().elect("Server");
+        Registry registry = ibis.registry();
+	IbisIdentifier server = registry.elect("Server");
         
         // If I am the server, run server, else run client.
         if( server.equals( ibis.identifier())){
@@ -81,7 +83,7 @@ public class TestProg {
         startWorker(ibis,server);
 
         ibis.end();
-        System.out.println( "Testprogram has ended" );
+        System.out.println( "Test program has ended" );
     }
 
     /** The command-line interface of this program.

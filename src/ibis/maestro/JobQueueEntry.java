@@ -60,6 +60,6 @@ class JobQueueEntry<R> implements Comparable<JobQueueEntry<R>>, Serializable {
      */
     @Override
     public String toString() {
-	return "job queue entry [id=" + id + ",job=" + job + "]";
+	return "(JobQueueEntry id=" + id + ",job=" + job + ")";
     }
 }

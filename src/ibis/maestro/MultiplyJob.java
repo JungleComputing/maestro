@@ -45,7 +45,11 @@ public class MultiplyJob implements Job<Double> {
     @Override
     public String toString()
     {
-	return "multiply job " + values;
+	String s = "[";
+	for( double v: values ) {
+	    s += v + ",";
+	}
+	return "(MultiplyJob " + s + "])";
     }
 
 }

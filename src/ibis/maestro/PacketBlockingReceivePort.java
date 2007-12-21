@@ -56,6 +56,5 @@ public class PacketBlockingReceivePort<T extends Serializable> {
     public void enable()
     {
 	port.enableConnections();
-	System.err.println( "Enabled packet port " + port );
     }
 }

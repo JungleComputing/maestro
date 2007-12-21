@@ -19,4 +19,13 @@ public class JobRequest implements Serializable {
     }
     
     ReceivePortIdentifier getPort() { return port; }
+    
+    /**
+     * Returns a string representation of this job request.
+     * @return The string.
+     */
+    @Override
+    public String toString() {
+	return "(JobRequest replyto " + port + ")"; 
+    }
 }

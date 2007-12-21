@@ -24,7 +24,7 @@ public class PacketUpcallReceivePort<T extends Serializable> implements MessageU
 
     /**
      * Constructs a new PacketSendPort.
-     * @param ibis The ibis the port will belong to.
+     * @param ibis The Ibis the port will belong to.
      * @param name The name of the port.
      * @throws IOException
      */

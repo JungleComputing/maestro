@@ -27,15 +27,17 @@ public class Master<R> implements Runnable {
     private class JobRequestHandler implements PacketReceiveListener<JobRequest> {
         /**
          * Handles job request message <code>request</code>.
-         * @param p The port on which the packet was received.
-         * @param request The job request message.
+         * @param p The port on which the packet was received
+         * @param request The job request message
          * @throws ClassNotFoundException Thrown if one of the communicated classes was not found
          */
         public void packetReceived(PacketUpcallReceivePort<JobRequest> p, JobRequest request) {
             System.err.println( "Recieved a job request " + request );
             JobQueueEntry<R> j = getJob();
             try {
+        	System.err.println( "Sending job " + j + " to worker " + request.getPort() );
                 submitPort.send( j, request.getPort());
+                System.err.println( "Job " + j + " has been sent" );
                 synchronized( activeJobs ) {
                     activeJobs.add (j );
                 }
@@ -57,7 +59,6 @@ public class Master<R> implements Runnable {
         // the given id. Reasonable because we hand out the ids ourselves...
         synchronized( activeJobs ) {
             for( JobQueueEntry<R> e: activeJobs ) {
-        	System.err.println( "Has active job " + e + " id " + id + "?" );
                 if( e.getId() == id ) {
                     return e;
                 }
@@ -107,6 +108,9 @@ public class Master<R> implements Runnable {
     {
         completionListener = l;
         submitPort = new PacketSendPort<JobQueueEntry<R>>( ibis );
+        /** Enable result port first, to avoid the embarrassing situation that a worker gets a job
+         * from us, but can't return the result.
+         */
         resultPort = new PacketUpcallReceivePort<JobResult<R>>( ibis, "resultPort", new JobResultHandler() );
         resultPort.enable();
         requestPort = new PacketUpcallReceivePort<JobRequest>( ibis, "requestPort", new JobRequestHandler() );

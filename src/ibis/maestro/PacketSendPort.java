@@ -14,15 +14,18 @@ import ibis.ipl.WriteMessage;
  * @author Kees van Reeuwijk
  *
  * A port that communicates in whole objects.
- * 
+ *
  * @param <T> The type of data that will be sent over this port.
  */
 public class PacketSendPort<T extends Serializable> {
     static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
     private final Ibis ibis;
+    private static boolean USE_DISCONNECT = false;
+    SendPort globalport;
 
-    PacketSendPort( Ibis ibis ) {
+    PacketSendPort( Ibis ibis ) throws IOException {
 	this.ibis = ibis;
+	globalport = ibis.createSendPort(portType);
     }
 
     /**
@@ -32,12 +35,21 @@ public class PacketSendPort<T extends Serializable> {
      * @throws IOException Thrown if there is a communication error.
      */
     public void send( T data, ReceivePortIdentifier receiver ) throws IOException {
-	SendPort port = ibis.createSendPort(portType);
-        port.connect(receiver);
-        WriteMessage msg = port.newMessage();
-        msg.writeObject( data );
-        msg.finish();
-        port.close();
+	if( USE_DISCONNECT ) {
+	    globalport.connect(receiver);
+	    WriteMessage msg = globalport.newMessage();
+	    msg.writeObject( data );
+	    msg.finish();
+	    globalport.disconnect(receiver);
+	}
+	else {
+	    SendPort port = ibis.createSendPort(portType);
+	    port.connect(receiver);
+	    WriteMessage msg = port.newMessage();
+	    msg.writeObject( data );
+	    msg.finish();
+	    port.close();
+	}
     }
 
     /**
@@ -48,12 +60,24 @@ public class PacketSendPort<T extends Serializable> {
      * @throws IOException Thrown if there is a communication error.
      */
     public void send( T data, IbisIdentifier receiver, String portname ) throws IOException {
-	SendPort port = ibis.createSendPort(portType);
-        port.connect( receiver, portname );
-        WriteMessage msg = port.newMessage();
-        msg.writeObject( data );
-        msg.finish();
-        port.close();
+	if( USE_DISCONNECT ) {
+	    globalport.connect( receiver, portname );
+	    WriteMessage msg = globalport.newMessage();
+	    msg.writeObject( data );
+	    msg.finish();
+	    ReceivePortIdentifier l[] = globalport.connectedTo();
+	    for( ReceivePortIdentifier p: l ) {
+		globalport.disconnect(p);
+	    }
+	}
+	else {
+	    SendPort port = ibis.createSendPort(portType);
+	    port.connect( receiver, portname );
+	    WriteMessage msg = port.newMessage();
+	    msg.writeObject( data );
+	    msg.finish();
+	    port.close();
+	}
     }
 
 }
