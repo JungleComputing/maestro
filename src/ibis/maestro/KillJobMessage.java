@@ -22,9 +22,20 @@ public class KillJobMessage extends JobMessage {
 	this.resultPort = resultPort;
     }
     
+    /** Returns the id of the job to be killed.
+     * Together with the result port of the job, this uniquely identifies
+     * the job.
+     * @return the Job id.
+     */
     public long getId() {
         return id;
     }
+    
+    /** Returns the result port for the job to be killed.
+     * Together with the id of the job, this uniquely identifies
+     * the job.
+     * @return The result port.
+     */
     public ReceivePortIdentifier getResultPort() {
         return resultPort;
     }
