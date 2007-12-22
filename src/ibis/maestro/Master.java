@@ -16,7 +16,7 @@ import java.util.PriorityQueue;
 @SuppressWarnings("synthetic-access")
 public class Master<R> implements Runnable {
     private final PacketUpcallReceivePort<JobRequest> requestPort;
-    private final PacketSendPort<JobQueueEntry<R>> submitPort;
+    private final PacketSendPort<JobMessage> submitPort;
     private final PacketUpcallReceivePort<JobResult<R>> resultPort;
     private final PriorityQueue<JobQueueEntry<R>> queue = new PriorityQueue<JobQueueEntry<R>>();
     private final LinkedList<JobQueueEntry<R>> activeJobs = new LinkedList<JobQueueEntry<R>>();
@@ -36,7 +36,8 @@ public class Master<R> implements Runnable {
             JobQueueEntry<R> j = getJob();
             try {
         	System.err.println( "Sending job " + j + " to worker " + request.getPort() );
-                submitPort.send( j, request.getPort());
+        	RunJobMessage<R> message = new RunJobMessage<R>( j.getJob(), j.getId(), resultPort.identifier() );
+                submitPort.send( message, request.getPort() );
                 System.err.println( "Job " + j + " has been sent" );
                 synchronized( activeJobs ) {
                     activeJobs.add (j );
@@ -89,13 +90,13 @@ public class Master<R> implements Runnable {
             System.err.println( "Received a job result " + result );
             JobQueueEntry<R> e = searchQueueEntry( id );
             if( e == null ) {
-                System.err.println( "Internal error: job with unknown id " + id + " reported a result" );
+                System.err.println( "Internal error: ignoring reported result from job with unknown id " + id );
                 return;
             }
             completionListener.jobCompleted( e.getJob(), result.getResult() );
             synchronized( activeJobs ) {
                 activeJobs.remove( e );
-                this.notify();
+                this.notify();   // Wake up master thread; we might have stopped.
             }
         }
     }
@@ -108,7 +109,7 @@ public class Master<R> implements Runnable {
     public Master( Ibis ibis, CompletionListener<R> l ) throws IOException
     {
         completionListener = l;
-        submitPort = new PacketSendPort<JobQueueEntry<R>>( ibis );
+        submitPort = new PacketSendPort<JobMessage>( ibis );
         /** Enable result port first, to avoid the embarrassing situation that a worker gets a job
          * from us, but can't return the result.
          */

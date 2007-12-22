@@ -13,7 +13,7 @@ import java.io.IOException;
  */
 @SuppressWarnings("synthetic-access")
 public class Worker<R> implements Runnable {
-    private PacketBlockingReceivePort<JobQueueEntry<R>> jobPort;
+    private PacketBlockingReceivePort<JobMessage> jobPort;
     private PacketSendPort<JobResult<R>> resultPort;
     private PacketSendPort<JobRequest> jobRequestPort;
     private static final long BACKOFF_DELAY = 10;  // In ms.
@@ -43,7 +43,7 @@ public class Worker<R> implements Runnable {
     public Worker( Ibis ibis, IbisIdentifier server ) throws IOException
     {
 	this.master = server;
-        jobPort = new PacketBlockingReceivePort<JobQueueEntry<R>>( ibis, "jobPort" );
+        jobPort = new PacketBlockingReceivePort<JobMessage>( ibis, "jobPort" );
         resultPort = new PacketSendPort<JobResult<R>>( ibis );
         jobRequestPort = new PacketSendPort<JobRequest>( ibis );
         jobPort.enable();
@@ -57,10 +57,19 @@ public class Worker<R> implements Runnable {
             System.err.println( "Next round for worker" );
             try {
                 sendWorkRequest();
-                JobQueueEntry<R> msg = jobPort.receive();
-                Job<R> job = msg.getJob();
-                System.err.println( "Received job " + job );
-                if( job == null ) {
+                JobMessage msg = jobPort.receive();
+                System.err.println( "Received job message " + msg );
+                if( msg instanceof RunJobMessage ) {
+                    RunJobMessage<R> rjm = (RunJobMessage<R>) msg;
+                    Job<R> job = rjm.getJob();
+                    R r = job.run();
+                    System.err.println( "Job " + job + " completed; result: " + r );
+                    resultPort.send( new JobResult<R>( r, rjm.getId() ), rjm.getResultPort() );
+                }
+                else if( msg instanceof MasterStoppedMessage ) {
+                    // FIXME: register the fact that this master has stopped.
+                }
+                else if( msg instanceof NoJobMessage ) {
                     try {
                         // FIXME: more sophistication.
                         Thread.sleep( BACKOFF_DELAY );
@@ -70,9 +79,7 @@ public class Worker<R> implements Runnable {
                     }
                 }
                 else {
-                    R r = job.run();
-                    System.err.println( "Job " + job + " completed; result: " + r );
-                    resultPort.send( new JobResult<R>( r, msg.getId() ), msg.getMaster() );
+                    System.err.println( "Unknown job message type " + msg.getClass() );
                 }
             }
             catch( ClassNotFoundException x ){
