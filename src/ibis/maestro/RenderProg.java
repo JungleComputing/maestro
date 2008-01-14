@@ -15,23 +15,23 @@ import java.io.IOException;
 public class RenderProg {
     IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.ELECTIONS_STRICT );
 
-    private Master<Double> master;
+    private Master master;
 
-    private class Listener implements CompletionListener<Double> {
+    private class Listener implements CompletionListener {
 
 	/** Handle the competion of job 'j': the result is 'result'.
 	 * @param j The job that was completed.
 	 * @param result The result of the job.
 	 */
 	@Override
-	public void jobCompleted(Job<Double> j, Double result) {
+	public void jobCompleted(Job j, JobReturn result) {
 	    System.out.println( "Job " + j + ": result is " + result );
 	}
 	
     }
     @SuppressWarnings("synthetic-access")
     private void startMaster( Ibis myIbis ) throws IOException {
-	master = new Master<Double>( myIbis, new Listener() );
+	master = new Master( myIbis, new Listener() );
     }
 
     private void startWorker( Ibis myIbis, IbisIdentifier server ) throws IOException {

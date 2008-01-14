@@ -20,7 +20,7 @@ import ibis.ipl.WriteMessage;
 public class PacketSendPort<T extends Serializable> {
     static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
     private final Ibis ibis;
-    private static boolean USE_DISCONNECT = false;
+    private static boolean USE_DISCONNECT = true;
     SendPort globalport;
 
     PacketSendPort( Ibis ibis ) throws IOException {
@@ -61,14 +61,11 @@ public class PacketSendPort<T extends Serializable> {
      */
     public void send( T data, IbisIdentifier receiver, String portname ) throws IOException {
 	if( USE_DISCONNECT ) {
-	    globalport.connect( receiver, portname );
+	    ReceivePortIdentifier rp = globalport.connect( receiver, portname );
 	    WriteMessage msg = globalport.newMessage();
 	    msg.writeObject( data );
 	    msg.finish();
-	    ReceivePortIdentifier l[] = globalport.connectedTo();
-	    for( ReceivePortIdentifier p: l ) {
-		globalport.disconnect(p);
-	    }
+	    globalport.disconnect(rp);
 	}
 	else {
 	    SendPort port = ibis.createSendPort(portType);

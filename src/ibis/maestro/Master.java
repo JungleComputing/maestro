@@ -14,13 +14,13 @@ import java.util.PriorityQueue;
  * @param <R> The result type of the jobs.
  */
 @SuppressWarnings("synthetic-access")
-public class Master<R> implements Runnable {
+public class Master implements Runnable {
     private final PacketUpcallReceivePort<JobRequest> requestPort;
-    private final PacketSendPort<JobMessage> submitPort;
-    private final PacketUpcallReceivePort<JobResult<R>> resultPort;
-    private final PriorityQueue<JobQueueEntry<R>> queue = new PriorityQueue<JobQueueEntry<R>>();
-    private final LinkedList<JobQueueEntry<R>> activeJobs = new LinkedList<JobQueueEntry<R>>();
-    private CompletionListener<R> completionListener;
+    private final PacketSendPort<MasterMessage> submitPort;
+    private final PacketUpcallReceivePort<JobResult> resultPort;
+    private final PriorityQueue<JobQueueEntry> queue = new PriorityQueue<JobQueueEntry>();
+    private final LinkedList<JobQueueEntry> activeJobs = new LinkedList<JobQueueEntry>();
+    private CompletionListener completionListener;
     private long jobno = 0;
     private boolean stopped = false;
 
@@ -33,10 +33,10 @@ public class Master<R> implements Runnable {
          */
         public void packetReceived(PacketUpcallReceivePort<JobRequest> p, JobRequest request) {
             System.err.println( "Recieved a job request " + request );
-            JobQueueEntry<R> j = getJob();
+            JobQueueEntry j = getJob();
             try {
         	System.err.println( "Sending job " + j + " to worker " + request.getPort() );
-        	RunJobMessage<R> message = new RunJobMessage<R>( j.getJob(), j.getId(), resultPort.identifier() );
+        	RunJobMessage message = new RunJobMessage( j.getJob(), j.getId(), resultPort.identifier() );
                 submitPort.send( message, request.getPort() );
                 System.err.println( "Job " + j + " has been sent" );
                 synchronized( activeJobs ) {
@@ -54,12 +54,12 @@ public class Master<R> implements Runnable {
      * @param id The job identifier to search for.
      * @return The JobQueueEntry of the job with this id, or null if there isn't one.
      */
-    private JobQueueEntry<R> searchQueueEntry( long id )
+    private JobQueueEntry searchQueueEntry( long id )
     {
         // Note that we blindly assume that there is only one entry with
         // the given id. Reasonable because we hand out the ids ourselves...
         synchronized( activeJobs ) {
-            for( JobQueueEntry<R> e: activeJobs ) {
+            for( JobQueueEntry e: activeJobs ) {
                 if( e.getId() == id ) {
                     return e;
                 }
@@ -78,17 +78,17 @@ public class Master<R> implements Runnable {
 	return stopped;
     }
 
-    private class JobResultHandler implements PacketReceiveListener<JobResult<R>> {
+    private class JobResultHandler implements PacketReceiveListener<JobResult> {
         /**
          * Handles job request message <code>message</code>.
          * @param result The job request message.
          */
         @Override
-        public void packetReceived(PacketUpcallReceivePort<JobResult<R>> p, JobResult<R> result) {
+        public void packetReceived(PacketUpcallReceivePort<JobResult> p, JobResult result) {
             long id = result.getId();
 
             System.err.println( "Received a job result " + result );
-            JobQueueEntry<R> e = searchQueueEntry( id );
+            JobQueueEntry e = searchQueueEntry( id );
             if( e == null ) {
                 System.err.println( "Internal error: ignoring reported result from job with unknown id " + id );
                 return;
@@ -106,14 +106,14 @@ public class Master<R> implements Runnable {
      * @param l The completion listener to use.
      * @throws IOException Thrown if the master cannot be created.
      */
-    public Master( Ibis ibis, CompletionListener<R> l ) throws IOException
+    public Master( Ibis ibis, CompletionListener l ) throws IOException
     {
         completionListener = l;
-        submitPort = new PacketSendPort<JobMessage>( ibis );
+        submitPort = new PacketSendPort<MasterMessage>( ibis );
         /** Enable result port first, to avoid the embarrassing situation that a worker gets a job
          * from us, but can't return the result.
          */
-        resultPort = new PacketUpcallReceivePort<JobResult<R>>( ibis, "resultPort", new JobResultHandler() );
+        resultPort = new PacketUpcallReceivePort<JobResult>( ibis, "resultPort", new JobResultHandler() );
         resultPort.enable();
         requestPort = new PacketUpcallReceivePort<JobRequest>( ibis, "requestPort", new JobRequestHandler() );
         requestPort.enable();
@@ -125,27 +125,27 @@ public class Master<R> implements Runnable {
      * so jobs may not be executed in chronological order.
      * @param j The job to add to the queue.
      */
-    public void submit( Job<R> j ){
+    public void submit( Job j ){
         long id;
 
         synchronized( this ) {
             id = jobno++;
         }
         System.err.println( "Submitting job " + id );
-        JobQueueEntry<R> e = new JobQueueEntry<R>( j, id, resultPort.identifier() );
+        JobQueueEntry e = new JobQueueEntry( j, id, resultPort.identifier() );
         synchronized( queue ) {
             queue.add( e );
         }
     }
 
-    private JobQueueEntry<R> getJob()
+    private JobQueueEntry getJob()
     {
         synchronized( queue ) {
             return queue.poll();
         }
     }
     
-    private void sendJobKill( JobQueueEntry<R> j )
+    private void sendJobKill( JobQueueEntry j )
     {
         // FIXME: implement this.
     }
@@ -160,7 +160,7 @@ public class Master<R> implements Runnable {
             queue.clear();
         }
         // FIXME: take a lock on the activeJobs list.
-        for( JobQueueEntry<R> j: activeJobs ){
+        for( JobQueueEntry j: activeJobs ){
             sendJobKill( j );
         }
     }
@@ -169,7 +169,7 @@ public class Master<R> implements Runnable {
      * Registers a completion listener with this master.
      * @param l The completion listener to register.
      */
-    public synchronized void setCompletionListener( CompletionListener<R> l )
+    public synchronized void setCompletionListener( CompletionListener l )
     {
 	completionListener = l;
     }

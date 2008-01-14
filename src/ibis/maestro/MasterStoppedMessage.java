@@ -7,7 +7,7 @@ import ibis.ipl.IbisIdentifier;
  * 
  * @author Kees van Reeuwijk
  */
-public class MasterStoppedMessage extends JobMessage {
+public class MasterStoppedMessage extends MasterMessage {
     /** */
     private static final long serialVersionUID = 1L;
     private final IbisIdentifier master;

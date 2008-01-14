@@ -1,7 +1,7 @@
 package ibis.maestro;
 
 /** A Maestro job that multiplies the array of values it is given. */
-public class MultiplyJob implements Job<Double> {
+public class MultiplyJob implements Job {
     private final double values[];
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
@@ -16,13 +16,13 @@ public class MultiplyJob implements Job<Double> {
      * @return The result of this run.
      */
     @Override
-    public Double run() {
+    public DoubleReturnValue run() {
 	double res = 1;
 	
 	for( double v: values ) {
 	    res *= v;
 	}
-	return res;
+	return new DoubleReturnValue( res );
     }
 
     /**
@@ -30,7 +30,7 @@ public class MultiplyJob implements Job<Double> {
      * @see java.lang.Comparable#compareTo(java.lang.Object)
      */
     @Override
-    public int compareTo( Job<Double> o) {
+    public int compareTo( Job o) {
 	if( o instanceof MultiplyJob ) {
 	    MultiplyJob other = (MultiplyJob) o;
 	    return this.values.length-other.values.length;

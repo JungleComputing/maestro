@@ -7,16 +7,15 @@ import ibis.ipl.ReceivePortIdentifier;
  * 
  * @author Kees van Reeuwijk
  *
- * @param <T> The type of a job result.
  */
-public class RunJobMessage<T> extends JobMessage {
+public class RunJobMessage extends MasterMessage {
     /** */
     private static final long serialVersionUID = 1L;
-    private final Job<T> job;
+    private final Job job;
     private final long id;
     private final ReceivePortIdentifier resultPort;
 
-    RunJobMessage( Job<T> job, long id, ReceivePortIdentifier resultPort )
+    RunJobMessage( Job job, long id, ReceivePortIdentifier resultPort )
     {
 	this.job = job;
 	this.id = id;
@@ -26,7 +25,7 @@ public class RunJobMessage<T> extends JobMessage {
     /** Returns the job contained in this job message.
      * @return The job.
      */
-    public Job<T> getJob() {
+    public Job getJob() {
         return job;
     }
     

@@ -9,21 +9,21 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  *
  */
-class JobQueueEntry<R> implements Comparable<JobQueueEntry<R>>, Serializable {
+class JobQueueEntry implements Comparable<JobQueueEntry>, Serializable {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
-    private final Job<R> job;
+    private final Job job;
     private final long id;
     private ReceivePortIdentifier master;
 
-    JobQueueEntry( Job<R> job, long id, ReceivePortIdentifier master )
+    JobQueueEntry( Job job, long id, ReceivePortIdentifier master )
     {
         this.job = job;
         this.id = id;
         this.master = master;
     }
 
-    Job<R> getJob() { return job; }
+    Job getJob() { return job; }
     long getId() { return id; }
 
     /**
@@ -32,7 +32,7 @@ class JobQueueEntry<R> implements Comparable<JobQueueEntry<R>>, Serializable {
      * @param other The other queue entry to compare to.
      */
     @Override
-    public int compareTo(JobQueueEntry<R> other) {
+    public int compareTo(JobQueueEntry other) {
         int res = this.job.compareTo( other.job );
         if( res == 0 ) {
             if( this.id<other.id ) {

@@ -8,7 +8,7 @@ import ibis.ipl.ReceivePortIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-public class KillJobMessage extends JobMessage {
+public class KillJobMessage extends MasterMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     private final long id;

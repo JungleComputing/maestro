@@ -7,17 +7,17 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  *
  */
-class JobResult<T> implements Serializable {
+class JobResult implements Serializable {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
-    private final T result;
+    private final JobReturn result;
     private long id;
 
-    T getResult() { return result; }
+    JobReturn getResult() { return result; }
     long getId() { return id; }
     
-    JobResult( T result, long id ){
-        this.result = result;
+    JobResult( JobReturn r, long id ){
+        this.result = r;
         this.id = id;
     }
 }

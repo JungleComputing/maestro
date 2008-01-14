@@ -13,7 +13,9 @@ import java.util.List;
  * @author Kees van Reeuwijk
  *
  */
-public class ExternalJob {
+public class ExternalJob implements Job {
+    /** Contractual obligation. */
+    private static final long serialVersionUID = -1100488263983745631L;
     private FileContents inputFiles[];
     private String outputFiles[];
     private List<String> command;
@@ -35,17 +37,7 @@ public class ExternalJob {
         f.delete();
     }
 
-    private static boolean containsName( FileContents l[], String name )
-    {
-	for( FileContents c: l ){
-	    if( c.hasName( name ) ) {
-		return true;
-	    }
-	}
-	return false;
-    }
-
-    static class RunResult {
+    static class RunResult implements JobReturn {
         private final int exitcode;
         private final byte out[];
         private final byte err[];
@@ -85,7 +77,7 @@ public class ExternalJob {
         }        
     }
     
-    private RunResult run()
+    public JobReturn run()
     {
         File sandbox;
         ProcessBuilder builder;
@@ -138,6 +130,12 @@ public class ExternalJob {
         this.inputFiles = inputFiles;
         this.outputFiles = outputFiles;
         this.command = command;
+    }
+
+    public int compareTo(Job o) {
+        // There is no reason to impose a special ordering on these job.
+        // TODO: add a priority number.
+        return 0;
     }
 }
 

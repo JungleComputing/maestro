@@ -67,6 +67,5 @@ public class PacketUpcallReceivePort<T extends Serializable> implements MessageU
     {
 	port.enableMessageUpcalls();
 	port.enableConnections();
-	System.err.println( "Enabled packet port " + port );
     }
 }
