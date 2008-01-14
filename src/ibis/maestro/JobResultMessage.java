@@ -7,7 +7,7 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  *
  */
-class JobResult implements Serializable {
+class JobResultMessage implements Serializable {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     private final JobReturn result;
@@ -16,7 +16,7 @@ class JobResult implements Serializable {
     JobReturn getResult() { return result; }
     long getId() { return id; }
     
-    JobResult( JobReturn r, long id ){
+    JobResultMessage( JobReturn r, long id ){
         this.result = r;
         this.id = id;
     }

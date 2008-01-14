@@ -15,23 +15,23 @@ import java.util.PriorityQueue;
  */
 @SuppressWarnings("synthetic-access")
 public class Master implements Runnable {
-    private final PacketUpcallReceivePort<JobRequest> requestPort;
+    private final PacketUpcallReceivePort<JobRequestMessage> requestPort;
     private final PacketSendPort<MasterMessage> submitPort;
-    private final PacketUpcallReceivePort<JobResult> resultPort;
+    private final PacketUpcallReceivePort<JobResultMessage> resultPort;
     private final PriorityQueue<JobQueueEntry> queue = new PriorityQueue<JobQueueEntry>();
     private final LinkedList<JobQueueEntry> activeJobs = new LinkedList<JobQueueEntry>();
     private CompletionListener completionListener;
     private long jobno = 0;
     private boolean stopped = false;
 
-    private class JobRequestHandler implements PacketReceiveListener<JobRequest> {
+    private class JobRequestHandler implements PacketReceiveListener<JobRequestMessage> {
         /**
          * Handles job request message <code>request</code>.
          * @param p The port on which the packet was received
          * @param request The job request message
          * @throws ClassNotFoundException Thrown if one of the communicated classes was not found
          */
-        public void packetReceived(PacketUpcallReceivePort<JobRequest> p, JobRequest request) {
+        public void packetReceived(PacketUpcallReceivePort<JobRequestMessage> p, JobRequestMessage request) {
             System.err.println( "Recieved a job request " + request );
             JobQueueEntry j = getJob();
             try {
@@ -78,13 +78,13 @@ public class Master implements Runnable {
 	return stopped;
     }
 
-    private class JobResultHandler implements PacketReceiveListener<JobResult> {
+    private class JobResultHandler implements PacketReceiveListener<JobResultMessage> {
         /**
          * Handles job request message <code>message</code>.
          * @param result The job request message.
          */
         @Override
-        public void packetReceived(PacketUpcallReceivePort<JobResult> p, JobResult result) {
+        public void packetReceived(PacketUpcallReceivePort<JobResultMessage> p, JobResultMessage result) {
             long id = result.getId();
 
             System.err.println( "Received a job result " + result );
@@ -113,9 +113,9 @@ public class Master implements Runnable {
         /** Enable result port first, to avoid the embarrassing situation that a worker gets a job
          * from us, but can't return the result.
          */
-        resultPort = new PacketUpcallReceivePort<JobResult>( ibis, "resultPort", new JobResultHandler() );
+        resultPort = new PacketUpcallReceivePort<JobResultMessage>( ibis, "resultPort", new JobResultHandler() );
         resultPort.enable();
-        requestPort = new PacketUpcallReceivePort<JobRequest>( ibis, "requestPort", new JobRequestHandler() );
+        requestPort = new PacketUpcallReceivePort<JobRequestMessage>( ibis, "requestPort", new JobRequestHandler() );
         requestPort.enable();
     }
 

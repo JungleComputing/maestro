@@ -9,12 +9,12 @@ import ibis.ipl.ReceivePortIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-public class JobRequest implements Serializable {
+public class JobRequestMessage implements Serializable {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     private final ReceivePortIdentifier port;
 
-    JobRequest( ReceivePortIdentifier port ){
+    JobRequestMessage( ReceivePortIdentifier port ){
         this.port = port;
     }
     

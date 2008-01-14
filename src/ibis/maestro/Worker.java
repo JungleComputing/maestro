@@ -14,8 +14,8 @@ import java.io.IOException;
 @SuppressWarnings("synthetic-access")
 public class Worker<R> implements Runnable {
     private PacketBlockingReceivePort<MasterMessage> jobPort;
-    private PacketSendPort<JobResult> resultPort;
-    private PacketSendPort<JobRequest> jobRequestPort;
+    private PacketSendPort<JobResultMessage> resultPort;
+    private PacketSendPort<JobRequestMessage> jobRequestPort;
     private static final long BACKOFF_DELAY = 10;  // In ms.
     private boolean stopped;
     private final IbisIdentifier master;
@@ -31,7 +31,7 @@ public class Worker<R> implements Runnable {
     private void sendWorkRequest() throws IOException
     {
         System.err.println( "Asking for work" );
-        jobRequestPort.send( new JobRequest( jobPort.identifier() ), master, "requestPort" );
+        jobRequestPort.send( new JobRequestMessage( jobPort.identifier() ), master, "requestPort" );
     }
 
     /**
@@ -44,8 +44,8 @@ public class Worker<R> implements Runnable {
     {
 	this.master = server;
         jobPort = new PacketBlockingReceivePort<MasterMessage>( ibis, "jobPort" );
-        resultPort = new PacketSendPort<JobResult>( ibis );
-        jobRequestPort = new PacketSendPort<JobRequest>( ibis );
+        resultPort = new PacketSendPort<JobResultMessage>( ibis );
+        jobRequestPort = new PacketSendPort<JobRequestMessage>( ibis );
         jobPort.enable();
     }
 
@@ -77,7 +77,7 @@ public class Worker<R> implements Runnable {
                     else {
                         JobReturn r = job.run();
                         System.err.println( "Job " + job + " completed; result: " + r );
-                        resultPort.send( new JobResult( r, tm.getId() ), tm.getMaster() );
+                        resultPort.send( new JobResultMessage( r, tm.getId() ), tm.getMaster() );
                     }
                 }
             }
