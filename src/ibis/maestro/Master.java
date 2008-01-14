@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import ibis.ipl.Ibis;
+import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
 import java.util.LinkedList;
@@ -35,10 +36,12 @@ public class Master implements Runnable {
             System.err.println( "Recieved a job request " + request );
             JobQueueEntry j = getJob();
             try {
-        	System.err.println( "Sending job " + j + " to worker " + request.getPort() );
+        	ReceivePortIdentifier worker = request.getPort();
+            System.err.println( "Sending job " + j + " to worker " + worker );
         	RunJobMessage message = new RunJobMessage( j.getJob(), j.getId(), resultPort.identifier() );
-                submitPort.send( message, request.getPort() );
+                submitPort.send( message, worker );
                 System.err.println( "Job " + j + " has been sent" );
+                j.setWorker( worker );
                 synchronized( activeJobs ) {
                     activeJobs.add (j );
                 }
@@ -147,7 +150,14 @@ public class Master implements Runnable {
     
     private void sendJobKill( JobQueueEntry j )
     {
-        // FIXME: implement this.
+        long jobid = j.getId();
+        ReceivePortIdentifier worker = j.getWorker();
+        KillJobMessage msg = new KillJobMessage( jobid, resultPort.identifier() );
+        try {
+            submitPort.send( msg, worker );
+        } catch (IOException e) {
+            // Nothing we can do; just ignore it.
+        }
     }
 
     /**

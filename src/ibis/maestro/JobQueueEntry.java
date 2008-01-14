@@ -14,7 +14,8 @@ class JobQueueEntry implements Comparable<JobQueueEntry>, Serializable {
     private static final long serialVersionUID = 1L;
     private final Job job;
     private final long id;
-    private ReceivePortIdentifier master;
+    private final ReceivePortIdentifier master;
+    private ReceivePortIdentifier worker;
 
     JobQueueEntry( Job job, long id, ReceivePortIdentifier master )
     {
@@ -61,5 +62,17 @@ class JobQueueEntry implements Comparable<JobQueueEntry>, Serializable {
     @Override
     public String toString() {
 	return "(JobQueueEntry id=" + id + ",job=" + job + ")";
+    }
+
+    /** Returns the port identifier of the worker this job belongs to.
+     * @return The port identifier of the worker of this job.
+     */
+    public ReceivePortIdentifier getWorker() {
+        return worker;
+    }
+    
+    /** Set the worker that is handling this job. */
+    public void setWorker(ReceivePortIdentifier worker) {
+        this.worker = worker;
     }
 }
