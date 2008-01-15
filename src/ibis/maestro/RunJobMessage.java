@@ -34,6 +34,10 @@ public class RunJobMessage extends MasterMessage {
 	return id;
     }
 
+    /**
+     * Returns the result port of the run job.
+     * @return The port that should be sent the result of this job.
+     */
     public ReceivePortIdentifier getResultPort() {
         return resultPort;
     }

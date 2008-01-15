@@ -12,7 +12,6 @@ import java.util.PriorityQueue;
  * 
  * @author Kees van Reeuwijk
  * 
- * @param <R> The result type of the jobs.
  */
 @SuppressWarnings("synthetic-access")
 public class Master implements Runnable {
@@ -30,7 +29,6 @@ public class Master implements Runnable {
          * Handles job request message <code>request</code>.
          * @param p The port on which the packet was received
          * @param request The job request message
-         * @throws ClassNotFoundException Thrown if one of the communicated classes was not found
          */
         public void packetReceived(PacketUpcallReceivePort<JobRequestMessage> p, JobRequestMessage request) {
             System.err.println( "Recieved a job request " + request );
