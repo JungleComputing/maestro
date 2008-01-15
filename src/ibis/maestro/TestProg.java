@@ -18,7 +18,7 @@ import java.util.Properties;
 public class TestProg {
     IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.ELECTIONS_STRICT );
 
-    private Master master;
+    private SendQueue master;
 
     private class Listener implements CompletionListener {
 
@@ -34,12 +34,13 @@ public class TestProg {
     }
     @SuppressWarnings("synthetic-access")
     private void startMaster( Ibis myIbis ) throws Exception {
-	master = new Master( myIbis, new Listener() );
+	master = new SendQueue( myIbis, new Listener() );
     }
 
-    private void startWorker( Ibis myIbis, IbisIdentifier server ) throws IOException {
-	Worker<MultiplyJob> worker = new Worker<MultiplyJob>( myIbis, server );
+    private void startWorker( Ibis myIbis ) throws IOException {
+	Worker worker = new Worker( myIbis );
 	worker.run();
+        worker.getJobPort();
     }
     
     private void submitJob( double [] arr )
@@ -80,7 +81,7 @@ public class TestProg {
             submitJob( buildSeries( 3 ) );
             submitJob( buildSeries( 12 ) );
         }
-        startWorker(ibis,server);
+        startWorker(ibis );
 
         ibis.end();
         System.out.println( "Test program has ended" );

@@ -2,23 +2,24 @@ package ibis.maestro;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
+import java.util.LinkedList;
+import java.util.concurrent.PriorityBlockingQueue;
 
 /**
  * A worker in the Maestro master-worker system.
  * @author Kees van Reeuwijk
- * @param <R> The result type of the jobs that this worker runs.
- *
  */
 @SuppressWarnings("synthetic-access")
-public class Worker<R> implements Runnable {
-    private PacketBlockingReceivePort<MasterMessage> jobPort;
+public class Worker implements Runnable {
+    private PacketUpcallReceivePort<MasterMessage> jobPort;
     private PacketSendPort<JobResultMessage> resultPort;
     private PacketSendPort<JobRequestMessage> jobRequestPort;
-    private static final long BACKOFF_DELAY = 10;  // In ms.
+    private final PriorityBlockingQueue<RunJobMessage> jobQueue = new PriorityBlockingQueue<RunJobMessage>();
+    private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
     private boolean stopped;
-    private final IbisIdentifier master;
 
     private synchronized void setStopped( boolean val ) {
 	stopped = val;
@@ -28,25 +29,80 @@ public class Worker<R> implements Runnable {
 	return stopped;
     }
 
-    private void sendWorkRequest() throws IOException
+    public ReceivePortIdentifier getJobPort()
     {
-        System.err.println( "Asking for work" );
-        jobRequestPort.send( new JobRequestMessage( jobPort.identifier() ), master, "requestPort" );
+        return jobPort.identifier();
+    }
+
+    private IbisIdentifier getUnusedNeighbor()
+    {
+        IbisIdentifier res;
+        synchronized( unusedNeighbors ){
+            if( unusedNeighbors.isEmpty() ){
+                res = null;
+            }
+            else {
+                res = unusedNeighbors.getFirst();
+            }
+        }
+        return res;
+    }
+    
+    private void addNeighbors( IbisIdentifier l[] )
+    {
+        for( IbisIdentifier n: l ){
+            synchronized( unusedNeighbors ){
+                unusedNeighbors.add( n );
+            }
+        }
+    }
+
+    private class JobEnqueueHandler implements PacketReceiveListener<MasterMessage> {
+        /**
+         * Handles job request message <code>request</code>.
+         * @param p The port on which the packet was received.
+         * @param request The job request message.
+         */
+        public void packetReceived(PacketUpcallReceivePort<MasterMessage> p, MasterMessage job) {
+            System.err.println( "Recieved a job " + job );
+            if( job instanceof RunJobMessage ){
+                jobQueue.add( (RunJobMessage) job );                
+            }
+            else if( job instanceof AddNeighborsMessage ){
+                addNeighbors( ((AddNeighborsMessage) job).getNeighbors() );
+            }
+            else {
+                System.err.println( "FIXME: handle " + job );
+            }
+        }
     }
 
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to
-     * @param server The (request port of) the master.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis, IbisIdentifier server ) throws IOException
+    public Worker( Ibis ibis ) throws IOException
     {
-	this.master = server;
-        jobPort = new PacketBlockingReceivePort<MasterMessage>( ibis, "jobPort" );
+        jobPort = new PacketUpcallReceivePort<MasterMessage>( ibis, "jobPort", new JobEnqueueHandler() );
         resultPort = new PacketSendPort<JobResultMessage>( ibis );
         jobRequestPort = new PacketSendPort<JobRequestMessage>( ibis );
         jobPort.enable();
+    }
+    
+    private void findNewMaster()
+    {
+        IbisIdentifier m = getUnusedNeighbor();
+        if( Settings.traceWorkerProgress ){
+            System.err.println( "Asking for work" );
+        }
+        try {
+            jobRequestPort.send( new JobRequestMessage( jobPort.identifier() ), m, "requestPort" );
+        }
+        catch( IOException x ){
+            System.err.println( "Failed to send a registration message to master " + m );
+            x.printStackTrace();
+        }
     }
 
     /** Runs this worker. */
@@ -54,40 +110,38 @@ public class Worker<R> implements Runnable {
     {
         setStopped( false );
         while( !isStopped() ) {
-            System.err.println( "Next round for worker" );
+            if( Settings.traceWorkerProgress ){
+                System.out.println( "Next round for worker" );
+            }
             try {
-                sendWorkRequest();
-                MasterMessage msg = jobPort.receive();
-                if( msg instanceof MasterStoppedMessage ){
-                    // FIXME: handle this.
+                if( jobQueue.isEmpty() ){
+                    findNewMaster();
                 }
-                else {
-                    TaskMessage tm = (TaskMessage) msg;
+                RunJobMessage tm = jobQueue.take();
+                if( tm != null ){
                     Job job = tm.getJob();
-                    System.err.println( "Received job " + job );
-                    if( job == null ) {
-                        try {
-                            // FIXME: more sophistication.
-                            Thread.sleep( BACKOFF_DELAY );
-                        }
-                        catch( InterruptedException e ) {
-                            // Somebody woke us, but we don't care.
-                        }
+                    if( Settings.traceWorkerProgress ){
+                        System.out.println( "Starting job " + job );
                     }
-                    else {
-                        JobReturn r = job.run();
-                        System.err.println( "Job " + job + " completed; result: " + r );
-                        resultPort.send( new JobResultMessage( r, tm.getId() ), tm.getMaster() );
+                    long startTime = System.nanoTime();
+                    JobReturn r = job.run();
+                    long computeTime = System.nanoTime()-startTime;
+                    if( Settings.traceWorkerProgress ){
+                        System.out.println( "Job " + job + " completed in " + computeTime + "ns; result: " + r );
                     }
+                    resultPort.send( new JobResultMessage( r, tm.getId() ), tm.getResultPort() );
                 }
             }
-            catch( ClassNotFoundException x ){
-        	x.printStackTrace();
-        	setStopped( true );
+            catch( InterruptedException x ){
+                if( Settings.traceWorkerProgress ){
+                    System.out.println( "Worker take() got interrupted: " + x );
+                }
+                // We got interrupted while waiting for the next job. Just ignore it.
             }
             catch( IOException x ){
-        	x.printStackTrace();
-        	setStopped( true );
+                // Something went wrong in sending the result back.
+                System.err.println( "Worker failed to send job result" );
+                x.printStackTrace();
             }
         }
     }

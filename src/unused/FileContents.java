@@ -1,4 +1,4 @@
-package ibis.maestro;
+package unused;
 
 import java.io.File;
 import java.io.FileWriter;

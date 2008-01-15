@@ -8,13 +8,13 @@ import java.util.LinkedList;
 import java.util.PriorityQueue;
 
 /**
- * A master in the Maestro master/worker framework.
+ * A send queue in the Maestro flow graph framework.
  * 
  * @author Kees van Reeuwijk
  * 
  */
 @SuppressWarnings("synthetic-access")
-public class Master implements Runnable {
+public class SendQueue implements Runnable {
     private final PacketUpcallReceivePort<JobRequestMessage> requestPort;
     private final PacketSendPort<MasterMessage> submitPort;
     private final PacketUpcallReceivePort<JobResultMessage> resultPort;
@@ -27,15 +27,15 @@ public class Master implements Runnable {
     private class JobRequestHandler implements PacketReceiveListener<JobRequestMessage> {
         /**
          * Handles job request message <code>request</code>.
-         * @param p The port on which the packet was received
-         * @param request The job request message
+         * @param p The port on which the packet was received.
+         * @param request The job request message.
          */
         public void packetReceived(PacketUpcallReceivePort<JobRequestMessage> p, JobRequestMessage request) {
             System.err.println( "Recieved a job request " + request );
             JobQueueEntry j = getJob();
             try {
         	ReceivePortIdentifier worker = request.getPort();
-            System.err.println( "Sending job " + j + " to worker " + worker );
+        	System.err.println( "Sending job " + j + " to worker " + worker );
         	RunJobMessage message = new RunJobMessage( j.getJob(), j.getId(), resultPort.identifier() );
                 submitPort.send( message, worker );
                 System.err.println( "Job " + j + " has been sent" );
@@ -48,6 +48,47 @@ public class Master implements Runnable {
                 e.printStackTrace();
             }
         }
+    }
+
+    private class JobResultHandler implements PacketReceiveListener<JobResultMessage> {
+        /**
+         * Handles job request message <code>message</code>.
+         * @param result The job request message.
+         */
+        @Override
+        public void packetReceived(PacketUpcallReceivePort<JobResultMessage> p, JobResultMessage result) {
+            long id = result.getId();
+    
+            System.err.println( "Received a job result " + result );
+            JobQueueEntry e = searchQueueEntry( id );
+            if( e == null ) {
+                System.err.println( "Internal error: ignoring reported result from job with unknown id " + id );
+                return;
+            }
+            completionListener.jobCompleted( e.getJob(), result.getResult() );
+            synchronized( activeJobs ) {
+                activeJobs.remove( e );
+                this.notify();   // Wake up master thread; we might have stopped.
+            }
+        }
+    }
+
+    /** Creates a new master instance.
+     * @param ibis The Ibis instance this master belongs to.
+     * @param l The completion listener to use.
+     * @throws IOException Thrown if the master cannot be created.
+     */
+    public SendQueue( Ibis ibis, CompletionListener l ) throws IOException
+    {
+        completionListener = l;
+        submitPort = new PacketSendPort<MasterMessage>( ibis );
+        /** Enable result port first, to avoid the embarrassing situation that a worker gets a job
+         * from us, but can't return the result.
+         */
+        resultPort = new PacketUpcallReceivePort<JobResultMessage>( ibis, "resultPort", new JobResultHandler() );
+        resultPort.enable();
+        requestPort = new PacketUpcallReceivePort<JobRequestMessage>( ibis, "requestPort", new JobRequestHandler() );
+        requestPort.enable();
     }
 
     /**
@@ -79,47 +120,6 @@ public class Master implements Runnable {
 	return stopped;
     }
 
-    private class JobResultHandler implements PacketReceiveListener<JobResultMessage> {
-        /**
-         * Handles job request message <code>message</code>.
-         * @param result The job request message.
-         */
-        @Override
-        public void packetReceived(PacketUpcallReceivePort<JobResultMessage> p, JobResultMessage result) {
-            long id = result.getId();
-
-            System.err.println( "Received a job result " + result );
-            JobQueueEntry e = searchQueueEntry( id );
-            if( e == null ) {
-                System.err.println( "Internal error: ignoring reported result from job with unknown id " + id );
-                return;
-            }
-            completionListener.jobCompleted( e.getJob(), result.getResult() );
-            synchronized( activeJobs ) {
-                activeJobs.remove( e );
-                this.notify();   // Wake up master thread; we might have stopped.
-            }
-        }
-    }
-
-    /** Creates a new master instance.
-     * @param ibis The Ibis instance this master belongs to.
-     * @param l The completion listener to use.
-     * @throws IOException Thrown if the master cannot be created.
-     */
-    public Master( Ibis ibis, CompletionListener l ) throws IOException
-    {
-        completionListener = l;
-        submitPort = new PacketSendPort<MasterMessage>( ibis );
-        /** Enable result port first, to avoid the embarrassing situation that a worker gets a job
-         * from us, but can't return the result.
-         */
-        resultPort = new PacketUpcallReceivePort<JobResultMessage>( ibis, "resultPort", new JobResultHandler() );
-        resultPort.enable();
-        requestPort = new PacketUpcallReceivePort<JobRequestMessage>( ibis, "requestPort", new JobRequestHandler() );
-        requestPort.enable();
-    }
-
     /**
      * Adds the given job to the work queue of this master.
      * Note that the master uses a priority queue for its scheduling,
@@ -146,33 +146,6 @@ public class Master implements Runnable {
         }
     }
     
-    private void sendJobKill( JobQueueEntry j )
-    {
-        long jobid = j.getId();
-        ReceivePortIdentifier worker = j.getWorker();
-        KillJobMessage msg = new KillJobMessage( jobid, resultPort.identifier() );
-        try {
-            submitPort.send( msg, worker );
-        } catch (IOException e) {
-            // Nothing we can do; just ignore it.
-        }
-    }
-
-    /**
-     * Kill all queued and running jobs.
-     * This does not stop this master, it `just' kills current jobs.
-     */
-    public void killJobs()
-    {
-        synchronized( queue ){
-            queue.clear();
-        }
-        // FIXME: take a lock on the activeJobs list.
-        for( JobQueueEntry j: activeJobs ){
-            sendJobKill( j );
-        }
-    }
-
     /**
      * Registers a completion listener with this master.
      * @param l The completion listener to register.
