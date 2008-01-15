@@ -15,8 +15,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 @SuppressWarnings("synthetic-access")
 public class Worker implements Runnable {
     private PacketUpcallReceivePort<MasterMessage> jobPort;
-    private PacketSendPort<JobResultMessage> resultPort;
-    private PacketSendPort<JobRequestMessage> jobRequestPort;
+    private PacketSendPort<WorkerMessage> resultPort;
     private final PriorityBlockingQueue<RunJobMessage> jobQueue = new PriorityBlockingQueue<RunJobMessage>();
     private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
     private boolean stopped;
@@ -29,6 +28,10 @@ public class Worker implements Runnable {
 	return stopped;
     }
 
+    /**
+     * Returns the identifier of the job submission port of this worker.
+     * @return The port identifier.
+     */
     public ReceivePortIdentifier getJobPort()
     {
         return jobPort.identifier();
@@ -61,7 +64,7 @@ public class Worker implements Runnable {
         /**
          * Handles job request message <code>request</code>.
          * @param p The port on which the packet was received.
-         * @param request The job request message.
+         * @param job The job we received and will put in the queue.
          */
         public void packetReceived(PacketUpcallReceivePort<MasterMessage> p, MasterMessage job) {
             System.err.println( "Recieved a job " + job );
@@ -85,9 +88,7 @@ public class Worker implements Runnable {
     public Worker( Ibis ibis ) throws IOException
     {
         jobPort = new PacketUpcallReceivePort<MasterMessage>( ibis, "jobPort", new JobEnqueueHandler() );
-        resultPort = new PacketSendPort<JobResultMessage>( ibis );
-        jobRequestPort = new PacketSendPort<JobRequestMessage>( ibis );
-        jobPort.enable();
+        resultPort = new PacketSendPort<WorkerMessage>( ibis );
     }
     
     private void findNewMaster()
@@ -97,7 +98,7 @@ public class Worker implements Runnable {
             System.err.println( "Asking for work" );
         }
         try {
-            jobRequestPort.send( new JobRequestMessage( jobPort.identifier() ), m, "requestPort" );
+            resultPort.send( new WorkerSubscribeMessage( jobPort.identifier() ), m, "requestPort" );
         }
         catch( IOException x ){
             System.err.println( "Failed to send a registration message to master " + m );

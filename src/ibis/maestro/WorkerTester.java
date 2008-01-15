@@ -46,11 +46,19 @@ public final class WorkerTester {
             this.duration = duration;
         }
         
+        /**
+         * Returns a string representation of this job.
+         * @return The string representation.
+         */
         @Override
         public String toString(){
             return "[sleep " + duration + "ms]";
         }
 
+        /**
+         * Runs this job.
+         * @return The result of the job run
+         */
         public JobReturn run() {
             try {
                 Thread.sleep( duration );
@@ -60,6 +68,13 @@ public final class WorkerTester {
             return new VoidReturnValue();
         }
 
+        /**
+         * Compares this job with the given other job.
+         * Since there is no reason to order jobs in this queue,
+         * zero is always returned.
+         * @param other The other job to compare to.
+         * @return The result of the comparison.
+         */
         public int compareTo(Job other) {
             return 0;
         }

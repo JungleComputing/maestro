@@ -14,61 +14,61 @@ import java.util.PriorityQueue;
  * 
  */
 @SuppressWarnings("synthetic-access")
-public class SendQueue implements Runnable {
-    private final PacketUpcallReceivePort<JobRequestMessage> requestPort;
+public class Master implements Runnable {
+    private final WorkerList workers = new WorkerList();
+    private final PacketUpcallReceivePort<WorkerMessage> requestPort;
     private final PacketSendPort<MasterMessage> submitPort;
-    private final PacketUpcallReceivePort<JobResultMessage> resultPort;
     private final PriorityQueue<JobQueueEntry> queue = new PriorityQueue<JobQueueEntry>();
     private final LinkedList<JobQueueEntry> activeJobs = new LinkedList<JobQueueEntry>();
     private CompletionListener completionListener;
     private long jobno = 0;
     private boolean stopped = false;
 
-    private class JobRequestHandler implements PacketReceiveListener<JobRequestMessage> {
-        /**
-         * Handles job request message <code>request</code>.
-         * @param p The port on which the packet was received.
-         * @param request The job request message.
-         */
-        public void packetReceived(PacketUpcallReceivePort<JobRequestMessage> p, JobRequestMessage request) {
-            System.err.println( "Recieved a job request " + request );
-            JobQueueEntry j = getJob();
-            try {
-        	ReceivePortIdentifier worker = request.getPort();
-        	System.err.println( "Sending job " + j + " to worker " + worker );
-        	RunJobMessage message = new RunJobMessage( j.getJob(), j.getId(), resultPort.identifier() );
-                submitPort.send( message, worker );
-                System.err.println( "Job " + j + " has been sent" );
-                j.setWorker( worker );
-                synchronized( activeJobs ) {
-                    activeJobs.add (j );
-                }
-            } catch (IOException e) {
-                // FIXME Is there anything we can do???
-                e.printStackTrace();
-            }
-        }
+    private void subscribeWorker( ReceivePortIdentifier worker )
+    {
+	workers.subscribeWorker( worker );
     }
 
-    private class JobResultHandler implements PacketReceiveListener<JobResultMessage> {
+    private void unsubscribeWorker( ReceivePortIdentifier worker )
+    {
+	workers.unsubscribeWorker( worker );
+    }
+
+    private class JobRequestHandler implements PacketReceiveListener<WorkerMessage> {
         /**
          * Handles job request message <code>message</code>.
          * @param result The job request message.
          */
         @Override
-        public void packetReceived(PacketUpcallReceivePort<JobResultMessage> p, JobResultMessage result) {
-            long id = result.getId();
-    
-            System.err.println( "Received a job result " + result );
-            JobQueueEntry e = searchQueueEntry( id );
-            if( e == null ) {
-                System.err.println( "Internal error: ignoring reported result from job with unknown id " + id );
-                return;
+        public void packetReceived(PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg) {
+            if( msg instanceof JobResultMessage ) {
+        	JobResultMessage result = (JobResultMessage) msg;
+        	long id = result.getId();
+
+        	System.err.println( "Received a job result " + result );
+        	JobQueueEntry e = searchQueueEntry( id );
+        	if( e == null ) {
+        	    System.err.println( "Internal error: ignoring reported result from job with unknown id " + id );
+        	    return;
+        	}
+        	completionListener.jobCompleted( e.getJob(), result.getResult() );
+        	synchronized( activeJobs ) {
+        	    activeJobs.remove( e );
+        	    this.notify();   // Wake up master thread; we might have stopped.
+        	}
             }
-            completionListener.jobCompleted( e.getJob(), result.getResult() );
-            synchronized( activeJobs ) {
-                activeJobs.remove( e );
-                this.notify();   // Wake up master thread; we might have stopped.
+            else if( msg instanceof WorkerSubscribeMessage ) {
+        	WorkerSubscribeMessage m = (WorkerSubscribeMessage) msg;
+
+        	subscribeWorker( m.getPort() );
+            }
+            else if( msg instanceof WorkerResignMessage ) {
+        	WorkerResignMessage m = (WorkerResignMessage) msg;
+
+        	unsubscribeWorker( m.getPort() );
+            }
+            else {
+        	System.err.println( "TODO: the master should handle message of type " + msg.getClass() );
             }
         }
     }
@@ -78,16 +78,11 @@ public class SendQueue implements Runnable {
      * @param l The completion listener to use.
      * @throws IOException Thrown if the master cannot be created.
      */
-    public SendQueue( Ibis ibis, CompletionListener l ) throws IOException
+    public Master( Ibis ibis, CompletionListener l ) throws IOException
     {
         completionListener = l;
         submitPort = new PacketSendPort<MasterMessage>( ibis );
-        /** Enable result port first, to avoid the embarrassing situation that a worker gets a job
-         * from us, but can't return the result.
-         */
-        resultPort = new PacketUpcallReceivePort<JobResultMessage>( ibis, "resultPort", new JobResultHandler() );
-        resultPort.enable();
-        requestPort = new PacketUpcallReceivePort<JobRequestMessage>( ibis, "requestPort", new JobRequestHandler() );
+        requestPort = new PacketUpcallReceivePort<WorkerMessage>( ibis, "requestPort", new JobRequestHandler() );
         requestPort.enable();
     }
 
@@ -133,19 +128,12 @@ public class SendQueue implements Runnable {
             id = jobno++;
         }
         System.err.println( "Submitting job " + id );
-        JobQueueEntry e = new JobQueueEntry( j, id, resultPort.identifier() );
+        JobQueueEntry e = new JobQueueEntry( j, id, requestPort.identifier() );
         synchronized( queue ) {
             queue.add( e );
         }
     }
 
-    private JobQueueEntry getJob()
-    {
-        synchronized( queue ) {
-            return queue.poll();
-        }
-    }
-    
     /**
      * Registers a completion listener with this master.
      * @param l The completion listener to register.

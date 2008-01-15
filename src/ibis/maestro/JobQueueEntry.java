@@ -71,7 +71,9 @@ class JobQueueEntry implements Comparable<JobQueueEntry>, Serializable {
         return worker;
     }
     
-    /** Set the worker that is handling this job. */
+    /** Set the worker that is handling this job.
+     * @param worker The worker that is handling this job.
+     */
     public void setWorker(ReceivePortIdentifier worker) {
         this.worker = worker;
     }

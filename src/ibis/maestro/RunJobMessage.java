@@ -29,7 +29,9 @@ public class RunJobMessage extends MasterMessage {
         return job;
     }
     
-    /** Returns the id of this job. */
+    /** Returns the id of this job.
+     * @return The job ID.
+     */
     public long getId() {
 	return id;
     }

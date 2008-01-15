@@ -18,7 +18,7 @@ import java.util.Properties;
 public class TestProg {
     IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.ELECTIONS_STRICT );
 
-    private SendQueue master;
+    private Master master;
 
     private class Listener implements CompletionListener {
 
@@ -34,7 +34,7 @@ public class TestProg {
     }
     @SuppressWarnings("synthetic-access")
     private void startMaster( Ibis myIbis ) throws Exception {
-	master = new SendQueue( myIbis, new Listener() );
+	master = new Master( myIbis, new Listener() );
     }
 
     private void startWorker( Ibis myIbis ) throws IOException {

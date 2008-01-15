@@ -1,13 +1,11 @@
 package ibis.maestro;
 
-import java.io.Serializable;
-
 /**
  * A job result as communicated from the worker to the master.
  * @author Kees van Reeuwijk
  *
  */
-class JobResultMessage implements Serializable {
+class JobResultMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     private final JobReturn result;
