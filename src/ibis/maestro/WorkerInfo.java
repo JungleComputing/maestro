@@ -9,11 +9,14 @@ class WorkerInfo {
     private final ReceivePortIdentifier port;
     private long roundTripTime;   // Estimated time to complete a job.
     private long jobStartTime;    // The time of the most recent job start.
-    private long overhead;        // Estimated time used to send and receive a job.
     private long computeTime;
 
     WorkerInfo( ReceivePortIdentifier port ){
         this.port = port;
+        // Initially we are very pessimistic about the performance of a worker,
+        // and we only give it work if there is no other worker.
+        roundTripTime = Long.MAX_VALUE/2;
+        computeTime = Long.MAX_VALUE/2;
     }
 
     boolean hasId(ReceivePortIdentifier id) {
@@ -38,10 +41,8 @@ class WorkerInfo {
      */
     public void registerJobCompletionTime( long t, long newComputeTime ) {
 	long newRoundTripTime = jobStartTime-t; // The time to send the job, compute, and report the result.
-	long newOverhead = newRoundTripTime-newComputeTime;
 	
 	roundTripTime = (roundTripTime+newRoundTripTime)/2;
-	overhead = (overhead+newOverhead)/2;
 	computeTime = (computeTime+newComputeTime)/2;
     }
 
@@ -53,7 +54,8 @@ class WorkerInfo {
      */
     public long getCompletionTime(long now) {
 	// We predict the worker will be ready with its current job from us until...
-	final long workerReadyTime = jobStartTime + (overhead/2) + computeTime; 
+        final long overhead = roundTripTime-computeTime;
+        final long workerReadyTime = jobStartTime + roundTripTime - (overhead/2); 
 	final long arrivalTime = now+(overhead/2);
 
         // Now return the estimated completion time. The job can be started
@@ -64,5 +66,20 @@ class WorkerInfo {
         // although they will show up in the overhead time.
         // A refinement would be to report the time a job spends in the queue.
 	return Math.max( workerReadyTime, arrivalTime ) + computeTime + (overhead/2);
+    }
+
+    /**
+     * Returns the estimated time span, in ms, until this worker should
+     * be send its next job.
+     * @param now The current time in nanoseconds.
+     * @return The interval in ms to the next useful job submission.
+     */
+    public long getBusyInterval(long now)
+    {
+        // We predict the worker will be ready with its current job from us until...
+        final long overhead = roundTripTime-computeTime;
+        final long workerReadyTime = jobStartTime + roundTripTime - (overhead/2);
+        
+        return (workerReadyTime-now)/1000;
     }
 }

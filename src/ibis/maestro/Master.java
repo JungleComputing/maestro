@@ -135,6 +135,7 @@ public class Master implements Runnable {
         synchronized( queue ) {
             queue.add( e );
         }
+        startJobs();   // Try to start some jobs.
     }
 
     /**
@@ -159,7 +160,11 @@ public class Master implements Runnable {
         }
         return res;
     }
-    
+
+    /**
+     * Returns true iff there are jobs in the queue.
+     * @return Are there jobs in the queue?
+     */
     private boolean areWaitingJobs()
     {
 	boolean res;
@@ -210,8 +215,10 @@ public class Master implements Runnable {
 	// We simply wait until we have reached the stop state.
 	// and there are no outstanding jobs.
 	while( !isStopped() && !areActiveJobs() ) {
+            startJobs();
 	    try {
-		wait();
+                long sleepTime = workers.getBusyInterval();
+                Thread.sleep( sleepTime );
 	    }
 	    catch( InterruptedException x ) {
 		// Nothing to do.

@@ -22,9 +22,12 @@ public class WorkerList {
 	return -1;
     }
 
-    void subscribeWorker( ReceivePortIdentifier worker )
+    void subscribeWorker( ReceivePortIdentifier port )
     {
-	System.err.println( "FIXME: implement subscribe of worker " + worker );
+        WorkerInfo worker = new WorkerInfo( port );
+        synchronized( workers ){
+            workers.add( worker );
+        }
     }
 
     void unsubscribeWorker( ReceivePortIdentifier worker )
@@ -63,14 +66,21 @@ public class WorkerList {
 	}
 	return bestWorker;
     }
-    
+
     /**
-     * Register a completion time for the given worker.
-     * @param worker The worker in question.
-     * @param completionTime The time in ns that it took to complete its latest job.
+     * Returns the estimated time span, in ms, until the first worker should
+     * be send its next job.
+     * @return The interval in ms to the next useful job submission.
      */
-    void registerCompletionTime( ReceivePortIdentifier worker, long completionTime )
-    {
-	System.err.println( "Worker " + worker + " completed its last job in " + completionTime + "ns" );
+    public long getBusyInterval() {
+        long res = Long.MAX_VALUE;
+        long now = System.nanoTime();
+
+        synchronized( workers ){
+            for( WorkerInfo worker: workers ){
+                res = Math.min( res, worker.getBusyInterval( now ) );
+            }
+        }
+        return res;
     }
 }
