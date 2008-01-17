@@ -52,6 +52,9 @@ public class Master implements Runnable {
         	    return;
         	}
         	completionListener.jobCompleted( e.getJob(), result.getResult() );
+                WorkerInfo worker = e.getWorker();
+                long now = System.nanoTime();
+                worker.registerJobCompletionTime( now, result.getComputeTime() );
         	synchronized( activeJobs ) {
         	    activeJobs.remove( e );
         	    this.notify();   // Wake up master thread; we might have stopped.

@@ -27,7 +27,7 @@ public class TestProg {
 	 * @param result The result of the job.
 	 */
 	@Override
-	public void jobCompleted(Job j, JobReturn result) {
+	public void jobCompleted(Job j, JobReturn result ) {
 	    System.out.println( "Job " + j + ": result is " + result );
 	}
 	
