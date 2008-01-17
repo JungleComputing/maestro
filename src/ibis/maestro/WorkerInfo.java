@@ -1,5 +1,5 @@
 /**
- * 
+ * Information about a worker in our list.
  */
 package ibis.maestro;
 
@@ -52,14 +52,17 @@ class WorkerInfo {
      * @return The completion time of this worker in ns.
      */
     public long getCompletionTime(long now) {
-	
-	// We predict the worker will be busy until this moment...
+	// We predict the worker will be ready with its current job from us until...
 	final long workerReadyTime = jobStartTime + (overhead/2) + computeTime; 
 	final long arrivalTime = now+(overhead/2);
-	
-	// Now return the estimated completion time. The job can be started
+
+        // Now return the estimated completion time. The job can be started
 	// at the estimated arrival time or the time the worker is finished, whichever
 	// comes first, plus the compute time, plus the time to send the result back.
+        //
+        // Note that in our estimates we totally ignore any other jobs the worker handles,
+        // although they will show up in the overhead time.
+        // A refinement would be to report the time a job spends in the queue.
 	return Math.max( workerReadyTime, arrivalTime ) + computeTime + (overhead/2);
     }
 }

@@ -69,7 +69,9 @@ public class Worker implements Runnable {
         public void packetReceived(PacketUpcallReceivePort<MasterMessage> p, MasterMessage job) {
             System.err.println( "Recieved a job " + job );
             if( job instanceof RunJobMessage ){
-                jobQueue.add( (RunJobMessage) job );                
+                RunJobMessage runJobMessage = (RunJobMessage) job;
+                runJobMessage.setStartTime( System.nanoTime() );
+                jobQueue.add( runJobMessage );
             }
             else if( job instanceof AddNeighborsMessage ){
                 addNeighbors( ((AddNeighborsMessage) job).getNeighbors() );
@@ -124,13 +126,12 @@ public class Worker implements Runnable {
                     if( Settings.traceWorkerProgress ){
                         System.out.println( "Starting job " + job );
                     }
-                    long startTime = System.nanoTime();
                     JobReturn r = job.run();
-                    long computeTime = System.nanoTime()-startTime;
+                    long computeTime = System.nanoTime()-tm.getStartTime();
                     if( Settings.traceWorkerProgress ){
                         System.out.println( "Job " + job + " completed in " + computeTime + "ns; result: " + r );
                     }
-                    resultPort.send( new JobResultMessage( r, tm.getId() ), tm.getResultPort() );
+                    resultPort.send( new JobResultMessage( r, tm.getId(), computeTime ), tm.getResultPort() );
                 }
             }
             catch( InterruptedException x ){

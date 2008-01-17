@@ -13,6 +13,7 @@ public class RunJobMessage extends MasterMessage {
     private static final long serialVersionUID = 1L;
     private final Job job;
     private final long id;
+    private transient long startTime;
     private final ReceivePortIdentifier resultPort;
 
     RunJobMessage( Job job, long id, ReceivePortIdentifier resultPort )
@@ -28,7 +29,7 @@ public class RunJobMessage extends MasterMessage {
     public Job getJob() {
         return job;
     }
-    
+
     /** Returns the id of this job.
      * @return The job ID.
      */
@@ -44,4 +45,18 @@ public class RunJobMessage extends MasterMessage {
         return resultPort;
     }
 
+    /** Set the start time of this job to the given time in ns.
+     * @param t The start time.
+     */
+    public void setStartTime(long t) {
+        startTime = t;
+    }
+
+    /** Returns the registered start time.
+     * 
+     * @return The registered start time.
+     */
+    public long getStartTime() {
+        return startTime;
+    }
 }
