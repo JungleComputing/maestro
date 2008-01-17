@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.Serializable;
 
@@ -9,18 +8,20 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  *
  */
-class JobQueueEntry implements Comparable<JobQueueEntry>, Serializable {
+class ActiveJob implements Comparable<ActiveJob>, Serializable {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     private final Job job;
     private final long id;
-    private final ReceivePortIdentifier master;
+    private final long startTime;
+    private final WorkerInfo worker;
 
-    JobQueueEntry( Job job, long id, ReceivePortIdentifier master )
+    ActiveJob( Job job, long id, long startTime, WorkerInfo worker )
     {
         this.job = job;
         this.id = id;
-        this.master = master;
+        this.startTime = startTime;
+        this.worker = worker;
     }
 
     Job getJob() { return job; }
@@ -32,7 +33,7 @@ class JobQueueEntry implements Comparable<JobQueueEntry>, Serializable {
      * @param other The other queue entry to compare to.
      */
     @Override
-    public int compareTo(JobQueueEntry other) {
+    public int compareTo(ActiveJob other) {
         int res = this.job.compareTo( other.job );
         if( res == 0 ) {
             if( this.id<other.id ) {
@@ -47,19 +48,26 @@ class JobQueueEntry implements Comparable<JobQueueEntry>, Serializable {
         return res;
     }
 
-    /** Returns the port identifier of the master this job belongs to.
-     * @return The port identifier of the master of this job.
-     */
-    public ReceivePortIdentifier getMaster() {
-        return master;
-    }
-    
     /**
      * Returns a string representation of this job queue entry.
      * @return The string.
      */
     @Override
     public String toString() {
-	return "(JobQueueEntry id=" + id + ",job=" + job + ")";
+	return "(ActiveJob id=" + id + ",job=" + job + ")";
+    }
+
+    /** Returns the worker this job belongs to.
+     * @return The worker of this job.
+     */
+    public WorkerInfo getWorker() {
+        return worker;
+    }
+    
+    /** Returns the starting time in ns of this active job.
+     * @return The starting time.
+     */
+    public long getStartTime() {
+	return startTime;
     }
 }

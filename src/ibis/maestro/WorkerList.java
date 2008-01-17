@@ -10,15 +10,6 @@ import ibis.ipl.ReceivePortIdentifier;
  * @author Kees van Reeuwijk
  */
 public class WorkerList {
-    private static class WorkerInfo {
-	ReceivePortIdentifier id;
-	long completionTime;
-
-	boolean hasId(ReceivePortIdentifier id2) {
-	    return id.equals( id2 );
-	}
-    }
-    
     private final Vector<WorkerInfo> workers = new Vector<WorkerInfo>();
 
     private static int searchWorker( Vector<WorkerInfo> workers, ReceivePortIdentifier id ) {
@@ -46,15 +37,31 @@ public class WorkerList {
 	    System.out.println( "unsubscribe of worker " + worker );
 	}
     }
-    
+
     /** Return a worker to execute a job for us.
      * This method may return <code>null</code> if at the moment
      * there is no suitable worker. 
      * @return The worker to execute the job.
      */
-    ReceivePortIdentifier getReadyWorker()
+    WorkerInfo getFastestWorker()
     {
-	return null;
+	long now = System.nanoTime();
+	long maxIdle = -1;
+	WorkerInfo bestWorker = null;
+
+	synchronized( workers ) {
+	    for( WorkerInfo worker: workers ) {
+		long idle = worker.getCompletionTime( now );
+
+		if( idle>=0 ) {
+		    if( maxIdle<idle ) {
+			maxIdle = idle;
+			bestWorker = worker;
+		    }
+		}
+	    }
+	}
+	return bestWorker;
     }
     
     /**

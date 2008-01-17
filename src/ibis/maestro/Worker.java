@@ -98,7 +98,7 @@ public class Worker implements Runnable {
             System.err.println( "Asking for work" );
         }
         try {
-            resultPort.send( new WorkerSubscribeMessage( jobPort.identifier() ), m, "requestPort" );
+            resultPort.send( new WorkRequestMessage( jobPort.identifier() ), m, "requestPort" );
         }
         catch( IOException x ){
             System.err.println( "Failed to send a registration message to master " + m );

@@ -19,7 +19,7 @@ public class Master implements Runnable {
     private final PacketUpcallReceivePort<WorkerMessage> requestPort;
     private final PacketSendPort<MasterMessage> submitPort;
     private final PriorityQueue<JobQueueEntry> queue = new PriorityQueue<JobQueueEntry>();
-    private final LinkedList<JobQueueEntry> activeJobs = new LinkedList<JobQueueEntry>();
+    private final LinkedList<ActiveJob> activeJobs = new LinkedList<ActiveJob>();
     private CompletionListener completionListener;
     private long jobno = 0;
     private boolean stopped = false;
@@ -46,7 +46,7 @@ public class Master implements Runnable {
         	long id = result.getId();
 
         	System.err.println( "Received a job result " + result );
-        	JobQueueEntry e = searchQueueEntry( id );
+        	ActiveJob e = searchQueueEntry( id );
         	if( e == null ) {
         	    System.err.println( "Internal error: ignoring reported result from job with unknown id " + id );
         	    return;
@@ -57,8 +57,8 @@ public class Master implements Runnable {
         	    this.notify();   // Wake up master thread; we might have stopped.
         	}
             }
-            else if( msg instanceof WorkerSubscribeMessage ) {
-        	WorkerSubscribeMessage m = (WorkerSubscribeMessage) msg;
+            else if( msg instanceof WorkRequestMessage ) {
+        	WorkRequestMessage m = (WorkRequestMessage) msg;
 
         	subscribeWorker( m.getPort() );
             }
@@ -91,12 +91,12 @@ public class Master implements Runnable {
      * @param id The job identifier to search for.
      * @return The JobQueueEntry of the job with this id, or null if there isn't one.
      */
-    private JobQueueEntry searchQueueEntry( long id )
+    private ActiveJob searchQueueEntry( long id )
     {
         // Note that we blindly assume that there is only one entry with
         // the given id. Reasonable because we hand out the ids ourselves...
         synchronized( activeJobs ) {
-            for( JobQueueEntry e: activeJobs ) {
+            for( ActiveJob e: activeJobs ) {
                 if( e.getId() == id ) {
                     return e;
                 }
@@ -155,6 +155,50 @@ public class Master implements Runnable {
             res = !activeJobs.isEmpty();
         }
         return res;
+    }
+    
+    private boolean areWaitingJobs()
+    {
+	boolean res;
+	
+	synchronized( queue ) {
+	    res = !queue.isEmpty();
+	}
+	return res;
+    }
+
+    /**
+     * As long as there are jobs in the queue and ready workers, send jobs to
+     * those workers.
+     */
+    private void startJobs()
+    {
+	while( areWaitingJobs() ) {
+	    WorkerInfo worker = workers.getFastestWorker();
+	    if( worker == null ) {
+		// FIXME: advertise for new workers.
+		return;
+	    }
+	    JobQueueEntry e;
+	    synchronized( queue ) {
+		e = queue.remove();
+	    }
+	    Job job = e.getJob();
+	    long id = jobno++;
+	    long startTime = System.nanoTime();
+	    RunJobMessage msg = new RunJobMessage( job, id, requestPort.identifier() );
+	    ActiveJob j = new ActiveJob( job, id, startTime, worker );
+	    synchronized( activeJobs ) {
+		activeJobs.add( j );
+	    }
+	    try {
+		submitPort.send( msg, worker.getPort() );
+	    } catch (IOException e1) {
+		System.err.println( "FIXME: could not send job to " + worker + ": put toothpaste back in the tube" );
+		// TODO: Auto-generated catch block
+		e1.printStackTrace();
+	    }
+	}
     }
 
     /** Runs this master. */
