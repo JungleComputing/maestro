@@ -2,6 +2,7 @@ package ibis.maestro;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisCapabilities;
+import ibis.ipl.IbisCreationFailedException;
 import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.Registry;
@@ -22,7 +23,7 @@ public class TestProg {
 
     private class Listener implements CompletionListener {
 
-	/** Handle the competion of job 'j': the result is 'result'.
+	/** Handle the completion of job 'j': the result is 'result'.
 	 * @param j The job that was completed.
 	 * @param result The result of the job.
 	 */
@@ -32,7 +33,7 @@ public class TestProg {
 	}
 	
     }
-    @SuppressWarnings("synthetic-access")
+
     private void startMaster( Ibis myIbis ) throws Exception {
 	master = new Master( myIbis, new Listener() );
     }
@@ -64,10 +65,8 @@ public class TestProg {
         //serverProperties.setProperty( "ibis.server.port", "12642" );
         Server ibisServer = new Server( serverProperties );
         String serveraddress = ibisServer.getLocalAddress();
-        Properties ibisProperties = new Properties();
-        ibisProperties.setProperty( "ibis.server.address", serveraddress );
-        ibisProperties.setProperty( "ibis.pool.name", "XXXpoolname" );
-        Ibis ibis = IbisFactory.createIbis(ibisCapabilities, ibisProperties, true, null, PacketSendPort.portType, PacketUpcallReceivePort.portType, PacketBlockingReceivePort.portType );
+        Ibis ibis;
+        ibis = createMaestroIbis( serveraddress );
 
         // Elect a server
         Registry registry = ibis.registry();
@@ -87,12 +86,23 @@ public class TestProg {
         System.out.println( "Test program has ended" );
     }
 
+    private Ibis createMaestroIbis( String serveraddress )
+	    throws IbisCreationFailedException {
+	Ibis ibis;
+	Properties ibisProperties = new Properties();
+        ibisProperties.setProperty( "ibis.server.address", serveraddress );
+        ibisProperties.setProperty( "ibis.pool.name", "XXXpoolname" );
+        ibis = IbisFactory.createIbis(ibisCapabilities, ibisProperties, true, null, PacketSendPort.portType, PacketUpcallReceivePort.portType, PacketBlockingReceivePort.portType );
+	return ibis;
+    }
+
     /** The command-line interface of this program.
      * 
      * @param args The list of command-line parameters.
      */
     public static void main( String args[] ) {
-        try {
+	System.out.println( "Running on platform " + Service.getPlatformVersion() );
+	try {
             new TestProg().run();            
         }
         catch( Exception e ) {

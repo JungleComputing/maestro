@@ -13,12 +13,13 @@ public class PingMessage extends MasterMessage {
     private final ReceivePortIdentifier master;
     private final double payload[];
     private static final int PAYLOAD_SIZE = 10000;
-    
+
     /** Minimal time in ms we want to run our benchmark. */
     private static final long TARGET_INTERVAL = 100;
 
     /**
      * Constructs a new ping message. 
+     * @param master The master that sends this ping message.
      */
     public PingMessage( ReceivePortIdentifier master )
     {

@@ -58,6 +58,9 @@ public class Logger {
 	}
     }
 
+    /** Returns the print stream of this logger.
+     * @return The print stream.
+     */
     public PrintStream getPrintStream() {
         return logfile;
     }

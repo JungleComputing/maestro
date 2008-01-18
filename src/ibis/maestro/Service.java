@@ -86,7 +86,7 @@ public class Service
     }
 
     /** Prints the platform version that is used. */
-    private static String getPlatformVersion()
+    static String getPlatformVersion()
     {
         java.util.Properties p = System.getProperties();
         

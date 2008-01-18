@@ -131,7 +131,7 @@ public class Master implements Runnable {
             }
             PingMessage msg = new PingMessage( receivePort.identifier() );
             if( Settings.traceWorkerProgress ){
-                Globals.log.reportProgress( "Sending ping message " + m + " to worker " + worker );
+                Globals.log.reportProgress( "Sending ping message " + msg + " to worker " + worker );
             }            
             try {
                 sendPort.send( msg, worker );
