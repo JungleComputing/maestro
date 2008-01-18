@@ -13,18 +13,15 @@ class JobQueueEntry implements Comparable<JobQueueEntry>, Serializable {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     private final Job job;
-    private final long id;
     private final ReceivePortIdentifier master;
 
-    JobQueueEntry( Job job, long id, ReceivePortIdentifier master )
+    JobQueueEntry( Job job, ReceivePortIdentifier master )
     {
         this.job = job;
-        this.id = id;
         this.master = master;
     }
 
     Job getJob() { return job; }
-    long getId() { return id; }
 
     /**
      * Returns a comparison result for this queue entry compared
@@ -34,16 +31,6 @@ class JobQueueEntry implements Comparable<JobQueueEntry>, Serializable {
     @Override
     public int compareTo(JobQueueEntry other) {
         int res = this.job.compareTo( other.job );
-        if( res == 0 ) {
-            if( this.id<other.id ) {
-                res = -1;
-            }
-            else {
-                if( this.id>other.id ) {
-                    res = 1;
-                }
-            }
-        }
         return res;
     }
 
@@ -60,6 +47,6 @@ class JobQueueEntry implements Comparable<JobQueueEntry>, Serializable {
      */
     @Override
     public String toString() {
-	return "(JobQueueEntry id=" + id + ",job=" + job + ")";
+	return "(JobQueueEntry job=" + job + ')';
     }
 }

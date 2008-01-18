@@ -25,6 +25,9 @@ public class PingTarget {
 	this.sendTime = sendTime;
     }
 
-    ReceivePortIdentifier getWorker() { return worker; }
     long getSendTime() { return sendTime; }
+
+    boolean hasIdentifier(ReceivePortIdentifier id) {
+        return worker.equals( id );
+    }
 }

@@ -86,11 +86,11 @@ public class Service
     }
 
     /** Prints the platform version that is used. */
-    static String getPlatformVersion()
+    private static String getPlatformVersion()
     {
         java.util.Properties p = System.getProperties();
         
-        return "Java " + p.getProperty( "java.version" ) + " (" + p.getProperty( "java.vendor" ) + ") on " + p.getProperty( "os.name" ) + " " + p.getProperty( "os.version" ) + " (" + p.getProperty( "os.arch" ) + ")";
+        return "Java " + p.getProperty( "java.version" ) + " (" + p.getProperty( "java.vendor" ) + ") on " + p.getProperty( "os.name" ) + ' ' + p.getProperty( "os.version" ) + " (" + p.getProperty( "os.arch" ) + ')';
     }
 
     /** Prints the given string to the tracing output. 
@@ -98,32 +98,6 @@ public class Service
      */
     public static void trace(String s ) {
         System.out.println( s );
-    }
-
-    /** Given a value and a number of decimals, return a formatted string
-     * with the decimal point at the correct position.
-     * @param val The value to format.
-     * @param decimals The number of decimal places.
-     * @return The constructed string.
-     */
-    static String toFixedPointString(long val, int decimals)
-    {
-        boolean negative = false;
-        if( val<0 ) {
-            val = -val;
-            negative = true;
-        }
-        String res = Long.toString( val );
-    
-        if( decimals == 0 ){
-    		return (negative?"-":"") + res;
-    	}
-    	while( res.length()<=decimals ){
-    		res = "0" + res;
-    	}
-    	// Calculate the place for the decimal point.
-    	int pos = res.length()-decimals;
-        return (negative?"-":"") + res.substring( 0, pos ) + "." + res.substring( pos );
     }
 
     /** Given an input stream, reads the entire contents of that stream into a String.
@@ -147,25 +121,6 @@ public class Service
             res.append( buffer, 0, n );
         }
         return new String( res );
-    }
-
-    /** Given a url, return a string containing the file behind the url.
-     * @param url The url to read.
-     * @return The text of the url.
-     */
-    static String readURL( final URL url )
-    {
-        String txt;
-
-        try{
-            InputStream s = url.openStream();
-            txt = read( s );
-            s.close();
-        }
-        catch( IOException e ){
-            return null;
-        }
-        return txt;
     }
 
 }

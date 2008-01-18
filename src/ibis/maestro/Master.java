@@ -25,9 +25,24 @@ public class Master implements Runnable {
     private long jobno = 0;
     private boolean stopped = false;
 
-    private void subscribeWorker( ReceivePortIdentifier worker, double benchmarkTime )
+    private void pingWorker( ReceivePortIdentifier worker )
     {
-	workers.subscribeWorker( worker, benchmarkTime );
+        long now = System.nanoTime();
+        PingTarget t = new PingTarget( worker, now );
+        synchronized( pingTargets ){
+            pingTargets.add( t );
+        }
+        PingMessage msg = new PingMessage( requestPort.identifier() );
+        try {
+        submitPort.send( msg, worker );
+        }
+        catch( IOException x ){
+            synchronized( pingTargets ){
+                pingTargets.remove( t );
+            }
+            System.err.println( "Cannot send ping message to worker " + worker );
+            x.printStackTrace();
+        }
     }
 
     private void unsubscribeWorker( ReceivePortIdentifier worker )
@@ -64,14 +79,32 @@ public class Master implements Runnable {
             else if( msg instanceof WorkRequestMessage ) {
         	WorkRequestMessage m = (WorkRequestMessage) msg;
 
-        	// FIXME: implement this.
-        	//subscribeWorker( m.getPort() );
+        	pingWorker( m.getPort() );
             }
             else if( msg instanceof PingReplyMessage ) {
         	PingReplyMessage m = (PingReplyMessage) msg;
-        	
-        	// FIXME: implement this.
-        	//subscribeWorker( m.getPort() );
+                PingTarget t = null;
+                long receiveTime = System.nanoTime();
+
+                ReceivePortIdentifier id = m.getWorker();
+                synchronized( pingTargets ){
+                    for( PingTarget w: pingTargets ){
+                        if( w.hasIdentifier( id ) ){
+                            t = w;
+                            break;
+                        }
+                    }
+                }
+                if( t == null ){
+                    System.err.println( "Worker " + id + " replied to a ping that wasn't sent: ignoring" );
+                }
+                else {
+                    long pingTime = t.getSendTime()-receiveTime;
+                    synchronized( pingTargets ){
+                        pingTargets.remove( t );
+                    }
+                    workers.subscribeWorker(id, pingTime, m.getBenchmarkScore() );
+                }
             }
             else if( msg instanceof WorkerResignMessage ) {
         	WorkerResignMessage m = (WorkerResignMessage) msg;
@@ -133,13 +166,8 @@ public class Master implements Runnable {
      * @param j The job to add to the queue.
      */
     public void submit( Job j ){
-        long id;
 
-        synchronized( this ) {
-            id = jobno++;
-        }
-        System.err.println( "Submitting job " + id );
-        JobQueueEntry e = new JobQueueEntry( j, id, requestPort.identifier() );
+        JobQueueEntry e = new JobQueueEntry( j, requestPort.identifier() );
         synchronized( queue ) {
             queue.add( e );
         }

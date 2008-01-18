@@ -22,9 +22,32 @@ public class WorkerList {
 	return -1;
     }
 
-    void subscribeWorker( ReceivePortIdentifier port, double benchmarkTime )
+    /** Estimate the multiplier between benchmark score and compute time of this job,
+     * by averaging the multipliers of all known workers.
+     */
+    private double estimateMultiplier()
     {
-        WorkerInfo worker = new WorkerInfo( port, benchmarkTime );
+        double sumMultipliers = 0.0;
+        int workerCount;
+        synchronized( workers ){
+            workerCount = workers.size();
+            
+            for( WorkerInfo w: workers ){
+                sumMultipliers += w.calculateMultiplier();
+            }
+        }
+        if( workerCount<1 ){
+            // There are no workers to compare to, so we will have to invent
+            // an estimate. This magic number says that this job is just as
+            // fast as the benchmark run we use to benchmark the nodes.
+            return 20.0;
+        }
+        return sumMultipliers/workerCount;
+    }
+    void subscribeWorker( ReceivePortIdentifier port, long pingTime, double benchmarkScore )
+    {
+        long computeTime = (long) (benchmarkScore*estimateMultiplier());
+        WorkerInfo worker = new WorkerInfo( port, benchmarkScore, pingTime+computeTime, computeTime );
         synchronized( workers ){
             workers.add( worker );
         }

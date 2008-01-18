@@ -64,20 +64,36 @@ public class Worker implements Runnable {
         /**
          * Handles job request message <code>request</code>.
          * @param p The port on which the packet was received.
-         * @param job The job we received and will put in the queue.
+         * @param msg The job we received and will put in the queue.
          */
-        public void packetReceived(PacketUpcallReceivePort<MasterMessage> p, MasterMessage job) {
-            System.err.println( "Recieved a job " + job );
-            if( job instanceof RunJobMessage ){
-                RunJobMessage runJobMessage = (RunJobMessage) job;
+        public void packetReceived(PacketUpcallReceivePort<MasterMessage> p, MasterMessage msg) {
+            System.err.println( "Recieved a job " + msg );
+            if( msg instanceof RunJobMessage ){
+                RunJobMessage runJobMessage = (RunJobMessage) msg;
                 runJobMessage.setStartTime( System.nanoTime() );
                 jobQueue.add( runJobMessage );
             }
-            else if( job instanceof AddNeighborsMessage ){
-                addNeighbors( ((AddNeighborsMessage) job).getNeighbors() );
+            else if( msg instanceof AddNeighborsMessage ){
+                addNeighbors( ((AddNeighborsMessage) msg).getNeighbors() );
+            }
+            else if( msg instanceof PingMessage ){
+                PingMessage ping = (PingMessage) msg;
+                long startTime = System.nanoTime();
+
+                double benchmarkScore = ping.benchmarkResult();
+                long benchmarkTime = System.nanoTime()-startTime;
+                ReceivePortIdentifier master = ping.getMaster();
+                PingReplyMessage m = new PingReplyMessage( jobPort.identifier(), benchmarkScore, benchmarkTime );
+                try {
+                    resultPort.send(m, master);
+                }
+                catch( IOException x ){
+                    System.err.println( "Cannot send ping reply to master " + master );
+                    x.printStackTrace();
+                }
             }
             else {
-                System.err.println( "FIXME: handle " + job );
+                System.err.println( "FIXME: handle " + msg );
             }
         }
     }

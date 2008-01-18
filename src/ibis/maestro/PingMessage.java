@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.ipl.ReceivePortIdentifier;
+
 /**
  * A message sent to a worker to test its response time.
  * 
@@ -8,6 +10,7 @@ package ibis.maestro;
 public class PingMessage extends MasterMessage {
     /** Contractual obligation */
     private static final long serialVersionUID = 1L;
+    private final ReceivePortIdentifier master;
     private final double payload[];
     private static final int PAYLOAD_SIZE = 10000;
     
@@ -17,7 +20,9 @@ public class PingMessage extends MasterMessage {
     /**
      * Constructs a new ping message. 
      */
-    public PingMessage() {
+    public PingMessage( ReceivePortIdentifier master )
+    {
+        this.master = master;
 	payload = new double[PAYLOAD_SIZE];
 	
 	// Fill the payload with some benchmark data.
@@ -25,6 +30,8 @@ public class PingMessage extends MasterMessage {
 	    payload[i] = Math.sin( (2*i*Math.PI)/PAYLOAD_SIZE );
 	}
     }
+    
+    ReceivePortIdentifier getMaster() { return master; }
 
     /**
      * Run a benchmark on the payload, and return the time in

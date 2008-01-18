@@ -3,13 +3,16 @@ package unused;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * @author Kees van Reeuwijk
  *
  * The name of a file with its contents.
  */
-public class FileContents {
+public class FileContents implements Serializable {
+    /** Contractual obligation. */
+    private static final long serialVersionUID = -5082035301445931441L;
     private String name;
     private String contents;
 

@@ -1,14 +1,11 @@
 package ibis.maestro;
 
-
-import java.io.Serializable;
-
 /**
  * An entry in our job queue.
  * @author Kees van Reeuwijk
  *
  */
-class ActiveJob implements Comparable<ActiveJob>, Serializable {
+class ActiveJob implements Comparable<ActiveJob> {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     private final Job job;
@@ -54,7 +51,7 @@ class ActiveJob implements Comparable<ActiveJob>, Serializable {
      */
     @Override
     public String toString() {
-	return "(ActiveJob id=" + id + ",job=" + job + ")";
+	return "(ActiveJob id=" + id + ",job=" + job + ')';
     }
 
     /** Returns the worker this job belongs to.

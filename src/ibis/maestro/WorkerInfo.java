@@ -7,18 +7,18 @@ import ibis.ipl.ReceivePortIdentifier;
 
 class WorkerInfo {
     private final ReceivePortIdentifier port;
-    private final double benchmarkTime;
+    
+    /** The time in seconds to do one iteration of a standard benchmark on this worker. */
+    private final double benchmarkScore;
     private long roundTripTime;   // Estimated time to complete a job.
-    private long jobStartTime;    // The time of the most recent job start.
     private long computeTime;
+    private long jobStartTime;    // The time of the most recent job start.
 
-    WorkerInfo( ReceivePortIdentifier port, double benchmarkTime ){
+    WorkerInfo( ReceivePortIdentifier port, double benchmarkScore, long roundTripTime, long computeTime ){
         this.port = port;
-        this.benchmarkTime = benchmarkTime;
-        // Initially we are very pessimistic about the performance of a worker,
-        // and we only give it work if there is no other worker.
-        roundTripTime = Long.MAX_VALUE/2;
-        computeTime = Long.MAX_VALUE/2;
+        this.benchmarkScore = benchmarkScore;
+        this.roundTripTime = roundTripTime;
+        this.computeTime = computeTime;
     }
 
     boolean hasId(ReceivePortIdentifier id) {
@@ -83,5 +83,13 @@ class WorkerInfo {
         final long workerReadyTime = jobStartTime + roundTripTime - (overhead/2);
         
         return (workerReadyTime-now)/1000;
+    }
+
+    /** Returns the current estimated multiplier from benchmark score
+     * to predicted job computation time in ns.
+     * @return Estimated multiplier.
+     */
+    public double calculateMultiplier() {
+        return computeTime/benchmarkScore;
     }
 }

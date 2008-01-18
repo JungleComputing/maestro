@@ -41,6 +41,8 @@ public class ExternalJob implements Job {
     }
 
     static class RunResult implements JobReturn {
+        /** Contractual obligation. */
+        private static final long serialVersionUID = 881469549150557400L;
         private final int exitcode;
         private final byte out[];
         private final byte err[];
