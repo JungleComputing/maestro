@@ -51,7 +51,7 @@ class ActiveJob implements Comparable<ActiveJob> {
      */
     @Override
     public String toString() {
-	return "(ActiveJob id=" + id + ",job=" + job + ')';
+	return "(ActiveJob id=" + id + ", job=" + job + ", start time " + Service.formatNanoseconds( startTime ) + ')';
     }
 
     /** Returns the worker this job belongs to.

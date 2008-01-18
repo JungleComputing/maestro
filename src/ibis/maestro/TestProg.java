@@ -40,7 +40,6 @@ public class TestProg {
     private void startWorker( Ibis myIbis ) throws IOException {
 	Worker worker = new Worker( myIbis );
 	worker.run();
-        worker.getJobPort();
     }
     
     private void submitJob( double [] arr )

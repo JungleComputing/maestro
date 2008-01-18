@@ -27,4 +27,12 @@ public class DoubleReturnValue implements JobReturn {
         return value;
     }
 
+
+    /**
+     * @return The string representation of this value.
+     */
+    @Override
+    public String toString(){
+        return "return value: " + value;
+    }
 }

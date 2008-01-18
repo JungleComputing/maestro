@@ -25,7 +25,7 @@ class PingReplyMessage extends WorkerMessage {
 
     ReceivePortIdentifier getWorker() { return worker; }
     double getBenchmarkScore() { return benchmarkScore; }
-    private long getBenchmarkTime() { return benchmarkTime; }
+    long getBenchmarkTime() { return benchmarkTime; }
 
     PingReplyMessage( ReceivePortIdentifier worker, double benchmarkScore, long benchmarkTime ){
         this.worker = worker;

@@ -16,9 +16,9 @@ import java.util.PriorityQueue;
 @SuppressWarnings("synthetic-access")
 public class Master implements Runnable {
     private final WorkerList workers = new WorkerList();
-    private final PacketUpcallReceivePort<WorkerMessage> requestPort;
-    private final PacketSendPort<MasterMessage> submitPort;
-    private final PriorityQueue<JobQueueEntry> queue = new PriorityQueue<JobQueueEntry>();
+    private final PacketUpcallReceivePort<WorkerMessage> receivePort;
+    private final PacketSendPort<MasterMessage> sendPort;
+    private final PriorityQueue<Job> queue = new PriorityQueue<Job>();
     private final LinkedList<ActiveJob> activeJobs = new LinkedList<ActiveJob>();
     private final LinkedList<PingTarget> pingTargets = new LinkedList<PingTarget>();
     private CompletionListener completionListener;
@@ -32,16 +32,16 @@ public class Master implements Runnable {
         synchronized( pingTargets ){
             pingTargets.add( t );
         }
-        PingMessage msg = new PingMessage( requestPort.identifier() );
+        PingMessage msg = new PingMessage( receivePort.identifier() );
         try {
-        submitPort.send( msg, worker );
+            sendPort.send( msg, worker );
         }
         catch( IOException x ){
             synchronized( pingTargets ){
                 pingTargets.remove( t );
             }
-            System.err.println( "Cannot send ping message to worker " + worker );
-            x.printStackTrace();
+            Globals.log.reportError( "Cannot send ping message to worker " + worker );
+            x.printStackTrace( Globals.log.getPrintStream() );
         }
     }
 
@@ -59,52 +59,16 @@ public class Master implements Runnable {
         public void packetReceived(PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg) {
             if( msg instanceof JobResultMessage ) {
         	JobResultMessage result = (JobResultMessage) msg;
-        	long id = result.getId();
-
-        	System.err.println( "Received a job result " + result );
-        	ActiveJob e = searchQueueEntry( id );
-        	if( e == null ) {
-        	    System.err.println( "Internal error: ignoring reported result from job with unknown id " + id );
-        	    return;
-        	}
-        	completionListener.jobCompleted( e.getJob(), result.getResult() );
-                WorkerInfo worker = e.getWorker();
-                long now = System.nanoTime();
-                worker.registerJobCompletionTime( now, result.getComputeTime() );
-        	synchronized( activeJobs ) {
-        	    activeJobs.remove( e );
-        	    this.notify();   // Wake up master thread; we might have stopped.
-        	}
+        	handleJobResultMessage(result);
             }
             else if( msg instanceof WorkRequestMessage ) {
         	WorkRequestMessage m = (WorkRequestMessage) msg;
 
-        	pingWorker( m.getPort() );
+        	handleWorkRequestMessage(m);
             }
             else if( msg instanceof PingReplyMessage ) {
         	PingReplyMessage m = (PingReplyMessage) msg;
-                PingTarget t = null;
-                long receiveTime = System.nanoTime();
-
-                ReceivePortIdentifier id = m.getWorker();
-                synchronized( pingTargets ){
-                    for( PingTarget w: pingTargets ){
-                        if( w.hasIdentifier( id ) ){
-                            t = w;
-                            break;
-                        }
-                    }
-                }
-                if( t == null ){
-                    System.err.println( "Worker " + id + " replied to a ping that wasn't sent: ignoring" );
-                }
-                else {
-                    long pingTime = t.getSendTime()-receiveTime;
-                    synchronized( pingTargets ){
-                        pingTargets.remove( t );
-                    }
-                    workers.subscribeWorker(id, pingTime, m.getBenchmarkScore() );
-                }
+                handlePingReplyMessage(m);
             }
             else if( msg instanceof WorkerResignMessage ) {
         	WorkerResignMessage m = (WorkerResignMessage) msg;
@@ -112,8 +76,68 @@ public class Master implements Runnable {
         	unsubscribeWorker( m.getPort() );
             }
             else {
-        	System.err.println( "TODO: the master should handle message of type " + msg.getClass() );
+        	Globals.log.reportInternalError( "the master should handle message of type " + msg.getClass() );
             }
+        }
+
+        /**
+         * @param result The message to handle.
+         */
+        private void handleJobResultMessage(JobResultMessage result) {
+            long id = result.getId();
+
+            if( Settings.traceWorkerProgress ){
+                Globals.log.reportProgress( "Received a job result " + result );
+            }
+            ActiveJob e = searchQueueEntry( id );
+            if( e == null ) {
+                Globals.log.reportInternalError( "ignoring reported result from job with unknown id " + id );
+                return;
+            }
+            completionListener.jobCompleted( e.getJob(), result.getResult() );
+            WorkerInfo worker = e.getWorker();
+            long now = System.nanoTime();
+            worker.registerJobCompletionTime( now, result.getComputeTime() );
+            synchronized( activeJobs ) {
+                activeJobs.remove( e );
+                this.notify();   // Wake up master thread; we might have stopped.
+            }
+        }
+
+        /**
+         * @param m The message to handle.
+         */
+        private void handlePingReplyMessage(PingReplyMessage m) {
+            PingTarget t = null;
+            long receiveTime = System.nanoTime();
+            long benchmarkTime = m.getBenchmarkTime();
+
+            ReceivePortIdentifier id = m.getWorker();
+            synchronized( pingTargets ){
+                for( PingTarget w: pingTargets ){
+                    if( w.hasIdentifier( id ) ){
+                        t = w;
+                        break;
+                    }
+                }
+            }
+            if( t == null ){
+                Globals.log.reportInternalError( "Worker " + id + " replied to a ping that wasn't sent: ignoring" );
+            }
+            else {
+                long pingTime = t.getSendTime()-receiveTime;
+                synchronized( pingTargets ){
+                    pingTargets.remove( t );
+                }
+                workers.subscribeWorker( id, pingTime-benchmarkTime, m.getBenchmarkScore() );
+            }
+        }
+
+        /**
+         * @param m The message to handle.
+         */
+        private void handleWorkRequestMessage(WorkRequestMessage m) {
+            pingWorker( m.getPort() );
         }
     }
 
@@ -125,9 +149,9 @@ public class Master implements Runnable {
     public Master( Ibis ibis, CompletionListener l ) throws IOException
     {
         completionListener = l;
-        submitPort = new PacketSendPort<MasterMessage>( ibis );
-        requestPort = new PacketUpcallReceivePort<WorkerMessage>( ibis, "requestPort", new JobRequestHandler() );
-        requestPort.enable();
+        sendPort = new PacketSendPort<MasterMessage>( ibis );
+        receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, "requestPort", new JobRequestHandler() );
+        receivePort.enable();
     }
 
     /**
@@ -166,10 +190,8 @@ public class Master implements Runnable {
      * @param j The job to add to the queue.
      */
     public void submit( Job j ){
-
-        JobQueueEntry e = new JobQueueEntry( j, requestPort.identifier() );
         synchronized( queue ) {
-            queue.add( e );
+            queue.add( j );
         }
         startJobs();   // Try to start some jobs.
     }
@@ -217,30 +239,37 @@ public class Master implements Runnable {
      */
     private void startJobs()
     {
+        long id;
 	while( areWaitingJobs() ) {
 	    WorkerInfo worker = workers.getFastestWorker();
 	    if( worker == null ) {
 		// FIXME: advertise for new workers.
 		return;
 	    }
-	    JobQueueEntry e;
+	    Job job;
 	    synchronized( queue ) {
-		e = queue.remove();
+		job = queue.remove();
 	    }
-	    Job job = e.getJob();
-	    long id = jobno++;
+            synchronized( this ){
+                id = jobno++;
+            }
 	    long startTime = System.nanoTime();
-	    RunJobMessage msg = new RunJobMessage( job, id, requestPort.identifier() );
+	    RunJobMessage msg = new RunJobMessage( job, id, receivePort.identifier() );
 	    ActiveJob j = new ActiveJob( job, id, startTime, worker );
 	    synchronized( activeJobs ) {
 		activeJobs.add( j );
 	    }
 	    try {
-		submitPort.send( msg, worker.getPort() );
-	    } catch (IOException e1) {
-		System.err.println( "FIXME: could not send job to " + worker + ": put toothpaste back in the tube" );
-		// TODO: Auto-generated catch block
-		e1.printStackTrace();
+		sendPort.send( msg, worker.getPort() );
+	    } catch (IOException e) {
+                synchronized( queue ){
+                    queue.add( job );
+                }
+                synchronized( activeJobs ){
+                    activeJobs.remove( j );
+                }
+                Globals.log.reportError( "Could not send job to " + worker + ": put toothpaste back in the tube" );
+                e.printStackTrace();
 	    }
 	}
     }
@@ -261,7 +290,7 @@ public class Master implements Runnable {
 	    }
 	}
 	try {
-	    requestPort.close();
+	    receivePort.close();
 	}
 	catch( IOException x ) {
 	    // Nothing we can do about it.

@@ -23,7 +23,7 @@ public final class WorkerTester {
     private ReceivePortIdentifier startWorker( Ibis myIbis ) throws IOException {
         Worker worker = new Worker( myIbis );
         worker.run();
-        return worker.getJobPort();
+        return worker.getReceivePort();
     }
     
     private class JobResultHandler implements PacketReceiveListener<JobResultMessage> {

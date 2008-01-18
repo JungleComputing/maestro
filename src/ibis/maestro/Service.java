@@ -9,7 +9,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.net.URL;
+import java.text.DecimalFormat;
 
 /**
  * 
@@ -121,6 +121,18 @@ public class Service
             res.append( buffer, 0, n );
         }
         return new String( res );
+    }
+    
+    private static final DecimalFormat nsFormatter = new DecimalFormat( "00#s ###ms ###us ###ns" );
+
+    /** Given a time in nanoseconds, return a neat format string for it.
+     * 
+     * @param t The time to format.
+     * @return The formatted string.
+     */
+    public static String formatNanoseconds( long t )
+    {
+        return nsFormatter.format( t );
     }
 
 }

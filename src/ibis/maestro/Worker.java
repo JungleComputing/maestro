@@ -14,8 +14,8 @@ import java.util.concurrent.PriorityBlockingQueue;
  */
 @SuppressWarnings("synthetic-access")
 public class Worker implements Runnable {
-    private PacketUpcallReceivePort<MasterMessage> jobPort;
-    private PacketSendPort<WorkerMessage> resultPort;
+    private final PacketUpcallReceivePort<MasterMessage> receivePort;
+    private final PacketSendPort<WorkerMessage> sendPort;
     private final PriorityBlockingQueue<RunJobMessage> jobQueue = new PriorityBlockingQueue<RunJobMessage>();
     private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
     private boolean stopped;
@@ -32,9 +32,9 @@ public class Worker implements Runnable {
      * Returns the identifier of the job submission port of this worker.
      * @return The port identifier.
      */
-    public ReceivePortIdentifier getJobPort()
+    public ReceivePortIdentifier getReceivePort()
     {
-        return jobPort.identifier();
+        return receivePort.identifier();
     }
 
     private IbisIdentifier getUnusedNeighbor()
@@ -67,33 +67,57 @@ public class Worker implements Runnable {
          * @param msg The job we received and will put in the queue.
          */
         public void packetReceived(PacketUpcallReceivePort<MasterMessage> p, MasterMessage msg) {
-            System.err.println( "Recieved a job " + msg );
+            if( Settings.traceWorkerProgress ){
+                Globals.log.reportProgress( "Recieved a job " + msg );
+            }
             if( msg instanceof RunJobMessage ){
                 RunJobMessage runJobMessage = (RunJobMessage) msg;
-                runJobMessage.setStartTime( System.nanoTime() );
-                jobQueue.add( runJobMessage );
+                handleRunJobMessage(runJobMessage);
             }
             else if( msg instanceof AddNeighborsMessage ){
-                addNeighbors( ((AddNeighborsMessage) msg).getNeighbors() );
+                AddNeighborsMessage addMsg = ((AddNeighborsMessage) msg);
+                handleAddNeighborsMessage(addMsg);
             }
             else if( msg instanceof PingMessage ){
                 PingMessage ping = (PingMessage) msg;
-                long startTime = System.nanoTime();
-
-                double benchmarkScore = ping.benchmarkResult();
-                long benchmarkTime = System.nanoTime()-startTime;
-                ReceivePortIdentifier master = ping.getMaster();
-                PingReplyMessage m = new PingReplyMessage( jobPort.identifier(), benchmarkScore, benchmarkTime );
-                try {
-                    resultPort.send(m, master);
-                }
-                catch( IOException x ){
-                    System.err.println( "Cannot send ping reply to master " + master );
-                    x.printStackTrace();
-                }
+                handlePingMessage(ping);
             }
             else {
-                System.err.println( "FIXME: handle " + msg );
+                Globals.log.reportInternalError( "FIXME: handle " + msg );
+            }
+        }
+
+        /**
+         * @param msg The message to handle.
+         */
+        private void handleAddNeighborsMessage(AddNeighborsMessage msg) {
+            addNeighbors( msg.getNeighbors() );
+        }
+
+        /**
+         * @param msg The message to handle.
+         */
+        private void handleRunJobMessage(RunJobMessage msg) {
+            msg.setStartTime( System.nanoTime() );
+            jobQueue.add( msg );
+        }
+
+        /**
+         * @param msg The message to handle.
+         */
+        private void handlePingMessage(PingMessage msg) {
+            long startTime = System.nanoTime();
+
+            double benchmarkScore = msg.benchmarkResult();
+            long benchmarkTime = System.nanoTime()-startTime;
+            ReceivePortIdentifier master = msg.getMaster();
+            PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), benchmarkScore, benchmarkTime );
+            try {
+                sendPort.send(m, master);
+            }
+            catch( IOException x ){
+                Globals.log.reportError( "Cannot send ping reply to master " + master );
+                x.printStackTrace( Globals.log.getPrintStream() );
             }
         }
     }
@@ -105,21 +129,21 @@ public class Worker implements Runnable {
      */
     public Worker( Ibis ibis ) throws IOException
     {
-        jobPort = new PacketUpcallReceivePort<MasterMessage>( ibis, "jobPort", new JobEnqueueHandler() );
-        resultPort = new PacketSendPort<WorkerMessage>( ibis );
+        receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, "jobPort", new JobEnqueueHandler() );
+        sendPort = new PacketSendPort<WorkerMessage>( ibis );
     }
     
     private void findNewMaster()
     {
         IbisIdentifier m = getUnusedNeighbor();
         if( Settings.traceWorkerProgress ){
-            System.err.println( "Asking for work" );
+            Globals.log.reportProgress( "Asking for work" );
         }
         try {
-            resultPort.send( new WorkRequestMessage( jobPort.identifier() ), m, "requestPort" );
+            sendPort.send( new WorkRequestMessage( receivePort.identifier() ), m, "requestPort" );
         }
         catch( IOException x ){
-            System.err.println( "Failed to send a registration message to master " + m );
+            Globals.log.reportError( "Failed to send a registration message to master " + m );
             x.printStackTrace();
         }
     }
@@ -147,7 +171,7 @@ public class Worker implements Runnable {
                     if( Settings.traceWorkerProgress ){
                         System.out.println( "Job " + job + " completed in " + computeTime + "ns; result: " + r );
                     }
-                    resultPort.send( new JobResultMessage( r, tm.getId(), computeTime ), tm.getResultPort() );
+                    sendPort.send( new JobResultMessage( r, tm.getId(), computeTime ), tm.getResultPort() );
                 }
             }
             catch( InterruptedException x ){
@@ -158,8 +182,8 @@ public class Worker implements Runnable {
             }
             catch( IOException x ){
                 // Something went wrong in sending the result back.
-                System.err.println( "Worker failed to send job result" );
-                x.printStackTrace();
+                Globals.log.reportError( "Worker failed to send job result" );
+                x.printStackTrace( Globals.log.getPrintStream() );
             }
         }
     }

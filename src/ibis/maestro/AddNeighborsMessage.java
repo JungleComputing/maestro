@@ -27,5 +27,24 @@ public class AddNeighborsMessage extends MasterMessage {
     public IbisIdentifier[] getNeighbors() {
         return l;
     }
+
+    /**
+     * @return The string representation of this message.
+     */
+    @Override
+    public String toString(){
+        String res = "AddNeighborsMessage[" ;
+        boolean first = true;
+
+        for( IbisIdentifier i: l ){
+            if( first ){
+                first = false;
+            }
+            else {
+                res += "," + i;
+            }
+        }
+        return res + ']';
+    }
     
 }
