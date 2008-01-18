@@ -73,14 +73,15 @@ public class TestProg {
         Registry registry = ibis.registry();
 	IbisIdentifier server = registry.elect("Server");
         
-        // If I am the server, run server, else run client.
+        // If I am elected the server, run server.
         if( server.equals( ibis.identifier())){
-            startMaster(ibis);
-            
+            startMaster( ibis );
+
             submitJob( buildSeries( 3 ) );
             submitJob( buildSeries( 12 ) );
         }
-        startWorker(ibis );
+        // ... and everyone runs a client.
+        startWorker( ibis );
 
         ibis.end();
         System.out.println( "Test program has ended" );

@@ -123,7 +123,7 @@ public class Service
         return new String( res );
     }
     
-    private static final DecimalFormat nsFormatter = new DecimalFormat( "00#s ###ms ###us ###ns" );
+    private static final DecimalFormat nsFormatter = new DecimalFormat( "#########,###" );
 
     /** Given a time in nanoseconds, return a neat format string for it.
      * 
@@ -132,7 +132,7 @@ public class Service
      */
     public static String formatNanoseconds( long t )
     {
-        return nsFormatter.format( t );
+        return nsFormatter.format( t ) + "ns";
     }
 
 }

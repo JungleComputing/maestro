@@ -25,38 +25,21 @@ public class Master implements Runnable {
     private long jobno = 0;
     private boolean stopped = false;
 
-    private void pingWorker( ReceivePortIdentifier worker )
-    {
-        long now = System.nanoTime();
-        PingTarget t = new PingTarget( worker, now );
-        synchronized( pingTargets ){
-            pingTargets.add( t );
-        }
-        PingMessage msg = new PingMessage( receivePort.identifier() );
-        try {
-            sendPort.send( msg, worker );
-        }
-        catch( IOException x ){
-            synchronized( pingTargets ){
-                pingTargets.remove( t );
-            }
-            Globals.log.reportError( "Cannot send ping message to worker " + worker );
-            x.printStackTrace( Globals.log.getPrintStream() );
-        }
-    }
-
     private void unsubscribeWorker( ReceivePortIdentifier worker )
     {
 	workers.unsubscribeWorker( worker );
     }
 
-    private class JobRequestHandler implements PacketReceiveListener<WorkerMessage> {
+    private class MessageHandler implements PacketReceiveListener<WorkerMessage> {
         /**
          * Handles job request message <code>message</code>.
          * @param result The job request message.
          */
         @Override
         public void packetReceived(PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg) {
+            if( Settings.traceWorkerProgress ){
+                Globals.log.reportProgress( "Received message " + msg );
+            }
             if( msg instanceof JobResultMessage ) {
         	JobResultMessage result = (JobResultMessage) msg;
         	handleJobResultMessage(result);
@@ -64,7 +47,7 @@ public class Master implements Runnable {
             else if( msg instanceof WorkRequestMessage ) {
         	WorkRequestMessage m = (WorkRequestMessage) msg;
 
-        	handleWorkRequestMessage(m);
+        	handleWorkRequestMessage( m );
             }
             else if( msg instanceof PingReplyMessage ) {
         	PingReplyMessage m = (PingReplyMessage) msg;
@@ -137,7 +120,29 @@ public class Master implements Runnable {
          * @param m The message to handle.
          */
         private void handleWorkRequestMessage(WorkRequestMessage m) {
-            pingWorker( m.getPort() );
+            ReceivePortIdentifier worker = m.getPort();
+            long now = System.nanoTime();
+            if( Settings.traceWorkerProgress ){
+                Globals.log.reportProgress( "Received work request message " + m + " from worker " + worker + " at " + Service.formatNanoseconds(now) );
+            }
+            PingTarget t = new PingTarget( worker, now );
+            synchronized( pingTargets ){
+                pingTargets.add( t );
+            }
+            PingMessage msg = new PingMessage( receivePort.identifier() );
+            if( Settings.traceWorkerProgress ){
+                Globals.log.reportProgress( "Sending ping message " + m + " to worker " + worker );
+            }            
+            try {
+                sendPort.send( msg, worker );
+            }
+            catch( IOException x ){
+                synchronized( pingTargets ){
+                    pingTargets.remove( t );
+                }
+                Globals.log.reportError( "Cannot send ping message to worker " + worker );
+                x.printStackTrace( Globals.log.getPrintStream() );
+            }
         }
     }
 
@@ -150,7 +155,7 @@ public class Master implements Runnable {
     {
         completionListener = l;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
-        receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, "requestPort", new JobRequestHandler() );
+        receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, "requestPort", new MessageHandler() );
         receivePort.enable();
     }
 

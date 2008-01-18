@@ -9,7 +9,7 @@ import java.util.LinkedList;
 import java.util.concurrent.PriorityBlockingQueue;
 
 /**
- * A worker in the Maestro master-worker system.
+ * A worker in the Maestro multiple master-worker system.
  * @author Kees van Reeuwijk
  */
 @SuppressWarnings("synthetic-access")
@@ -19,6 +19,21 @@ public class Worker implements Runnable {
     private final PriorityBlockingQueue<RunJobMessage> jobQueue = new PriorityBlockingQueue<RunJobMessage>();
     private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
     private boolean stopped;
+
+    /**
+     * Create a new Maestro worker instance using the given Ibis instance.
+     * @param ibis The Ibis instance this worker belongs to
+     * @throws IOException Thrown if the construction of the worker failed.
+     */
+    public Worker( Ibis ibis ) throws IOException
+    {
+        receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, "jobPort", new MessageHandler() );
+        sendPort = new PacketSendPort<WorkerMessage>( ibis );
+        synchronized( unusedNeighbors ){
+            // Add yourself to the list of neighbors.
+            unusedNeighbors.add( ibis.identifier() );
+        }
+    }
 
     private synchronized void setStopped( boolean val ) {
 	stopped = val;
@@ -60,7 +75,7 @@ public class Worker implements Runnable {
         }
     }
 
-    private class JobEnqueueHandler implements PacketReceiveListener<MasterMessage> {
+    private class MessageHandler implements PacketReceiveListener<MasterMessage> {
         /**
          * Handles job request message <code>request</code>.
          * @param p The port on which the packet was received.
@@ -68,7 +83,7 @@ public class Worker implements Runnable {
          */
         public void packetReceived(PacketUpcallReceivePort<MasterMessage> p, MasterMessage msg) {
             if( Settings.traceWorkerProgress ){
-                Globals.log.reportProgress( "Recieved a job " + msg );
+                Globals.log.reportProgress( "Recieved a message " + msg );
             }
             if( msg instanceof RunJobMessage ){
                 RunJobMessage runJobMessage = (RunJobMessage) msg;
@@ -122,28 +137,23 @@ public class Worker implements Runnable {
         }
     }
 
-    /**
-     * Create a new Maestro worker instance using the given Ibis instance.
-     * @param ibis The Ibis instance this worker belongs to
-     * @throws IOException Thrown if the construction of the worker failed.
-     */
-    public Worker( Ibis ibis ) throws IOException
-    {
-        receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, "jobPort", new JobEnqueueHandler() );
-        sendPort = new PacketSendPort<WorkerMessage>( ibis );
-    }
-    
     private void findNewMaster()
     {
         IbisIdentifier m = getUnusedNeighbor();
+        if( m == null ){
+            if( Settings.traceWorkerProgress ){
+                Globals.log.reportProgress( "No neighbors to ask for work" );
+            }
+            return;
+        }
         if( Settings.traceWorkerProgress ){
-            Globals.log.reportProgress( "Asking for work" );
+            Globals.log.reportProgress( "Asking neighbor " + m + " for work" );
         }
         try {
             sendPort.send( new WorkRequestMessage( receivePort.identifier() ), m, "requestPort" );
         }
         catch( IOException x ){
-            Globals.log.reportError( "Failed to send a registration message to master " + m );
+            Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
             x.printStackTrace();
         }
     }
