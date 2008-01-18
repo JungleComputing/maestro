@@ -7,12 +7,14 @@ import ibis.ipl.ReceivePortIdentifier;
 
 class WorkerInfo {
     private final ReceivePortIdentifier port;
+    private final double benchmarkTime;
     private long roundTripTime;   // Estimated time to complete a job.
     private long jobStartTime;    // The time of the most recent job start.
     private long computeTime;
 
-    WorkerInfo( ReceivePortIdentifier port ){
+    WorkerInfo( ReceivePortIdentifier port, double benchmarkTime ){
         this.port = port;
+        this.benchmarkTime = benchmarkTime;
         // Initially we are very pessimistic about the performance of a worker,
         // and we only give it work if there is no other worker.
         roundTripTime = Long.MAX_VALUE/2;

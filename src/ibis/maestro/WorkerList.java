@@ -22,9 +22,9 @@ public class WorkerList {
 	return -1;
     }
 
-    void subscribeWorker( ReceivePortIdentifier port )
+    void subscribeWorker( ReceivePortIdentifier port, double benchmarkTime )
     {
-        WorkerInfo worker = new WorkerInfo( port );
+        WorkerInfo worker = new WorkerInfo( port, benchmarkTime );
         synchronized( workers ){
             workers.add( worker );
         }

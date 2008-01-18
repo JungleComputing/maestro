@@ -20,13 +20,14 @@ public class Master implements Runnable {
     private final PacketSendPort<MasterMessage> submitPort;
     private final PriorityQueue<JobQueueEntry> queue = new PriorityQueue<JobQueueEntry>();
     private final LinkedList<ActiveJob> activeJobs = new LinkedList<ActiveJob>();
+    private final LinkedList<PingTarget> pingTargets = new LinkedList<PingTarget>();
     private CompletionListener completionListener;
     private long jobno = 0;
     private boolean stopped = false;
 
-    private void subscribeWorker( ReceivePortIdentifier worker )
+    private void subscribeWorker( ReceivePortIdentifier worker, double benchmarkTime )
     {
-	workers.subscribeWorker( worker );
+	workers.subscribeWorker( worker, benchmarkTime );
     }
 
     private void unsubscribeWorker( ReceivePortIdentifier worker )
@@ -63,7 +64,14 @@ public class Master implements Runnable {
             else if( msg instanceof WorkRequestMessage ) {
         	WorkRequestMessage m = (WorkRequestMessage) msg;
 
-        	subscribeWorker( m.getPort() );
+        	// FIXME: implement this.
+        	//subscribeWorker( m.getPort() );
+            }
+            else if( msg instanceof PingReplyMessage ) {
+        	PingReplyMessage m = (PingReplyMessage) msg;
+        	
+        	// FIXME: implement this.
+        	//subscribeWorker( m.getPort() );
             }
             else if( msg instanceof WorkerResignMessage ) {
         	WorkerResignMessage m = (WorkerResignMessage) msg;
