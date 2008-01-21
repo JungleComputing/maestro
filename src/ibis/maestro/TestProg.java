@@ -37,11 +37,12 @@ public class TestProg {
     @SuppressWarnings("synthetic-access")
     private void startMaster( Ibis myIbis ) throws Exception {
 	master = new Master( myIbis, new Listener() );
+        master.start();
     }
 
     private void startWorker( Ibis myIbis ) throws IOException {
 	Worker worker = new Worker( myIbis );
-	worker.run();
+	worker.start();
     }
     
     private void submitJob( double [] arr )
@@ -92,8 +93,16 @@ public class TestProg {
 	Ibis ibis;
 	Properties ibisProperties = new Properties();
         ibisProperties.setProperty( "ibis.server.address", serveraddress );
-        ibisProperties.setProperty( "ibis.pool.name", "XXXpoolname" );
-        ibis = IbisFactory.createIbis(ibisCapabilities, ibisProperties, true, null, PacketSendPort.portType, PacketUpcallReceivePort.portType, PacketBlockingReceivePort.portType );
+        ibisProperties.setProperty( "ibis.pool.name", "TestprogPool" );
+        ibis = IbisFactory.createIbis(
+            ibisCapabilities,
+            ibisProperties,
+            true,
+            null,
+            PacketSendPort.portType,
+            PacketUpcallReceivePort.portType,
+            PacketBlockingReceivePort.portType
+        );
 	return ibis;
     }
 

@@ -14,7 +14,7 @@ import java.util.PriorityQueue;
  * 
  */
 @SuppressWarnings("synthetic-access")
-public class Master implements Runnable {
+public class Master extends Thread {
     private final WorkerList workers = new WorkerList();
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
@@ -323,7 +323,7 @@ public class Master implements Runnable {
     }
     
     /** Stops  this master.   */
-    public void stop()
+    public void stopQueue()
     {
 	setStopped( true );
     }

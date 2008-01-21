@@ -13,7 +13,7 @@ import java.util.concurrent.PriorityBlockingQueue;
  * @author Kees van Reeuwijk
  */
 @SuppressWarnings("synthetic-access")
-public class Worker implements Runnable {
+public class Worker extends Thread {
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
     private final PriorityBlockingQueue<RunJobMessage> jobQueue = new PriorityBlockingQueue<RunJobMessage>();
@@ -166,6 +166,7 @@ public class Worker implements Runnable {
     }
 
     /** Runs this worker. */
+    @Override
     public void run()
     {
         setStopped( false );
@@ -208,7 +209,7 @@ public class Worker implements Runnable {
     /**
      * Stop this worker.
      */
-    public void stop()
+    public void stopWorker()
     {
 	setStopped( true );
     }
