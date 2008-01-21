@@ -183,6 +183,7 @@ public class Master extends Thread {
      */
     private ActiveJob searchQueueEntry( long id )
     {
+        setDaemon(false);
         // Note that we blindly assume that there is only one entry with
         // the given id. Reasonable because we hand out the ids ourselves...
         synchronized( activeJobs ) {
@@ -301,7 +302,9 @@ public class Master extends Thread {
 
     /** Runs this master. */
     @Override
-    public void run() {
+    public void run()
+    {
+        System.out.println( "Starting master thread" );
 	// We simply wait until we have reached the stop state.
 	// and there are no outstanding jobs.
 	while( !isStopped() && !areActiveJobs() ) {
@@ -320,6 +323,7 @@ public class Master extends Thread {
 	catch( IOException x ) {
 	    // Nothing we can do about it.
 	}
+        System.out.println( "Ending master thread" );
     }
     
     /** Stops  this master.   */

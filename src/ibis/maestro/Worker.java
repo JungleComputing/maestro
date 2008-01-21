@@ -22,11 +22,12 @@ public class Worker extends Thread {
 
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
-     * @param ibis The Ibis instance this worker belongs to
+     * @param ibis The Ibis instance this worker belongs to.
      * @throws IOException Thrown if the construction of the worker failed.
      */
     public Worker( Ibis ibis ) throws IOException
     {
+        setDaemon(false);
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, "jobPort", new MessageHandler() );
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         synchronized( unusedNeighbors ){
@@ -169,6 +170,7 @@ public class Worker extends Thread {
     @Override
     public void run()
     {
+        System.out.println( "Starting worker thread" );
         setStopped( false );
         while( !isStopped() ) {
             if( Settings.traceWorkerProgress ){
@@ -204,6 +206,7 @@ public class Worker extends Thread {
                 x.printStackTrace( Globals.log.getPrintStream() );
             }
         }
+        System.out.println( "Ended worker thread" );
     }
     
     /**

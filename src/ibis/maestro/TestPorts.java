@@ -4,11 +4,12 @@ import ibis.ipl.Ibis;
 import ibis.ipl.IbisCapabilities;
 import ibis.ipl.IbisCreationFailedException;
 import ibis.ipl.IbisFactory;
-import ibis.ipl.IbisIdentifier;
+import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.Registry;
 import ibis.server.Server;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Properties;
 
 /**
@@ -16,50 +17,58 @@ import java.util.Properties;
  * @author Kees van Reeuwijk
  *
  */
-public class TestProg {
+public class TestPorts {
     IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.ELECTIONS_STRICT );
+    Sender sender;
 
-    private Master master;
+    private static class Message implements Serializable {
+        private static final long serialVersionUID = 1L;
+        String payload;
+        
+        Message( String payload ){
+            this.payload = payload;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return "Message [" + payload + ']';
+        }
+    }
 
-    private class Listener implements CompletionListener {
+    private class Listener implements PacketReceiveListener<Message> {
+        public void packetReceived(PacketUpcallReceivePort<Message> p, Message packet) {
+            System.out.println( "Received message " + p + " from port " + p );
+        }
+    }
 
-	/** Handle the completion of job 'j': the result is 'result'.
-	 * @param j The job that was completed.
-	 * @param result The result of the job.
-	 */
-	@Override
-	public void jobCompleted(Job j, JobReturn result ) {
-	    System.out.println( "Job " + j + ": result is " + result );
-	}
+    private static class Sender extends Thread {
+        private PacketSendPort<Message> port;
+        ReceivePortIdentifier receiver;
+
+        Sender( Ibis ibis, ReceivePortIdentifier receiver ) throws IOException {
+            port = new PacketSendPort<Message>( ibis );
+            this.receiver = receiver;
+        }
+        
+        @Override
+        public void run(){
+            System.out.println( "Started sender" );
+            
+            while( true ){
+                Message m = new Message( "test" );
+                try {
+                    System.out.println( "Sending message " + m ); 
+                    port.send(m, receiver);
+                } catch (IOException e) {
+                    System.out.println( "Cannot send message" );
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     @SuppressWarnings("synthetic-access")
-    private void startMaster( Ibis myIbis ) throws Exception {
-	master = new Master( myIbis, new Listener() );
-        master.start();
-    }
-
-    private void startWorker( Ibis myIbis ) throws IOException {
-	Worker worker = new Worker( myIbis );
-	worker.start();
-    }
-    
-    private void submitJob( double [] arr )
-    {
-	MultiplyJob j = new MultiplyJob( arr );
-	master.submit( j );
-    }
-    
-    private double [] buildSeries( int n )
-    {
-	double res[] = new double[n];
-	
-	for( int i=0; i<n; i++ ) {
-	    res[i] = i+1;
-	}
-	return res;
-    }
-
     private void run() throws Exception {
         // Create an ibis instance.
         Properties serverProperties = new Properties();
@@ -71,18 +80,11 @@ public class TestProg {
 
         // Elect a server
         Registry registry = ibis.registry();
-	IbisIdentifier server = registry.elect( "Server" );
 
-        // .. and if I am elected the server, run server.
-        if( server.equals( ibis.identifier())){
-            startMaster( ibis );
-
-            submitJob( buildSeries( 3 ) );
-            submitJob( buildSeries( 12 ) );
-        }
-
-        // Everyone runs a client.
-        startWorker( ibis );
+        Listener listener = new Listener();
+        PacketUpcallReceivePort<Message> receiver = new PacketUpcallReceivePort<Message>( ibis, "link", listener );
+        sender = new Sender( ibis, receiver.identifier() );
+        sender.start();
 
         //ibis.end();
         System.out.println( "Test program has ended" );
@@ -113,7 +115,7 @@ public class TestProg {
     public static void main( String args[] ) {
 	System.out.println( "Running on platform " + Service.getPlatformVersion() );
 	try {
-            new TestProg().run();            
+            new TestPorts().run();            
         }
         catch( Exception e ) {
             e.printStackTrace( System.err );
