@@ -2,6 +2,7 @@ package ibis.maestro;
 
 /**
  * A job result as communicated from the worker to the master.
+ * 
  * @author Kees van Reeuwijk
  *
  */
@@ -10,7 +11,7 @@ class JobResultMessage extends WorkerMessage {
     private static final long serialVersionUID = 1L;
     private final JobReturn result;
     private long id;   // The identifier of the job
-    private long computeTime;  // The time it took from worker queue entry to job completion.
+    private long computeTime;  // The time it took the worker, from queue entry to job completion.
 
     JobReturn getResult() { return result; }
     long getId() { return id; }

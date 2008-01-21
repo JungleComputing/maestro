@@ -42,6 +42,7 @@ public class Master implements Runnable {
             }
             if( msg instanceof JobResultMessage ) {
         	JobResultMessage result = (JobResultMessage) msg;
+
         	handleJobResultMessage(result);
             }
             else if( msg instanceof WorkRequestMessage ) {
@@ -51,7 +52,8 @@ public class Master implements Runnable {
             }
             else if( msg instanceof PingReplyMessage ) {
         	PingReplyMessage m = (PingReplyMessage) msg;
-                handlePingReplyMessage(m);
+
+        	handlePingReplyMessage(m);
             }
             else if( msg instanceof WorkerResignMessage ) {
         	WorkerResignMessage m = (WorkerResignMessage) msg;
@@ -64,10 +66,13 @@ public class Master implements Runnable {
         }
 
         /**
+         * A worker has sent us the result of a job. Register this information.
+         * 
          * @param result The message to handle.
          */
-        private void handleJobResultMessage(JobResultMessage result) {
-            long id = result.getId();
+        private void handleJobResultMessage( JobResultMessage result )
+        {
+            long id = result.getId();    // The identifier of the job, as handed out by us.
 
             if( Settings.traceWorkerProgress ){
                 Globals.log.reportProgress( "Received a job result " + result );
@@ -88,6 +93,14 @@ public class Master implements Runnable {
         }
 
         /**
+         * A new worker has sent a reply to our ping message.
+         * The reply contains the performance of the worker on a benchmark,
+         * and the time it took to complete the benchmark (the two are
+         * not necessarily related).
+         * From the round-trip time of our ping request we compute communication
+         * overhead. Together all this information gives us a reasonable guess
+         * for the performance of the new worker relative to our other workers.
+         * 
          * @param m The message to handle.
          */
         private void handlePingReplyMessage(PingReplyMessage m) {
@@ -95,28 +108,32 @@ public class Master implements Runnable {
             long receiveTime = System.nanoTime();
             long benchmarkTime = m.getBenchmarkTime();
 
-            ReceivePortIdentifier id = m.getWorker();
+            // First, search for the worker in our list of
+            // outstanding pings.
+            ReceivePortIdentifier worker = m.getWorker();
             synchronized( pingTargets ){
                 for( PingTarget w: pingTargets ){
-                    if( w.hasIdentifier( id ) ){
+                    if( w.hasIdentifier( worker ) ){
                         t = w;
                         break;
                     }
                 }
             }
             if( t == null ){
-                Globals.log.reportInternalError( "Worker " + id + " replied to a ping that wasn't sent: ignoring" );
+                Globals.log.reportInternalError( "Worker " + worker + " replied to a ping that wasn't sent: ignoring" );
             }
             else {
                 long pingTime = t.getSendTime()-receiveTime;
                 synchronized( pingTargets ){
                     pingTargets.remove( t );
                 }
-                workers.subscribeWorker( id, pingTime-benchmarkTime, m.getBenchmarkScore() );
+                workers.subscribeWorker( worker, pingTime-benchmarkTime, m.getBenchmarkScore() );
             }
         }
 
         /**
+         * A (presumably unregistered) worker has sent us a message asking for work.
+         * 
          * @param m The message to handle.
          */
         private void handleWorkRequestMessage(WorkRequestMessage m) {
@@ -264,6 +281,7 @@ public class Master implements Runnable {
 	    synchronized( activeJobs ) {
 		activeJobs.add( j );
 	    }
+	    worker.registerJobStartTime( startTime );
 	    try {
 		sendPort.send( msg, worker.getPort() );
 	    } catch (IOException e) {
@@ -275,6 +293,8 @@ public class Master implements Runnable {
                 }
                 Globals.log.reportError( "Could not send job to " + worker + ": put toothpaste back in the tube" );
                 e.printStackTrace();
+                // We don't try to roll back job start time, since the worker
+                // may in fact be busy.
 	    }
 	}
     }

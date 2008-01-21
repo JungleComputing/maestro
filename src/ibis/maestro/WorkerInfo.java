@@ -1,5 +1,5 @@
 /**
- * Information about a worker in our list.
+ * Information about a worker in the list of a master.
  */
 package ibis.maestro;
 
@@ -21,7 +21,8 @@ class WorkerInfo {
         this.computeTime = computeTime;
     }
 
-    boolean hasId(ReceivePortIdentifier id) {
+    boolean hasId(ReceivePortIdentifier id )
+    {
         return port.equals( id );
     }
 
@@ -32,7 +33,8 @@ class WorkerInfo {
     /** The start time of the most recent job.
      * @param t The start time.
      */
-    public void registerJobStartTime( long t ) {
+    void registerJobStartTime( long t )
+    {
 	jobStartTime = t;
     }
 
@@ -41,7 +43,8 @@ class WorkerInfo {
      * @param t The time at which the completion message was received.
      * @param newComputeTime The compute time as reported by the worker.
      */
-    public void registerJobCompletionTime( long t, long newComputeTime ) {
+    public void registerJobCompletionTime( long t, long newComputeTime )
+    {
 	long newRoundTripTime = jobStartTime-t; // The time to send the job, compute, and report the result.
 	
 	roundTripTime = (roundTripTime+newRoundTripTime)/2;
@@ -54,7 +57,8 @@ class WorkerInfo {
      * @param now The current time in ns.
      * @return The completion time of this worker in ns.
      */
-    public long getCompletionTime(long now) {
+    public long getCompletionTime( long now )
+    {
 	// We predict the worker will be ready with its current job from us until...
         final long overhead = roundTripTime-computeTime;
         final long workerReadyTime = jobStartTime + roundTripTime - (overhead/2); 
@@ -76,7 +80,7 @@ class WorkerInfo {
      * @param now The current time in nanoseconds.
      * @return The interval in ms to the next useful job submission.
      */
-    public long getBusyInterval(long now)
+    public long getBusyInterval( long now )
     {
         // We predict the worker will be ready with its current job from us until...
         final long overhead = roundTripTime-computeTime;
