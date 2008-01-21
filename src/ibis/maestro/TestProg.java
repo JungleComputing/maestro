@@ -34,6 +34,7 @@ public class TestProg {
 	
     }
 
+    @SuppressWarnings("synthetic-access")
     private void startMaster( Ibis myIbis ) throws Exception {
 	master = new Master( myIbis, new Listener() );
     }

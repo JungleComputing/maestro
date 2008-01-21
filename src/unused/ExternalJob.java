@@ -84,7 +84,7 @@ public class ExternalJob implements Job {
     
     /**
      * Runs this job.
-     * @return
+     * @return The return value of this job.
      */
     public JobReturn run()
     {

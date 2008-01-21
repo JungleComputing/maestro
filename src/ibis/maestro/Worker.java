@@ -68,8 +68,8 @@ public class Worker implements Runnable {
     
     private void addNeighbors( IbisIdentifier l[] )
     {
-        for( IbisIdentifier n: l ){
-            synchronized( unusedNeighbors ){
+        synchronized( unusedNeighbors ){
+            for( IbisIdentifier n: l ){
                 unusedNeighbors.add( n );
             }
         }
@@ -77,7 +77,7 @@ public class Worker implements Runnable {
 
     private class MessageHandler implements PacketReceiveListener<MasterMessage> {
         /**
-         * Handles job request message <code>request</code>.
+         * Handles job request message <code>msg</code>.
          * @param p The port on which the packet was received.
          * @param msg The job we received and will put in the queue.
          */
@@ -87,14 +87,17 @@ public class Worker implements Runnable {
             }
             if( msg instanceof RunJobMessage ){
                 RunJobMessage runJobMessage = (RunJobMessage) msg;
+
                 handleRunJobMessage(runJobMessage);
             }
             else if( msg instanceof AddNeighborsMessage ){
-                AddNeighborsMessage addMsg = ((AddNeighborsMessage) msg);
+                AddNeighborsMessage addMsg = (AddNeighborsMessage) msg;
+
                 handleAddNeighborsMessage(addMsg);
             }
             else if( msg instanceof PingMessage ){
                 PingMessage ping = (PingMessage) msg;
+
                 handlePingMessage(ping);
             }
             else {
@@ -103,6 +106,8 @@ public class Worker implements Runnable {
         }
 
         /**
+         * Handle a message containing new neighbors.
+         * 
          * @param msg The message to handle.
          */
         private void handleAddNeighborsMessage(AddNeighborsMessage msg) {
@@ -110,6 +115,8 @@ public class Worker implements Runnable {
         }
 
         /**
+         * Handle a message containing a new job to run.
+         * 
          * @param msg The message to handle.
          */
         private void handleRunJobMessage(RunJobMessage msg) {
