@@ -23,4 +23,9 @@ public class Settings {
      * Trace the creation and destruction of Nodes.
      */
     public static final boolean traceNodes = true;
+    
+    /**
+     * Produce a log file with information for a timing trace?
+     */
+    public static final boolean writeTrace = true;
 }

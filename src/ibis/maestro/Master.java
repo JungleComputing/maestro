@@ -64,6 +64,7 @@ public class Master extends Thread {
             else {
         	Globals.log.reportInternalError( "the master should handle message of type " + msg.getClass() );
             }
+            startJobs();    // While we're awake, try to start a few new jobs.
         }
 
         /**
@@ -130,7 +131,6 @@ public class Master extends Thread {
                     pingTargets.remove( t );
                 }
                 workers.subscribeWorker( worker, pingTime-benchmarkTime, m.getBenchmarkScore() );
-                startJobs();    // There is a new worker, try to give it work.
             }
         }
 
