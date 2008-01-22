@@ -2,6 +2,7 @@ package ibis.maestro;
 
 import java.util.Vector;
 
+import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
 /**
@@ -105,5 +106,23 @@ public class WorkerList {
             }
         }
         return res;
+    }
+
+    /**
+     * We know the given ibis has disappeared from the computation.
+     * Remove any workers on that ibis.
+     * @param theIbis The ibis that was gone.
+     */
+    public void removeIbis(IbisIdentifier theIbis) {
+        synchronized( workers ){
+            int ix = workers.size();
+            while( ix>0 ){
+                ix--;
+                WorkerInfo worker = workers.get(ix);
+                if( worker.hasIbis( theIbis ) ){
+                    workers.remove(ix);
+                }
+            }
+        }
     }
 }

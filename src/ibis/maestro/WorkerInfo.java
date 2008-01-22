@@ -3,6 +3,7 @@
  */
 package ibis.maestro;
 
+import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
 class WorkerInfo {
@@ -95,5 +96,14 @@ class WorkerInfo {
      */
     public double calculateMultiplier() {
         return computeTime/benchmarkScore;
+    }
+
+    /**
+     * Given an ibis, return true iff this worker lives on that ibis.
+     * @param ibis The ibis to compare to.
+     * @return True iff this worker lives on the given ibis.
+     */
+    public boolean hasIbis(IbisIdentifier ibis) {
+        return port.ibisIdentifier().equals(ibis);
     }
 }

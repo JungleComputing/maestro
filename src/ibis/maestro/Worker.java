@@ -18,7 +18,7 @@ public class Worker extends Thread {
     private final PacketSendPort<WorkerMessage> sendPort;
     private final PriorityBlockingQueue<RunJobMessage> jobQueue = new PriorityBlockingQueue<RunJobMessage>();
     private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
-    private final Master master;
+    private final Master localMaster;
     private boolean stopped;
 
     /**
@@ -30,12 +30,13 @@ public class Worker extends Thread {
     public Worker( Ibis ibis, Master master ) throws IOException
     {
         setDaemon(false);
-	this.master = master;
+	this.localMaster = master;
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, new MessageHandler() );
+        receivePort.enable();
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         synchronized( unusedNeighbors ){
             // Add yourself to the list of neighbors.
-            //unusedNeighbors.add( ibis.identifier() );
+            unusedNeighbors.add( ibis.identifier() );
         }
     }
 
@@ -189,7 +190,7 @@ public class Worker extends Thread {
                     if( Settings.traceWorkerProgress ){
                         System.out.println( "Starting job " + job );
                     }
-                    JobReturn r = job.run( master );
+                    JobReturn r = job.run( localMaster );
                     long computeTime = System.nanoTime()-tm.getStartTime();
                     if( Settings.traceWorkerProgress ){
                         System.out.println( "Job " + job + " completed in " + computeTime + "ns; result: " + r );

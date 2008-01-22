@@ -91,7 +91,6 @@ public class Master extends Thread {
             worker.registerJobCompletionTime( now, result.getComputeTime() );
             synchronized( activeJobs ) {
                 activeJobs.remove( e );
-                this.notify();   // Wake up master thread; we might have stopped.
             }
         }
 
@@ -131,6 +130,7 @@ public class Master extends Thread {
                     pingTargets.remove( t );
                 }
                 workers.subscribeWorker( worker, pingTime-benchmarkTime, m.getBenchmarkScore() );
+                startJobs();    // There is a new worker, try to give it work.
             }
         }
 
@@ -173,6 +173,7 @@ public class Master extends Thread {
      */
     public Master( Ibis ibis, CompletionListener l ) throws IOException
     {
+        setDaemon(false);
         completionListener = l;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, new MessageHandler() );
@@ -186,7 +187,6 @@ public class Master extends Thread {
      */
     private ActiveJob searchQueueEntry( long id )
     {
-        setDaemon(false);
         // Note that we blindly assume that there is only one entry with
         // the given id. Reasonable because we hand out the ids ourselves...
         synchronized( activeJobs ) {
@@ -341,7 +341,8 @@ public class Master extends Thread {
      * @param theIbis The ibis that was gone.
      */
     public void removeIbis(IbisIdentifier theIbis) {
-	// FIXME: implement this.
+        workers.removeIbis( theIbis );
+        // FIXME: reschedule any outstanding jobs on this ibis.
     }
 
     /**
