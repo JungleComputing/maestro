@@ -2,13 +2,19 @@ package ibis.maestro;
 
 /** A Maestro job that multiplies the array of values it is given. */
 public class MultiplyJob implements Job {
+    private final int BLOCK_SIZE = 1000;
     private final double values[];
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
-    MultiplyJob( double values[] )
+    MultiplyJob( int n )
     {
-	this.values = values;
+	double a[] = new double [BLOCK_SIZE];
+	
+	for( int i=0; i<BLOCK_SIZE; i++ ) {
+	    a[i] = i+n;
+	}
+	this.values = a;
     }
 
     /**

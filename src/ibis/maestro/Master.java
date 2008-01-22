@@ -107,6 +107,10 @@ public class Master extends Thread {
          * @param m The message to handle.
          */
         private void handlePingReplyMessage(PingReplyMessage m) {
+            if( isStopped() ) {
+        	// If we're stopped, just ignore the message.
+        	return;
+            }
             PingTarget t = null;
             long receiveTime = System.nanoTime();
             long benchmarkTime = m.getBenchmarkTime();
@@ -139,7 +143,11 @@ public class Master extends Thread {
          * 
          * @param m The message to handle.
          */
-        private void handleWorkRequestMessage(WorkRequestMessage m) {
+        private void handleWorkRequestMessage( WorkRequestMessage m ) {
+            if( isStopped() ) {
+        	// If we're stopped, just ignore the message.
+        	return;
+            }
             ReceivePortIdentifier worker = m.getPort();
             long now = System.nanoTime();
             if( Settings.traceWorkerProgress ){
@@ -330,12 +338,6 @@ public class Master extends Thread {
         System.out.println( "Ending master thread" );
     }
     
-    /** Stops  this master.   */
-    public void stopQueue()
-    {
-	setStopped( true );
-    }
-
     /**
      * We know the given ibis has disappeared from the computation.
      * Make sure we don't talk to it.
@@ -352,5 +354,46 @@ public class Master extends Thread {
      */
     public void addIbis(IbisIdentifier theIbis) {
 	// FIXME: implement this.
+    }
+
+    /**
+     * Gracefully shut down this master after all the jobs currently in the queue have been processed.
+     * That is, both the work queue and the list of outstanding jobs should be empty.
+     * This method returns after the master has been shut down.
+     */
+    public void finish() {
+	setStopped( true );
+	boolean busy = true;
+	while( busy ) {
+	    try {
+		queue.wait();
+	    } catch (InterruptedException e) {
+		// Not interesting.
+	    }
+	    synchronized( queue ) {
+		busy = !queue.isEmpty();
+	    }
+	}
+	busy = true;
+	while( busy ) {
+	    try {
+		activeJobs.wait();
+	    } catch (InterruptedException e) {
+		// Not interesting.
+	    }
+	    synchronized( activeJobs ) {
+		busy = !activeJobs.isEmpty();
+	    }
+	}
+	try {
+	    // First make sure no new workers try to reach us.
+	    // Unfortunately, we can only now close the receive
+	    // port, because our workers need to report their
+	    // results.
+	    receivePort.close();
+	}
+	catch( IOException x ) {
+	    // Nothing we can do about it.
+	}
     }
 }

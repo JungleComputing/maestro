@@ -25,21 +25,11 @@ public class TestProg {
 	}
 	
     }
-    
-    private void submitJob( double [] arr )
+
+    private void submitJob( int n )
     {
-	MultiplyJob j = new MultiplyJob( arr );
+	MultiplyJob j = new MultiplyJob( n );
 	node.submit( j );
-    }
-    
-    private double [] buildSeries( int n )
-    {
-	double res[] = new double[n];
-	
-	for( int i=0; i<n; i++ ) {
-	    res[i] = i+1;
-	}
-	return res;
     }
 
     private void run() throws Exception {
@@ -51,9 +41,9 @@ public class TestProg {
         node = new Node( serveraddress, new Listener() );
 
         for( int i=0; i<JOBCOUNT; i++ ){
-            submitJob( buildSeries( 1000*(i+1) ) );
+            submitJob( 1000*i );
         }
-
+        node.finish();
         System.out.println( "Test program has ended" );
     }
 

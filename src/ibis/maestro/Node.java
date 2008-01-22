@@ -102,7 +102,7 @@ public class Node extends Thread implements RegistryEventHandler {
 	master = new Master( ibis, listener );
 	master.start();
         for( int i=0; i<numberOfProcessors; i++ ){
-            Worker w = new Worker( ibis, master );
+            Worker w = new Worker( ibis, master, i );
             w.start();
             workers[i] = w;
         }
@@ -123,11 +123,43 @@ public class Node extends Thread implements RegistryEventHandler {
     public void run()
     {
 	try {
+	    // FIXME: do something more appropriate.
             Thread.sleep( 10000 );
 	    ibis.end();
 	}
 	catch( Exception x ) {
 	    x.printStackTrace();
+	}
+    }
+
+    /**
+     * Gracefully shut down this node after all the jobs currently
+     * in the queue have been processed.
+     * This method returns after the node has been shut down.
+     */
+    public void finish() {
+	// We must close the master first before we even try to stop the
+	// workers, since the master may need them to finish its jobs.
+	master.finish();
+	
+	// Now try to shut down all workers.
+	
+	// First let all workers close their input port and resign from all masters.
+	for( Worker w: workers ) {
+	    w.closeDown();
+	}
+	
+	// Then wait for each worker to complete its work.
+	// We can wait for all workers to finish by waiting
+	// one by one for each worker to finish.
+	for( Worker w: workers ) {
+	    w.finish();
+	}
+	try {
+	    ibis.end();
+	}
+	catch( IOException x ) {
+	    // Nothing we can do about it.
 	}
     }
 }

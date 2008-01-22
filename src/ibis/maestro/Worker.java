@@ -25,13 +25,14 @@ public class Worker extends Thread {
      * Create a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to.
      * @param master The master that jobs may submit new jobs to.
+     * @param serial The serial number of this worker on this node.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis, Master master ) throws IOException
+    public Worker( Ibis ibis, Master master, int serial ) throws IOException
     {
         setDaemon(false);
 	this.localMaster = master;
-        receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, new MessageHandler() );
+        receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName + serial, new MessageHandler() );
         receivePort.enable();
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         synchronized( unusedNeighbors ){
@@ -239,5 +240,37 @@ public class Worker extends Thread {
      */
     public void addIbis(IbisIdentifier theIbis) {
 	// FIXME: implement this.
+    }
+    
+    /** Quickly do as much as possible to prevent new work from reaching us. */
+    public void closeDown() {
+	try {
+	    receivePort.close();
+	}
+	catch( IOException x ) {
+	    // Nothing we can do about it. Ignore.
+	}
+    }
+
+    /**
+     * Shut down this worker after all the jobs currently in the queue have been processed.
+     * That is, both the work queue and the list of outstanding jobs should be empty.
+     * This method returns after the master has been shut down.
+     */
+    public void finish() {
+	// First wait for job queue to drain.
+	boolean busy = true;
+	while( busy ) {
+	    try {
+		jobQueue.wait();
+	    } catch (InterruptedException e) {
+		// Not interesting.
+	    }
+	    synchronized( jobQueue ) {
+		busy = !jobQueue.isEmpty();
+	    }
+	}
+	// FIXME: wait for last job to finish.
+	setStopped( true );	
     }
 }
