@@ -33,4 +33,13 @@ class PingReplyMessage extends WorkerMessage {
         this.benchmarkTime = benchmarkTime;
     }
 
+    /**
+     * Returns a string representation of this ping reply message.
+     * @return The string representation.
+     */
+    @Override
+    public String toString()
+    {
+	return "Ping reply message from worker " + worker + " score=" + benchmarkScore + " time=" + Service.formatNanoseconds( benchmarkTime );
+    }
 }

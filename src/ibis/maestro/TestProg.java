@@ -1,14 +1,7 @@
 package ibis.maestro;
 
-import ibis.ipl.Ibis;
-import ibis.ipl.IbisCapabilities;
-import ibis.ipl.IbisCreationFailedException;
-import ibis.ipl.IbisFactory;
-import ibis.ipl.IbisIdentifier;
-import ibis.ipl.Registry;
 import ibis.server.Server;
 
-import java.io.IOException;
 import java.util.Properties;
 
 /**
@@ -17,9 +10,7 @@ import java.util.Properties;
  *
  */
 public class TestProg {
-    IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.ELECTIONS_STRICT );
-
-    private Master master;
+    private Node node;
 
     private class Listener implements CompletionListener {
 
@@ -31,23 +22,13 @@ public class TestProg {
 	public void jobCompleted(Job j, JobReturn result ) {
 	    System.out.println( "Job " + j + ": result is " + result );
 	}
-    }
-
-    @SuppressWarnings("synthetic-access")
-    private void startMaster( Ibis myIbis ) throws Exception {
-	master = new Master( myIbis, new Listener() );
-        master.start();
-    }
-
-    private void startWorker( Ibis myIbis ) throws IOException {
-	Worker worker = new Worker( myIbis );
-	worker.start();
+	
     }
     
     private void submitJob( double [] arr )
     {
 	MultiplyJob j = new MultiplyJob( arr );
-	master.submit( j );
+	node.submit( j );
     }
     
     private double [] buildSeries( int n )
@@ -66,44 +47,12 @@ public class TestProg {
         //serverProperties.setProperty( "ibis.server.port", "12642" );
         Server ibisServer = new Server( serverProperties );
         String serveraddress = ibisServer.getLocalAddress();
-        Ibis ibis;
-        ibis = createMaestroIbis( serveraddress );
+        node = new Node( serveraddress, new Listener() );
 
-        // Elect a server
-        Registry registry = ibis.registry();
-	IbisIdentifier server = registry.elect( "Server" );
+        submitJob( buildSeries( 3 ) );
+        submitJob( buildSeries( 12 ) );
 
-        // .. and if I am elected the server, run server.
-        if( server.equals( ibis.identifier())){
-            startMaster( ibis );
-
-            submitJob( buildSeries( 3 ) );
-            submitJob( buildSeries( 12 ) );
-        }
-
-        // Everyone runs a client.
-        startWorker( ibis );
-
-        //ibis.end();
         System.out.println( "Test program has ended" );
-    }
-
-    private Ibis createMaestroIbis( String serveraddress )
-	    throws IbisCreationFailedException {
-	Ibis ibis;
-	Properties ibisProperties = new Properties();
-        ibisProperties.setProperty( "ibis.server.address", serveraddress );
-        ibisProperties.setProperty( "ibis.pool.name", "TestprogPool" );
-        ibis = IbisFactory.createIbis(
-            ibisCapabilities,
-            ibisProperties,
-            true,
-            null,
-            PacketSendPort.portType,
-            PacketUpcallReceivePort.portType,
-            PacketBlockingReceivePort.portType
-        );
-	return ibis;
     }
 
     /** The command-line interface of this program.

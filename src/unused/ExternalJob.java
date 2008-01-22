@@ -2,6 +2,7 @@ package unused;
 
 import ibis.maestro.Job;
 import ibis.maestro.JobReturn;
+import ibis.maestro.Master;
 import ibis.util.RunProcess;
 
 import java.io.File;
@@ -86,7 +87,8 @@ public class ExternalJob implements Job {
      * Runs this job.
      * @return The return value of this job.
      */
-    public JobReturn run()
+    @Override
+    public JobReturn run( Master master )
     {
         File sandbox;
         ProcessBuilder builder;

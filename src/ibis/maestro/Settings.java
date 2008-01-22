@@ -10,7 +10,7 @@ public class Settings {
     // Debugging flags.
     
     /**
-     * Trace the progress of worker threads?
+     * Trace the progress of workers?
      */
     public static final boolean traceWorkerProgress = true;
     
@@ -18,4 +18,9 @@ public class Settings {
      * Trace the progress of the worker lists of masters.
      */
     public static final boolean traceWorkerList = true;
+    
+    /**
+     * Trace the creation and destruction of Nodes.
+     */
+    public static final boolean traceNodes = true;
 }

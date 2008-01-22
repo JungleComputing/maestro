@@ -30,4 +30,14 @@ public class PingTarget {
     boolean hasIdentifier(ReceivePortIdentifier id) {
         return worker.equals( id );
     }
+    
+    /**
+     * Returns a string representation of this ping target.
+     * @return The string representation.
+     */
+    @Override
+    public String toString()
+    {
+	return "ping to " + worker + " sent at " + Service.formatNanoseconds( sendTime );
+    }
 }

@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import ibis.ipl.Ibis;
+import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
@@ -82,7 +83,9 @@ public class Master extends Thread {
                 Globals.log.reportInternalError( "ignoring reported result from job with unknown id " + id );
                 return;
             }
-            completionListener.jobCompleted( e.getJob(), result.getResult() );
+            if( completionListener != null ) {
+        	completionListener.jobCompleted( e.getJob(), result.getResult() );
+            }
             WorkerInfo worker = e.getWorker();
             long now = System.nanoTime();
             worker.registerJobCompletionTime( now, result.getComputeTime() );
@@ -172,7 +175,7 @@ public class Master extends Thread {
     {
         completionListener = l;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
-        receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, "requestPort", new MessageHandler() );
+        receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, new MessageHandler() );
         receivePort.enable();
     }
 
@@ -330,5 +333,22 @@ public class Master extends Thread {
     public void stopQueue()
     {
 	setStopped( true );
+    }
+
+    /**
+     * We know the given ibis has disappeared from the computation.
+     * Make sure we don't talk to it.
+     * @param theIbis The ibis that was gone.
+     */
+    public void removeIbis(IbisIdentifier theIbis) {
+	// FIXME: implement this.
+    }
+
+    /**
+     * A new ibis has joined the computation.
+     * @param theIbis The ibis that has joined.
+     */
+    public void addIbis(IbisIdentifier theIbis) {
+	// FIXME: implement this.
     }
 }

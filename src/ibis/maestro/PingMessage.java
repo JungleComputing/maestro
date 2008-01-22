@@ -56,4 +56,14 @@ public class PingMessage extends MasterMessage {
 	} while( time<TARGET_INTERVAL );
 	return (time/1000.0*iterations);
     }
+
+    /**
+     * Returns a string representation of this ping message.
+     * @return The string representation.
+     */
+    @Override
+    public String toString()
+    {
+	return "Ping message. Reply to " + master;
+    }
 }

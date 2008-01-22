@@ -5,7 +5,6 @@ import ibis.ipl.IbisCapabilities;
 import ibis.ipl.IbisCreationFailedException;
 import ibis.ipl.IbisFactory;
 import ibis.ipl.ReceivePortIdentifier;
-import ibis.ipl.Registry;
 import ibis.server.Server;
 
 import java.io.IOException;
@@ -29,6 +28,10 @@ public class TestPorts {
             this.payload = payload;
         }
         
+        /**
+         * Returns a string representation of this message.
+         * @return The string representation.
+         */
         @Override
         public String toString()
         {
@@ -77,9 +80,6 @@ public class TestPorts {
         String serveraddress = ibisServer.getLocalAddress();
         Ibis ibis;
         ibis = createMaestroIbis( serveraddress );
-
-        // Elect a server
-        Registry registry = ibis.registry();
 
         Listener listener = new Listener();
         PacketUpcallReceivePort<Message> receiver = new PacketUpcallReceivePort<Message>( ibis, "link", listener );

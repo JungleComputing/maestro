@@ -3,7 +3,7 @@ package ibis.maestro;
 import ibis.ipl.ReceivePortIdentifier;
 
 /**
- * Tell the worker to execute the message contained in this message.
+ * Tell the worker to execute the job contained in this message.
  * 
  * @author Kees van Reeuwijk
  *
@@ -58,5 +58,15 @@ public class RunJobMessage extends MasterMessage {
      */
     public long getStartTime() {
         return startTime;
+    }
+
+    /**
+     * Returns a string representation of this job messabge.
+     * @return The string representation.
+     */
+    @Override
+    public String toString()
+    {
+	return "Job message for job " + id;
     }
 }

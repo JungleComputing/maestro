@@ -16,7 +16,8 @@ public class MultiplyJob implements Job {
      * @return The result of this run.
      */
     @Override
-    public DoubleReturnValue run() {
+    public DoubleReturnValue run( Master master )
+    {
 	double res = 1;
 	
 	for( double v: values ) {

@@ -10,7 +10,8 @@ import java.io.Serializable;
 public interface Job extends Comparable<Job>, Serializable {
     /**
      * Runs the job.
+     * @param master The master to submit any new jobs to.
      * @return The result of the job.
      */
-    JobReturn run();
+    JobReturn run( Master master );
 }

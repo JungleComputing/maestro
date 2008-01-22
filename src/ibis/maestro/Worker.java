@@ -18,21 +18,24 @@ public class Worker extends Thread {
     private final PacketSendPort<WorkerMessage> sendPort;
     private final PriorityBlockingQueue<RunJobMessage> jobQueue = new PriorityBlockingQueue<RunJobMessage>();
     private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
+    private final Master master;
     private boolean stopped;
 
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to.
+     * @param master The master that jobs may submit new jobs to.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis ) throws IOException
+    public Worker( Ibis ibis, Master master ) throws IOException
     {
         setDaemon(false);
-        receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, "jobPort", new MessageHandler() );
+	this.master = master;
+        receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, new MessageHandler() );
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         synchronized( unusedNeighbors ){
             // Add yourself to the list of neighbors.
-            unusedNeighbors.add( ibis.identifier() );
+            //unusedNeighbors.add( ibis.identifier() );
         }
     }
 
@@ -158,7 +161,7 @@ public class Worker extends Thread {
             Globals.log.reportProgress( "Asking neighbor " + m + " for work" );
         }
         try {
-            sendPort.send( new WorkRequestMessage( receivePort.identifier() ), m, "requestPort" );
+            sendPort.send( new WorkRequestMessage( receivePort.identifier() ), m, Globals.masterReceivePortName );
         }
         catch( IOException x ){
             Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
@@ -186,7 +189,7 @@ public class Worker extends Thread {
                     if( Settings.traceWorkerProgress ){
                         System.out.println( "Starting job " + job );
                     }
-                    JobReturn r = job.run();
+                    JobReturn r = job.run( master );
                     long computeTime = System.nanoTime()-tm.getStartTime();
                     if( Settings.traceWorkerProgress ){
                         System.out.println( "Job " + job + " completed in " + computeTime + "ns; result: " + r );
@@ -215,5 +218,25 @@ public class Worker extends Thread {
     public void stopWorker()
     {
 	setStopped( true );
+    }
+
+    /**
+     * We know the given ibis has disappeared from the computation.
+     * Make sure we don't talk to it.
+     * @param theIbis The ibis that was gone.
+     */
+    public void removeIbis(IbisIdentifier theIbis) {
+	synchronized( unusedNeighbors ) {
+	    unusedNeighbors.remove( theIbis );
+	}
+	// FIXME: remove any jobs from this ibis from our queue.
+    }
+
+    /**
+     * A new ibis has joined the computation.
+     * @param theIbis The ibis that has joined.
+     */
+    public void addIbis(IbisIdentifier theIbis) {
+	// FIXME: implement this.
     }
 }
