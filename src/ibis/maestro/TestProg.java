@@ -11,6 +11,7 @@ import java.util.Properties;
  */
 public class TestProg {
     private Node node;
+    private static final int JOBCOUNT = 50;
 
     private class Listener implements CompletionListener {
 
@@ -49,8 +50,9 @@ public class TestProg {
         String serveraddress = ibisServer.getLocalAddress();
         node = new Node( serveraddress, new Listener() );
 
-        submitJob( buildSeries( 3 ) );
-        submitJob( buildSeries( 12 ) );
+        for( int i=0; i<JOBCOUNT; i++ ){
+            submitJob( buildSeries( 1000*(i+1) ) );
+        }
 
         System.out.println( "Test program has ended" );
     }

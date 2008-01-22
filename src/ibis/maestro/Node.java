@@ -18,10 +18,10 @@ import java.util.Properties;
  */
 public class Node extends Thread implements RegistryEventHandler {
     IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE );
-
     private final Ibis ibis;
     private final Master master;
-    private final Worker worker;
+    private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
+    private final Worker workers[] = new Worker[numberOfProcessors];
 
     /**
      * An ibis has died.
@@ -29,7 +29,9 @@ public class Node extends Thread implements RegistryEventHandler {
      */
     @Override
     public void died(IbisIdentifier theIbis) {
-        worker.removeIbis( theIbis );
+        for( Worker w: workers ){
+            w.removeIbis( theIbis );
+        }
         master.removeIbis( theIbis );
     }
 
@@ -59,7 +61,9 @@ public class Node extends Thread implements RegistryEventHandler {
     @Override
     public void joined(IbisIdentifier theIbis) {
         master.addIbis( theIbis );
-        worker.addIbis( theIbis );
+        for( Worker w: workers ){
+            w.addIbis( theIbis );
+        }
     }
 
     /**
@@ -68,7 +72,9 @@ public class Node extends Thread implements RegistryEventHandler {
      */
     @Override
     public void left(IbisIdentifier theIbis) {
-        worker.removeIbis( theIbis );
+        for( Worker w: workers ){
+            w.removeIbis( theIbis );
+        }
         master.removeIbis( theIbis );
     }
 
@@ -95,8 +101,11 @@ public class Node extends Thread implements RegistryEventHandler {
 	);
 	master = new Master( ibis, listener );
 	master.start();
-	worker = new Worker( ibis, master );
-	worker.start();
+        for( int i=0; i<numberOfProcessors; i++ ){
+            Worker w = new Worker( ibis, master );
+            w.start();
+            workers[i] = w;
+        }
 	if( Settings.traceNodes ) {
 	    Globals.log.log( "Started a Maestro node. serverAddress=" + serverAddress );
 	}

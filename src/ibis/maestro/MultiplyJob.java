@@ -48,7 +48,7 @@ public class MultiplyJob implements Job {
     {
 	String s = "[";
 	for( double v: values ) {
-	    s += v + ',';
+	    s += v + ",";
 	}
 	return "(MultiplyJob " + s + "])";
     }

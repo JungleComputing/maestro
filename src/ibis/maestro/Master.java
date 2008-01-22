@@ -174,6 +174,7 @@ public class Master extends Thread {
     public Master( Ibis ibis, CompletionListener l ) throws IOException
     {
         setDaemon(false);
+        
         completionListener = l;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, new MessageHandler() );
