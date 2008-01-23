@@ -11,11 +11,19 @@ import ibis.ipl.ReceivePortIdentifier;
 public class WorkRequestMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
-    private final ReceivePortIdentifier worker;
 
-    ReceivePortIdentifier getPort() { return worker; }
+    // FIXME: inline this.
+    ReceivePortIdentifier getPort() { return source; }
     
     WorkRequestMessage( ReceivePortIdentifier worker ){
-        this.worker = worker;
+	super( worker );
+    }
+
+    /**
+     * Returns the event type of this message.
+     */
+    protected TraceEvent.Type getMessageType()
+    {
+	return TraceEvent.Type.ASK_WORK;
     }
 }

@@ -10,7 +10,6 @@ import ibis.ipl.ReceivePortIdentifier;
 class PingReplyMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
-    private final ReceivePortIdentifier worker;
     
     /** The score of the worker in the benchmark. */
     private final double benchmarkScore;
@@ -23,12 +22,13 @@ class PingReplyMessage extends WorkerMessage {
      */
     private long benchmarkTime;
 
-    ReceivePortIdentifier getWorker() { return worker; }
+    // FIXME: inline this.
+    ReceivePortIdentifier getWorker() { return source; }
     double getBenchmarkScore() { return benchmarkScore; }
     long getBenchmarkTime() { return benchmarkTime; }
 
     PingReplyMessage( ReceivePortIdentifier worker, double benchmarkScore, long benchmarkTime ){
-        this.worker = worker;
+	super( worker );
         this.benchmarkScore = benchmarkScore;
         this.benchmarkTime = benchmarkTime;
     }
@@ -40,6 +40,14 @@ class PingReplyMessage extends WorkerMessage {
     @Override
     public String toString()
     {
-	return "Ping reply message from worker " + worker + " score=" + benchmarkScore + " time=" + Service.formatNanoseconds( benchmarkTime );
+	return "Ping reply message from worker " + source + " score=" + benchmarkScore + " time=" + Service.formatNanoseconds( benchmarkTime );
+    }
+
+    /**
+     * Returns the event type of this message.
+     */
+    protected TraceEvent.Type getMessageType()
+    {
+	return TraceEvent.Type.PING_REPLY;
     }
 }

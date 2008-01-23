@@ -12,15 +12,12 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
     /** */
     private static final long serialVersionUID = 1L;
     private final Job job;
-    private final long id;
     private transient long startTime;
-    private final ReceivePortIdentifier resultPort;
 
-    RunJobMessage( Job job, long id, ReceivePortIdentifier resultPort )
+    RunJobMessage( Job job, ReceivePortIdentifier resultPort )
     {
+	super( resultPort );
 	this.job = job;
-	this.id = id;
-	this.resultPort = resultPort;
     }
 
     /** Returns the job contained in this job message.
@@ -30,7 +27,7 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
         return job;
     }
 
-    /** Returns the id of this job.
+    /** Returns the id of this job. // FIXME: inline this.
      * @return The job ID.
      */
     public long getId() {
@@ -42,7 +39,7 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
      * @return The port that should be sent the result of this job.
      */
     public ReceivePortIdentifier getResultPort() {
-        return resultPort;
+        return source;
     }
 
     /** Set the start time of this job to the given time in ns.
@@ -88,5 +85,13 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
             return -1;
         }
         return 0;
+    }
+
+    /**
+     * Returns the event type of this message.
+     */
+    protected TraceEvent.Type getMessageType()
+    {
+	return TraceEvent.Type.JOB;
     }
 }

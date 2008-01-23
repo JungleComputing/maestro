@@ -91,6 +91,9 @@ public class Worker extends Thread {
             if( Settings.traceWorkerProgress ){
                 Globals.log.reportProgress( "Recieved a message " + msg );
             }
+            if( Settings.traceNodes ) {
+        	Globals.tracer.traceReceivedMessage( msg );
+            }
             if( msg instanceof RunJobMessage ){
                 RunJobMessage runJobMessage = (RunJobMessage) msg;
 
@@ -196,7 +199,11 @@ public class Worker extends Thread {
                     if( Settings.traceWorkerProgress ){
                         System.out.println( "Job " + job + " completed in " + computeTime + "ns; result: " + r );
                     }
-                    sendPort.send( new JobResultMessage( r, tm.getId(), computeTime ), tm.getResultPort() );
+                    JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, tm.getId(), computeTime );
+                    if( Settings.traceNodes ) {
+                	Globals.tracer.traceSentMessage( msg );
+                    }
+		    sendPort.send( msg, tm.getResultPort() );
                 }
             }
             catch( InterruptedException x ){

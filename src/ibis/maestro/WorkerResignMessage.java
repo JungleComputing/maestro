@@ -10,11 +10,19 @@ import ibis.ipl.ReceivePortIdentifier;
 class WorkerResignMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
-    private final ReceivePortIdentifier worker;
 
-    ReceivePortIdentifier getPort() { return worker; }
+    // FIXME: inline this
+    ReceivePortIdentifier getPort() { return source; }
     
     WorkerResignMessage( ReceivePortIdentifier worker ){
-        this.worker = worker;
+	super( worker );
+    }
+
+    /**
+     * Returns the event type of this message.
+     */
+    protected TraceEvent.Type getMessageType()
+    {
+	return TraceEvent.Type.RESIGN;
     }
 }

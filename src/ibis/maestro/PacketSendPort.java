@@ -25,7 +25,7 @@ public class PacketSendPort<T extends Serializable> {
 
     PacketSendPort( Ibis ibis ) throws IOException {
 	this.ibis = ibis;
-	globalport = ibis.createSendPort(portType);
+	globalport = ibis.createSendPort( portType );
     }
 
     /**
@@ -43,8 +43,8 @@ public class PacketSendPort<T extends Serializable> {
 	    globalport.disconnect(receiver);
 	}
 	else {
-	    SendPort port = ibis.createSendPort(portType);
-	    port.connect(receiver);
+	    SendPort port = ibis.createSendPort( portType );
+	    port.connect( receiver );
 	    WriteMessage msg = port.newMessage();
 	    msg.writeObject( data );
 	    msg.finish();

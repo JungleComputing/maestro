@@ -8,9 +8,8 @@ import ibis.ipl.ReceivePortIdentifier;
  * @author Kees van Reeuwijk
  */
 public class PingMessage extends MasterMessage {
-    /** Contractual obligation */
-    private static final long serialVersionUID = 1L;
-    private final ReceivePortIdentifier master;
+    /** */
+    private static final long serialVersionUID = -933843016931228878L;
     private final double payload[];
     private static final int PAYLOAD_SIZE = 10000;
 
@@ -21,9 +20,9 @@ public class PingMessage extends MasterMessage {
      * Constructs a new ping message. 
      * @param master The master that sends this ping message.
      */
-    public PingMessage( ReceivePortIdentifier master )
+    public PingMessage( final ReceivePortIdentifier master )
     {
-        this.master = master;
+	super( master );
 	payload = new double[PAYLOAD_SIZE];
 	
 	// Fill the payload with some benchmark data.
@@ -32,7 +31,8 @@ public class PingMessage extends MasterMessage {
 	}
     }
     
-    ReceivePortIdentifier getMaster() { return master; }
+    // FIXME: remove this method.
+    ReceivePortIdentifier getMaster() { return source; }
 
     /**
      * Run a benchmark on the payload, and return the time in
@@ -46,7 +46,7 @@ public class PingMessage extends MasterMessage {
 
 	do {
 	    iterations *= 2;
-	    long startTime = System.currentTimeMillis();
+	    final long startTime = System.currentTimeMillis();
 	    for( int iteration=0; iteration<iterations; iteration++ ) {
 		for( int i=1; i<payload.length-1; i++ ) {
 		    sum += Math.atan( (payload[i-1]+payload[i]+payload[i+1])/3 );
@@ -64,6 +64,15 @@ public class PingMessage extends MasterMessage {
     @Override
     public String toString()
     {
-	return "Ping message. Reply to " + master;
+	return "Ping message. Reply to " + source;
+    }
+
+
+    /**
+     * Returns the event type of this message.
+     */
+    protected TraceEvent.Type getMessageType()
+    {
+	return TraceEvent.Type.PING;
     }
 }

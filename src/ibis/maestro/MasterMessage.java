@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.ipl.ReceivePortIdentifier;
+
 import java.io.Serializable;
 
 /**
@@ -7,8 +9,9 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  *
  */
-public abstract class MasterMessage implements Serializable {
+public abstract class MasterMessage extends Message implements Serializable {
 
-    /** Contractual obligation. */
-    private static final long serialVersionUID = 1547379144090317151L;
+    MasterMessage( ReceivePortIdentifier source ){
+	super( source );
+    }
 }

@@ -23,7 +23,6 @@ public class Master extends Thread {
     private final LinkedList<ActiveJob> activeJobs = new LinkedList<ActiveJob>();
     private final LinkedList<PingTarget> pingTargets = new LinkedList<PingTarget>();
     private CompletionListener completionListener;
-    private long jobno = 0;
     private boolean stopped = false;
 
     private void unsubscribeWorker( ReceivePortIdentifier worker )
@@ -37,9 +36,13 @@ public class Master extends Thread {
          * @param result The job request message.
          */
         @Override
-        public void packetReceived(PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg) {
+        public void packetReceived( PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg )
+        {
             if( Settings.traceWorkerProgress ){
                 Globals.log.reportProgress( "Received message " + msg );
+            }
+            if( Settings.traceNodes ) {
+        	Globals.tracer.traceReceivedMessage( msg );
             }
             if( msg instanceof JobResultMessage ) {
         	JobResultMessage result = (JobResultMessage) msg;
@@ -74,7 +77,7 @@ public class Master extends Thread {
          */
         private void handleJobResultMessage( JobResultMessage result )
         {
-            long id = result.getId();    // The identifier of the job, as handed out by us.
+            long id = result.jobid;    // The identifier of the job, as handed out by us.
 
             if( Settings.traceWorkerProgress ){
                 Globals.log.reportProgress( "Received a job result " + result );
@@ -106,7 +109,8 @@ public class Master extends Thread {
          * 
          * @param m The message to handle.
          */
-        private void handlePingReplyMessage(PingReplyMessage m) {
+        private void handlePingReplyMessage( PingReplyMessage m )
+        {
             if( isStopped() ) {
         	// If we're stopped, just ignore the message.
         	return;
@@ -143,7 +147,8 @@ public class Master extends Thread {
          * 
          * @param m The message to handle.
          */
-        private void handleWorkRequestMessage( WorkRequestMessage m ) {
+        private void handleWorkRequestMessage( WorkRequestMessage m )
+        {
             if( isStopped() ) {
         	// If we're stopped, just ignore the message.
         	return;
@@ -274,7 +279,6 @@ public class Master extends Thread {
      */
     private void startJobs()
     {
-        long id;
 	while( areWaitingJobs() ) {
 	    WorkerInfo worker = workers.getFastestWorker();
 	    if( worker == null ) {
@@ -285,18 +289,16 @@ public class Master extends Thread {
 	    synchronized( queue ) {
 		job = queue.remove();
 	    }
-            synchronized( this ){
-                id = jobno++;
-            }
 	    long startTime = System.nanoTime();
-	    RunJobMessage msg = new RunJobMessage( job, id, receivePort.identifier() );
-	    ActiveJob j = new ActiveJob( job, id, startTime, worker );
+	    RunJobMessage msg = new RunJobMessage( job, receivePort.identifier() );
+	    ActiveJob j = new ActiveJob( job, msg.id, startTime, worker );
 	    synchronized( activeJobs ) {
 		activeJobs.add( j );
 	    }
 	    worker.registerJobStartTime( startTime );
 	    try {
 		sendPort.send( msg, worker.getPort() );
+		Globals.tracer.traceSentMessage( msg );
 	    } catch (IOException e) {
                 synchronized( queue ){
                     queue.add( job );

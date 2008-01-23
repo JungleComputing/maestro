@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.ReceivePortIdentifier;
 
 /**
  * A message sent to a worker to tell it about new neighbor Ibises.
@@ -14,9 +15,11 @@ public class AddNeighborsMessage extends MasterMessage {
 
     /**
      * Constructs a new neighbor update message. 
+     * @param source The source of this message.
      * @param l The list of new neighbor Ibises.
      */
-    public AddNeighborsMessage(IbisIdentifier l[]) {
+    public AddNeighborsMessage( ReceivePortIdentifier source, IbisIdentifier l[]) {
+	super( source );
 	this.l = l;
     }
 
@@ -46,5 +49,12 @@ public class AddNeighborsMessage extends MasterMessage {
         }
         return res + ']';
     }
-    
+
+    /**
+     * Returns the event type of this message.
+     */
+    protected TraceEvent.Type getMessageType()
+    {
+	return TraceEvent.Type.ADD_NEIGHBORS;
+    }
 }
