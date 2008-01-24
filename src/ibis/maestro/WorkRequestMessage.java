@@ -22,6 +22,7 @@ public class WorkRequestMessage extends WorkerMessage {
     /**
      * Returns the event type of this message.
      */
+    @Override
     protected TraceEvent.Type getMessageType()
     {
 	return TraceEvent.Type.ASK_WORK;

@@ -253,7 +253,9 @@ public class Worker extends Thread {
      * @param theIbis The ibis that has joined.
      */
     public void addIbis(IbisIdentifier theIbis) {
-	// FIXME: implement this.
+        synchronized( unusedNeighbors ){
+            unusedNeighbors.add( theIbis );
+        }
     }
     
     /** Quickly do as much as possible to prevent new work from reaching us. */

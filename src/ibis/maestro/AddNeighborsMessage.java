@@ -53,6 +53,7 @@ public class AddNeighborsMessage extends MasterMessage {
     /**
      * Returns the event type of this message.
      */
+    @Override
     protected TraceEvent.Type getMessageType()
     {
 	return TraceEvent.Type.ADD_NEIGHBORS;

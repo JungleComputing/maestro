@@ -21,6 +21,7 @@ class WorkerResignMessage extends WorkerMessage {
     /**
      * Returns the event type of this message.
      */
+    @Override
     protected TraceEvent.Type getMessageType()
     {
 	return TraceEvent.Type.RESIGN;
