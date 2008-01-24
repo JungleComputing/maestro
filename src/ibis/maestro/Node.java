@@ -105,6 +105,7 @@ public class Node extends Thread implements RegistryEventHandler {
         for( int i=0; i<numberOfProcessors; i++ ){
             Worker w = new Worker( ibis, master, i );
             w.start();
+            master.waitForSubscription( w.identifier() );
             workers[i] = w;
         }
 	if( Settings.traceNodes ) {

@@ -27,51 +27,13 @@ public class Master extends Thread {
 
     private void unsubscribeWorker( ReceivePortIdentifier worker )
     {
-	workers.unsubscribeWorker( worker );
         synchronized( workers ){
+            workers.unsubscribeWorker( worker );
             workers.notifyAll();
         }
     }
 
     private class MessageHandler implements PacketReceiveListener<WorkerMessage> {
-        /**
-         * Handles job request message <code>message</code>.
-         * @param result The job request message.
-         */
-        @Override
-        public void packetReceived( PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg )
-        {
-            if( Settings.traceWorkerProgress ){
-                Globals.log.reportProgress( "Received message " + msg );
-            }
-            if( Settings.traceNodes ) {
-        	Globals.tracer.traceReceivedMessage( msg );
-            }
-            if( msg instanceof JobResultMessage ) {
-        	JobResultMessage result = (JobResultMessage) msg;
-
-        	handleJobResultMessage(result);
-            }
-            else if( msg instanceof WorkRequestMessage ) {
-        	WorkRequestMessage m = (WorkRequestMessage) msg;
-
-        	handleWorkRequestMessage( m );
-            }
-            else if( msg instanceof PingReplyMessage ) {
-        	PingReplyMessage m = (PingReplyMessage) msg;
-
-        	handlePingReplyMessage(m);
-            }
-            else if( msg instanceof WorkerResignMessage ) {
-        	WorkerResignMessage m = (WorkerResignMessage) msg;
-
-        	unsubscribeWorker( m.getPort() );
-            }
-            else {
-        	Globals.log.reportInternalError( "the master should handle message of type " + msg.getClass() );
-            }
-        }
-
         /**
          * A worker has sent us the result of a job. Register this information.
          * 
@@ -97,6 +59,7 @@ public class Master extends Thread {
             worker.registerJobCompletionTime( now, result.getComputeTime() );
             synchronized( activeJobs ) {
                 activeJobs.remove( e );
+                activeJobs.notifyAll();
             }
         }
 
@@ -140,8 +103,8 @@ public class Master extends Thread {
                 synchronized( pingTargets ){
                     pingTargets.remove( t );
                 }
-                workers.subscribeWorker( worker, pingTime-benchmarkTime, m.getBenchmarkScore() );
                 synchronized( workers ){
+                    workers.subscribeWorker( worker, pingTime-benchmarkTime, m.getBenchmarkScore() );
                     workers.notifyAll();
                 }
             }
@@ -185,6 +148,44 @@ public class Master extends Thread {
                 x.printStackTrace( Globals.log.getPrintStream() );
             }
         }
+
+	/**
+	 * Handles job request message <code>message</code>.
+	 * @param result The job request message.
+	 */
+	@Override
+	public void packetReceived( PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg )
+	{
+	    if( Settings.traceWorkerProgress ){
+	        Globals.log.reportProgress( "Master: Received message " + msg );
+	    }
+	    if( Settings.traceNodes ) {
+		Globals.tracer.traceReceivedMessage( msg );
+	    }
+	    if( msg instanceof JobResultMessage ) {
+		JobResultMessage result = (JobResultMessage) msg;
+	
+		handleJobResultMessage(result);
+	    }
+	    else if( msg instanceof WorkRequestMessage ) {
+		WorkRequestMessage m = (WorkRequestMessage) msg;
+	
+		handleWorkRequestMessage( m );
+	    }
+	    else if( msg instanceof PingReplyMessage ) {
+		PingReplyMessage m = (PingReplyMessage) msg;
+	
+		handlePingReplyMessage(m);
+	    }
+	    else if( msg instanceof WorkerResignMessage ) {
+		WorkerResignMessage m = (WorkerResignMessage) msg;
+	
+		unsubscribeWorker( m.getPort() );
+	    }
+	    else {
+		Globals.log.reportInternalError( "the master should handle message of type " + msg.getClass() );
+	    }
+	}
     }
 
     /** Creates a new master instance.
@@ -253,7 +254,7 @@ public class Master extends Thread {
     {
 	completionListener = l;
     }
-    
+
     /**
      * Returns true iff there are jobs in the queue.
      * @return Are there jobs in the queue?
@@ -295,6 +296,7 @@ public class Master extends Thread {
                 // We have at least one job, now try to give it to a worker.
                 WorkerInfo worker = workers.getFastestWorker();
                 if( worker == null ) {
+                    System.out.println( "No ready workers; waiting" );
                     // FIXME: advertise for new workers.
                     long sleepTime = workers.getBusyInterval();
                     try {
@@ -309,6 +311,7 @@ public class Master extends Thread {
                 }
                 else {
                     // We have a worker willing to the job, now get a job to do.
+                    System.out.println( "Submitting job to worker" );
                     Job job;
                     synchronized( queue ) {
                         job = queue.remove();
@@ -381,52 +384,8 @@ public class Master extends Thread {
      * A new ibis has joined the computation.
      * @param theIbis The ibis that has joined.
      */
-    public void addIbis(IbisIdentifier theIbis) {
+    public void addIbis( IbisIdentifier theIbis ) {
 	// FIXME: implement this.
-    }
-
-    /**
-     * Gracefully shut down this master after all the jobs currently in the queue have been processed.
-     * That is, both the work queue and the list of outstanding jobs should be empty.
-     * This method returns after the master has been shut down.
-     */
-    public void finish() {
-	setStopped();
-        System.err.println( "Waiting for master queue to drain" );
-	boolean busy = true;
-	while( busy ) {
-	    synchronized( queue ) {
-		try {
-		    queue.wait();
-		} catch (InterruptedException e) {
-		    // Not interesting.
-		}
-		busy = !queue.isEmpty();
-	    }
-	}
-        System.err.println( "Waiting for active jobs to terminate" );
-	busy = true;
-	while( busy ) {
-	    synchronized( activeJobs ) {
-	        try {
-	            activeJobs.wait();
-	        } catch (InterruptedException e) {
-	            // Not interesting.
-	        }
-		busy = !activeJobs.isEmpty();
-	    }
-	}
-        System.err.println( "Master has finished" );
-	try {
-	    // First make sure no new workers try to reach us.
-	    // Unfortunately, we can only now close the receive
-	    // port, because our workers need to report their
-	    // results.
-	    receivePort.close();
-	}
-	catch( IOException x ) {
-	    // Nothing we can do about it.
-	}
     }
 
     /** Returns the identifier of (the receive port of) this worker.
@@ -436,5 +395,26 @@ public class Master extends Thread {
     public ReceivePortIdentifier identifier()
     {
         return receivePort.identifier();
+    }
+
+    /** Given the identifier for a worker, wait until this worker
+     * has subscribed itself. Due to possibly unreliable communication,
+     * a remote worker may never subscribe itself. Therefore, only
+     * this method is only safe for local workers.
+     * @param identifier The worker.
+     */
+    public void waitForSubscription(ReceivePortIdentifier identifier) {
+	while( true ) {
+	    synchronized( workers ) {
+		if( workers.contains( identifier ) ) {
+		    return;
+		}
+		try {
+		    workers.wait();
+		} catch (InterruptedException e) {
+		    // Ignore.
+		}
+	    }
+	}
     }
 }

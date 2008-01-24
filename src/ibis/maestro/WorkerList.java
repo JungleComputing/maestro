@@ -125,4 +125,14 @@ public class WorkerList {
             }
         }
     }
+
+    /** Returns true iff we have a worker on our list with the
+     * given identifier.
+     * @param identifier The identifier to search for.
+     * @return True iff we know the given worker.
+     */
+    public boolean contains(ReceivePortIdentifier identifier) {
+	int i = searchWorker( workers, identifier );
+	return i>=0;
+    }
 }

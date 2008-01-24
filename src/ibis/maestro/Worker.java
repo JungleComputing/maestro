@@ -42,6 +42,11 @@ public class Worker extends Thread {
             unusedNeighbors.add( ibis.identifier() );
         }
     }
+    
+    ReceivePortIdentifier identifier()
+    {
+	return receivePort.identifier();
+    }
 
     private synchronized void setStopped( boolean val ) {
 	stopped = val;
@@ -202,48 +207,80 @@ public class Worker extends Thread {
         }
     }
 
+    /**
+     * Returns true iff there are jobs in the queue.
+     * @return Are there jobs in the queue?
+     */
+    private boolean areWaitingJobs()
+    {
+	boolean res;
+
+	synchronized( jobQueue ) {
+	    res = !jobQueue.isEmpty();
+	}
+	return res;
+    }
+
     /** Runs this worker. */
     @Override
     public void run()
     {
         System.out.println( "Starting worker thread" );
         setStopped( false );
-        while( !isStopped() ) {
+        while( true ) {
             if( Settings.traceWorkerProgress ){
-                System.out.println( "Next round for worker" );
+        	System.out.println( "Next round for worker" );
             }
-            try {
-                if( jobQueue.isEmpty() ){
-                    findNewMaster();
-                }
-                RunJobMessage tm = jobQueue.take();
-                if( tm != null ){
-                    Job job = tm.getJob();
-                    if( Settings.traceWorkerProgress ){
-                        System.out.println( "Starting job " + job );
-                    }
-                    JobReturn r = job.run( localMaster );
-                    long computeTime = System.nanoTime()-tm.getStartTime();
-                    if( Settings.traceWorkerProgress ){
-                        System.out.println( "Job " + job + " completed in " + computeTime + "ns; result: " + r );
-                    }
-                    JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, tm.getId(), computeTime );
-		    sendPort.send( msg, tm.getResultPort() );
-                    if( Settings.traceNodes ) {
-                	Globals.tracer.traceSentMessage( msg );
-                    }
-                }
-            }
-            catch( InterruptedException x ){
-                if( Settings.traceWorkerProgress ){
-                    System.out.println( "Worker take() got interrupted: " + x );
-                }
-                // We got interrupted while waiting for the next job. Just ignore it.
-            }
-            catch( IOException x ){
-                // Something went wrong in sending the result back.
-                Globals.log.reportError( "Worker failed to send job result" );
-                x.printStackTrace( Globals.log.getPrintStream() );
+            synchronized( jobQueue ) {
+        	if( !areWaitingJobs() ) {
+        	    if( isStopped() ) {
+        		break;
+        	    }
+        	    try {
+        		findNewMaster();
+        		// There is nothing to do; Wait for new queue entries.
+        		synchronized( jobQueue ){
+        		    jobQueue.wait();
+        		}
+        	    } catch (InterruptedException e) {
+        		// Not interested.
+        	    }
+        	}
+        	else {
+        	    try {
+        		RunJobMessage jobMessage = jobQueue.take();
+        		if( jobMessage != null ){
+        		    Job job = jobMessage.getJob();
+        		    if( Settings.traceWorkerProgress ){
+        			System.out.println( "Starting job " + job );
+        		    }
+        		    JobReturn r = job.run( localMaster );
+        		    long computeTime = System.nanoTime()-jobMessage.getStartTime();
+        		    if( Settings.traceWorkerProgress ){
+        			System.out.println( "Job " + job + " completed in " + computeTime + "ns; result: " + r );
+        		    }
+        		    try {
+        			JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime );
+        			sendPort.send( msg, jobMessage.getResultPort() );
+        			if( Settings.traceNodes ) {
+        			    Globals.tracer.traceSentMessage( msg );
+        			}
+        		    }
+        		    catch( IOException x ){
+        			// Something went wrong in sending the result back.
+        			Globals.log.reportError( "Worker failed to send job result" );
+        			x.printStackTrace( Globals.log.getPrintStream() );
+        		    }
+        		}
+        	    }
+        	    catch( InterruptedException x ){
+        		if( Settings.traceWorkerProgress ){
+        		    System.out.println( "Worker take() got interrupted: " + x );
+        		}
+        		// We got interrupted while waiting for the next job. Just ignore it.
+        	    }
+
+        	}
             }
         }
         System.out.println( "Ended worker thread" );
@@ -296,15 +333,16 @@ public class Worker extends Thread {
      */
     public void finish() {
 	// First wait for job queue to drain.
-	boolean busy = true;
-	while( busy ) {
-	    try {
-		jobQueue.wait();
-	    } catch (InterruptedException e) {
-		// Not interesting.
-	    }
+	while( true ) {
 	    synchronized( jobQueue ) {
-		busy = !jobQueue.isEmpty();
+		if(jobQueue.isEmpty() ) {
+		    break;
+		}
+		try {
+		    jobQueue.wait();
+		} catch (InterruptedException e) {
+		    // Not interesting.
+		}
 	    }
 	}
 	// FIXME: wait for last job to finish.
