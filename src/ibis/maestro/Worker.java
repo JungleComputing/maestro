@@ -20,6 +20,7 @@ public class Worker extends Thread {
     private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
     private final Master localMaster;
     private boolean stopped;
+    private ReceivePortIdentifier exclusiveMaster = null;
 
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
@@ -30,6 +31,7 @@ public class Worker extends Thread {
      */
     public Worker( Ibis ibis, Master master, int serial ) throws IOException
     {
+        super( "Worker" );
         setDaemon(false);
 	this.localMaster = master;
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName + serial, new MessageHandler() );
@@ -112,6 +114,16 @@ public class Worker extends Thread {
             else {
                 Globals.log.reportInternalError( "FIXME: handle " + msg );
             }
+            // Now send an unsubscribe message if we only handle work from a specific master.
+            if( exclusiveMaster != null && !exclusiveMaster.equals( msg.source ) ){
+                // Resign from the given master.
+                try {
+                    sendResignMessage( msg.source );
+                }
+                catch( IOException x ){
+                    // Nothing we can do about it.
+                }
+            }
         }
 
         /**
@@ -121,6 +133,15 @@ public class Worker extends Thread {
          */
         private void handleAddNeighborsMessage(AddNeighborsMessage msg) {
             addNeighbors( msg.getNeighbors() );
+        }
+
+        private void sendResignMessage( ReceivePortIdentifier master ) throws IOException
+        {
+            WorkerResignMessage msg = new WorkerResignMessage( receivePort.identifier() );
+            sendPort.send(msg, master);
+            if( Settings.traceNodes ) {
+                Globals.tracer.traceSentMessage(msg);
+            }
         }
 
         /**
@@ -145,9 +166,9 @@ public class Worker extends Thread {
             PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), benchmarkScore, benchmarkTime );
             try {
                 sendPort.send(m, master);
-    	    if( Settings.traceNodes ) {
-		Globals.tracer.traceSentMessage(m);
-	    }
+                if( Settings.traceNodes ) {
+                    Globals.tracer.traceSentMessage(m);
+                }
             }
             catch( IOException x ){
                 Globals.log.reportError( "Cannot send ping reply to master " + master );
@@ -288,5 +309,14 @@ public class Worker extends Thread {
 	}
 	// FIXME: wait for last job to finish.
 	setStopped( true );	
+    }
+
+    /**
+     * Send resign messages to all masters except for the one given here.
+     * @param identifier the master we shouldn't resign from.
+     */
+    public void resignExcept(ReceivePortIdentifier identifier)
+    {
+        exclusiveMaster = identifier;
     }
 }

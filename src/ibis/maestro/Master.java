@@ -28,6 +28,9 @@ public class Master extends Thread {
     private void unsubscribeWorker( ReceivePortIdentifier worker )
     {
 	workers.unsubscribeWorker( worker );
+        synchronized( workers ){
+            workers.notifyAll();
+        }
     }
 
     private class MessageHandler implements PacketReceiveListener<WorkerMessage> {
@@ -67,7 +70,6 @@ public class Master extends Thread {
             else {
         	Globals.log.reportInternalError( "the master should handle message of type " + msg.getClass() );
             }
-            startJobs();    // While we're awake, try to start a few new jobs.
         }
 
         /**
@@ -139,6 +141,9 @@ public class Master extends Thread {
                     pingTargets.remove( t );
                 }
                 workers.subscribeWorker( worker, pingTime-benchmarkTime, m.getBenchmarkScore() );
+                synchronized( workers ){
+                    workers.notifyAll();
+                }
             }
         }
 
@@ -189,6 +194,7 @@ public class Master extends Thread {
      */
     public Master( Ibis ibis, CompletionListener l ) throws IOException
     {
+        super( "Master" );
         setDaemon(false);
         
         completionListener = l;
@@ -216,8 +222,9 @@ public class Master extends Thread {
         return null;
     }
 
-    private synchronized void setStopped( boolean val ) {
-	stopped = val;
+    synchronized void setStopped()
+    {
+	stopped = true;
     }
 
     private synchronized boolean isStopped()
@@ -236,7 +243,6 @@ public class Master extends Thread {
             queue.add( j );
             queue.notifyAll();
         }
-        startJobs();   // Try to start some jobs.
     }
 
     /**
@@ -248,20 +254,6 @@ public class Master extends Thread {
 	completionListener = l;
     }
     
-    /**
-     * Returns true iff there are active jobs.
-     * @return True iff there are active jobs.
-     */
-    private boolean areActiveJobs()
-    {
-        boolean res;
-
-        synchronized( activeJobs ){
-            res = !activeJobs.isEmpty();
-        }
-        return res;
-    }
-
     /**
      * Returns true iff there are jobs in the queue.
      * @return Are there jobs in the queue?
@@ -276,67 +268,96 @@ public class Master extends Thread {
 	return res;
     }
 
-    /**
-     * As long as there are jobs in the queue and ready workers, send jobs to
-     * those workers.
-     */
-    private void startJobs()
-    {
-	while( areWaitingJobs() ) {
-	    WorkerInfo worker = workers.getFastestWorker();
-	    if( worker == null ) {
-		// FIXME: advertise for new workers.
-		return;
-	    }
-	    Job job;
-	    synchronized( queue ) {
-		job = queue.remove();
-		queue.notifyAll();
-	    }
-	    long startTime = System.nanoTime();
-	    RunJobMessage msg = new RunJobMessage( job, receivePort.identifier() );
-	    ActiveJob j = new ActiveJob( job, msg.id, startTime, worker );
-	    synchronized( activeJobs ) {
-		activeJobs.add( j );
-	    }
-	    worker.registerJobStartTime( startTime );
-	    try {
-		sendPort.send( msg, worker.getPort() );
-                if( Settings.traceNodes ) {
-                    Globals.tracer.traceSentMessage( msg );
-                }
-	    } catch (IOException e) {
-                synchronized( queue ){
-                    queue.add( job );
-                }
-                synchronized( activeJobs ){
-                    activeJobs.remove( j );
-                }
-                Globals.log.reportError( "Could not send job to " + worker + ": put toothpaste back in the tube" );
-                e.printStackTrace();
-                // We don't try to roll back job start time, since the worker
-                // may in fact be busy.
-	    }
-	}
-    }
-
     /** Runs this master. */
     @Override
     public void run()
     {
         System.out.println( "Starting master thread" );
-	// We simply wait until we have reached the stop state.
-	// and there are no outstanding jobs.
-	while( !isStopped() && !areActiveJobs() ) {
-            startJobs();
-	    try {
-                long sleepTime = workers.getBusyInterval();
-                Thread.sleep( sleepTime );
-	    }
-	    catch( InterruptedException x ) {
-		// Nothing to do.
-	    }
-	}
+        while( true ){
+            System.out.println( "Next round for master" );
+            if( !areWaitingJobs() ) {
+                if( isStopped() ){
+                    // No jobs, and we are stopped; don't try to send new jobs.
+                    break;
+                }
+                System.out.println( "Nothing in the queue; waiting" );
+                // Since the queue is empty, we can only wait for new jobs.
+                try {
+                    // There is nothing to do; Wait for new queue entries.
+                    synchronized( queue ){
+                        queue.wait();
+                    }
+                } catch (InterruptedException e) {
+                    // Not interested.
+                }
+            }
+            else {
+                // We have at least one job, now try to give it to a worker.
+                WorkerInfo worker = workers.getFastestWorker();
+                if( worker == null ) {
+                    // FIXME: advertise for new workers.
+                    long sleepTime = workers.getBusyInterval();
+                    try {
+                        // There is nothing to do; Wait for workers to complete
+                        // or new workers.
+                        synchronized( workers ){
+                            workers.wait( sleepTime/1000000 );
+                        }
+                    } catch (InterruptedException e) {
+                        // Not interested.
+                    }
+                }
+                else {
+                    // We have a worker willing to the job, now get a job to do.
+                    Job job;
+                    synchronized( queue ) {
+                        job = queue.remove();
+                    }
+                    long startTime = System.nanoTime();
+                    RunJobMessage msg = new RunJobMessage( job, receivePort.identifier() );
+                    ActiveJob j = new ActiveJob( job, msg.id, startTime, worker );
+                    synchronized( activeJobs ) {
+                        activeJobs.add( j );
+                    }
+                    worker.registerJobStartTime( startTime );
+                    try {
+                        sendPort.send( msg, worker.getPort() );
+                        if( Settings.traceNodes ) {
+                            Globals.tracer.traceSentMessage( msg );
+                        }
+                    } catch (IOException e) {
+                        // Try to put the paste back in the tube.
+                        synchronized( queue ){
+                            queue.add( job );
+                        }
+                        synchronized( activeJobs ){
+                            activeJobs.remove( j );
+                        }
+                        Globals.log.reportError( "Could not send job to " + worker + ": put toothpaste back in the tube" );
+                        e.printStackTrace();
+                        // We don't try to roll back job start time, since the worker
+                        // may in fact be busy.
+                    }
+                }
+            }            
+        }
+        // At this point we are shutting down, but we have to wait for outstanding jobs to
+        // complete.
+        while( true ){
+            synchronized( activeJobs ){
+                if( activeJobs.isEmpty() ){
+                    // No outstanding jobs, we're done.
+                    break;
+                }
+                try {
+                    // Wait for a change in the active jobs status.
+                    activeJobs.wait();
+                }
+                catch( InterruptedException x ){
+                    // Ignore.
+                }
+            }
+        }
 	try {
 	    receivePort.close();
 	}
@@ -370,7 +391,8 @@ public class Master extends Thread {
      * This method returns after the master has been shut down.
      */
     public void finish() {
-	setStopped( true );
+	setStopped();
+        System.err.println( "Waiting for master queue to drain" );
 	boolean busy = true;
 	while( busy ) {
 	    synchronized( queue ) {
@@ -382,17 +404,19 @@ public class Master extends Thread {
 		busy = !queue.isEmpty();
 	    }
 	}
+        System.err.println( "Waiting for active jobs to terminate" );
 	busy = true;
 	while( busy ) {
-	    try {
-		activeJobs.wait();
-	    } catch (InterruptedException e) {
-		// Not interesting.
-	    }
 	    synchronized( activeJobs ) {
+	        try {
+	            activeJobs.wait();
+	        } catch (InterruptedException e) {
+	            // Not interesting.
+	        }
 		busy = !activeJobs.isEmpty();
 	    }
 	}
+        System.err.println( "Master has finished" );
 	try {
 	    // First make sure no new workers try to reach us.
 	    // Unfortunately, we can only now close the receive
@@ -403,5 +427,14 @@ public class Master extends Thread {
 	catch( IOException x ) {
 	    // Nothing we can do about it.
 	}
+    }
+
+    /** Returns the identifier of (the receive port of) this worker.
+     * 
+     * @return The identifier.
+     */
+    public ReceivePortIdentifier identifier()
+    {
+        return receivePort.identifier();
     }
 }

@@ -87,6 +87,7 @@ public class Node extends Thread implements RegistryEventHandler {
      */
     public Node( String serverAddress, CompletionListener listener ) throws IbisCreationFailedException, IOException
     {
+        super( "Node" );
 	Properties ibisProperties = new Properties();
 	ibisProperties.setProperty( "ibis.server.address", serverAddress );
 	ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
@@ -138,11 +139,25 @@ public class Node extends Thread implements RegistryEventHandler {
      * This method returns after the node has been shut down.
      */
     public void finish() {
+        
+        for( Worker w: workers ){
+            w.resignExcept( master.identifier() );
+        }
 	// We must close the master first before we even try to stop the
 	// workers, since the master may need them to finish its jobs.
-	master.finish();
-	
-	// Now try to shut down all workers.
+	master.setStopped();
+        boolean masterActive = true;
+
+        do {
+            try {
+                master.join();
+            } catch (InterruptedException e) {
+                // Not interesting.
+            }
+            masterActive = master.isAlive();
+        } while( masterActive );
+
+        // Now try to shut down all workers.
 	
 	// First let all workers close their input port and resign from all masters.
 	for( Worker w: workers ) {
