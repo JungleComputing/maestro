@@ -168,6 +168,9 @@ public class Master extends Thread {
             }            
             try {
                 sendPort.send( msg, worker );
+                if( Settings.traceNodes ) {
+                    Globals.tracer.traceSentMessage( msg );
+                }
             }
             catch( IOException x ){
                 synchronized( pingTargets ){
@@ -215,7 +218,6 @@ public class Master extends Thread {
 
     private synchronized void setStopped( boolean val ) {
 	stopped = val;
-	this.notify();
     }
 
     private synchronized boolean isStopped()
@@ -232,6 +234,7 @@ public class Master extends Thread {
     public void submit( Job j ){
         synchronized( queue ) {
             queue.add( j );
+            queue.notifyAll();
         }
         startJobs();   // Try to start some jobs.
     }
@@ -288,6 +291,7 @@ public class Master extends Thread {
 	    Job job;
 	    synchronized( queue ) {
 		job = queue.remove();
+		queue.notifyAll();
 	    }
 	    long startTime = System.nanoTime();
 	    RunJobMessage msg = new RunJobMessage( job, receivePort.identifier() );
@@ -298,7 +302,9 @@ public class Master extends Thread {
 	    worker.registerJobStartTime( startTime );
 	    try {
 		sendPort.send( msg, worker.getPort() );
-		Globals.tracer.traceSentMessage( msg );
+                if( Settings.traceNodes ) {
+                    Globals.tracer.traceSentMessage( msg );
+                }
 	    } catch (IOException e) {
                 synchronized( queue ){
                     queue.add( job );
@@ -367,12 +373,12 @@ public class Master extends Thread {
 	setStopped( true );
 	boolean busy = true;
 	while( busy ) {
-	    try {
-		queue.wait();
-	    } catch (InterruptedException e) {
-		// Not interesting.
-	    }
 	    synchronized( queue ) {
+		try {
+		    queue.wait();
+		} catch (InterruptedException e) {
+		    // Not interesting.
+		}
 		busy = !queue.isEmpty();
 	    }
 	}

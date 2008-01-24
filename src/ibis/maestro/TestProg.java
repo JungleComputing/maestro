@@ -44,6 +44,7 @@ public class TestProg {
             submitJob( 1000*i );
         }
         node.finish();
+        Globals.tracer.close();
         System.out.println( "Test program has ended" );
     }
 

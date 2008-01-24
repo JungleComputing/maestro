@@ -145,6 +145,9 @@ public class Worker extends Thread {
             PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), benchmarkScore, benchmarkTime );
             try {
                 sendPort.send(m, master);
+    	    if( Settings.traceNodes ) {
+		Globals.tracer.traceSentMessage(m);
+	    }
             }
             catch( IOException x ){
                 Globals.log.reportError( "Cannot send ping reply to master " + master );
@@ -166,7 +169,11 @@ public class Worker extends Thread {
             Globals.log.reportProgress( "Asking neighbor " + m + " for work" );
         }
         try {
-            sendPort.send( new WorkRequestMessage( receivePort.identifier() ), m, Globals.masterReceivePortName );
+            WorkRequestMessage msg = new WorkRequestMessage( receivePort.identifier() );
+	    sendPort.send( msg, m, Globals.masterReceivePortName );
+	    if( Settings.traceNodes ) {
+		Globals.tracer.traceSentMessage(msg);
+	    }
         }
         catch( IOException x ){
             Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
@@ -200,10 +207,10 @@ public class Worker extends Thread {
                         System.out.println( "Job " + job + " completed in " + computeTime + "ns; result: " + r );
                     }
                     JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, tm.getId(), computeTime );
+		    sendPort.send( msg, tm.getResultPort() );
                     if( Settings.traceNodes ) {
                 	Globals.tracer.traceSentMessage( msg );
                     }
-		    sendPort.send( msg, tm.getResultPort() );
                 }
             }
             catch( InterruptedException x ){
