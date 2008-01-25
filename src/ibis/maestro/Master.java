@@ -150,8 +150,9 @@ public class Master extends Thread {
         }
 
 	/**
-	 * Handles job request message <code>message</code>.
-	 * @param result The job request message.
+	 * Handles message <code>msg</code> from worker.
+	 * @param p The port this was received on.
+	 * @param msg The message we received.
 	 */
 	@Override
 	public void packetReceived( PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg )

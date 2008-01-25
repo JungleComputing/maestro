@@ -70,7 +70,7 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
     /**
      * Compares this run job to the given RunJobMessage.
      * @param o The RunJobMessage to compare to.
-     * @return
+     * @return The comparison result.
      */
     public int compareTo(Object o) {
         RunJobMessage other = (RunJobMessage) o;

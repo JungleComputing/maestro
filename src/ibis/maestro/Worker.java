@@ -136,7 +136,8 @@ public class Worker extends Thread {
          * 
          * @param msg The message to handle.
          */
-        private void handleAddNeighborsMessage(AddNeighborsMessage msg) {
+        private void handleAddNeighborsMessage(AddNeighborsMessage msg)
+        {
             addNeighbors( msg.getNeighbors() );
         }
 
@@ -154,7 +155,8 @@ public class Worker extends Thread {
          * 
          * @param msg The message to handle.
          */
-        private void handleRunJobMessage(RunJobMessage msg) {
+        private void handleRunJobMessage(RunJobMessage msg)
+        {
             msg.setStartTime( System.nanoTime() );
             jobQueue.add( msg );
         }
@@ -162,7 +164,8 @@ public class Worker extends Thread {
         /**
          * @param msg The message to handle.
          */
-        private void handlePingMessage(PingMessage msg) {
+        private void handlePingMessage(PingMessage msg)
+        {
             long startTime = System.nanoTime();
 
             double benchmarkScore = msg.benchmarkResult();
@@ -289,9 +292,9 @@ public class Worker extends Thread {
     /**
      * Stop this worker.
      */
-    public void stopWorker()
+    public synchronized void stopWorker()
     {
-	setStopped( true );
+	stopped = true;
     }
 
     /**
