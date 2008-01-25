@@ -145,7 +145,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     public void packetReceived( PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg )
     {
         if( Settings.traceWorkerProgress ){
-            Globals.log.reportProgress( "Master: Received message " + msg );
+            Globals.log.reportProgress( "Master: received message " + msg );
         }
         if( Settings.traceNodes ) {
             Globals.tracer.traceReceivedMessage( msg );

@@ -6,17 +6,16 @@ import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.PriorityQueue;
 
 /**
  * A worker in the Maestro multiple master-worker system.
  * @author Kees van Reeuwijk
  */
 @SuppressWarnings("synthetic-access")
-public class Worker extends Thread implements WorkSource {
+public class Worker extends Thread implements WorkSource, PacketReceiveListener<MasterMessage> {
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
-    private final PriorityQueue<RunJobMessage> jobQueue = new PriorityQueue<RunJobMessage>();
+    private final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
     private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private final WorkThread workThreads[] = new WorkThread[numberOfProcessors];
@@ -37,7 +36,7 @@ public class Worker extends Thread implements WorkSource {
             // Add yourself to the list of neighbors.
             unusedNeighbors.add( ibis.identifier() );
         }
-        receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, new MessageHandler() );
+        receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
         receivePort.enable();
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         for( int i=0; i<numberOfProcessors; i++ ) {
@@ -49,15 +48,15 @@ public class Worker extends Thread implements WorkSource {
 
     ReceivePortIdentifier identifier()
     {
-	return receivePort.identifier();
+        return receivePort.identifier();
     }
 
     private synchronized void setStopped( boolean val ) {
-	stopped = val;
+        stopped = val;
     }
 
     private synchronized boolean isStopped() {
-	return stopped;
+        return stopped;
     }
 
     /**
@@ -92,99 +91,100 @@ public class Worker extends Thread implements WorkSource {
         }
     }
 
-    private class MessageHandler implements PacketReceiveListener<MasterMessage> {
-        /**
-         * Handles job request message <code>msg</code>.
-         * @param p The port on which the packet was received.
-         * @param msg The job we received and will put in the queue.
-         */
-        public void packetReceived(PacketUpcallReceivePort<MasterMessage> p, MasterMessage msg) {
-            if( Settings.traceWorkerProgress ){
-                Globals.log.reportProgress( "Received a message " + msg );
-            }
+    /**
+     * Handle a message containing new neighbors.
+     * 
+     * @param msg The message to handle.
+     */
+    private void handleAddNeighborsMessage(AddNeighborsMessage msg)
+    {
+        addNeighbors( msg.getNeighbors() );
+    }
+
+    private void sendResignMessage( ReceivePortIdentifier master ) throws IOException
+    {
+        WorkerResignMessage msg = new WorkerResignMessage( receivePort.identifier() );
+        sendPort.send(msg, master);
+        if( Settings.traceNodes ) {
+            Globals.tracer.traceSentMessage(msg);
+        }
+    }
+
+    /**
+     * Handle a message containing a new job to run.
+     * 
+     * @param msg The message to handle.
+     */
+    private void handleRunJobMessage( RunJobMessage msg )
+    {
+        msg.setStartTime( System.nanoTime() );
+        synchronized( queue ) {
+            queue.add( msg );
+            queue.notifyAll();
+        }
+    }
+
+    /**
+     * @param msg The message to handle.
+     */
+    private void handlePingMessage(PingMessage msg)
+    {
+        long startTime = System.nanoTime();
+    
+        double benchmarkScore = msg.benchmarkResult();
+        long benchmarkTime = System.nanoTime()-startTime;
+        ReceivePortIdentifier master = msg.getMaster();
+        PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), benchmarkScore, benchmarkTime );
+        try {
+            sendPort.send(m, master);
             if( Settings.traceNodes ) {
-        	Globals.tracer.traceReceivedMessage( msg );
-            }
-            if( msg instanceof RunJobMessage ){
-                RunJobMessage runJobMessage = (RunJobMessage) msg;
-
-                handleRunJobMessage(runJobMessage);
-            }
-            else if( msg instanceof PingMessage ){
-                PingMessage ping = (PingMessage) msg;
-
-                handlePingMessage( ping );
-            }
-            else if( msg instanceof AddNeighborsMessage ){
-                AddNeighborsMessage addMsg = (AddNeighborsMessage) msg;
-
-                handleAddNeighborsMessage(addMsg);
-            }
-            else {
-                Globals.log.reportInternalError( "FIXME: handle " + msg );
-            }
-            // Now send an unsubscribe message if we only handle work from a specific master.
-            if( exclusiveMaster != null && !exclusiveMaster.equals( msg.source ) ){
-                // Resign from the given master.
-                try {
-                    sendResignMessage( msg.source );
-                }
-                catch( IOException x ){
-                    // Nothing we can do about it.
-                }
+                Globals.tracer.traceSentMessage(m);
             }
         }
-
-        /**
-         * Handle a message containing new neighbors.
-         * 
-         * @param msg The message to handle.
-         */
-        private void handleAddNeighborsMessage(AddNeighborsMessage msg)
-        {
-            addNeighbors( msg.getNeighbors() );
+        catch( IOException x ){
+            Globals.log.reportError( "Cannot send ping reply to master " + master );
+            x.printStackTrace( Globals.log.getPrintStream() );
         }
+    }
 
-        private void sendResignMessage( ReceivePortIdentifier master ) throws IOException
-        {
-            WorkerResignMessage msg = new WorkerResignMessage( receivePort.identifier() );
-            sendPort.send(msg, master);
-            if( Settings.traceNodes ) {
-                Globals.tracer.traceSentMessage(msg);
-            }
+    /**
+     * Handles job request message <code>msg</code>.
+     * @param p The port on which the packet was received.
+     * @param msg The job we received and will put in the queue.
+     */
+    public void packetReceived(PacketUpcallReceivePort<MasterMessage> p, MasterMessage msg) {
+        if( Settings.traceWorkerProgress ){
+            Globals.log.reportProgress( "Worker: received message " + msg );
         }
-
-        /**
-         * Handle a message containing a new job to run.
-         * 
-         * @param msg The message to handle.
-         */
-        private void handleRunJobMessage(RunJobMessage msg)
-        {
-            msg.setStartTime( System.nanoTime() );
-            jobQueue.add( msg );
+        if( Settings.traceNodes ) {
+            Globals.tracer.traceReceivedMessage( msg );
         }
-
-        /**
-         * @param msg The message to handle.
-         */
-        private void handlePingMessage(PingMessage msg)
-        {
-            long startTime = System.nanoTime();
-
-            double benchmarkScore = msg.benchmarkResult();
-            long benchmarkTime = System.nanoTime()-startTime;
-            ReceivePortIdentifier master = msg.getMaster();
-            PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), benchmarkScore, benchmarkTime );
+        if( msg instanceof RunJobMessage ){
+            RunJobMessage runJobMessage = (RunJobMessage) msg;
+    
+            handleRunJobMessage(runJobMessage);
+        }
+        else if( msg instanceof PingMessage ){
+            PingMessage ping = (PingMessage) msg;
+    
+            handlePingMessage( ping );
+        }
+        else if( msg instanceof AddNeighborsMessage ){
+            AddNeighborsMessage addMsg = (AddNeighborsMessage) msg;
+    
+            handleAddNeighborsMessage(addMsg);
+        }
+        else {
+            Globals.log.reportInternalError( "FIXME: handle " + msg );
+        }
+        // Now send an unsubscribe message if we only handle work from a specific master.
+        if( exclusiveMaster != null && !exclusiveMaster.equals( msg.source ) ){
+            // Resign from the given master.
             try {
-                sendPort.send(m, master);
-                if( Settings.traceNodes ) {
-                    Globals.tracer.traceSentMessage(m);
-                }
+                sendResignMessage( msg.source );
             }
             catch( IOException x ){
-                Globals.log.reportError( "Cannot send ping reply to master " + master );
-                x.printStackTrace( Globals.log.getPrintStream() );
+                // Nothing we can do about it.
             }
         }
     }
@@ -203,10 +203,10 @@ public class Worker extends Thread implements WorkSource {
         }
         try {
             WorkRequestMessage msg = new WorkRequestMessage( receivePort.identifier() );
-	    sendPort.send( msg, m, Globals.masterReceivePortName );
-	    if( Settings.traceNodes ) {
-		Globals.tracer.traceSentMessage(msg);
-	    }
+            sendPort.send( msg, m, Globals.masterReceivePortName );
+            if( Settings.traceNodes ) {
+                Globals.tracer.traceSentMessage(msg);
+            }
         }
         catch( IOException x ){
             Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
@@ -223,6 +223,7 @@ public class Worker extends Thread implements WorkSource {
         setStopped( false );
         for( int i=0; i<numberOfProcessors; i++ ) {
             Service.waitToTerminate( workThreads[i] );
+            System.out.println( "Ended work thread " + i );
         }
         System.out.println( "Ended worker thread" );
     }
@@ -232,10 +233,10 @@ public class Worker extends Thread implements WorkSource {
      */
     public synchronized void setStopped()
     {
-	stopped = true;
-	synchronized( jobQueue ) {
-	    jobQueue.notifyAll();
-	}
+        stopped = true;
+        synchronized( queue ) {
+            queue.notifyAll();
+        }
     }
 
     /**
@@ -245,10 +246,10 @@ public class Worker extends Thread implements WorkSource {
      */
     public void removeIbis( IbisIdentifier theIbis )
     {
-	synchronized( unusedNeighbors ) {
-	    unusedNeighbors.remove( theIbis );
-	}
-	// FIXME: remove any jobs from this ibis from our queue.
+        synchronized( unusedNeighbors ) {
+            unusedNeighbors.remove( theIbis );
+        }
+        // FIXME: remove any jobs from this ibis from our queue.
     }
 
     /**
@@ -279,8 +280,8 @@ public class Worker extends Thread implements WorkSource {
     {
         while( true ) {
             try {
-                synchronized( jobQueue ) {
-                    if( jobQueue.isEmpty() ) {
+                synchronized( queue ) {
+                    if( queue.isEmpty() ) {
                         if( isStopped() ) {
                             // No jobs in queue, and worker is stopped. Tell
                             // return null to indicate that there won't be further
@@ -289,11 +290,11 @@ public class Worker extends Thread implements WorkSource {
                         }
                         if( !findNewMaster() ) {
                             System.out.println( "Worker: waiting for new jobs in queue" );
-                            jobQueue.wait();
+                            queue.wait();
                         }
                     }
                     else {
-                        return jobQueue.poll();
+                        return queue.remove();
                     }
 
                 }
@@ -319,6 +320,7 @@ public class Worker extends Thread implements WorkSource {
             if( Settings.traceNodes ) {
                 Globals.tracer.traceSentMessage( msg );
             }
+            System.out.println( "Returned job result " + r + " for job "  + jobMessage );
         }
         catch( IOException x ){
             // Something went wrong in sending the result back.

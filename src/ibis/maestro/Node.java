@@ -97,6 +97,7 @@ public class Node extends Thread implements RegistryEventHandler {
 	master.start();
         worker = new Worker( ibis, master );
         worker.start();
+        master.waitForSubscription(  worker.identifier() );
 	if( Settings.traceNodes ) {
 	    Globals.log.log( "Started a Maestro node. serverAddress=" + serverAddress );
 	}
