@@ -16,7 +16,7 @@ import java.util.Properties;
  * @author Kees van Reeuwijk
  *
  */
-public class Node extends Thread implements RegistryEventHandler {
+public class Node implements RegistryEventHandler {
     IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE );
     private final Ibis ibis;
     private final Master master;
@@ -80,7 +80,6 @@ public class Node extends Thread implements RegistryEventHandler {
      */
     public Node( String serverAddress, CompletionListener listener ) throws IbisCreationFailedException, IOException
     {
-        super( "Node" );
 	Properties ibisProperties = new Properties();
 	ibisProperties.setProperty( "ibis.server.address", serverAddress );
 	ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
@@ -111,29 +110,6 @@ public class Node extends Thread implements RegistryEventHandler {
 	master.submit( j );
     }
 
-    /** Run this node thread. (Overrides method in superclass.)
-     * 
-     */
-    @Override
-    public void run()
-    {
-        /**
-         * Everything interesting happens in the master and worker.
-         * So all we do here is wait for the master and worker to terminate.
-         * We only stop this thread if both are terminated, so we can just wait
-         * for one to terminate, and then the other.
-         */
-        Service.waitToTerminate( master );
-        worker.setStopped();
-        Service.waitToTerminate( worker );
-        try {
-            ibis.end();
-        }
-        catch( IOException x ) {
-            // Nothing we can do about it.
-        }
-    }
-    
     /** Set this node to a stopped mode. */
     public void setStopped()
     {
@@ -143,7 +119,22 @@ public class Node extends Thread implements RegistryEventHandler {
     /** Finish this node. */
     public void finish()
     {
-        setStopped();
-        Service.waitToTerminate( this );
+        master.setStopped();
+        /**
+         * Everything interesting happens in the master and worker.
+         * So all we do here is wait for the master and worker to terminate.
+         * We only stop this thread if both are terminated, so we can just wait
+         * for one to terminate, and then the other.
+         */
+        Service.waitToTerminate( master );
+        System.out.println( "Node master has terminated; terminating worker" );
+        worker.setStopped();
+        Service.waitToTerminate( worker );
+        try {
+            ibis.end();
+        }
+        catch( IOException x ) {
+            // Nothing we can do about it.
+        }
     }
 }

@@ -55,6 +55,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
             activeJobs.remove( e );
             activeJobs.notifyAll();
         }
+        System.out.println( "Master: retired job " + e );
     }
 
     /**
@@ -268,7 +269,6 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     public void run()
     {
         System.out.println( "Starting master thread" );
-        // FIXME: remove this stuff
         while( true ){
             System.out.println( "Next round for master" );
             if( !areWaitingJobs() ) {
@@ -343,6 +343,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         }
         // At this point we are shutting down, but we have to wait for outstanding jobs to
         // complete.
+        System.out.println( "Master is stopping. Queue drained, waiting for outstanding jobs" );
         while( true ){
             synchronized( activeJobs ){
                 if( activeJobs.isEmpty() ){
@@ -351,6 +352,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                 }
                 try {
                     // Wait for a change in the active jobs status.
+                    System.out.println( "Waiting for " + activeJobs.size() + " active jobs" );
                     activeJobs.wait();
                 }
                 catch( InterruptedException x ){
@@ -364,7 +366,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         catch( IOException x ) {
             // Nothing we can do about it.
         }
-        System.out.println( "Ending master thread" );
+        System.out.println( "End of master thread" );
     }
 
     /**

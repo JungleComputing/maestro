@@ -51,10 +51,6 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         return receivePort.identifier();
     }
 
-    private synchronized void setStopped( boolean val ) {
-        stopped = val;
-    }
-
     private synchronized boolean isStopped() {
         return stopped;
     }
@@ -220,12 +216,11 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     public void run()
     {
         System.out.println( "Starting worker thread" );
-        setStopped( false );
         for( int i=0; i<numberOfProcessors; i++ ) {
             Service.waitToTerminate( workThreads[i] );
             System.out.println( "Ended work thread " + i );
         }
-        System.out.println( "Ended worker thread" );
+        System.out.println( "End of worker thread" );
     }
 
     /**
@@ -237,6 +232,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         synchronized( queue ) {
             queue.notifyAll();
         }
+        System.out.println( "Worker is set to stopped" );
     }
 
     /**
