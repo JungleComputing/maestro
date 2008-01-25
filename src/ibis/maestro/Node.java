@@ -20,8 +20,7 @@ public class Node extends Thread implements RegistryEventHandler {
     IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE );
     private final Ibis ibis;
     private final Master master;
-    private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
-    private final Worker workers[] = new Worker[numberOfProcessors];
+    private final Worker worker;
 
     /**
      * An ibis has died.
@@ -29,9 +28,7 @@ public class Node extends Thread implements RegistryEventHandler {
      */
     @Override
     public void died(IbisIdentifier theIbis) {
-        for( Worker w: workers ){
-            w.removeIbis( theIbis );
-        }
+        worker.removeIbis( theIbis );
         master.removeIbis( theIbis );
     }
 
@@ -61,9 +58,7 @@ public class Node extends Thread implements RegistryEventHandler {
     @Override
     public void joined(IbisIdentifier theIbis) {
         master.addIbis( theIbis );
-        for( Worker w: workers ){
-            w.addIbis( theIbis );
-        }
+        worker.addIbis( theIbis );
     }
 
     /**
@@ -72,9 +67,7 @@ public class Node extends Thread implements RegistryEventHandler {
      */
     @Override
     public void left(IbisIdentifier theIbis) {
-        for( Worker w: workers ){
-            w.removeIbis( theIbis );
-        }
+        worker.removeIbis( theIbis );
         master.removeIbis( theIbis );
     }
 
@@ -102,12 +95,8 @@ public class Node extends Thread implements RegistryEventHandler {
 	);
 	master = new Master( ibis, listener );
 	master.start();
-        for( int i=0; i<numberOfProcessors; i++ ){
-            Worker w = new Worker( ibis, master, i );
-            w.start();
-            master.waitForSubscription( w.identifier() );
-            workers[i] = w;
-        }
+        worker = new Worker( ibis, master );
+        worker.start();
 	if( Settings.traceNodes ) {
 	    Globals.log.log( "Started a Maestro node. serverAddress=" + serverAddress );
 	}
@@ -121,61 +110,39 @@ public class Node extends Thread implements RegistryEventHandler {
 	master.submit( j );
     }
 
+    /** Run this node thread. (Overrides method in superclass.)
+     * 
+     */
     @Override
     public void run()
     {
-	try {
-	    // FIXME: do something more appropriate.
-            Thread.sleep( 10000 );
-	    ibis.end();
-	}
-	catch( Exception x ) {
-	    x.printStackTrace();
-	}
-    }
-
-    /**
-     * Gracefully shut down this node after all the jobs currently
-     * in the queue have been processed.
-     * This method returns after the node has been shut down.
-     */
-    public void finish() {
-        
-        for( Worker w: workers ){
-            w.resignExcept( master.identifier() );
+        /**
+         * Everything interesting happens in the master and worker.
+         * So all we do here is wait for the master and worker to terminate.
+         * We only stop this thread if both are terminated, so we can just wait
+         * for one to terminate, and then the other.
+         */
+        Service.waitToTerminate( master );
+        worker.setStopped();
+        Service.waitToTerminate( worker );
+        try {
+            ibis.end();
         }
-	// We must close the master first before we even try to stop the
-	// workers, since the master may need them to finish its jobs.
-	master.setStopped();
-        boolean masterActive = true;
-
-        do {
-            try {
-                master.join();
-            } catch (InterruptedException e) {
-                // Not interesting.
-            }
-            masterActive = master.isAlive();
-        } while( masterActive );
-
-        // Now try to shut down all workers.
-	
-	// First let all workers close their input port and resign from all masters.
-	for( Worker w: workers ) {
-	    w.closeDown();
-	}
-	
-	// Then wait for each worker to complete its work.
-	// We can wait for all workers to finish by waiting
-	// one by one for each worker to finish.
-	for( Worker w: workers ) {
-	    w.finish();
-	}
-	try {
-	    ibis.end();
-	}
-	catch( IOException x ) {
-	    // Nothing we can do about it.
-	}
+        catch( IOException x ) {
+            // Nothing we can do about it.
+        }
+    }
+    
+    /** Set this node to a stopped mode. */
+    public void setStopped()
+    {
+        master.setStopped();
+    }
+    
+    /** Finish this node. */
+    public void finish()
+    {
+        setStopped();
+        Service.waitToTerminate( this );
     }
 }

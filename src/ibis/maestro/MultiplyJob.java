@@ -52,11 +52,7 @@ public class MultiplyJob implements Job {
     @Override
     public String toString()
     {
-	String s = "[";
-	for( double v: values ) {
-	    s += v + ",";
-	}
-	return "(MultiplyJob " + s + "])";
+	return "(MultiplyJob [" + values[0] + ",...," + values[values.length-1] + "])";
     }
 
 }

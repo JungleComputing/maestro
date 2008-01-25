@@ -32,6 +32,7 @@ public class TestProg {
 	node.submit( j );
     }
 
+    @SuppressWarnings("synthetic-access")
     private void run() throws Exception {
         // Create an ibis instance.
         Properties serverProperties = new Properties();

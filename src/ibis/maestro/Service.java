@@ -135,4 +135,19 @@ public class Service
         return nsFormatter.format( t ) + "ns";
     }
 
+    /** Wait for the given thread to terminate.
+     * @param thread The tread to wait for.
+     */
+    public static void waitToTerminate( Thread thread )
+    {
+        do {
+            try {
+                thread.join();
+            }
+            catch( InterruptedException x ) {
+                // We don't care
+            }
+        } while( thread.isAlive() );
+    }
+
 }

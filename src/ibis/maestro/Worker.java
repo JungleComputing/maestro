@@ -6,19 +6,20 @@ import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
 import java.util.LinkedList;
-import java.util.concurrent.PriorityBlockingQueue;
+import java.util.PriorityQueue;
 
 /**
  * A worker in the Maestro multiple master-worker system.
  * @author Kees van Reeuwijk
  */
 @SuppressWarnings("synthetic-access")
-public class Worker extends Thread {
+public class Worker extends Thread implements WorkSource {
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
-    private final PriorityBlockingQueue<RunJobMessage> jobQueue = new PriorityBlockingQueue<RunJobMessage>();
+    private final PriorityQueue<RunJobMessage> jobQueue = new PriorityQueue<RunJobMessage>();
     private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
-    private final Master localMaster;
+    private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
+    private final WorkThread workThreads[] = new WorkThread[numberOfProcessors];
     private boolean stopped;
     private ReceivePortIdentifier exclusiveMaster = null;
 
@@ -26,23 +27,26 @@ public class Worker extends Thread {
      * Create a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to.
      * @param master The master that jobs may submit new jobs to.
-     * @param serial The serial number of this worker on this node.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis, Master master, int serial ) throws IOException
+    public Worker( Ibis ibis, Master master ) throws IOException
     {
         super( "Worker" );
         setDaemon(false);
-	this.localMaster = master;
-        receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName + serial, new MessageHandler() );
-        receivePort.enable();
-        sendPort = new PacketSendPort<WorkerMessage>( ibis );
         synchronized( unusedNeighbors ){
             // Add yourself to the list of neighbors.
             unusedNeighbors.add( ibis.identifier() );
         }
+        receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, new MessageHandler() );
+        receivePort.enable();
+        sendPort = new PacketSendPort<WorkerMessage>( ibis );
+        for( int i=0; i<numberOfProcessors; i++ ) {
+            WorkThread t = new WorkThread( this, master );
+            workThreads[i] = t;
+            t.start();
+        }
     }
-    
+
     ReceivePortIdentifier identifier()
     {
 	return receivePort.identifier();
@@ -51,7 +55,7 @@ public class Worker extends Thread {
     private synchronized void setStopped( boolean val ) {
 	stopped = val;
     }
-    
+
     private synchronized boolean isStopped() {
 	return stopped;
     }
@@ -73,12 +77,12 @@ public class Worker extends Thread {
                 res = null;
             }
             else {
-                res = unusedNeighbors.getFirst();
+                res = unusedNeighbors.removeFirst();
             }
         }
         return res;
     }
-    
+
     private void addNeighbors( IbisIdentifier l[] )
     {
         synchronized( unusedNeighbors ){
@@ -96,7 +100,7 @@ public class Worker extends Thread {
          */
         public void packetReceived(PacketUpcallReceivePort<MasterMessage> p, MasterMessage msg) {
             if( Settings.traceWorkerProgress ){
-                Globals.log.reportProgress( "Recieved a message " + msg );
+                Globals.log.reportProgress( "Received a message " + msg );
             }
             if( Settings.traceNodes ) {
         	Globals.tracer.traceReceivedMessage( msg );
@@ -106,15 +110,15 @@ public class Worker extends Thread {
 
                 handleRunJobMessage(runJobMessage);
             }
+            else if( msg instanceof PingMessage ){
+                PingMessage ping = (PingMessage) msg;
+
+                handlePingMessage( ping );
+            }
             else if( msg instanceof AddNeighborsMessage ){
                 AddNeighborsMessage addMsg = (AddNeighborsMessage) msg;
 
                 handleAddNeighborsMessage(addMsg);
-            }
-            else if( msg instanceof PingMessage ){
-                PingMessage ping = (PingMessage) msg;
-
-                handlePingMessage(ping);
             }
             else {
                 Globals.log.reportInternalError( "FIXME: handle " + msg );
@@ -185,14 +189,14 @@ public class Worker extends Thread {
         }
     }
 
-    private void findNewMaster()
+    private boolean findNewMaster()
     {
         IbisIdentifier m = getUnusedNeighbor();
         if( m == null ){
             if( Settings.traceWorkerProgress ){
                 Globals.log.reportProgress( "No neighbors to ask for work" );
             }
-            return;
+            return false;
         }
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Asking neighbor " + m + " for work" );
@@ -208,20 +212,7 @@ public class Worker extends Thread {
             Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
             x.printStackTrace();
         }
-    }
-
-    /**
-     * Returns true iff there are jobs in the queue.
-     * @return Are there jobs in the queue?
-     */
-    private boolean areWaitingJobs()
-    {
-	boolean res;
-
-	synchronized( jobQueue ) {
-	    res = !jobQueue.isEmpty();
-	}
-	return res;
+        return true;
     }
 
     /** Runs this worker. */
@@ -230,71 +221,21 @@ public class Worker extends Thread {
     {
         System.out.println( "Starting worker thread" );
         setStopped( false );
-        while( true ) {
-            if( Settings.traceWorkerProgress ){
-        	System.out.println( "Next round for worker" );
-            }
-            synchronized( jobQueue ) {
-        	if( !areWaitingJobs() ) {
-        	    if( isStopped() ) {
-        		break;
-        	    }
-        	    try {
-        		findNewMaster();
-        		// There is nothing to do; Wait for new queue entries.
-        		synchronized( jobQueue ){
-        		    jobQueue.wait();
-        		}
-        	    } catch (InterruptedException e) {
-        		// Not interested.
-        	    }
-        	}
-        	else {
-        	    try {
-        		RunJobMessage jobMessage = jobQueue.take();
-        		if( jobMessage != null ){
-        		    Job job = jobMessage.getJob();
-        		    if( Settings.traceWorkerProgress ){
-        			System.out.println( "Starting job " + job );
-        		    }
-        		    JobReturn r = job.run( localMaster );
-        		    long computeTime = System.nanoTime()-jobMessage.getStartTime();
-        		    if( Settings.traceWorkerProgress ){
-        			System.out.println( "Job " + job + " completed in " + computeTime + "ns; result: " + r );
-        		    }
-        		    try {
-        			JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime );
-        			sendPort.send( msg, jobMessage.getResultPort() );
-        			if( Settings.traceNodes ) {
-        			    Globals.tracer.traceSentMessage( msg );
-        			}
-        		    }
-        		    catch( IOException x ){
-        			// Something went wrong in sending the result back.
-        			Globals.log.reportError( "Worker failed to send job result" );
-        			x.printStackTrace( Globals.log.getPrintStream() );
-        		    }
-        		}
-        	    }
-        	    catch( InterruptedException x ){
-        		if( Settings.traceWorkerProgress ){
-        		    System.out.println( "Worker take() got interrupted: " + x );
-        		}
-        		// We got interrupted while waiting for the next job. Just ignore it.
-        	    }
-
-        	}
-            }
+        for( int i=0; i<numberOfProcessors; i++ ) {
+            Service.waitToTerminate( workThreads[i] );
         }
         System.out.println( "Ended worker thread" );
     }
-    
+
     /**
      * Stop this worker.
      */
-    public synchronized void stopWorker()
+    public synchronized void setStopped()
     {
 	stopped = true;
+	synchronized( jobQueue ) {
+	    jobQueue.notifyAll();
+	}
     }
 
     /**
@@ -302,7 +243,8 @@ public class Worker extends Thread {
      * Make sure we don't talk to it.
      * @param theIbis The ibis that was gone.
      */
-    public void removeIbis(IbisIdentifier theIbis) {
+    public void removeIbis( IbisIdentifier theIbis )
+    {
 	synchronized( unusedNeighbors ) {
 	    unusedNeighbors.remove( theIbis );
 	}
@@ -313,51 +255,75 @@ public class Worker extends Thread {
      * A new ibis has joined the computation.
      * @param theIbis The ibis that has joined.
      */
-    public void addIbis(IbisIdentifier theIbis) {
+    public void addIbis(IbisIdentifier theIbis)
+    {
         synchronized( unusedNeighbors ){
             unusedNeighbors.add( theIbis );
         }
-    }
-    
-    /** Quickly do as much as possible to prevent new work from reaching us. */
-    public void closeDown() {
-	try {
-	    receivePort.close();
-	}
-	catch( IOException x ) {
-	    // Nothing we can do about it. Ignore.
-	}
-    }
-
-    /**
-     * Shut down this worker after all the jobs currently in the queue have been processed.
-     * That is, both the work queue and the list of outstanding jobs should be empty.
-     * This method returns after the master has been shut down.
-     */
-    public void finish() {
-	// First wait for job queue to drain.
-	while( true ) {
-	    synchronized( jobQueue ) {
-		if(jobQueue.isEmpty() ) {
-		    break;
-		}
-		try {
-		    jobQueue.wait();
-		} catch (InterruptedException e) {
-		    // Not interesting.
-		}
-	    }
-	}
-	// FIXME: wait for last job to finish.
-	setStopped( true );	
     }
 
     /**
      * Send resign messages to all masters except for the one given here.
      * @param identifier the master we shouldn't resign from.
      */
-    public void resignExcept(ReceivePortIdentifier identifier)
+    public void workOnlyFor(ReceivePortIdentifier identifier)
     {
         exclusiveMaster = identifier;
+    }
+
+    /** Gets a job to execute.
+     * @return The next job to execute.
+     */
+    @Override
+    public RunJobMessage getJob()
+    {
+        while( true ) {
+            try {
+                synchronized( jobQueue ) {
+                    if( jobQueue.isEmpty() ) {
+                        if( isStopped() ) {
+                            // No jobs in queue, and worker is stopped. Tell
+                            // return null to indicate that there won't be further
+                            // jobs.
+                            break;
+                        }
+                        if( !findNewMaster() ) {
+                            System.out.println( "Worker: waiting for new jobs in queue" );
+                            jobQueue.wait();
+                        }
+                    }
+                    else {
+                        return jobQueue.poll();
+                    }
+
+                }
+            }
+            catch( InterruptedException e ){
+                // Not interesting.
+            }
+        }
+        return null;
+    }
+
+    /** Reports the result of the execution of a job. (Overrides method in superclass.)
+     * @param jobMessage The job to run.
+     * @param r The returned value of this job.
+     */
+    @Override
+    public void reportJobResult( RunJobMessage jobMessage, JobReturn r )
+    {
+        long computeTime = System.nanoTime()-jobMessage.getStartTime();
+        try {
+            JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime );
+            sendPort.send( msg, jobMessage.getResultPort() );
+            if( Settings.traceNodes ) {
+                Globals.tracer.traceSentMessage( msg );
+            }
+        }
+        catch( IOException x ){
+            // Something went wrong in sending the result back.
+            Globals.log.reportError( "Worker failed to send job result" );
+            x.printStackTrace( Globals.log.getPrintStream() );
+        }
     }
 }

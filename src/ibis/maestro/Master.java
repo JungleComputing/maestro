@@ -9,13 +9,13 @@ import java.util.LinkedList;
 import java.util.PriorityQueue;
 
 /**
- * A send queue in the Maestro flow graph framework.
+ * A master in the Maestro flow graph framework.
  * 
  * @author Kees van Reeuwijk
  * 
  */
 @SuppressWarnings("synthetic-access")
-public class Master extends Thread {
+public class Master extends Thread  implements PacketReceiveListener<WorkerMessage> {
     private final WorkerList workers = new WorkerList();
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
@@ -33,160 +33,146 @@ public class Master extends Thread {
         }
     }
 
-    private class MessageHandler implements PacketReceiveListener<WorkerMessage> {
-        /**
-         * A worker has sent us the result of a job. Register this information.
-         * 
-         * @param result The message to handle.
-         */
-        private void handleJobResultMessage( JobResultMessage result )
-        {
-            long id = result.jobid;    // The identifier of the job, as handed out by us.
+    private void handleJobResultMessage( JobResultMessage result )
+    {
+        long id = result.jobid;    // The identifier of the job, as handed out by us.
 
-            if( Settings.traceWorkerProgress ){
-                Globals.log.reportProgress( "Received a job result " + result );
-            }
-            ActiveJob e = searchQueueEntry( id );
-            if( e == null ) {
-                Globals.log.reportInternalError( "ignoring reported result from job with unknown id " + id );
-                return;
-            }
-            if( completionListener != null ) {
-        	completionListener.jobCompleted( e.getJob(), result.getResult() );
-            }
-            WorkerInfo worker = e.getWorker();
-            long now = System.nanoTime();
-            worker.registerJobCompletionTime( now, result.getComputeTime() );
-            synchronized( activeJobs ) {
-                activeJobs.remove( e );
-                activeJobs.notifyAll();
+        if( Settings.traceWorkerProgress ){
+            Globals.log.reportProgress( "Received a job result " + result );
+        }
+        ActiveJob e = searchQueueEntry( id );
+        if( e == null ) {
+            Globals.log.reportInternalError( "ignoring reported result from job with unknown id " + id );
+            return;
+        }
+        if( completionListener != null ) {
+            completionListener.jobCompleted( e.getJob(), result.getResult() );
+        }
+        WorkerInfo worker = e.getWorker();
+        long now = System.nanoTime();
+        worker.registerJobCompletionTime( now, result.getComputeTime() );
+        synchronized( activeJobs ) {
+            activeJobs.remove( e );
+            activeJobs.notifyAll();
+        }
+    }
+
+    /**
+     * A new worker has sent a reply to our ping message.
+     * The reply contains the performance of the worker on a benchmark,
+     * and the time it took to complete the benchmark (the two are
+     * not necessarily related).
+     * From the round-trip time of our ping request we compute communication
+     * overhead. Together all this information gives us a reasonable guess
+     * for the performance of the new worker relative to our other workers.
+     * 
+     * @param m The message to handle.
+     */
+    private void handlePingReplyMessage( PingReplyMessage m )
+    {
+        PingTarget t = null;
+        long receiveTime = System.nanoTime();
+        long benchmarkTime = m.getBenchmarkTime();
+
+        // First, search for the worker in our list of
+        // outstanding pings.
+        ReceivePortIdentifier worker = m.getWorker();
+        synchronized( pingTargets ){
+            for( PingTarget w: pingTargets ){
+                if( w.hasIdentifier( worker ) ){
+                    t = w;
+                    break;
+                }
             }
         }
-
-        /**
-         * A new worker has sent a reply to our ping message.
-         * The reply contains the performance of the worker on a benchmark,
-         * and the time it took to complete the benchmark (the two are
-         * not necessarily related).
-         * From the round-trip time of our ping request we compute communication
-         * overhead. Together all this information gives us a reasonable guess
-         * for the performance of the new worker relative to our other workers.
-         * 
-         * @param m The message to handle.
-         */
-        private void handlePingReplyMessage( PingReplyMessage m )
-        {
-            if( isStopped() ) {
-        	// If we're stopped, just ignore the message.
-        	return;
-            }
-            PingTarget t = null;
-            long receiveTime = System.nanoTime();
-            long benchmarkTime = m.getBenchmarkTime();
-
-            // First, search for the worker in our list of
-            // outstanding pings.
-            ReceivePortIdentifier worker = m.getWorker();
+        if( t == null ){
+            Globals.log.reportInternalError( "Worker " + worker + " replied to a ping that wasn't sent: ignoring" );
+        }
+        else {
+            long pingTime = t.getSendTime()-receiveTime;
             synchronized( pingTargets ){
-                for( PingTarget w: pingTargets ){
-                    if( w.hasIdentifier( worker ) ){
-                        t = w;
-                        break;
-                    }
-                }
+                pingTargets.remove( t );
             }
-            if( t == null ){
-                Globals.log.reportInternalError( "Worker " + worker + " replied to a ping that wasn't sent: ignoring" );
-            }
-            else {
-                long pingTime = t.getSendTime()-receiveTime;
-                synchronized( pingTargets ){
-                    pingTargets.remove( t );
-                }
-                synchronized( workers ){
-                    workers.subscribeWorker( worker, pingTime-benchmarkTime, m.getBenchmarkScore() );
-                    workers.notifyAll();
-                }
+            synchronized( workers ){
+                workers.subscribeWorker( worker, pingTime-benchmarkTime, m.getBenchmarkScore() );
+                System.out.println( "A new worker " + worker + " has arrived" );
+                workers.notifyAll();
             }
         }
+    }
 
-        /**
-         * A (presumably unregistered) worker has sent us a message asking for work.
-         * 
-         * @param m The message to handle.
-         */
-        private void handleWorkRequestMessage( WorkRequestMessage m )
-        {
-            if( isStopped() ) {
-        	// If we're stopped, just ignore the message.
-        	return;
+    /**
+     * A (presumably unregistered) worker has sent us a message asking for work.
+     * 
+     * @param m The message to handle.
+     */
+    private void handleWorkRequestMessage( WorkRequestMessage m )
+    {
+        ReceivePortIdentifier worker = m.getPort();
+        long now = System.nanoTime();
+        if( Settings.traceWorkerProgress ){
+            Globals.log.reportProgress( "Received work request message " + m + " from worker " + worker + " at " + Service.formatNanoseconds(now) );
+        }
+        PingTarget t = new PingTarget( worker, now );
+        synchronized( pingTargets ){
+            pingTargets.add( t );
+        }
+        PingMessage msg = new PingMessage( receivePort.identifier() );
+        if( Settings.traceWorkerProgress ){
+            Globals.log.reportProgress( "Sending ping message " + msg + " to worker " + worker );
+        }            
+        try {
+            sendPort.send( msg, worker );
+            if( Settings.traceNodes ) {
+                Globals.tracer.traceSentMessage( msg );
             }
-            ReceivePortIdentifier worker = m.getPort();
-            long now = System.nanoTime();
-            if( Settings.traceWorkerProgress ){
-                Globals.log.reportProgress( "Received work request message " + m + " from worker " + worker + " at " + Service.formatNanoseconds(now) );
-            }
-            PingTarget t = new PingTarget( worker, now );
+        }
+        catch( IOException x ){
             synchronized( pingTargets ){
-                pingTargets.add( t );
+                pingTargets.remove( t );
             }
-            PingMessage msg = new PingMessage( receivePort.identifier() );
-            if( Settings.traceWorkerProgress ){
-                Globals.log.reportProgress( "Sending ping message " + msg + " to worker " + worker );
-            }            
-            try {
-                sendPort.send( msg, worker );
-                if( Settings.traceNodes ) {
-                    Globals.tracer.traceSentMessage( msg );
-                }
-            }
-            catch( IOException x ){
-                synchronized( pingTargets ){
-                    pingTargets.remove( t );
-                }
-                Globals.log.reportError( "Cannot send ping message to worker " + worker );
-                x.printStackTrace( Globals.log.getPrintStream() );
-            }
+            Globals.log.reportError( "Cannot send ping message to worker " + worker );
+            x.printStackTrace( Globals.log.getPrintStream() );
         }
+    }
 
-	/**
-	 * Handles message <code>msg</code> from worker.
-	 * @param p The port this was received on.
-	 * @param msg The message we received.
-	 */
-	@Override
-	public void packetReceived( PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg )
-	{
-	    if( Settings.traceWorkerProgress ){
-	        Globals.log.reportProgress( "Master: Received message " + msg );
-	    }
-	    if( Settings.traceNodes ) {
-		Globals.tracer.traceReceivedMessage( msg );
-	    }
-	    if( msg instanceof JobResultMessage ) {
-		JobResultMessage result = (JobResultMessage) msg;
-	
-		handleJobResultMessage(result);
-	    }
-	    else if( msg instanceof WorkRequestMessage ) {
-		WorkRequestMessage m = (WorkRequestMessage) msg;
-	
-		handleWorkRequestMessage( m );
-	    }
-	    else if( msg instanceof PingReplyMessage ) {
-		PingReplyMessage m = (PingReplyMessage) msg;
-	
-		handlePingReplyMessage(m);
-	    }
-	    else if( msg instanceof WorkerResignMessage ) {
-		WorkerResignMessage m = (WorkerResignMessage) msg;
-	
-		unsubscribeWorker( m.getPort() );
-	    }
-	    else {
-		Globals.log.reportInternalError( "the master should handle message of type " + msg.getClass() );
-	    }
-	}
+    /**
+     * Handles message <code>msg</code> from worker.
+     * @param p The port this was received on.
+     * @param msg The message we received.
+     */
+    @Override
+    public void packetReceived( PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg )
+    {
+        if( Settings.traceWorkerProgress ){
+            Globals.log.reportProgress( "Master: Received message " + msg );
+        }
+        if( Settings.traceNodes ) {
+            Globals.tracer.traceReceivedMessage( msg );
+        }
+        if( msg instanceof JobResultMessage ) {
+            JobResultMessage result = (JobResultMessage) msg;
+
+            handleJobResultMessage(result);
+        }
+        else if( msg instanceof WorkRequestMessage ) {
+            WorkRequestMessage m = (WorkRequestMessage) msg;
+
+            handleWorkRequestMessage( m );
+        }
+        else if( msg instanceof PingReplyMessage ) {
+            PingReplyMessage m = (PingReplyMessage) msg;
+
+            handlePingReplyMessage(m);
+        }
+        else if( msg instanceof WorkerResignMessage ) {
+            WorkerResignMessage m = (WorkerResignMessage) msg;
+
+            unsubscribeWorker( m.getPort() );
+        }
+        else {
+            Globals.log.reportInternalError( "the master should handle message of type " + msg.getClass() );
+        }
     }
 
     /** Creates a new master instance.
@@ -198,10 +184,10 @@ public class Master extends Thread {
     {
         super( "Master" );
         setDaemon(false);
-        
+
         completionListener = l;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
-        receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, new MessageHandler() );
+        receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
         receivePort.enable();
     }
 
@@ -226,12 +212,18 @@ public class Master extends Thread {
 
     synchronized void setStopped()
     {
-	stopped = true;
+        stopped = true;
+        synchronized( queue ) {
+            queue.notifyAll();
+        }
+        synchronized( activeJobs ) {
+            activeJobs.notifyAll();
+        }
     }
 
     private synchronized boolean isStopped()
     {
-	return stopped;
+        return stopped;
     }
 
     /**
@@ -245,6 +237,7 @@ public class Master extends Thread {
             queue.add( j );
             queue.notifyAll();
         }
+        System.out.println( "Submitted job " + j + " to master" );
     }
 
     /**
@@ -253,7 +246,7 @@ public class Master extends Thread {
      */
     public synchronized void setCompletionListener( CompletionListener l )
     {
-	completionListener = l;
+        completionListener = l;
     }
 
     /**
@@ -262,12 +255,12 @@ public class Master extends Thread {
      */
     private boolean areWaitingJobs()
     {
-	boolean res;
-	
-	synchronized( queue ) {
-	    res = !queue.isEmpty();
-	}
-	return res;
+        boolean res;
+
+        synchronized( queue ) {
+            res = !queue.isEmpty();
+        }
+        return res;
     }
 
     /** Runs this master. */
@@ -275,6 +268,7 @@ public class Master extends Thread {
     public void run()
     {
         System.out.println( "Starting master thread" );
+        // FIXME: remove this stuff
         while( true ){
             System.out.println( "Next round for master" );
             if( !areWaitingJobs() ) {
@@ -287,6 +281,7 @@ public class Master extends Thread {
                 try {
                     // There is nothing to do; Wait for new queue entries.
                     synchronized( queue ){
+                        System.out.println( "Master: waiting for new jobs in queue" );
                         queue.wait();
                     }
                 } catch (InterruptedException e) {
@@ -304,6 +299,7 @@ public class Master extends Thread {
                         // There is nothing to do; Wait for workers to complete
                         // or new workers.
                         synchronized( workers ){
+                            System.out.println( "Master: waiting for a ready worker" );
                             workers.wait( sleepTime/1000000 );
                         }
                     } catch (InterruptedException e) {
@@ -362,15 +358,15 @@ public class Master extends Thread {
                 }
             }
         }
-	try {
-	    receivePort.close();
-	}
-	catch( IOException x ) {
-	    // Nothing we can do about it.
-	}
+        try {
+            receivePort.close();
+        }
+        catch( IOException x ) {
+            // Nothing we can do about it.
+        }
         System.out.println( "Ending master thread" );
     }
-    
+
     /**
      * We know the given ibis has disappeared from the computation.
      * Make sure we don't talk to it.
@@ -386,7 +382,7 @@ public class Master extends Thread {
      * @param theIbis The ibis that has joined.
      */
     public void addIbis( IbisIdentifier theIbis ) {
-	// FIXME: implement this.
+        // FIXME: implement this.
     }
 
     /** Returns the identifier of (the receive port of) this worker.
@@ -404,18 +400,19 @@ public class Master extends Thread {
      * this method is only safe for local workers.
      * @param identifier The worker.
      */
-    public void waitForSubscription(ReceivePortIdentifier identifier) {
-	while( true ) {
-	    synchronized( workers ) {
-		if( workers.contains( identifier ) ) {
-		    return;
-		}
-		try {
-		    workers.wait();
-		} catch (InterruptedException e) {
-		    // Ignore.
-		}
-	    }
-	}
+    public void waitForSubscription(ReceivePortIdentifier identifier)
+    {
+        while( true ) {
+            synchronized( workers ) {
+                if( workers.contains( identifier ) ) {
+                    return;
+                }
+                try {
+                    workers.wait();
+                } catch (InterruptedException e) {
+                    // Ignore.
+                }
+            }
+        }
     }
 }
