@@ -103,7 +103,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         WorkerResignMessage msg = new WorkerResignMessage( receivePort.identifier() );
         sendPort.send(msg, master);
         if( Settings.traceNodes ) {
-            Globals.tracer.traceSentMessage(msg);
+            Globals.tracer.traceSentMessage( msg, master );
         }
     }
 
@@ -133,9 +133,9 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         ReceivePortIdentifier master = msg.getMaster();
         PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), benchmarkScore, benchmarkTime );
         try {
-            sendPort.send(m, master);
+            sendPort.send( m, master );
             if( Settings.traceNodes ) {
-                Globals.tracer.traceSentMessage(m);
+                Globals.tracer.traceSentMessage( m, receivePort.identifier() );
             }
         }
         catch( IOException x ){
@@ -155,7 +155,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             Globals.log.reportProgress( "Worker: received message " + msg );
         }
         if( Settings.traceNodes ) {
-            Globals.tracer.traceReceivedMessage( msg );
+            Globals.tracer.traceReceivedMessage( msg, p.identifier() );
         }
         if( msg instanceof RunJobMessage ){
             RunJobMessage runJobMessage = (RunJobMessage) msg;
@@ -203,7 +203,8 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             WorkRequestMessage msg = new WorkRequestMessage( receivePort.identifier() );
             sendPort.send( msg, m, Globals.masterReceivePortName );
             if( Settings.traceNodes ) {
-                Globals.tracer.traceSentMessage(msg);
+                // FIXME: compute a receive port identifier for this one.
+                Globals.tracer.traceSentMessage( msg, null );
             }
         }
         catch( IOException x ){
@@ -316,7 +317,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime );
             sendPort.send( msg, jobMessage.getResultPort() );
             if( Settings.traceNodes ) {
-                Globals.tracer.traceSentMessage( msg );
+                Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
             }
             System.out.println( "Returned job result " + r + " for job "  + jobMessage );
         }

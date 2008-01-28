@@ -10,7 +10,8 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
     /** */
     private static final long serialVersionUID = 2246454357626562870L;
     final long time;			// When.
-    final ReceivePortIdentifier source;	// Where.
+    final ReceivePortIdentifier source;	// From where
+    final ReceivePortIdentifier dest;   // To where.
     final Type type;		// What.
     final boolean sent;		// True: sent, false: received
     final long id;
@@ -57,10 +58,11 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
 	}
     }
     
-    TraceEvent( long time, ReceivePortIdentifier site, Type type, boolean sent, long id )
+    TraceEvent( long time, ReceivePortIdentifier source, ReceivePortIdentifier dest, Type type, boolean sent, long id )
     {
 	this.time = time;
-	this.source = site;
+	this.source = source;
+        this.dest = dest;
 	this.type = type;
 	this.sent = sent;
 	this.id = id;
@@ -71,18 +73,19 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
      * @param startTime 
      * 
      */
-    public void print(long startTime, HashMap<ReceivePortIdentifier, Integer> sourceMap)
+    public void print( long startTime, HashMap<ReceivePortIdentifier, Integer> sourceMap )
     {
         int src = sourceMap.get( source );
         if( sent ){
-            System.out.println( Service.formatNanoseconds(time-startTime) + " sent '" + type.getDescription() + "'  from P" + src + " id=" + id );
+            System.out.println( Service.formatNanoseconds(time-startTime) + " sent '" + type.getDescription() + "' from P" + src + " id=" + id );
         }
         else {
-            System.out.println( Service.formatNanoseconds(time-startTime) + " received '" + type.getDescription() + "'  from P" + src + " id=" + id );
+            System.out.println( Service.formatNanoseconds(time-startTime) + " received '" + type.getDescription() + "' from P" + src + " id=" + id );
         }
     }
 
-    public int compareTo(TraceEvent other) {
+    public int compareTo( TraceEvent other )
+    {
         if( this.time<other.time ){
             return -1;
         }

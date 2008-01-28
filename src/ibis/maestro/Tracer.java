@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.ipl.ReceivePortIdentifier;
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -60,9 +62,9 @@ public class Tracer {
      * Given a message that has been sent, write an entry to the trace file.
      * @param msg The message that was sent.
      */
-    public void traceSentMessage(Message msg )
+    public void traceSentMessage(Message msg, ReceivePortIdentifier dest )
     {
-	TraceEvent e = msg.buildTraceEvent( true );
+	TraceEvent e = msg.buildSendTraceEvent( dest );
 	log( e );
     }
 
@@ -71,9 +73,9 @@ public class Tracer {
      * Given a message that has been received, write an entry to the trace file.
      * @param msg The message that was received.
      */
-    public void traceReceivedMessage(Message msg )
+    public void traceReceivedMessage(Message msg, ReceivePortIdentifier dest )
     {
-	TraceEvent e = msg.buildTraceEvent( false );
+	TraceEvent e = msg.buildReceiveTraceEvent( dest );
 	log( e );
     }
 }

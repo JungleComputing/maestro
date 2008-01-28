@@ -125,7 +125,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         try {
             sendPort.send( msg, worker );
             if( Settings.traceNodes ) {
-                Globals.tracer.traceSentMessage( msg );
+                Globals.tracer.traceSentMessage( msg, worker );
             }
         }
         catch( IOException x ){
@@ -149,7 +149,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
             Globals.log.reportProgress( "Master: received message " + msg );
         }
         if( Settings.traceNodes ) {
-            Globals.tracer.traceReceivedMessage( msg );
+            Globals.tracer.traceReceivedMessage( msg, p.identifier() );
         }
         if( msg instanceof JobResultMessage ) {
             JobResultMessage result = (JobResultMessage) msg;
@@ -324,7 +324,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                     try {
                         sendPort.send( msg, worker.getPort() );
                         if( Settings.traceNodes ) {
-                            Globals.tracer.traceSentMessage( msg );
+                            Globals.tracer.traceSentMessage( msg, worker.getPort() );
                         }
                     } catch (IOException e) {
                         // Try to put the paste back in the tube.

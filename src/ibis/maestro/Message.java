@@ -42,9 +42,19 @@ public abstract class Message implements Serializable {
      * @param sent True iff this is a sent event.
      * @return The constructed trace event.
      */
-    public TraceEvent buildTraceEvent( boolean sent )
+    public TraceEvent buildSendTraceEvent( ReceivePortIdentifier dest )
     {
-	return new TraceEvent( System.nanoTime(), source, getMessageType(), sent, id );
+	return new TraceEvent( System.nanoTime(), source, dest, getMessageType(), true, id );
+    }
+
+    /** Build a trace event for this message.
+     * 
+     * @param sent True iff this is a sent event.
+     * @return The constructed trace event.
+     */
+    public TraceEvent buildReceiveTraceEvent( ReceivePortIdentifier dest )
+    {
+        return new TraceEvent( System.nanoTime(), source, dest, getMessageType(), false, id );
     }
 
     protected abstract TraceEvent.Type getMessageType();
