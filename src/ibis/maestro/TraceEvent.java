@@ -75,15 +75,24 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
      */
     public void print( long startTime, HashMap<ReceivePortIdentifier, Integer> sourceMap )
     {
-        int src = sourceMap.get( source );
+        int srcNo = sourceMap.get( source );
+        int destNo = sourceMap.get( dest );
         if( sent ){
-            System.out.println( Service.formatNanoseconds(time-startTime) + " sent '" + type.getDescription() + "' from P" + src + " id=" + id );
+            System.out.println( Service.formatNanoseconds(time-startTime) + " sent '" + type.getDescription() + "' P" + srcNo + "->P" + destNo + " id=" + id );
         }
         else {
-            System.out.println( Service.formatNanoseconds(time-startTime) + " received '" + type.getDescription() + "' from P" + src + " id=" + id );
+            System.out.println( Service.formatNanoseconds(time-startTime) + " received '" + type.getDescription() + "' P" + srcNo + "->P" + destNo + " id=" + id );
         }
     }
 
+    /**
+     * Compares this trace event to another.
+     * We order the events on their moment of occurrence,
+     * or on their id number in the unlikely event that they
+     * have the same tine.
+     * @param other The other event to 
+     * @return The comparison result: 1: this event is larger, -1: this event is smaller, 0: both are equal.
+     */
     public int compareTo( TraceEvent other )
     {
         if( this.time<other.time ){

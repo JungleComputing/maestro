@@ -61,6 +61,7 @@ public class Tracer {
     /**
      * Given a message that has been sent, write an entry to the trace file.
      * @param msg The message that was sent.
+     * @param dest The destination of this message.
      */
     public void traceSentMessage(Message msg, ReceivePortIdentifier dest )
     {
@@ -72,6 +73,7 @@ public class Tracer {
     /**
      * Given a message that has been received, write an entry to the trace file.
      * @param msg The message that was received.
+     * @param dest The destination of this message.
      */
     public void traceReceivedMessage(Message msg, ReceivePortIdentifier dest )
     {

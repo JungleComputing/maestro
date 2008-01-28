@@ -16,21 +16,25 @@ import java.util.PriorityQueue;
  */
 public class ProcessTraces {
     private static PriorityQueue<TraceEvent> events = new PriorityQueue<TraceEvent>();
-    private static int sourceNo = 0;
-    private static HashMap<ReceivePortIdentifier, Integer> sourceMap = new HashMap<ReceivePortIdentifier,Integer>();
+    private static int portNo = 0;
+    private static HashMap<ReceivePortIdentifier, Integer> portMap = new HashMap<ReceivePortIdentifier,Integer>();
+
+    private static void registerPort( ReceivePortIdentifier p )
+    {
+	if( p != null && !portMap.containsKey( p ) ){
+            portMap.put( p, portNo++ );
+        }
+    }
 
     private static void registerEvent( TraceEvent e )
     {
-        ReceivePortIdentifier src = e.source;
-        
-        if( !sourceMap.containsKey( src ) ){
-            sourceMap.put( src, sourceNo++ );
-        }
+        registerPort( e.source );
+        registerPort( e.dest );
     }
     
     private int getSourceID( ReceivePortIdentifier src )
     {
-        return sourceMap.get( src );
+        return portMap.get( src );
     }
 
     private static void readFile( String fnm )
@@ -52,7 +56,7 @@ public class ProcessTraces {
 	    System.err.println( "Cannot load trace file " + fnm + ": " + e.getLocalizedMessage() );
 	}
 	catch( ClassNotFoundException e ){
-	    System.err.println( "Cannot load trace file " + fnm + ": " + e.getLocalizedMessage() );
+	    System.err.println( "Cannot load trace file '" + fnm + "': " + e.getLocalizedMessage() );
 	}		
 
     }
@@ -62,7 +66,7 @@ public class ProcessTraces {
         long startTime = 0L;
 	while( !events.isEmpty() ) {
 	    TraceEvent e = events.poll();
-	    e.print( startTime, sourceMap );
+	    e.print( startTime, portMap );
 	}
     }
 

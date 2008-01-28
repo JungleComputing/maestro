@@ -35,7 +35,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
 
     private void handleJobResultMessage( JobResultMessage result )
     {
-        long id = result.jobid;    // The identifier of the job, as handed out by us.
+        final long id = result.jobid;    // The identifier of the job, as handed out by us.
 
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Received a job result " + result );
@@ -46,7 +46,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
             return;
         }
         if( completionListener != null ) {
-            completionListener.jobCompleted( e.getJob(), result.getResult() );
+            completionListener.jobCompleted( e.getJob(), result.result );
         }
         WorkerInfo worker = e.getWorker();
         long now = System.nanoTime();

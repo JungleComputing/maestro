@@ -15,6 +15,12 @@ class WorkerInfo {
     private long computeTime;
     private long jobStartTime;    // The time of the most recent job start.
 
+    /** How many jobs do we have on this worker at the moment? */
+    private int outstandingJobs;
+    
+    /** How many work threads does this worker have? */
+    private int workThreads;
+
     WorkerInfo( ReceivePortIdentifier port, double benchmarkScore, long roundTripTime, long computeTime ){
         this.port = port;
         this.benchmarkScore = benchmarkScore;

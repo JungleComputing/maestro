@@ -39,7 +39,7 @@ public abstract class Message implements Serializable {
 
     /** Build a trace event for this message.
      * 
-     * @param sent True iff this is a sent event.
+     * @param dest The destination of this message.
      * @return The constructed trace event.
      */
     public TraceEvent buildSendTraceEvent( ReceivePortIdentifier dest )
@@ -49,7 +49,7 @@ public abstract class Message implements Serializable {
 
     /** Build a trace event for this message.
      * 
-     * @param sent True iff this is a sent event.
+     * @param dest The destination of this message.
      * @return The constructed trace event.
      */
     public TraceEvent buildReceiveTraceEvent( ReceivePortIdentifier dest )

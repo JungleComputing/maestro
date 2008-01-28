@@ -19,7 +19,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private final WorkThread workThreads[] = new WorkThread[numberOfProcessors];
-    private boolean stopped;
+    private boolean stopped = false;
     private ReceivePortIdentifier exclusiveMaster = null;
 
     /**
@@ -30,25 +30,20 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      */
     public Worker( Ibis ibis, Master master ) throws IOException
     {
-        super( "Worker" );
-        setDaemon(false);
+        super( "Worker" );   // Create a thread with a name.
+        setDaemon( false );
         synchronized( unusedNeighbors ){
             // Add yourself to the list of neighbors.
             unusedNeighbors.add( ibis.identifier() );
         }
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
-        receivePort.enable();
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         for( int i=0; i<numberOfProcessors; i++ ) {
             WorkThread t = new WorkThread( this, master );
             workThreads[i] = t;
             t.start();
         }
-    }
-
-    ReceivePortIdentifier identifier()
-    {
-        return receivePort.identifier();
+        receivePort.enable();   // We're open for business.
     }
 
     private synchronized boolean isStopped()
@@ -60,7 +55,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      * Returns the identifier of the job submission port of this worker.
      * @return The port identifier.
      */
-    public ReceivePortIdentifier getReceivePort()
+    public ReceivePortIdentifier identifier()
     {
         return receivePort.identifier();
     }
@@ -69,12 +64,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     {
         IbisIdentifier res;
         synchronized( unusedNeighbors ){
-            if( unusedNeighbors.isEmpty() ){
-                res = null;
-            }
-            else {
-                res = unusedNeighbors.removeFirst();
-            }
+            res = unusedNeighbors.pollFirst();
         }
         return res;
     }

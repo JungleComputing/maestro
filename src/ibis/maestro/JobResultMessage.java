@@ -11,12 +11,10 @@ import ibis.ipl.ReceivePortIdentifier;
 class JobResultMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
-    private final JobReturn result;
-    long jobid;   // The identifier of the job
+    final JobReturn result;
+    final long jobid;   // The identifier of the job
     private long computeTime;  // The time it took the worker, from queue entry to job completion.
 
-    JobReturn getResult() { return result; }
-    long getId() { return id; }
     long getComputeTime() { return computeTime; }
 
     JobResultMessage( ReceivePortIdentifier src, JobReturn r, long jobid, long computeTime )
