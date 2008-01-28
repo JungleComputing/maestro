@@ -1,9 +1,12 @@
 package ibis.maestro;
 
+import ibis.ipl.ReceivePortIdentifier;
+
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.util.HashMap;
 import java.util.PriorityQueue;
 
 /** Process trace files to generate a coherent time trace.
@@ -13,6 +16,22 @@ import java.util.PriorityQueue;
  */
 public class ProcessTraces {
     private static PriorityQueue<TraceEvent> events = new PriorityQueue<TraceEvent>();
+    private static int sourceNo = 0;
+    private static HashMap<ReceivePortIdentifier, Integer> sourceMap = new HashMap<ReceivePortIdentifier,Integer>();
+
+    private static void registerEvent( TraceEvent e )
+    {
+        ReceivePortIdentifier src = e.source;
+        
+        if( !sourceMap.containsKey( src ) ){
+            sourceMap.put( src, sourceNo++ );
+        }
+    }
+    
+    private int getSourceID( ReceivePortIdentifier src )
+    {
+        return sourceMap.get( src );
+    }
 
     private static void readFile( String fnm )
     {
@@ -25,6 +44,7 @@ public class ProcessTraces {
 		    break;
 		}
 		events.add( res );
+                registerEvent( res );
 	    }
 	    in.close();
 	}
@@ -39,9 +59,10 @@ public class ProcessTraces {
 
     private static void printEvents()
     {
+        long startTime = 0L;
 	while( !events.isEmpty() ) {
 	    TraceEvent e = events.poll();
-	    e.print();
+	    e.print( startTime, sourceMap );
 	}
     }
 

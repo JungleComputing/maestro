@@ -2,7 +2,7 @@ package ibis.maestro;
 
 /** A Maestro job that multiplies the array of values it is given. */
 public class MultiplyJob implements Job {
-    private final int BLOCK_SIZE = 1000;
+    private static final int BLOCK_SIZE = 1000;
     private final double values[];
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;

@@ -3,9 +3,10 @@ package ibis.maestro;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 /** An event in the trace of a run. */
-public class TraceEvent implements Serializable {
+public class TraceEvent implements Serializable, Comparable<TraceEvent> {
     /** */
     private static final long serialVersionUID = 2246454357626562870L;
     final long time;			// When.
@@ -66,11 +67,34 @@ public class TraceEvent implements Serializable {
     }
 
     /** Print this trace event.
+     * @param sourceMap 
+     * @param startTime 
      * 
      */
-    public void print()
+    public void print(long startTime, HashMap<ReceivePortIdentifier, Integer> sourceMap)
     {
-	String action = sent?"Sent":"Received";
-	System.out.println( Service.formatNanoseconds(time) + " " + action + " " + type.getDescription() + " from " + source + " id=" + id );
+        int src = sourceMap.get( source );
+        if( sent ){
+            System.out.println( Service.formatNanoseconds(time-startTime) + " sent '" + type.getDescription() + "'  from P" + src + " id=" + id );
+        }
+        else {
+            System.out.println( Service.formatNanoseconds(time-startTime) + " received '" + type.getDescription() + "'  from P" + src + " id=" + id );
+        }
+    }
+
+    public int compareTo(TraceEvent other) {
+        if( this.time<other.time ){
+            return -1;
+        }
+        if( this.time>other.time ){
+            return 1;
+        }
+        if( this.id<other.id ){
+            return -1;
+        }
+        if( this.id>other.id ){
+            return 1;
+        }
+        return 0;
     }
 }
