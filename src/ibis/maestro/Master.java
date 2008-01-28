@@ -233,7 +233,8 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
      * so jobs may not be executed in chronological order.
      * @param j The job to add to the queue.
      */
-    public void submit( Job j ){
+    public void submit( Job j )
+    {
         synchronized( queue ) {
             queue.add( j );
             queue.notifyAll();
@@ -374,7 +375,8 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
      * Make sure we don't talk to it.
      * @param theIbis The ibis that was gone.
      */
-    public void removeIbis(IbisIdentifier theIbis) {
+    public void removeIbis(IbisIdentifier theIbis)
+    {
         workers.removeIbis( theIbis );
         // FIXME: reschedule any outstanding jobs on this ibis.
     }
@@ -383,7 +385,8 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
      * A new ibis has joined the computation.
      * @param theIbis The ibis that has joined.
      */
-    public void addIbis( IbisIdentifier theIbis ) {
+    public void addIbis( IbisIdentifier theIbis )
+    {
         // FIXME: implement this.
     }
 

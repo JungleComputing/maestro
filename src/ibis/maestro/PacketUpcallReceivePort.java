@@ -28,7 +28,8 @@ public class PacketUpcallReceivePort<T extends Serializable> implements MessageU
      * @param name The name of the port.
      * @throws IOException
      */
-    PacketUpcallReceivePort( Ibis ibis, String name, PacketReceiveListener<T> listener ) throws IOException{
+    PacketUpcallReceivePort( Ibis ibis, String name, PacketReceiveListener<T> listener ) throws IOException
+    {
 	this.listener = listener;
         port = ibis.createReceivePort(portType, name, this );
     }
@@ -40,7 +41,8 @@ public class PacketUpcallReceivePort<T extends Serializable> implements MessageU
      * @throws ClassNotFoundException 
      */
     @SuppressWarnings("unchecked")
-    public void upcall(ReadMessage msg) throws IOException, ClassNotFoundException {
+    public void upcall(ReadMessage msg) throws IOException, ClassNotFoundException
+    {
         T data = (T) msg.readObject();
         //msg.finish();
         listener.packetReceived( this, data );
@@ -50,7 +52,8 @@ public class PacketUpcallReceivePort<T extends Serializable> implements MessageU
      * Returns the identifier of this port.
      * @return The port identifier.
      */
-    public ReceivePortIdentifier identifier() {
+    public ReceivePortIdentifier identifier()
+    {
         return port.identifier();
     }
 
@@ -58,7 +61,8 @@ public class PacketUpcallReceivePort<T extends Serializable> implements MessageU
      * Close this port.
      * @throws IOException
      */
-    public void close() throws IOException {
+    public void close() throws IOException
+    {
 	port.close();
     }
 

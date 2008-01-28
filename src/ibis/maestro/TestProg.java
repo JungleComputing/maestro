@@ -13,7 +13,8 @@ public class TestProg {
     private Node node;
     private static final int JOBCOUNT = 12;
 
-    private class Listener implements CompletionListener {
+    private class Listener implements CompletionListener
+    {
 
 	/** Handle the completion of job 'j': the result is 'result'.
 	 * @param j The job that was completed.
@@ -33,7 +34,8 @@ public class TestProg {
     }
 
     @SuppressWarnings("synthetic-access")
-    private void run() throws Exception {
+    private void run() throws Exception
+    {
         // Create an ibis instance.
         Properties serverProperties = new Properties();
         //serverProperties.setProperty( "ibis.server.port", "12642" );
@@ -53,7 +55,8 @@ public class TestProg {
      * 
      * @param args The list of command-line parameters.
      */
-    public static void main( String args[] ) {
+    public static void main( String args[] )
+    {
 	System.out.println( "Running on platform " + Service.getPlatformVersion() );
 	try {
             new TestProg().run();            

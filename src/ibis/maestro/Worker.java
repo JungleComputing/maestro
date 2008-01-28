@@ -51,7 +51,8 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         return receivePort.identifier();
     }
 
-    private synchronized boolean isStopped() {
+    private synchronized boolean isStopped()
+    {
         return stopped;
     }
 
@@ -148,7 +149,8 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      * @param p The port on which the packet was received.
      * @param msg The job we received and will put in the queue.
      */
-    public void packetReceived(PacketUpcallReceivePort<MasterMessage> p, MasterMessage msg) {
+    public void packetReceived(PacketUpcallReceivePort<MasterMessage> p, MasterMessage msg)
+    {
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Worker: received message " + msg );
         }

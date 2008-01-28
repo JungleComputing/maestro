@@ -21,7 +21,8 @@ public class Tracer {
 	stream = openStream( file );
     }
 
-    private ObjectOutputStream openStream(File file) {
+    private ObjectOutputStream openStream(File file)
+    {
 	OutputStream fis;
 	try {
 	    fis = new FileOutputStream( file );

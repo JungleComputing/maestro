@@ -19,7 +19,8 @@ class JobResultMessage extends WorkerMessage {
     long getId() { return id; }
     long getComputeTime() { return computeTime; }
 
-    JobResultMessage( ReceivePortIdentifier src, JobReturn r, long jobid, long computeTime ){
+    JobResultMessage( ReceivePortIdentifier src, JobReturn r, long jobid, long computeTime )
+    {
 	super( src );
         this.result = r;
         this.jobid = jobid;

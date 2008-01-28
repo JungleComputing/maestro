@@ -23,7 +23,8 @@ public class PacketSendPort<T extends Serializable> {
     private static boolean USE_DISCONNECT = false;
     private final SendPort globalport;
 
-    PacketSendPort( Ibis ibis ) throws IOException {
+    PacketSendPort( Ibis ibis ) throws IOException
+    {
 	this.ibis = ibis;
 	globalport = ibis.createSendPort( portType );
     }
@@ -34,7 +35,8 @@ public class PacketSendPort<T extends Serializable> {
      * @param receiver The port to send it to.
      * @throws IOException Thrown if there is a communication error.
      */
-    public void send( T data, ReceivePortIdentifier receiver ) throws IOException {
+    public void send( T data, ReceivePortIdentifier receiver ) throws IOException
+    {
 	if( USE_DISCONNECT ) {
 	    globalport.connect(receiver);
 	    WriteMessage msg = globalport.newMessage();
@@ -59,7 +61,8 @@ public class PacketSendPort<T extends Serializable> {
      * @param portname The name of the port to send to.
      * @throws IOException Thrown if there is a communication error.
      */
-    public void send( T data, IbisIdentifier receiver, String portname ) throws IOException {
+    public void send( T data, IbisIdentifier receiver, String portname ) throws IOException
+    {
 	if( USE_DISCONNECT ) {
 	    ReceivePortIdentifier rp = globalport.connect( receiver, portname );
 	    WriteMessage msg = globalport.newMessage();

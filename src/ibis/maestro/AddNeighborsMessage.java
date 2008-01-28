@@ -18,7 +18,8 @@ public class AddNeighborsMessage extends MasterMessage {
      * @param source The source of this message.
      * @param l The list of new neighbor Ibises.
      */
-    public AddNeighborsMessage( ReceivePortIdentifier source, IbisIdentifier l[]) {
+    public AddNeighborsMessage( ReceivePortIdentifier source, IbisIdentifier l[])
+    {
 	super( source );
 	this.l = l;
     }
@@ -27,7 +28,8 @@ public class AddNeighborsMessage extends MasterMessage {
      * Returns the list of neighbors in this message.
      * @return The list of neighbors.
      */
-    public IbisIdentifier[] getNeighbors() {
+    public IbisIdentifier[] getNeighbors()
+    {
         return l;
     }
 
@@ -35,7 +37,8 @@ public class AddNeighborsMessage extends MasterMessage {
      * @return The string representation of this message.
      */
     @Override
-    public String toString(){
+    public String toString()
+    {
         String res = "AddNeighborsMessage[" ;
         boolean first = true;
 
