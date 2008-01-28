@@ -35,13 +35,10 @@ public class Tracer {
     /** Write a message to the log file. */
     void log( TraceEvent e )
     {
-	// FIXME: enable this again.
-	if( false ) {
-	    try {
-		stream.writeObject( e );
-	    } catch (IOException x ) {
-		System.err.println( "Cannot write to trace file" );
-	    }
+	try {
+	    stream.writeObject( e );
+	} catch (IOException x ) {
+	    System.err.println( "Cannot write to trace file" );
 	}
     }
     
@@ -50,6 +47,7 @@ public class Tracer {
     {
 	if( stream != null ) {
 	    try {
+		stream.writeObject( null );   // End-of-file marker
 		stream.close();
 	    } catch (IOException e) {
 		System.err.println( "Cannot close trace file" );
