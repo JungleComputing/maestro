@@ -45,10 +45,10 @@ public class WorkerList {
         }
         return sumMultipliers/workerCount;
     }
-    void subscribeWorker( ReceivePortIdentifier port, long pingTime, double benchmarkScore )
+    void subscribeWorker( ReceivePortIdentifier port, int workThreads, long pingTime, double benchmarkScore )
     {
         long computeTime = (long) (benchmarkScore*estimateMultiplier());
-        WorkerInfo worker = new WorkerInfo( port, benchmarkScore, pingTime+computeTime, computeTime );
+        WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime+computeTime, computeTime );
         synchronized( workers ){
             workers.add( worker );
         }
@@ -134,5 +134,35 @@ public class WorkerList {
     public boolean contains(ReceivePortIdentifier identifier) {
 	int i = searchWorker( workers, identifier );
 	return i>=0;
+    }
+
+    /**
+     * Register a job result in the info of the worker that handled it.
+     * @param result The job result.
+     * @param completionListener The completion listener that should be notified.
+     */
+    public void registerJobResult( JobResultMessage result, CompletionListener completionListener )
+    {
+	int ix = searchWorker( workers, result.source );
+	if( ix<0 ) {
+	    System.err.println( "Job result from unknown worker " + result.source );
+	    return;
+	}
+	WorkerInfo w = workers.elementAt(ix);
+	w.registerJobResult( result, completionListener );
+    }
+
+    /**
+     * Returns true iff all workers in our list are idle.
+     * @return True iff all workers in our list are idle.
+     */
+    public boolean areIdle()
+    {
+	for( WorkerInfo w: workers ) {
+	    if( !w.isIdle() ) {
+		return false;
+	    }
+	}
+	return true;
     }
 }

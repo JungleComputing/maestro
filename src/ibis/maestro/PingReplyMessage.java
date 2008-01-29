@@ -22,13 +22,17 @@ class PingReplyMessage extends WorkerMessage {
      */
     private long benchmarkTime;
 
+    /** The number of work threads of this worker. */
+    public final int workThreads;
+
     // FIXME: inline this.
     ReceivePortIdentifier getWorker() { return source; }
     double getBenchmarkScore() { return benchmarkScore; }
     long getBenchmarkTime() { return benchmarkTime; }
 
-    PingReplyMessage( ReceivePortIdentifier worker, double benchmarkScore, long benchmarkTime ){
+    PingReplyMessage( ReceivePortIdentifier worker, int workThreads, double benchmarkScore, long benchmarkTime ){
 	super( worker );
+	this.workThreads = workThreads;
         this.benchmarkScore = benchmarkScore;
         this.benchmarkTime = benchmarkTime;
     }

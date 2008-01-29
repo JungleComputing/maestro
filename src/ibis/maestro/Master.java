@@ -20,7 +20,6 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
     private final PriorityQueue<Job> queue = new PriorityQueue<Job>();
-    private final LinkedList<ActiveJob> activeJobs = new LinkedList<ActiveJob>();
     private final LinkedList<PingTarget> pingTargets = new LinkedList<PingTarget>();
     private CompletionListener completionListener;
     private boolean stopped = false;
@@ -35,27 +34,13 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
 
     private void handleJobResultMessage( JobResultMessage result )
     {
-        final long id = result.jobid;    // The identifier of the job, as handed out by us.
-
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Received a job result " + result );
         }
-        ActiveJob e = searchQueueEntry( id );
-        if( e == null ) {
-            Globals.log.reportInternalError( "ignoring reported result from job with unknown id " + id );
-            return;
-        }
-        if( completionListener != null ) {
-            completionListener.jobCompleted( e.getJob(), result.result );
-        }
-        WorkerInfo worker = e.getWorker();
-        long now = System.nanoTime();
-        worker.registerJobCompletionTime( now, result.getComputeTime() );
-        synchronized( activeJobs ) {
-            activeJobs.remove( e );
-            activeJobs.notifyAll();
-        }
-        System.out.println( "Master: retired job " + e );
+	synchronized( workers ) {
+	    workers.registerJobResult( result, completionListener );
+	    workers.notifyAll();
+	}
     }
 
     /**
@@ -74,6 +59,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         PingTarget t = null;
         long receiveTime = System.nanoTime();
         long benchmarkTime = m.getBenchmarkTime();
+        int workThreads = m.workThreads;
 
         // First, search for the worker in our list of
         // outstanding pings.
@@ -95,7 +81,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                 pingTargets.remove( t );
             }
             synchronized( workers ){
-                workers.subscribeWorker( worker, pingTime-benchmarkTime, m.getBenchmarkScore() );
+                workers.subscribeWorker( worker, workThreads, pingTime-benchmarkTime, m.getBenchmarkScore() );
                 System.out.println( "A new worker " + worker + " has arrived" );
                 workers.notifyAll();
             }
@@ -192,33 +178,14 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         receivePort.enable();
     }
 
-    /**
-     * Given a job identifier, returns the job queue entry with that id, or null.
-     * @param id The job identifier to search for.
-     * @return The JobQueueEntry of the job with this id, or null if there isn't one.
-     */
-    private ActiveJob searchQueueEntry( long id )
-    {
-        // Note that we blindly assume that there is only one entry with
-        // the given id. Reasonable because we hand out the ids ourselves...
-        synchronized( activeJobs ) {
-            for( ActiveJob e: activeJobs ) {
-                if( e.getId() == id ) {
-                    return e;
-                }
-            }
-        }
-        return null;
-    }
-
     synchronized void setStopped()
     {
         stopped = true;
         synchronized( queue ) {
             queue.notifyAll();
         }
-        synchronized( activeJobs ) {
-            activeJobs.notifyAll();
+        synchronized( workers ) {
+            workers.notifyAll();
         }
     }
 
@@ -314,13 +281,10 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                     synchronized( queue ) {
                         job = queue.remove();
                     }
-                    long startTime = System.nanoTime();
                     RunJobMessage msg = new RunJobMessage( job, receivePort.identifier() );
-                    ActiveJob j = new ActiveJob( job, msg.id, startTime, worker );
-                    synchronized( activeJobs ) {
-                        activeJobs.add( j );
+                    synchronized( workers ) {
+                	worker.registerJobStart( job, msg.id );
                     }
-                    worker.registerJobStartTime( startTime );
                     try {
                         sendPort.send( msg, worker.getPort() );
                         if( Settings.traceNodes ) {
@@ -331,9 +295,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                         synchronized( queue ){
                             queue.add( job );
                         }
-                        synchronized( activeJobs ){
-                            activeJobs.remove( j );
-                        }
+                        worker.retractJob( msg.id );
                         Globals.log.reportError( "Could not send job to " + worker + ": put toothpaste back in the tube" );
                         e.printStackTrace();
                         // We don't try to roll back job start time, since the worker
@@ -346,15 +308,13 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         // complete.
         System.out.println( "Master is stopping. Queue drained, waiting for outstanding jobs" );
         while( true ){
-            synchronized( activeJobs ){
-                if( activeJobs.isEmpty() ){
+            synchronized( workers ){
+                if( workers.areIdle() ){
                     // No outstanding jobs, we're done.
                     break;
                 }
                 try {
-                    // Wait for a change in the active jobs status.
-                    System.out.println( "Waiting for " + activeJobs.size() + " active jobs" );
-                    activeJobs.wait();
+                    workers.wait();
                 }
                 catch( InterruptedException x ){
                     // Ignore.

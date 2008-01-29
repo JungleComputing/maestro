@@ -121,7 +121,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         double benchmarkScore = msg.benchmarkResult();
         long benchmarkTime = System.nanoTime()-startTime;
         ReceivePortIdentifier master = msg.getMaster();
-        PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), benchmarkScore, benchmarkTime );
+        PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), workThreads.length, benchmarkScore, benchmarkTime );
         try {
             sendPort.send( m, master );
             if( Settings.traceNodes ) {
@@ -317,4 +317,5 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             x.printStackTrace( Globals.log.getPrintStream() );
         }
     }
+
 }

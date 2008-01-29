@@ -11,14 +11,12 @@ class ActiveJob implements Comparable<ActiveJob> {
     private final Job job;
     private final long id;
     private final long startTime;
-    private final WorkerInfo worker;
 
-    ActiveJob( Job job, long id, long startTime, WorkerInfo worker )
+    ActiveJob( Job job, long id, long startTime )
     {
         this.job = job;
         this.id = id;
         this.startTime = startTime;
-        this.worker = worker;
     }
 
     Job getJob() { return job; }
@@ -52,13 +50,6 @@ class ActiveJob implements Comparable<ActiveJob> {
     @Override
     public String toString() {
 	return "(ActiveJob id=" + id + ", job=" + job + ", start time " + Service.formatNanoseconds( startTime ) + ')';
-    }
-
-    /** Returns the worker this job belongs to.
-     * @return The worker of this job.
-     */
-    public WorkerInfo getWorker() {
-        return worker;
     }
     
     /** Returns the starting time in ns of this active job.
