@@ -66,63 +66,63 @@ class WorkerInfo {
         return ix;
     }
 
-    /**
-     * Given the current time, estimate the time interval before a new job should be submitted to this
-     * worker. We pass the current time to this method instead of looking at the clock ourselves to
-     * make the computations more predictable.
-     * @param now The current time.
-     * @return The estimated time in ns before a new job should be submitted to this worker.
-     */
-    public long estimateSubmissionTime( long now )
+    private long computeSubmitTime(long now)
     {
-        // Since we submit jobs before the previous one was completed, we may have more
-        // outstanding jobs on a worker than it has workers. To make sure we still can
-        // estimate the 
-        long completionInterval[] = new long[workThreads];
-        for( int ix=0; ix<workThreads; ix++ ){
-            completionInterval[ix] = Long.MIN_VALUE;
+        long completionTime[] = new long[workThreads];
+    
+        // For /n/ worker threads, we want the /n/th latest
+        // completion time. We compute this by maintaining
+        // an array of the /n/ latest completion times, and
+        // always replacing the lowest value by a higher one
+        // if appropriate.
+        // Note that we may arrive at a completion
+        // time that is in the past. That's ok, it just means
+        // that the result is still in transition. However, if
+        // we are past the estimated arrival time, the completion
+        // time is also adjusted.
+        //
+        // Also note that if there are less than /n/ active jobs,
+        // we in essence get a very early completion time.
+        // That's ok.
+        synchronized( activeJobs ) {
+    
+            for( ActiveJob j: activeJobs ) {
+        	int ix = indexOfLowest( completionTime );
+    
+        	long t = j.getCompletionTime( now );
+        	if( completionTime[ix]<t ) {
+        	    completionTime[ix] = t;
+        	}
+            }
         }
-        long overhead = roundTripTime-computeTime;
-
-        for( int i=0; i<activeJobs.size(); i++ ){
-            ActiveJob j = activeJobs.get( i );
-            
-            // Overwrite the current earliest completion time with the completion
-            // time of this job.
-            int ix = indexOfLowest( completionInterval );
-            long startTime = j.startTime;
-            long completionTime = Math.max( now, startTime + roundTripTime )-overhead/2;
-            completionInterval[ix] = completionTime;
-        }
-        if( activeJobs.size()<workThreads ){
-            return 0L;
-        }
-        // Now return the smallest completion interval in the current list.
-        int ix = indexOfLowest( completionInterval );
-        return completionInterval[ix];
+        int ix = indexOfLowest( completionTime );
+        // The time we should submit the job.
+        long submitTime = Math.max( now, completionTime[ix]-preCompletionInterval );
+        return submitTime;
     }
+
     /** 
      * Given the current time, estimate how long this worker would take to complete
-     * a job.
+     * a job, taking the current load of the worker into account.
      * @param now The current time in ns.
      * @return The completion time of this worker in ns.
      */
     public long getCompletionTime( long now )
     {
-        // FIXME: implement this correctly.
-        return now + computeTime;
+	long submitTime = computeSubmitTime(now);
+	return submitTime+roundTripTime;
     }
 
     /**
      * Returns the estimated time span, in ms, until this worker should
      * be send its next job.
      * @param now The current time in nanoseconds.
-     * @return The interval in ms to the next useful job submission.
+     * @return The interval in ns to the next useful job submission.
      */
     public long getBusyInterval( long now )
     {
-        // FIXME: implement this correctly.
-        return computeTime;
+	long submitTime = computeSubmitTime(now);
+	return submitTime-now;
     }
 
     /** Returns the current estimated multiplier from benchmark score
@@ -141,7 +141,6 @@ class WorkerInfo {
     public boolean hasIbis(IbisIdentifier ibis) {
         return port.ibisIdentifier().equals(ibis);
     }
-
 
     /**
      * Given a job identifier, returns the job queue entry with that id, or null.
@@ -206,18 +205,24 @@ class WorkerInfo {
      * @param job The job that was started.
      * @param id The id given to the job.
      * @param completionTime The estimated completion time of this job.
+     * @param arrivalTime The estimated arrival time of this job on the master.
      */
-    public void registerJobStart( Job job, long id, long completionTime )
+    public void registerJobStart( Job job, long id, long completionTime, long arrivalTime )
     {
         long startTime = System.nanoTime();
-        ActiveJob j = new ActiveJob( job, id, startTime, completionTime );
+        ActiveJob j = new ActiveJob( job, id, startTime, completionTime, arrivalTime );
 
         synchronized( activeJobs ) {
             activeJobs.add( j );
         }	
     }
 
-    public void retractJob(long id) {
+    /** Given a job id, retract it from the administration.
+     * For some reason we could not send this job to the worker.
+     * @param id The identifier of the job.
+     */
+    public void retractJob( long id )
+    {
         ActiveJob e = searchQueueEntry( id );
         if( e == null ) {
             Globals.log.reportInternalError( "ignoring job retraction for unknown id " + id );

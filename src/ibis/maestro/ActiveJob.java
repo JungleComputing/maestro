@@ -10,15 +10,25 @@ class ActiveJob implements Comparable<ActiveJob> {
     private static final long serialVersionUID = 1L;
     final Job job;
     final long id;
+    
+    /** The time this job was sent to the worker. */
     final long startTime;
-    final long completionTime;
+    
+    /** The estimated time this job will be completed, and
+     * the worker thread will be available for the next job.
+     */
+    private long completionTime;
+    
+    /** The estimated time this job will arrive back on this master. */
+    private long arrivalTime;
 
-    ActiveJob( Job job, long id, long startTime, long completionTime )
+    ActiveJob( Job job, long id, long startTime, long completionTime, long arrivalTime )
     {
         this.job = job;
         this.id = id;
         this.startTime = startTime;
         this.completionTime = completionTime;
+        this.arrivalTime = arrivalTime;
     }
 
     /**
@@ -51,16 +61,21 @@ class ActiveJob implements Comparable<ActiveJob> {
 	return "(ActiveJob id=" + id + ", job=" + job + ", start time " + Service.formatNanoseconds( startTime ) + ')';
     }
 
-    /** Given the estimate completion time of the previous job on the same worker,
-     * and given the current time, returns the number of ns from now it will take to complete
-     * this job.
-     * @param l
-     * @param now
-     * @return
+    /**
+     * Returns the estimated this job will no longer need a work thread.
+     * @param now The current time.
+     * @return The estimated completion time.
      */
-    public long estimateCompletionInterval(long l, long now) {
-        // TODO Auto-generated method stub
-        return 0;
+    public long getCompletionTime(long now) {
+	if( now>arrivalTime ) {
+	    // Our estimated arrival time was wrong.
+	    // We still assume the difference between
+	    // Completion and arrival time is correct,
+	    // but we essentially assume the job result
+	    // will arrive right now.
+	    return now-(arrivalTime-completionTime);
+	}
+	return completionTime;
     }
  
 }

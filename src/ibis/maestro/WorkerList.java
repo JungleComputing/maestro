@@ -92,9 +92,9 @@ public class WorkerList {
     }
 
     /**
-     * Returns the estimated time span, in ms, until the first worker should
+     * Returns the estimated time span, in ns, until the first worker should
      * be send its next job.
-     * @return The interval in ms to the next useful job submission.
+     * @return The interval in ns to the next useful job submission.
      */
     public long getBusyInterval() {
         long res = Long.MAX_VALUE;
