@@ -8,19 +8,18 @@ package ibis.maestro;
 class ActiveJob implements Comparable<ActiveJob> {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
-    private final Job job;
-    private final long id;
-    private final long startTime;
+    final Job job;
+    final long id;
+    final long startTime;
+    final long completionTime;
 
-    ActiveJob( Job job, long id, long startTime )
+    ActiveJob( Job job, long id, long startTime, long completionTime )
     {
         this.job = job;
         this.id = id;
         this.startTime = startTime;
+        this.completionTime = completionTime;
     }
-
-    Job getJob() { return job; }
-    long getId() { return id; }
 
     /**
      * Returns a comparison result for this queue entry compared
@@ -51,11 +50,17 @@ class ActiveJob implements Comparable<ActiveJob> {
     public String toString() {
 	return "(ActiveJob id=" + id + ", job=" + job + ", start time " + Service.formatNanoseconds( startTime ) + ')';
     }
-    
-    /** Returns the starting time in ns of this active job.
-     * @return The starting time.
+
+    /** Given the estimate completion time of the previous job on the same worker,
+     * and given the current time, returns the number of ns from now it will take to complete
+     * this job.
+     * @param l
+     * @param now
+     * @return
      */
-    public long getStartTime() {
-	return startTime;
+    public long estimateCompletionInterval(long l, long now) {
+        // TODO Auto-generated method stub
+        return 0;
     }
+ 
 }

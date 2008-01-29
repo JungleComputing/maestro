@@ -113,7 +113,8 @@ public class WorkerList {
      * Remove any workers on that ibis.
      * @param theIbis The ibis that was gone.
      */
-    public void removeIbis(IbisIdentifier theIbis) {
+    public void removeIbis(IbisIdentifier theIbis)
+    {
         synchronized( workers ){
             int ix = workers.size();
             while( ix>0 ){
@@ -131,7 +132,8 @@ public class WorkerList {
      * @param identifier The identifier to search for.
      * @return True iff we know the given worker.
      */
-    public boolean contains(ReceivePortIdentifier identifier) {
+    public boolean contains( ReceivePortIdentifier identifier )
+    {
 	int i = searchWorker( workers, identifier );
 	return i>=0;
     }
@@ -148,7 +150,7 @@ public class WorkerList {
 	    System.err.println( "Job result from unknown worker " + result.source );
 	    return;
 	}
-	WorkerInfo w = workers.elementAt(ix);
+	WorkerInfo w = workers.elementAt( ix );
 	w.registerJobResult( result, completionListener );
     }
 

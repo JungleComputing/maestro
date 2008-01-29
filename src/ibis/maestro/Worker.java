@@ -15,6 +15,8 @@ import java.util.LinkedList;
 public class Worker extends Thread implements WorkSource, PacketReceiveListener<MasterMessage> {
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
+    private long queueEmptyMoment = 0L;
+    private long queueEmptyInterval = 0L;
     private final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
     private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
@@ -106,6 +108,11 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     {
         msg.setStartTime( System.nanoTime() );
         synchronized( queue ) {
+            if( queueEmptyMoment>0 ){
+                // Compute a queue empty interval from this moment.
+                queueEmptyInterval = System.nanoTime() - queueEmptyMoment;
+                queueEmptyMoment = 0L;
+            }
             queue.add( msg );
             queue.notifyAll();
         }
@@ -271,6 +278,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             try {
                 synchronized( queue ) {
                     if( queue.isEmpty() ) {
+                        queueEmptyMoment = System.nanoTime();
                         if( isStopped() ) {
                             // No jobs in queue, and worker is stopped. Tell
                             // return null to indicate that there won't be further
@@ -303,8 +311,14 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     public void reportJobResult( RunJobMessage jobMessage, JobReturn r )
     {
         long computeTime = System.nanoTime()-jobMessage.getStartTime();
+        long interval;
+        synchronized( queue ){
+            interval = queueEmptyInterval;
+            queueEmptyInterval = 0L;
+        }
         try {
-            JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime );
+            // FIXME: fill in correct value.
+            JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime, interval, 0L );
             sendPort.send( msg, jobMessage.getResultPort() );
             if( Settings.traceNodes ) {
                 Globals.tracer.traceSentMessage( msg, receivePort.identifier() );

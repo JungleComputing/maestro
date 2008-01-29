@@ -283,7 +283,9 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                     }
                     RunJobMessage msg = new RunJobMessage( job, receivePort.identifier() );
                     synchronized( workers ) {
-                	worker.registerJobStart( job, msg.id );
+                        // FIXME: compute proper completion time.
+                        long completionTime = 0L;
+                	worker.registerJobStart( job, msg.id, completionTime );
                     }
                     try {
                         sendPort.send( msg, worker.getPort() );

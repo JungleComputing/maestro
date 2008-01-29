@@ -31,11 +31,6 @@ public class ProcessTraces {
         registerPort( e.source );
         registerPort( e.dest );
     }
-    
-    private int getSourceID( ReceivePortIdentifier src )
-    {
-        return portMap.get( src );
-    }
 
     private static void readFile( String fnm )
     {

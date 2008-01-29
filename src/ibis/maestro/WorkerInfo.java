@@ -9,20 +9,26 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
 class WorkerInfo {
+    /** The receive port of this worker. */
     private final ReceivePortIdentifier port;
-    
-    /** The time in seconds to do one iteration of a standard benchmark on this worker. */
-    private final double benchmarkScore;
-    private final LinkedList<ActiveJob> activeJobs = new LinkedList<ActiveJob>();
-    private long roundTripTime;   // Estimated time to complete a job.
-    private long computeTime;
-    private final long jobStartTime[];    // The time of the most recent job start of each thread.
-
-    /** How many jobs do we have on this worker at the moment? */
-    private int outstandingJobs;
     
     /** How many work threads does this worker have? */
     private final int workThreads;
+    
+    /** The time in seconds to do one iteration of a standard benchmark on this worker. */
+    private final double benchmarkScore;
+    
+    /** The active jobs of this worker. */
+    private final LinkedList<ActiveJob> activeJobs = new LinkedList<ActiveJob>();
+
+    /** Estimated time to complete a job, including communication. */
+    private long roundTripTime;
+    
+    /** Estimated time to complete a job, excluding communication. */
+    private long computeTime;
+    
+    /** Estimated interval, before one job completes, that we should submit a new job. In ns. */
+    private long preCompletionInterval;
 
     WorkerInfo( ReceivePortIdentifier port, int workThreads, double benchmarkScore, long roundTripTime, long computeTime ){
         this.port = port;
@@ -30,7 +36,6 @@ class WorkerInfo {
         this.benchmarkScore = benchmarkScore;
         this.roundTripTime = roundTripTime;
         this.computeTime = computeTime;
-        this.jobStartTime = new long[workThreads];
     }
 
     boolean hasId(ReceivePortIdentifier id )
@@ -38,50 +43,64 @@ class WorkerInfo {
         return port.equals( id );
     }
 
-    ReceivePortIdentifier getPort() {
+    ReceivePortIdentifier getPort()
+    {
         return port;
     }
-    
-    /** The start time of the most recent job.
-     * @param t The start time.
+
+    /** Given an array, return the index of the lowest value in
+     * the index. We blindly assume that the array is at least 1
+     * element long.
+     * @param val The array of values.
+     * @return The index of the lowest values.
      */
-    void registerJobStartTime( long t )
+    private static int indexOfLowest( long val[] )
     {
-	synchronized( this ) {
-	    // Shift down all completion times.
-	    // jobStartTime is a FIFO with the size of
-	    // the number of work threads of this worker.
-	    // Inherently, jobStartTime[0] will be the oldest
-	    // start time, and other entries are increasingly
-	    // recent. We blindly assume that a newly started
-	    // job replaces a job on the work thread with the oldest
-	    // start time.
-	    int i = 0;
-	    while( (i+1)<workThreads ) {
-		jobStartTime[i] = jobStartTime[i+1];
-		i++;
-	    }
-	    jobStartTime[i] = t;
-	    outstandingJobs++;
-	}
+        int ix = 0;
+        
+        for( int i=1; i<val.length; i++ ){
+            if( val[i]<val[ix] ){
+                ix = i;
+            }
+        }
+        return ix;
     }
 
-    /** Register job completion time, and also handle the
-     * reported computation time.
-     * @param t The time at which the completion message was received.
-     * @param newComputeTime The compute time as reported by the worker.
+    /**
+     * Given the current time, estimate the time interval before a new job should be submitted to this
+     * worker. We pass the current time to this method instead of looking at the clock ourselves to
+     * make the computations more predictable.
+     * @param now The current time.
+     * @return The estimated time in ns before a new job should be submitted to this worker.
      */
-    public void registerJobCompletionTime( long t, long newComputeTime )
+    public long estimateSubmissionTime( long now )
     {
-	long newRoundTripTime = jobStartTime[0]-t; // The time to send the job, compute, and report the result.
-	
-	synchronized( this ) {
-	    roundTripTime = (roundTripTime+newRoundTripTime)/2;
-	    computeTime = (computeTime+newComputeTime)/2;
-	    outstandingJobs--;
-	}
-    }
+        // Since we submit jobs before the previous one was completed, we may have more
+        // outstanding jobs on a worker than it has workers. To make sure we still can
+        // estimate the 
+        long completionInterval[] = new long[workThreads];
+        for( int ix=0; ix<workThreads; ix++ ){
+            completionInterval[ix] = Long.MIN_VALUE;
+        }
+        long overhead = roundTripTime-computeTime;
 
+        for( int i=0; i<activeJobs.size(); i++ ){
+            ActiveJob j = activeJobs.get( i );
+            
+            // Overwrite the current earliest completion time with the completion
+            // time of this job.
+            int ix = indexOfLowest( completionInterval );
+            long startTime = j.startTime;
+            long completionTime = Math.max( now, startTime + roundTripTime )-overhead/2;
+            completionInterval[ix] = completionTime;
+        }
+        if( activeJobs.size()<workThreads ){
+            return 0L;
+        }
+        // Now return the smallest completion interval in the current list.
+        int ix = indexOfLowest( completionInterval );
+        return completionInterval[ix];
+    }
     /** 
      * Given the current time, estimate how long this worker would take to complete
      * a job.
@@ -90,20 +109,8 @@ class WorkerInfo {
      */
     public long getCompletionTime( long now )
     {
-	// FIXME: take the number of outstanding jobs into account.
-	// We predict the worker will be ready with its current job from us until...
-        final long overhead = roundTripTime-computeTime;
-        final long workerReadyTime = jobStartTime[0] + roundTripTime - (overhead/2); 
-	final long arrivalTime = now+(overhead/2);
-
-        // Now return the estimated completion time. The job can be started
-	// at the estimated arrival time or the time the worker is finished, whichever
-	// comes first, plus the compute time, plus the time to send the result back.
-        //
-        // Note that in our estimates we totally ignore any other jobs the worker handles,
-        // although they will show up in the overhead time.
-        // A refinement would be to report the time a job spends in the queue.
-	return Math.max( workerReadyTime, arrivalTime ) + computeTime + (overhead/2);
+        // FIXME: implement this correctly.
+        return now + computeTime;
     }
 
     /**
@@ -114,13 +121,8 @@ class WorkerInfo {
      */
     public long getBusyInterval( long now )
     {
-	// FIXME: take the number of outstanding jobs into account.
-	// FIXME: Share logic with getCompletionTime()
-        // We predict the worker will be ready with its current job from us until...
-        final long overhead = roundTripTime-computeTime;
-        final long workerReadyTime = jobStartTime[0] + roundTripTime - (overhead/2);
-        
-        return (workerReadyTime-now)/1000;
+        // FIXME: implement this correctly.
+        return computeTime;
     }
 
     /** Returns the current estimated multiplier from benchmark score
@@ -151,14 +153,20 @@ class WorkerInfo {
 	// Note that we blindly assume that there is only one entry with
 	// the given id. Reasonable because we hand out the ids ourselves...
 	for( ActiveJob e: activeJobs ) {
-	    if( e.getId() == id ) {
+	    if( e.id == id ) {
 		return e;
 	    }
 	}
 	return null;
     }
 
-    public void registerJobResult(JobResultMessage result, CompletionListener completionListener) {
+    /**
+     * Register a job result for an outstanding job.
+     * @param result The job result message that tells about this job.
+     * @param completionListener A completion listener to be notified.
+     */
+    public void registerJobResult(JobResultMessage result, CompletionListener completionListener)
+    {
         final long id = result.jobid;    // The identifier of the job, as handed out by us.
 
         ActiveJob e = searchQueueEntry( id );
@@ -167,14 +175,20 @@ class WorkerInfo {
             return;
         }
         if( completionListener != null ) {
-            completionListener.jobCompleted( e.getJob(), result.result );
+            completionListener.jobCompleted( e.job, result.result );
         }
         long now = System.nanoTime();
-        registerJobCompletionTime( now, result.getComputeTime() );
-        synchronized( this ) {
-            
+        long newRoundTripTime = e.startTime-now; // The time to send the job, compute, and report the result.
+        long newComputeTime = result.getComputeTime();
+
+        roundTripTime = (roundTripTime+newRoundTripTime)/2;
+        computeTime = (computeTime+newComputeTime)/2;
+
+        synchronized( activeJobs ){
             activeJobs.remove( e );
-            activeJobs.notifyAll();
+            // Adjust the precompletion interval to avoid both empty queues and full queues.
+            // The /2 is a dampening factor.
+            preCompletionInterval += (result.queueEmptyInterval-result.queueEmptyInterval)/2;
         }
         System.out.println( "Master: retired job " + e );		
     }
@@ -191,11 +205,12 @@ class WorkerInfo {
      * 
      * @param job The job that was started.
      * @param id The id given to the job.
+     * @param completionTime The estimated completion time of this job.
      */
-    public void registerJobStart(Job job, long id)
+    public void registerJobStart( Job job, long id, long completionTime )
     {
         long startTime = System.nanoTime();
-        ActiveJob j = new ActiveJob( job, id, startTime );
+        ActiveJob j = new ActiveJob( job, id, startTime, completionTime );
 
         synchronized( activeJobs ) {
             activeJobs.add( j );

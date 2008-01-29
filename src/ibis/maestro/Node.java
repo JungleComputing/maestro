@@ -27,7 +27,8 @@ public class Node implements RegistryEventHandler {
      * @param theIbis The ibis that died.
      */
     @Override
-    public void died(IbisIdentifier theIbis) {
+    public void died( IbisIdentifier theIbis )
+    {
         worker.removeIbis( theIbis );
         master.removeIbis( theIbis );
     }
