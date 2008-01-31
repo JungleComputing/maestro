@@ -1,0 +1,2 @@
+#!/bin/sh
+exec $IBIS_HOME/bin/ibis-server --events --port 5437
