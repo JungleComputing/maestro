@@ -39,7 +39,7 @@ public class PingMessage extends MasterMessage {
      * seconds that was required to run one iteration of that benchmark.
      * @return The list of neighbors.
      */
-    public double benchmarkResult() {
+    public double runBenchmark() {
 	double sum = 0.0;
 	int iterations = 10;
 	long time;

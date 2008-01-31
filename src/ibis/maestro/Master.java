@@ -56,35 +56,36 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
      */
     private void handlePingReplyMessage( PingReplyMessage m )
     {
-        PingTarget t = null;
-        long receiveTime = System.nanoTime();
-        long benchmarkTime = m.getBenchmarkTime();
-        int workThreads = m.workThreads;
+        final long receiveTime = System.nanoTime();
+        final long benchmarkTime = m.getBenchmarkTime();
+        final int workThreads = m.workThreads;
+        long pingTime = 0L;
 
         // First, search for the worker in our list of
         // outstanding pings.
         ReceivePortIdentifier worker = m.getWorker();
         synchronized( pingTargets ){
+            PingTarget t = null;
+
             for( PingTarget w: pingTargets ){
                 if( w.hasIdentifier( worker ) ){
                     t = w;
-                    break;
                 }
             }
-        }
-        if( t == null ){
-            Globals.log.reportInternalError( "Worker " + worker + " replied to a ping that wasn't sent: ignoring" );
-        }
-        else {
-            long pingTime = t.getSendTime()-receiveTime;
-            synchronized( pingTargets ){
-                pingTargets.remove( t );
+            pingTime = receiveTime-t.getSendTime();
+            if( t == null ){
+                Globals.log.reportInternalError( "Worker " + worker + " replied to a ping that wasn't sent: ignoring" );
+                return;
             }
-            synchronized( workers ){
-                workers.subscribeWorker( worker, workThreads, pingTime-benchmarkTime, m.getBenchmarkScore() );
-                System.out.println( "A new worker " + worker + " has arrived" );
-                workers.notifyAll();
-            }
+            pingTargets.remove( t );
+        }
+        synchronized( workers ){
+            workers.subscribeWorker( worker, workThreads, pingTime-benchmarkTime, m.getBenchmarkScore() );
+            System.out.println( "A new worker " + worker + " has arrived" );
+            workers.notifyAll();
+        }
+        synchronized( queue ) {
+            queue.notifyAll();
         }
     }
 
@@ -140,7 +141,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         if( msg instanceof JobResultMessage ) {
             JobResultMessage result = (JobResultMessage) msg;
 
-            handleJobResultMessage(result);
+            handleJobResultMessage( result );
         }
         else if( msg instanceof WorkRequestMessage ) {
             WorkRequestMessage m = (WorkRequestMessage) msg;
@@ -150,7 +151,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         else if( msg instanceof PingReplyMessage ) {
             PingReplyMessage m = (PingReplyMessage) msg;
 
-            handlePingReplyMessage(m);
+            handlePingReplyMessage( m );
         }
         else if( msg instanceof WorkerResignMessage ) {
             WorkerResignMessage m = (WorkerResignMessage) msg;

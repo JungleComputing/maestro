@@ -33,11 +33,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     public Worker( Ibis ibis, Master master ) throws IOException
     {
         super( "Worker" );   // Create a thread with a name.
-        setDaemon( false );
-        synchronized( unusedNeighbors ){
-            // Add yourself to the list of neighbors.
-            unusedNeighbors.add( ibis.identifier() );
-        }
+        unusedNeighbors.add( ibis.identifier() );
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         for( int i=0; i<numberOfProcessors; i++ ) {
@@ -65,6 +61,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private IbisIdentifier getUnusedNeighbor()
     {
         IbisIdentifier res;
+
         synchronized( unusedNeighbors ){
             res = unusedNeighbors.pollFirst();
         }
@@ -80,6 +77,15 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         }
     }
 
+    private void sendResignMessage( ReceivePortIdentifier master ) throws IOException
+    {
+        WorkerResignMessage msg = new WorkerResignMessage( receivePort.identifier() );
+        sendPort.send(msg, master);
+        if( Settings.traceNodes ) {
+            Globals.tracer.traceSentMessage( msg, master );
+        }
+    }
+
     /**
      * Handle a message containing new neighbors.
      * 
@@ -88,15 +94,6 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private void handleAddNeighborsMessage(AddNeighborsMessage msg)
     {
         addNeighbors( msg.getNeighbors() );
-    }
-
-    private void sendResignMessage( ReceivePortIdentifier master ) throws IOException
-    {
-        WorkerResignMessage msg = new WorkerResignMessage( receivePort.identifier() );
-        sendPort.send(msg, master);
-        if( Settings.traceNodes ) {
-            Globals.tracer.traceSentMessage( msg, master );
-        }
     }
 
     /**
@@ -119,13 +116,13 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     }
 
     /**
-     * @param msg The message to handle.
+     * @param msg The ping message to handle.
      */
-    private void handlePingMessage(PingMessage msg)
+    private void handlePingMessage( PingMessage msg )
     {
         long startTime = System.nanoTime();
     
-        double benchmarkScore = msg.benchmarkResult();
+        double benchmarkScore = msg.runBenchmark();
         long benchmarkTime = System.nanoTime()-startTime;
         ReceivePortIdentifier master = msg.getMaster();
         PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), workThreads.length, benchmarkScore, benchmarkTime );
@@ -146,7 +143,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      * @param p The port on which the packet was received.
      * @param msg The job we received and will put in the queue.
      */
-    public void packetReceived(PacketUpcallReceivePort<MasterMessage> p, MasterMessage msg)
+    public void packetReceived( PacketUpcallReceivePort<MasterMessage> p, MasterMessage msg )
     {
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Worker: received message " + msg );
@@ -157,7 +154,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         if( msg instanceof RunJobMessage ){
             RunJobMessage runJobMessage = (RunJobMessage) msg;
     
-            handleRunJobMessage(runJobMessage);
+            handleRunJobMessage( runJobMessage );
         }
         else if( msg instanceof PingMessage ){
             PingMessage ping = (PingMessage) msg;
@@ -167,7 +164,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         else if( msg instanceof AddNeighborsMessage ){
             AddNeighborsMessage addMsg = (AddNeighborsMessage) msg;
     
-            handleAddNeighborsMessage(addMsg);
+            handleAddNeighborsMessage( addMsg );
         }
         else {
             Globals.log.reportInternalError( "FIXME: handle " + msg );
@@ -198,6 +195,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         }
         try {
             WorkRequestMessage msg = new WorkRequestMessage( receivePort.identifier() );
+
             sendPort.send( msg, m, Globals.masterReceivePortName );
             if( Settings.traceNodes ) {
                 // FIXME: compute a receive port identifier for this one.
@@ -252,7 +250,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      * A new ibis has joined the computation.
      * @param theIbis The ibis that has joined.
      */
-    public void addIbis(IbisIdentifier theIbis)
+    public void addIbis( IbisIdentifier theIbis )
     {
         synchronized( unusedNeighbors ){
             unusedNeighbors.add( theIbis );
@@ -317,7 +315,6 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             queueEmptyInterval = 0L;
         }
         try {
-            // FIXME: fill in correct value.
             JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime, interval, 0L );
             sendPort.send( msg, jobMessage.getResultPort() );
             if( Settings.traceNodes ) {
