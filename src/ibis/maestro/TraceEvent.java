@@ -68,15 +68,22 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
 	this.id = id;
     }
 
+    private int getHostNumber( HashMap<ReceivePortIdentifier, Integer> sourceMap, ReceivePortIdentifier h )
+    {
+        if( h == null ){
+            return -1;
+        }
+        return sourceMap.get( h );
+    }
+
     /** Print this trace event.
-     * @param sourceMap 
-     * @param startTime 
-     * 
+     * @param sourceMap The mapping between receive port and host number.
+     * @param startTime The start time of the run.
      */
     public void print( long startTime, HashMap<ReceivePortIdentifier, Integer> sourceMap )
     {
-        int srcNo = sourceMap.get( source );
-        int destNo = sourceMap.get( dest );
+        int srcNo = getHostNumber( sourceMap, source );
+        int destNo = getHostNumber( sourceMap, dest );
         if( sent ){
             System.out.println( Service.formatNanoseconds(time-startTime) + " sent '" + type.getDescription() + "' P" + srcNo + "->P" + destNo + " id=" + id );
         }

@@ -59,8 +59,13 @@ public class ProcessTraces {
     private static void printEvents()
     {
         long startTime = 0L;
+        boolean first = true;
 	while( !events.isEmpty() ) {
 	    TraceEvent e = events.poll();
+            if( first ){
+                startTime = e.time;
+                first = false;
+            }
 	    e.print( startTime, portMap );
 	}
     }
