@@ -75,6 +75,13 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
         }
         return sourceMap.get( h );
     }
+    
+    public String getDescription( HashMap<ReceivePortIdentifier, Integer> sourceMap )
+    {
+        int srcNo = getHostNumber( sourceMap, source );
+        int destNo = getHostNumber( sourceMap, dest );
+        return type.getDescription() + "' P" + srcNo + "->P" + destNo + " id=" + id;
+    }
 
     /** Print this trace event.
      * @param sourceMap The mapping between receive port and host number.

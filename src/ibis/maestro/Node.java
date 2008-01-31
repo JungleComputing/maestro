@@ -77,7 +77,6 @@ public class Node implements RegistryEventHandler {
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
-     * @param serverAddress The name server to use.
      * @param listener A completion listener for computations completed by this node.
      * @throws IbisCreationFailedException
      * @throws IOException

@@ -36,7 +36,7 @@ public class Tracer {
     }
 
     /** Write a message to the log file. */
-    void log( TraceEvent e )
+    synchronized void log( TraceEvent e )
     {
 	try {
 	    stream.writeObject( e );
