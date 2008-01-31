@@ -39,7 +39,8 @@ public class Node implements RegistryEventHandler {
      * @param arg1 The ibis that was elected.
      */
     @Override
-    public void electionResult(String arg0, IbisIdentifier arg1) {
+    public void electionResult( String arg0, IbisIdentifier arg1 )
+    {
         // Not interested.
     }
 
@@ -48,7 +49,8 @@ public class Node implements RegistryEventHandler {
      * @param arg0 The signal.
      */
     @Override
-    public void gotSignal(String arg0) {
+    public void gotSignal( String arg0 )
+    {
         // Not interested.
     }
 
@@ -57,7 +59,8 @@ public class Node implements RegistryEventHandler {
      * @param theIbis The ibis that joined the computation.
      */
     @Override
-    public void joined(IbisIdentifier theIbis) {
+    public void joined( IbisIdentifier theIbis )
+    {
         master.addIbis( theIbis );
         worker.addIbis( theIbis );
     }
@@ -79,10 +82,10 @@ public class Node implements RegistryEventHandler {
      * @throws IbisCreationFailedException
      * @throws IOException
      */
-    public Node( String serverAddress, CompletionListener listener ) throws IbisCreationFailedException, IOException
+    public Node( CompletionListener listener ) throws IbisCreationFailedException, IOException
     {
 	Properties ibisProperties = new Properties();
-	ibisProperties.setProperty( "ibis.server.address", serverAddress );
+	//ibisProperties.setProperty( "ibis.server.address", serverAddress );
 	ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
 	ibis = IbisFactory.createIbis(
 	    ibisCapabilities,
@@ -99,7 +102,7 @@ public class Node implements RegistryEventHandler {
         worker.start();
         master.waitForSubscription(  worker.identifier() );
 	if( Settings.traceNodes ) {
-	    Globals.log.log( "Started a Maestro node. serverAddress=" + serverAddress );
+	    Globals.log.log( "Started a Maestro node" );
 	}
     }
     
@@ -137,5 +140,6 @@ public class Node implements RegistryEventHandler {
         catch( IOException x ) {
             // Nothing we can do about it.
         }
+        System.out.println( "Node has terminated" );
     }
 }

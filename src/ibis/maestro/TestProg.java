@@ -10,7 +10,6 @@ import java.util.Properties;
  *
  */
 public class TestProg {
-    private Node node;
     private static final int JOBCOUNT = 12;
 
     private class Listener implements CompletionListener
@@ -26,28 +25,30 @@ public class TestProg {
 	}
 	
     }
-
-    private void submitJob( int n )
-    {
-	MultiplyJob j = new MultiplyJob( n );
-	node.submit( j );
-    }
+    
+    private Server ibisServer = null;
 
     @SuppressWarnings("synthetic-access")
     private void run() throws Exception
     {
-        // Create an ibis instance.
-        Properties serverProperties = new Properties();
-        //serverProperties.setProperty( "ibis.server.port", "12642" );
-        Server ibisServer = new Server( serverProperties );
-        String serveraddress = ibisServer.getLocalAddress();
-        node = new Node( serveraddress, new Listener() );
+        if( false ){
+            // Create an ibis instance.
+            Properties serverProperties = new Properties();
+            //serverProperties.setProperty( "ibis.server.port", "12642" );
+            ibisServer = new Server( serverProperties );
+            String serveraddress = ibisServer.getLocalAddress();
+        }
+        Node node = new Node( new Listener() );
 
         for( int i=0; i<JOBCOUNT; i++ ){
-            submitJob( 1000*i );
+            MultiplyJob j = new MultiplyJob( 12*i );
+            node.submit( j );
         }
         node.finish();
         Globals.tracer.close();
+        if( ibisServer != null ){
+            ibisServer.end( true );
+        }
         System.out.println( "Test program has ended" );
     }
 

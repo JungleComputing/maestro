@@ -72,11 +72,11 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                     t = w;
                 }
             }
-            pingTime = receiveTime-t.getSendTime();
             if( t == null ){
                 Globals.log.reportInternalError( "Worker " + worker + " replied to a ping that wasn't sent: ignoring" );
                 return;
             }
+            pingTime = receiveTime-t.getSendTime();
             pingTargets.remove( t );
         }
         synchronized( workers ){
