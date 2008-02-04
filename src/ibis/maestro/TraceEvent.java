@@ -41,7 +41,7 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
 	ADD_NEIGHBORS( "Add neighbors" ),
 	
 	/** Inform the master of a job result. */
-	JOB_RESULT( "Job result" ),
+	JOB_RESULT( "Job-result" ),
 	
 	/** Resign from this master. */
 	RESIGN( "Resign" );
@@ -68,19 +68,34 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
 	this.id = id;
     }
 
-    private int getHostNumber( HashMap<ReceivePortIdentifier, Integer> sourceMap, ReceivePortIdentifier h )
+    private String getHostNumber( HashMap<ReceivePortIdentifier, Integer> sourceMap, ReceivePortIdentifier h )
     {
         if( h == null ){
-            return -1;
+            return "?";
         }
-        return sourceMap.get( h );
+        return sourceMap.get( h ).toString();
     }
-    
+
+    /**
+     * Returns a description string for this trace event.
+     * @param sourceMap The mapping of port identifiers to processor numbers.
+     * @return The description string.
+     */
     public String getDescription( HashMap<ReceivePortIdentifier, Integer> sourceMap )
     {
-        int srcNo = getHostNumber( sourceMap, source );
-        int destNo = getHostNumber( sourceMap, dest );
-        return type.getDescription() + "' P" + srcNo + "->P" + destNo + " id=" + id;
+        String srcNo = getHostNumber( sourceMap, source );
+        String destNo = getHostNumber( sourceMap, dest );
+        return type.getDescription() + " P" + srcNo + "->P" + destNo + " id=" + id;
+    }
+
+    /**
+     * Returns a string representation of this trace event.
+     * @return The string representation.
+     */
+    @Override
+    public String toString()
+    {
+	return "@" + time + (sent?" sent":" recv") + " " + type.descr + " id=" + id;
     }
 
     /** Print this trace event.
@@ -89,8 +104,8 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
      */
     public void print( long startTime, HashMap<ReceivePortIdentifier, Integer> sourceMap )
     {
-        int srcNo = getHostNumber( sourceMap, source );
-        int destNo = getHostNumber( sourceMap, dest );
+        String srcNo = getHostNumber( sourceMap, source );
+        String destNo = getHostNumber( sourceMap, dest );
         if( sent ){
             System.out.println( Service.formatNanoseconds(time-startTime) + " sent '" + type.getDescription() + "' P" + srcNo + "->P" + destNo + " id=" + id );
         }
@@ -114,6 +129,10 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
         }
         if( this.time>other.time ){
             return 1;
+        }
+        if( this.sent != other.sent) {
+            // Put sent events before receive events.
+            return this.sent?-1:1;
         }
         if( this.id<other.id ){
             return -1;

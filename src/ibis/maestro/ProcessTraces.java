@@ -33,7 +33,8 @@ public class ProcessTraces {
         final long start;
         final String label;
 
-        public Slot(final long id, final long start, final String label) {
+        public Slot(final long id, final long start, final String label)
+        {
             super();
             this.id = id;
             this.start = start;
@@ -104,16 +105,58 @@ public class ProcessTraces {
         System.out.println( "</text>" );
     }
 
-    private static void printEvents()
+    private static String spaces( int n ) {
+	StringBuffer buf = new StringBuffer( n );
+	
+	for( int i=0; i<n; i++ ) {
+	    buf.append( " " );
+	}
+	return new String( buf );
+    }
+
+    private static void printEvent(TraceEvent e)
     {
-	while( !events.isEmpty() ) {
-	    TraceEvent e = events.poll();
-	    e.print( startTime, portMap );
+	long timeFromStart = e.time-startTime;
+	if( e.sent ){
+	    String lbl = e.getDescription( portMap );
+	    Slot s = new Slot( e.id, e.time, lbl );
+	    int slotno = slots.size();
+	    slots.add( s );
+	    System.out.println( spaces( slotno ) + "@" + timeFromStart + " sent " + lbl );
+	}
+	else {
+	    // A received event.
+	    int slotno = searchSlot( e.id );
+	    if( slotno<0 ){
+		System.out.println( "@"+timeFromStart + " No sent for receive event " + e );
+		return;
+	    }
+	    Slot s = slots.get(slotno);
+	    System.out.println( spaces( slotno ) + "@" + timeFromStart + " recv " + s.label + " (" + Service.formatNanoseconds(e.time-s.start) + ")" );
+	    slots.set(slotno, null );
+	    cleanSlots();
 	}
     }
     
+    private static void printEvents()
+    {
+        while( !events.isEmpty() ) {
+            TraceEvent e = events.poll();
+            printEvent( e );
+        }
+        while( slots.size()>0 ){
+            int ix = slots.size()-1;
+            Slot s = slots.get(ix);
+
+            if( s != null ){
+        	System.out.println( spaces( ix ) + "no receive for message " + s.label );
+            }
+            slots.remove( ix );
+        }
+    }
+
     /** Returns the index in the list of slots of the message with
-     * the given id, or -1 if tehre is no such slot.
+     * the given id, or -1 if there is no such slot.
      * @param id The identifier of the slot.
      * @return The index in the list of slots, or -1 if not found.
      */
@@ -167,9 +210,10 @@ public class ProcessTraces {
      * @param slotno
      * @param s
      */
-    private static void placeBar(long endTime, int slotno, Slot s) {
+    private static void placeBar(long endTime, int slotno, Slot s)
+    {
         printSVGBar( timeScale*(s.start-startTime), slotOffset+(slotno*slotSeparation), timeScale*(endTime-s.start) );
-           printText( timeScale*(s.start-startTime), slotOffset+textSeparation+(slotno*slotSeparation), s.label );
+        printText( timeScale*(s.start-startTime), slotOffset+textSeparation+(slotno*slotSeparation), s.label );
     }
 
     private static void printSVGEvents()
@@ -186,7 +230,7 @@ public class ProcessTraces {
 
             if( s != null ){
                 placeBar(endTime, ix, s);
-                System.err.println( "Outstanding slot" + s );
+                System.err.println( "Outstanding slot" + s.label );
             }
             slots.remove( ix );
 
@@ -201,8 +245,8 @@ public class ProcessTraces {
 	for( String fnm: args ) {
 	    readFile( fnm );
 	}
-        if( false ){
-	printEvents();
+        if( true ){
+            printEvents();
         }
         else {
             printSVGEvents();
