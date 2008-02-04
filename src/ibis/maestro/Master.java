@@ -110,10 +110,10 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
             Globals.log.reportProgress( "Sending ping message " + msg + " to worker " + worker );
         }            
         try {
-            sendPort.send( msg, worker );
             if( Settings.traceNodes ) {
                 Globals.tracer.traceSentMessage( msg, worker );
             }
+            sendPort.send( msg, worker );
         }
         catch( IOException x ){
             synchronized( pingTargets ){
@@ -290,10 +290,10 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                 	worker.registerJobStart( job, msg.id, completionTime, arrivalTime );
                     }
                     try {
-                        sendPort.send( msg, worker.getPort() );
                         if( Settings.traceNodes ) {
                             Globals.tracer.traceSentMessage( msg, worker.getPort() );
                         }
+                        sendPort.send( msg, worker.getPort() );
                     } catch (IOException e) {
                         // Try to put the paste back in the tube.
                         synchronized( queue ){
