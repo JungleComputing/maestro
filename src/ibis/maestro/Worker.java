@@ -80,10 +80,10 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private void sendResignMessage( ReceivePortIdentifier master ) throws IOException
     {
         WorkerResignMessage msg = new WorkerResignMessage( receivePort.identifier() );
-        sendPort.send(msg, master);
         if( Settings.traceNodes ) {
             Globals.tracer.traceSentMessage( msg, master );
         }
+        sendPort.send(msg, master);
     }
 
     /**
@@ -126,11 +126,11 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         long benchmarkTime = System.nanoTime()-startTime;
         ReceivePortIdentifier master = msg.getMaster();
         PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), workThreads.length, benchmarkScore, benchmarkTime );
+        if( Settings.traceNodes ) {
+            Globals.tracer.traceSentMessage( m, receivePort.identifier() );
+        }
         try {
             sendPort.send( m, master );
-            if( Settings.traceNodes ) {
-                Globals.tracer.traceSentMessage( m, receivePort.identifier() );
-            }
         }
         catch( IOException x ){
             Globals.log.reportError( "Cannot send ping reply to master " + master );
@@ -196,11 +196,11 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         try {
             WorkRequestMessage msg = new WorkRequestMessage( receivePort.identifier() );
 
-            sendPort.send( msg, m, Globals.masterReceivePortName );
             if( Settings.traceNodes ) {
                 // FIXME: compute a receive port identifier for this one.
                 Globals.tracer.traceSentMessage( msg, null );
             }
+            sendPort.send( msg, m, Globals.masterReceivePortName );
         }
         catch( IOException x ){
             Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
@@ -316,10 +316,10 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         }
         try {
             JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime, interval, 0L );
-            sendPort.send( msg, jobMessage.getResultPort() );
             if( Settings.traceNodes ) {
                 Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
             }
+            sendPort.send( msg, jobMessage.getResultPort() );
             System.out.println( "Returned job result " + r + " for job "  + jobMessage );
         }
         catch( IOException x ){
