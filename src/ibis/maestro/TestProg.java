@@ -10,7 +10,7 @@ import java.util.Properties;
  *
  */
 public class TestProg {
-    private static final int JOBCOUNT = 12;
+    private static final int JOBCOUNT = 30;
 
     private class Listener implements CompletionListener
     {
