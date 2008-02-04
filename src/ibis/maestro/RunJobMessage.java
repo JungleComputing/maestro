@@ -95,8 +95,8 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
      * Returns the event type of this message.
      */
     @Override
-    protected TraceEvent.Type getMessageType()
+    protected TransmissionEvent.Type getMessageType()
     {
-	return TraceEvent.Type.JOB;
+	return TransmissionEvent.Type.JOB;
     }
 }

@@ -45,10 +45,15 @@ public class WorkerList {
         }
         return sumMultipliers/workerCount;
     }
-    void subscribeWorker( ReceivePortIdentifier port, int workThreads, long pingTime, double benchmarkScore )
+    void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port, int workThreads, long pingTime, double benchmarkScore )
     {
         long computeTime = (long) (benchmarkScore*estimateMultiplier());
-        WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime+computeTime, computeTime );
+        // FIXME: better estimate.
+        long preCompletionInterval = pingTime/2;
+        WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime+computeTime, computeTime, preCompletionInterval );
+        if( Settings.traceNodes ) {
+            Globals.tracer.traceWorkerSettings( me, port, workThreads, benchmarkScore, pingTime+computeTime, computeTime, preCompletionInterval );
+        }
         synchronized( workers ){
             workers.add( worker );
         }

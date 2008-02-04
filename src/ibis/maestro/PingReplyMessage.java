@@ -51,8 +51,8 @@ class PingReplyMessage extends WorkerMessage {
      * Returns the event type of this message.
      */
     @Override
-    protected TraceEvent.Type getMessageType()
+    protected TransmissionEvent.Type getMessageType()
     {
-	return TraceEvent.Type.PING_REPLY;
+	return TransmissionEvent.Type.PING_REPLY;
     }
 }

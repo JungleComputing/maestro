@@ -132,6 +132,9 @@ public class Service
      */
     public static String formatNanoseconds( long t )
     {
+        if( (t % 1000) == 0 ) {
+            return nsFormatter.format( t/1000 ) + "us";
+        }
         return nsFormatter.format( t ) + "ns";
     }
 

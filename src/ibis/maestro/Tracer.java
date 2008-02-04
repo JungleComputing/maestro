@@ -66,7 +66,7 @@ public class Tracer {
         if( msg instanceof JobResultMessage ){
             return ((JobResultMessage) msg).jobId;
         }
-        return 0L;
+        return -1L;
     }
 
     /**
@@ -94,6 +94,13 @@ public class Tracer {
 
     public void traceAlias( ReceivePortIdentifier a, ReceivePortIdentifier b )
     {
-        log( new TraceAlias( System.nanoTime(), a, b ) );
+        log( new TraceAlias( a, b ) );
+    }
+
+    public void traceWorkerSettings(ReceivePortIdentifier me,
+	    ReceivePortIdentifier port, int workThreads, double benchmarkScore,
+	    long l, long computeTime, long preCompletionInterval) {
+
+	log( new TraceWorkerSetting( me, port, workThreads, benchmarkScore, l, computeTime, preCompletionInterval ) );
     }
 }

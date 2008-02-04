@@ -6,16 +6,15 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 /** An event in the trace of a run. */
-public class TraceEvent implements Serializable, Comparable<TraceEvent> {
+public class TransmissionEvent extends TraceEvent implements Serializable, Comparable<TransmissionEvent> {
     /** */
     private static final long serialVersionUID = 2246454357626562870L;
-    final long time;			// When.
     final ReceivePortIdentifier source;	// From where
     final ReceivePortIdentifier dest;   // To where.
     final Type type;		// What.
     final boolean sent;		// True: sent, false: received
     final long id;
-    final long jobid;
+    final long jobId;
 
     /**
      * The possible types of events.
@@ -23,9 +22,6 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
      * @author Kees van Reeuwijk
      */
     public static enum Type {
-	/** A job submission. */
-	ALIAS( "Alias" ),
-	
 	/** A job submission. */
 	JOB( "Job" ),
 	
@@ -62,15 +58,15 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
 	}
     }
     
-    TraceEvent( long time, ReceivePortIdentifier source, ReceivePortIdentifier dest, Type type, boolean sent, long id, long jobid )
+    TransmissionEvent( long time, ReceivePortIdentifier source, ReceivePortIdentifier dest, Type type, boolean sent, long id, long jobId )
     {
-	this.time = time;
+	super( time );
 	this.source = source;
         this.dest = dest;
 	this.type = type;
 	this.sent = sent;
 	this.id = id;
-        this.jobid = jobid;
+        this.jobId = jobId;
     }
 
     private String getHostNumber( HashMap<ReceivePortIdentifier, Integer> sourceMap, ReceivePortIdentifier h )
@@ -90,7 +86,7 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
     {
         String srcNo = getHostNumber( sourceMap, source );
         String destNo = getHostNumber( sourceMap, dest );
-        return type.getDescription() + " P" + srcNo + "->P" + destNo + " id=" + id;
+        return type.getDescription() + " P" + srcNo + "->P" + destNo + " id=" + id + " jobId=" + jobId;
     }
 
     /**
@@ -101,7 +97,7 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
     @Override
     public String toString()
     {
-	return "@" + time + (sent?" sent":" recv") + ' ' + type.descr + " id=" + id;
+	return "@" + time + (sent?" sent":" recv") + ' ' + type.descr + " id=" + id + " jobId=" + jobId;
     }
 
     /** Print this trace event.
@@ -128,7 +124,7 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
      * @param other The other event to 
      * @return The comparison result: 1: this event is larger, -1: this event is smaller, 0: both are equal.
      */
-    public int compareTo( TraceEvent other )
+    public int compareTo( TransmissionEvent other )
     {
         if( this.time<other.time ){
             return -1;

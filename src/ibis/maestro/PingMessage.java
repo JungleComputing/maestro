@@ -72,8 +72,8 @@ public class PingMessage extends MasterMessage {
      * Returns the event type of this message.
      */
     @Override
-    protected TraceEvent.Type getMessageType()
+    protected TransmissionEvent.Type getMessageType()
     {
-	return TraceEvent.Type.PING;
+	return TransmissionEvent.Type.PING;
     }
 }

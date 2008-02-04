@@ -23,7 +23,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     private final LinkedList<PingTarget> pingTargets = new LinkedList<PingTarget>();
     private CompletionListener completionListener;
     private boolean stopped = false;
-    private long jobNo = 0;
+    private long jobNo = 1;
 
     private void unsubscribeWorker( ReceivePortIdentifier worker )
     {
@@ -81,7 +81,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
             pingTargets.remove( t );
         }
         synchronized( workers ){
-            workers.subscribeWorker( worker, workThreads, pingTime-benchmarkTime, m.getBenchmarkScore() );
+            workers.subscribeWorker( receivePort.identifier(), worker, workThreads, pingTime-benchmarkTime, m.getBenchmarkScore() );
             System.out.println( "A new worker " + worker + " has arrived" );
             workers.notifyAll();
         }

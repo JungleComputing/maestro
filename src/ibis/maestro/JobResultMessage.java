@@ -33,8 +33,8 @@ class JobResultMessage extends WorkerMessage {
      * Returns the event type of this message.
      */
     @Override
-    protected TraceEvent.Type getMessageType()
+    protected TransmissionEvent.Type getMessageType()
     {
-	return TraceEvent.Type.JOB_RESULT;
+	return TransmissionEvent.Type.JOB_RESULT;
     }
 }

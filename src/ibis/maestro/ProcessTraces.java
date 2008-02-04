@@ -16,7 +16,7 @@ import java.util.Vector;
  *
  */
 public class ProcessTraces {
-    private static PriorityQueue<TraceEvent> events = new PriorityQueue<TraceEvent>();
+    private static PriorityQueue<TransmissionEvent> events = new PriorityQueue<TransmissionEvent>();
     private static int portNo = 0;
     private static long startTime = Long.MAX_VALUE;
     private static long endTime = Long.MIN_VALUE;
@@ -49,7 +49,7 @@ public class ProcessTraces {
         }
     }
 
-    private static void registerEvent( TraceEvent e )
+    private static void registerEvent( TransmissionEvent e )
     {
         long t = e.time;
         if( t<startTime ){
@@ -68,8 +68,9 @@ public class ProcessTraces {
 	    InputStream fis = new FileInputStream( fnm );
 	    ObjectInputStream in = new ObjectInputStream( fis );
 	    while( true ) {
-		TraceEvent res = (TraceEvent) in.readObject();
+		TransmissionEvent res = (TransmissionEvent) in.readObject();
 		if( res == null ) {
+                    // End of the trace file is marked by a null entry.
 		    break;
 		}
 		events.add( res );
@@ -86,7 +87,8 @@ public class ProcessTraces {
 
     }
     
-    private static void printSVGBar( double x, double y, double length ){
+    private static void printSVGBar( double x, double y, double length )
+    {
         System.out.println( "<g><path" );
         System.out.println( "  style=\"stroke:#000000;stroke-width:1px\"" );
         System.out.println( "  d=\"M" + x + ',' + y + " H" + (x+length) + "\"" );
@@ -129,39 +131,46 @@ public class ProcessTraces {
         }
     }
 
-    private static void printEvent(TraceEvent e)
+    private static void printEvent(TraceEvent ev )
     {
-        if( e instanceof TraceAlias ){
-            registerAlias( e.source, e.dest );
-            return;
-        }
-	long timeFromStart = e.time-startTime;
-	if( e.sent ){
-	    String lbl = e.getDescription( portMap );
-	    Slot s = new Slot( e.id, e.time, lbl );
-	    int slotno = slots.size();
-	    slots.add( s );
-	    System.out.println( spaces( slotno ) + '@' + timeFromStart + " sent " + lbl );
+	if( ev instanceof TraceAlias ){
+	    TraceAlias ta = (TraceAlias) ev;
+	    registerAlias( ta.source, ta.dest );
+	    return;
+	}
+	else if( ev instanceof TransmissionEvent ) {
+	    TransmissionEvent e = (TransmissionEvent) ev;
+	    long timeFromStart = e.time-startTime;
+	    if( e.sent ){
+		String lbl = e.getDescription( portMap );
+		Slot s = new Slot( e.id, e.time, lbl );
+		int slotno = slots.size();
+		slots.add( s );
+		System.out.println( spaces( slotno ) + '@' + timeFromStart + " sent " + lbl );
+	    }
+	    else {
+		// A received event.
+		int slotno = searchSlot( e.id );
+		if( slotno<0 ){
+		    System.out.println( "@"+timeFromStart + " No sent for receive event " + e );
+		    return;
+		}
+		Slot s = slots.get(slotno);
+		System.out.println( spaces( slotno ) + '@' + timeFromStart + " recv " + s.label + " (" + Service.formatNanoseconds(e.time-s.start) + ')' );
+		slots.set(slotno, null );
+		cleanSlots();
+	    }
 	}
 	else {
-	    // A received event.
-	    int slotno = searchSlot( e.id );
-	    if( slotno<0 ){
-		System.out.println( "@"+timeFromStart + " No sent for receive event " + e );
-		return;
-	    }
-	    Slot s = slots.get(slotno);
-	    System.out.println( spaces( slotno ) + '@' + timeFromStart + " recv " + s.label + " (" + Service.formatNanoseconds(e.time-s.start) + ')' );
-	    slots.set(slotno, null );
-	    cleanSlots();
+	    System.err.println( "Don't know how to print a trace event of type " + ev.getClass() );
 	}
     }
 
     private static void printEvents()
     {
-        while( !events.isEmpty() ) {
-            TraceEvent e = events.poll();
-            printEvent( e );
+	while( !events.isEmpty() ) {
+	    TransmissionEvent e = events.poll();
+	    printEvent( e );
         }
         while( slots.size()>0 ){
             int ix = slots.size()-1;
@@ -215,30 +224,37 @@ public class ProcessTraces {
         return slots.size()-1;
     }
 
-    private static void printSVGEvent( TraceEvent e )
+    private static void printSVGEvent( TraceEvent ev )
     {
-        if( e instanceof TraceAlias ){
-            registerAlias( e.source, e.dest );
-            return;
-        }
-       if( e.sent ){
-           String lbl = e.getDescription( portMap );
-           int slotno = allocateSlot();
-           Slot s = new Slot( e.id, e.time, lbl );
-           slots.set( slotno, s );
-       }
-       else {
-           // A received event.
-           int slotno = searchSlot( e.id );
-           if( slotno<0 ){
-               System.err.println( "No sent for receive event " + e );
-               return;
-           }
-           Slot s = slots.get(slotno);
-           placeBar(e.time, slotno, s);
-           slots.set(slotno, null );
-           cleanSlots();
-       }
+	if( ev instanceof TraceAlias ){
+	    TraceAlias ta = (TraceAlias) ev;
+	    registerAlias( ta.source, ta.dest );
+	    return;
+	}
+	else if( ev instanceof TransmissionEvent ) {
+	    TransmissionEvent e = (TransmissionEvent) ev;
+	    if( e.sent ){
+		String lbl = e.getDescription( portMap );
+		int slotno = allocateSlot();
+		Slot s = new Slot( e.id, e.time, lbl );
+		slots.set( slotno, s );
+	    }
+	    else {
+		// A received event.
+		int slotno = searchSlot( e.id );
+		if( slotno<0 ){
+		    System.err.println( "No sent for receive event " + e );
+		    return;
+		}
+		Slot s = slots.get(slotno);
+		placeBar(e.time, slotno, s);
+		slots.set(slotno, null );
+		cleanSlots();
+	    }
+	}
+	else {
+	    System.err.println( "Don't know how to print a trace event of type " + ev.getClass() );
+	}
     }
 
     /**
@@ -257,7 +273,7 @@ public class ProcessTraces {
         System.out.println( "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" );
         System.out.println( "<svg>" );
         while( !events.isEmpty() ) {
-            TraceEvent e = events.poll();
+            TransmissionEvent e = events.poll();
             printSVGEvent( e );
         }
         while( slots.size()>0 ){
@@ -281,7 +297,7 @@ public class ProcessTraces {
 	for( String fnm: args ) {
 	    readFile( fnm );
 	}
-        if( false ){
+        if( true ){
             printEvents();
         }
         else {

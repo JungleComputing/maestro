@@ -40,22 +40,24 @@ public abstract class Message implements Serializable {
     /** Build a trace event for this message.
      * 
      * @param dest The destination of this message.
+     * @param jobid The job this event is associated with.
      * @return The constructed trace event.
      */
     public TraceEvent buildSendTraceEvent( ReceivePortIdentifier dest, long jobid )
     {
-	return new TraceEvent( System.nanoTime(), source, dest, getMessageType(), true, messageId, jobid );
+	return new TransmissionEvent( System.nanoTime(), source, dest, getMessageType(), true, messageId, jobid );
     }
 
     /** Build a trace event for this message.
      * 
      * @param dest The destination of this message.
+     * @param jobid The job this event is associated with.
      * @return The constructed trace event.
      */
     public TraceEvent buildReceiveTraceEvent( ReceivePortIdentifier dest, long jobid )
     {
-        return new TraceEvent( System.nanoTime(), source, dest, getMessageType(), false, messageId, jobid );
+        return new TransmissionEvent( System.nanoTime(), source, dest, getMessageType(), false, messageId, jobid );
     }
 
-    protected abstract TraceEvent.Type getMessageType();
+    protected abstract TransmissionEvent.Type getMessageType();
 }

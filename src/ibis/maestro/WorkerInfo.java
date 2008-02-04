@@ -30,12 +30,13 @@ class WorkerInfo {
     /** Estimated interval, before one job completes, that we should submit a new job. In ns. */
     private long preCompletionInterval;
 
-    WorkerInfo( ReceivePortIdentifier port, int workThreads, double benchmarkScore, long roundTripTime, long computeTime ){
+    WorkerInfo( ReceivePortIdentifier port, int workThreads, double benchmarkScore, long roundTripTime, long computeTime, long preCompletionInterval ){
         this.port = port;
         this.workThreads = workThreads;
         this.benchmarkScore = benchmarkScore;
         this.roundTripTime = roundTripTime;
         this.computeTime = computeTime;
+        this.preCompletionInterval = preCompletionInterval;
     }
 
     boolean hasId(ReceivePortIdentifier id )
