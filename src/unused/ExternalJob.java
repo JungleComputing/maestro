@@ -7,7 +7,7 @@ import ibis.util.RunProcess;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Vector;
 
 
 /**
@@ -22,7 +22,7 @@ public class ExternalJob implements Job {
     private static final long serialVersionUID = -1100488263983745631L;
     private FileContents inputFiles[];
     private String outputFiles[];
-    private List<String> command;
+    private Vector<String> command;
     private static final boolean traceCommands = true;
     private static long label = 0L;
 
@@ -136,7 +136,7 @@ public class ExternalJob implements Job {
      * @param outputFiles The files to get after the job has finished.
      * @param command The command to execute.
      */
-    public ExternalJob(FileContents[] inputFiles, String[] outputFiles, List<String> command) {
+    public ExternalJob(FileContents[] inputFiles, String[] outputFiles, Vector<String> command) {
         super();
         this.inputFiles = inputFiles;
         this.outputFiles = outputFiles;

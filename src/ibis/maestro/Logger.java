@@ -44,7 +44,7 @@ public class Logger {
     /** Given an error message, report an internal error.
      * @param msg The error message.
      */
-    public void reportInternalError(String msg )
+    public void reportInternalError( String msg )
     {
         logfile.print( "Internal error: " );
         logfile.println( msg );
@@ -61,7 +61,8 @@ public class Logger {
     /** Returns the print stream of this logger.
      * @return The print stream.
      */
-    public PrintStream getPrintStream() {
+    public PrintStream getPrintStream()
+    {
         return logfile;
     }
 }

@@ -57,6 +57,17 @@ public class Tracer {
 	    }
 	}
     }
+    
+    private long extractJobId( Message msg )
+    {
+        if( msg instanceof RunJobMessage ){
+            return ((RunJobMessage) msg).jobId;
+        }
+        if( msg instanceof JobResultMessage ){
+            return ((JobResultMessage) msg).jobId;
+        }
+        return 0L;
+    }
 
     /**
      * Given a message that has been sent, write an entry to the trace file.
@@ -65,7 +76,7 @@ public class Tracer {
      */
     public void traceSentMessage(Message msg, ReceivePortIdentifier dest )
     {
-	TraceEvent e = msg.buildSendTraceEvent( dest );
+	TraceEvent e = msg.buildSendTraceEvent( dest, extractJobId(msg) );
 	log( e );
     }
 
@@ -77,7 +88,12 @@ public class Tracer {
      */
     public void traceReceivedMessage(Message msg, ReceivePortIdentifier dest )
     {
-	TraceEvent e = msg.buildReceiveTraceEvent( dest );
+	TraceEvent e = msg.buildReceiveTraceEvent( dest, extractJobId(msg) );
 	log( e );
+    }
+
+    public void traceAlias( ReceivePortIdentifier a, ReceivePortIdentifier b )
+    {
+        log( new TraceAlias( System.nanoTime(), a, b ) );
     }
 }

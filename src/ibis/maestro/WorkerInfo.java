@@ -166,7 +166,7 @@ class WorkerInfo {
      */
     public void registerJobResult(JobResultMessage result, CompletionListener completionListener)
     {
-        final long id = result.jobid;    // The identifier of the job, as handed out by us.
+        final long id = result.jobId;    // The identifier of the job, as handed out by us.
 
         ActiveJob e = searchQueueEntry( id );
         if( e == null ) {

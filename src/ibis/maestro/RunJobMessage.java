@@ -12,15 +12,18 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
     /** */
     private static final long serialVersionUID = 1L;
     private final Job job;
+    final long jobId;
     private transient long startTime;
 
-    RunJobMessage( Job job, ReceivePortIdentifier resultPort )
+    RunJobMessage( Job job, ReceivePortIdentifier resultPort, long jobId )
     {
 	super( resultPort );
 	this.job = job;
+        this.jobId = jobId;
     }
 
     /** Returns the job contained in this job message.
+     * FIXME: inline this.
      * @return The job.
      */
     public Job getJob() {
@@ -30,8 +33,9 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
     /** Returns the id of this job. // FIXME: inline this.
      * @return The job ID.
      */
-    public long getId() {
-	return id;
+    public long getId()
+    {
+	return jobId;
     }
 
     /**
@@ -64,7 +68,7 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
     @Override
     public String toString()
     {
-	return "Job message for job " + id;
+	return "Job message for job " + jobId;
     }
 
     /**
@@ -78,10 +82,10 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
         if( res != 0 ){
             return res;
         }
-        if( this.id>other.id ){
+        if( this.jobId>other.jobId ){
             return 1;
         }
-        if( this.id<other.id ){
+        if( this.jobId<other.jobId ){
             return -1;
         }
         return 0;

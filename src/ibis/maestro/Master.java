@@ -23,6 +23,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     private final LinkedList<PingTarget> pingTargets = new LinkedList<PingTarget>();
     private CompletionListener completionListener;
     private boolean stopped = false;
+    private long jobNo = 0;
 
     private void unsubscribeWorker( ReceivePortIdentifier worker )
     {
@@ -279,15 +280,17 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                     // We have a worker willing to the job, now get a job to do.
                     System.out.println( "Submitting job to worker" );
                     Job job;
+                    long jobId;
                     synchronized( queue ) {
                         job = queue.remove();
+                        jobId = jobNo++;
                     }
-                    RunJobMessage msg = new RunJobMessage( job, receivePort.identifier() );
+                    RunJobMessage msg = new RunJobMessage( job, receivePort.identifier(), jobId );
                     synchronized( workers ) {
                         // FIXME: compute proper completion time.
                         long completionTime = 0L;
                         long arrivalTime = 0L;
-                	worker.registerJobStart( job, msg.id, completionTime, arrivalTime );
+                	worker.registerJobStart( job, jobId, completionTime, arrivalTime );
                     }
                     try {
                         if( Settings.traceNodes ) {
@@ -299,7 +302,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                         synchronized( queue ){
                             queue.add( job );
                         }
-                        worker.retractJob( msg.id );
+                        worker.retractJob( jobId );
                         Globals.log.reportError( "Could not send job to " + worker + ": put toothpaste back in the tube" );
                         e.printStackTrace();
                         // We don't try to roll back job start time, since the worker

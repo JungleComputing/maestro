@@ -17,7 +17,7 @@ public abstract class Message implements Serializable {
 
     /** Contractual obligation. */
     private static final long serialVersionUID = 1547379144090317151L;
-    protected final long id;
+    protected final long messageId;
     
     /** The source of this message. */
     public final ReceivePortIdentifier source;
@@ -33,7 +33,7 @@ public abstract class Message implements Serializable {
      * @param source The source of this message.
      */
     public Message( ReceivePortIdentifier source ) {
-	this.id = getID();
+	this.messageId = getID();
 	this.source = source;
     }
 
@@ -42,9 +42,9 @@ public abstract class Message implements Serializable {
      * @param dest The destination of this message.
      * @return The constructed trace event.
      */
-    public TraceEvent buildSendTraceEvent( ReceivePortIdentifier dest )
+    public TraceEvent buildSendTraceEvent( ReceivePortIdentifier dest, long jobid )
     {
-	return new TraceEvent( System.nanoTime(), source, dest, getMessageType(), true, id );
+	return new TraceEvent( System.nanoTime(), source, dest, getMessageType(), true, messageId, jobid );
     }
 
     /** Build a trace event for this message.
@@ -52,9 +52,9 @@ public abstract class Message implements Serializable {
      * @param dest The destination of this message.
      * @return The constructed trace event.
      */
-    public TraceEvent buildReceiveTraceEvent( ReceivePortIdentifier dest )
+    public TraceEvent buildReceiveTraceEvent( ReceivePortIdentifier dest, long jobid )
     {
-        return new TraceEvent( System.nanoTime(), source, dest, getMessageType(), false, id );
+        return new TraceEvent( System.nanoTime(), source, dest, getMessageType(), false, messageId, jobid );
     }
 
     protected abstract TraceEvent.Type getMessageType();

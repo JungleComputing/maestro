@@ -20,7 +20,7 @@ public class ProcessTraces {
     private static int portNo = 0;
     private static long startTime = Long.MAX_VALUE;
     private static long endTime = Long.MIN_VALUE;
-    private static double slotOffset = 50;
+    private static double slotOffset = 40;
     private static double slotSeparation = 100;
     private static double textSeparation = 20;
     private static HashMap<ReceivePortIdentifier, Integer> portMap = new HashMap<ReceivePortIdentifier,Integer>();
@@ -89,7 +89,7 @@ public class ProcessTraces {
     private static void printSVGBar( double x, double y, double length ){
         System.out.println( "<g><path" );
         System.out.println( "  style=\"stroke:#000000;stroke-width:1px\"" );
-        System.out.println( "  d=\"M" + x + "," + y + " H" + (x+length) + "\"" );
+        System.out.println( "  d=\"M" + x + ',' + y + " H" + (x+length) + "\"" );
         System.out.println( "/></g>" );
     }
     
@@ -109,20 +109,39 @@ public class ProcessTraces {
 	StringBuffer buf = new StringBuffer( n );
 	
 	for( int i=0; i<n; i++ ) {
-	    buf.append( " " );
+	    buf.append( ' ' );
 	}
 	return new String( buf );
     }
 
+    private static void registerAlias( ReceivePortIdentifier source, ReceivePortIdentifier dest )
+    {
+        if( portMap.containsKey( source ) ){
+            portMap.put(dest, portMap.get( source ) );
+        }
+        else if( portMap.containsKey( dest ) ){
+            portMap.put(source, portMap.get( dest ) );
+        }
+        else {
+            int n = portNo++;
+            portMap.put( source, n );
+            portMap.put( dest, n );
+        }
+    }
+
     private static void printEvent(TraceEvent e)
     {
+        if( e instanceof TraceAlias ){
+            registerAlias( e.source, e.dest );
+            return;
+        }
 	long timeFromStart = e.time-startTime;
 	if( e.sent ){
 	    String lbl = e.getDescription( portMap );
 	    Slot s = new Slot( e.id, e.time, lbl );
 	    int slotno = slots.size();
 	    slots.add( s );
-	    System.out.println( spaces( slotno ) + "@" + timeFromStart + " sent " + lbl );
+	    System.out.println( spaces( slotno ) + '@' + timeFromStart + " sent " + lbl );
 	}
 	else {
 	    // A received event.
@@ -132,12 +151,12 @@ public class ProcessTraces {
 		return;
 	    }
 	    Slot s = slots.get(slotno);
-	    System.out.println( spaces( slotno ) + "@" + timeFromStart + " recv " + s.label + " (" + Service.formatNanoseconds(e.time-s.start) + ")" );
+	    System.out.println( spaces( slotno ) + '@' + timeFromStart + " recv " + s.label + " (" + Service.formatNanoseconds(e.time-s.start) + ')' );
 	    slots.set(slotno, null );
 	    cleanSlots();
 	}
     }
-    
+
     private static void printEvents()
     {
         while( !events.isEmpty() ) {
@@ -163,7 +182,8 @@ public class ProcessTraces {
     private static int searchSlot( long id )
     {
         for( int i=0; i<slots.size(); i++ ){
-            Slot s = slots.get(i);
+            Slot s = slots.get( i );
+
             if( s != null && id == s.id ){
                 return i;
             }
@@ -176,20 +196,36 @@ public class ProcessTraces {
     {
         while( slots.size()>0 ){
             int ix = slots.size()-1;
-            Slot s = slots.get(ix);
+            Slot s = slots.get( ix );
             if( s != null ){
                 break;
             }
             slots.remove( ix );
         }
     }
+    
+    /** Returns the index of a slot for the event. */
+    private static int allocateSlot(){
+        for( int i=0; i<slots.size(); i++ ){
+            if( slots.get(i) == null ){
+                return i;
+            }
+        }
+        slots.add( null );
+        return slots.size()-1;
+    }
 
     private static void printSVGEvent( TraceEvent e )
     {
+        if( e instanceof TraceAlias ){
+            registerAlias( e.source, e.dest );
+            return;
+        }
        if( e.sent ){
-           String lbl = e.getDescription(portMap);
+           String lbl = e.getDescription( portMap );
+           int slotno = allocateSlot();
            Slot s = new Slot( e.id, e.time, lbl );
-           slots.add( s );
+           slots.set( slotno, s );
        }
        else {
            // A received event.
@@ -226,10 +262,10 @@ public class ProcessTraces {
         }
         while( slots.size()>0 ){
             int ix = slots.size()-1;
-            Slot s = slots.get(ix);
+            Slot s = slots.get( ix );
 
             if( s != null ){
-                placeBar(endTime, ix, s);
+                placeBar( endTime, ix, s );
                 System.err.println( "Outstanding slot" + s.label );
             }
             slots.remove( ix );
@@ -245,7 +281,7 @@ public class ProcessTraces {
 	for( String fnm: args ) {
 	    readFile( fnm );
 	}
-        if( true ){
+        if( false ){
             printEvents();
         }
         else {

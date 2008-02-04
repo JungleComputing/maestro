@@ -15,6 +15,7 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
     final Type type;		// What.
     final boolean sent;		// True: sent, false: received
     final long id;
+    final long jobid;
 
     /**
      * The possible types of events.
@@ -22,6 +23,9 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
      * @author Kees van Reeuwijk
      */
     public static enum Type {
+	/** A job submission. */
+	ALIAS( "Alias" ),
+	
 	/** A job submission. */
 	JOB( "Job" ),
 	
@@ -58,7 +62,7 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
 	}
     }
     
-    TraceEvent( long time, ReceivePortIdentifier source, ReceivePortIdentifier dest, Type type, boolean sent, long id )
+    TraceEvent( long time, ReceivePortIdentifier source, ReceivePortIdentifier dest, Type type, boolean sent, long id, long jobid )
     {
 	this.time = time;
 	this.source = source;
@@ -66,6 +70,7 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
 	this.type = type;
 	this.sent = sent;
 	this.id = id;
+        this.jobid = jobid;
     }
 
     private String getHostNumber( HashMap<ReceivePortIdentifier, Integer> sourceMap, ReceivePortIdentifier h )
@@ -92,10 +97,11 @@ public class TraceEvent implements Serializable, Comparable<TraceEvent> {
      * Returns a string representation of this trace event.
      * @return The string representation.
      */
+    @SuppressWarnings("synthetic-access")
     @Override
     public String toString()
     {
-	return "@" + time + (sent?" sent":" recv") + " " + type.descr + " id=" + id;
+	return "@" + time + (sent?" sent":" recv") + ' ' + type.descr + " id=" + id;
     }
 
     /** Print this trace event.

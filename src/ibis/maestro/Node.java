@@ -102,6 +102,7 @@ public class Node implements RegistryEventHandler {
         master.waitForSubscription(  worker.identifier() );
 	if( Settings.traceNodes ) {
 	    Globals.log.log( "Started a Maestro node" );
+            Globals.tracer.traceAlias( master.identifier(), worker.identifier() );
 	}
     }
     
