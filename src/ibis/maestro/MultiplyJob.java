@@ -29,6 +29,39 @@ public class MultiplyJob implements Job {
 	for( double v: values ) {
 	    res *= v;
 	}
+        for( double v: values ) {
+            res *= v;
+        }
+        for( double v: values ) {
+            res *= v;
+        }
+        for( double v: values ) {
+            res *= v;
+        }
+        for( double v: values ) {
+            res *= v;
+        }
+        for( double v: values ) {
+            res *= v;
+        }
+        for( double v: values ) {
+            res *= v;
+        }
+        for( double v: values ) {
+            res *= v;
+        }
+        for( double v: values ) {
+            res *= v;
+        }
+        for( double v: values ) {
+            res *= v;
+        }
+        for( double v: values ) {
+            res *= v;
+        }
+        for( double v: values ) {
+            res *= v;
+        }
 	return new DoubleReturnValue( res );
     }
 
