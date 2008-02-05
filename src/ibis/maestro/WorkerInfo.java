@@ -193,7 +193,7 @@ class WorkerInfo {
             activeJobs.remove( e );
             // Adjust the precompletion interval to avoid both empty queues and full queues.
             // The /2 is a dampening factor.
-            preCompletionInterval += (result.queueInterval-result.queueEmptyInterval)/2;
+            preCompletionInterval += (result.queueEmptyInterval-result.queueInterval)/2;
             roundTripTime = (roundTripTime+newRoundTripTime)/2;
             computeTime = (computeTime+newComputeTime)/2;
             sPreCompletionInterval = preCompletionInterval;
