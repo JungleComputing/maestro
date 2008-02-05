@@ -46,15 +46,15 @@ public class WorkerList {
         return sumMultipliers/workerCount;
     }
 
-    void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port, int workThreads, long pingTime, double benchmarkScore )
+    void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port, int workThreads, long benchmarkComputeTime, long benchmarkRoundtripTime, double benchmarkScore )
     {
-        long computeTime = (long) (benchmarkScore*estimateMultiplier());
-        // FIXME: better estimate.
-        long preCompletionInterval = pingTime/2;
-        WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime+computeTime, computeTime, preCompletionInterval );
+        long estimatedComputeTime = (long) (benchmarkScore*estimateMultiplier());
+        long pingTime = benchmarkRoundtripTime-benchmarkComputeTime;
+        long preCompletionInterval = (benchmarkRoundtripTime-benchmarkComputeTime)/2;
+        WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime+estimatedComputeTime, estimatedComputeTime, preCompletionInterval );
         if( Settings.traceNodes ) {
-            Globals.tracer.traceWorkerRegistration( me, port, benchmarkScore, pingTime, computeTime );
-            Globals.tracer.traceWorkerSettings( me, port, pingTime+computeTime, computeTime, preCompletionInterval );
+            Globals.tracer.traceWorkerRegistration( me, port, benchmarkScore, benchmarkRoundtripTime, benchmarkComputeTime );
+            Globals.tracer.traceWorkerSettings( me, port, pingTime+estimatedComputeTime, estimatedComputeTime, preCompletionInterval, 0L, 0L );
         }
         synchronized( workers ){
             workers.add( worker );

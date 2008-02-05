@@ -23,6 +23,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private final WorkThread workThreads[] = new WorkThread[numberOfProcessors];
     private boolean stopped = false;
     private ReceivePortIdentifier exclusiveMaster = null;
+    private boolean sawJobs = false;
 
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
@@ -105,6 +106,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     {
         msg.setStartTime( System.nanoTime() );
         synchronized( queue ) {
+            sawJobs = true;
             if( queueEmptyMoment>0 ){
                 // Compute a queue empty interval from this moment.
                 queueEmptyInterval = System.nanoTime() - queueEmptyMoment;
@@ -120,9 +122,11 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      */
     private void handlePingMessage( PingMessage msg )
     {
+        // First force the benchmark to be compiled.
+        double benchmarkScore = msg.runBenchmark();
         long startTime = System.nanoTime();
     
-        double benchmarkScore = msg.runBenchmark();
+        benchmarkScore = msg.runBenchmark();
         long benchmarkTime = System.nanoTime()-startTime;
         ReceivePortIdentifier master = msg.getMaster();
         PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), workThreads.length, benchmarkScore, benchmarkTime );
@@ -276,7 +280,9 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             try {
                 synchronized( queue ) {
                     if( queue.isEmpty() ) {
-                        queueEmptyMoment = System.nanoTime();
+                        if( sawJobs ){
+                            queueEmptyMoment = System.nanoTime();
+                        }
                         if( isStopped() ) {
                             // No jobs in queue, and worker is stopped. Tell
                             // return null to indicate that there won't be further

@@ -193,7 +193,7 @@ class WorkerInfo {
             activeJobs.remove( e );
             // Adjust the precompletion interval to avoid both empty queues and full queues.
             // The /2 is a dampening factor.
-            preCompletionInterval += (result.queueEmptyInterval-result.queueEmptyInterval)/2;
+            preCompletionInterval += (result.queueInterval-result.queueEmptyInterval)/2;
             roundTripTime = (roundTripTime+newRoundTripTime)/2;
             computeTime = (computeTime+newComputeTime)/2;
             sPreCompletionInterval = preCompletionInterval;
@@ -203,7 +203,7 @@ class WorkerInfo {
         if( Settings.traceNodes ) {
             Globals.tracer.traceWorkerSettings( master,
                 port,
-                sRoundTripTime, sComputeTime, sPreCompletionInterval);
+                sRoundTripTime, sComputeTime, sPreCompletionInterval, result.queueInterval, result.queueEmptyInterval );
         }
         System.out.println( "Master: retired job " + e );		
     }

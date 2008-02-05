@@ -109,9 +109,10 @@ public class Tracer {
      */
     public void traceWorkerSettings(ReceivePortIdentifier master,
 	    ReceivePortIdentifier worker,
-	    long roundTripTime, long computeTime, long preCompletionInterval) {
+	    long roundTripTime, long computeTime, long preCompletionInterval,
+            long queueInterval, long queueEmptyInterval ) {
 
-	log( new WorkerSettingEvent( master, worker, roundTripTime, computeTime, preCompletionInterval ) );
+	log( new WorkerSettingEvent( master, worker, roundTripTime, computeTime, preCompletionInterval, queueInterval, queueEmptyInterval ) );
     }
 
     /**

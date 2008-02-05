@@ -15,6 +15,8 @@ public class WorkerSettingEvent extends TraceEvent {
     final long computeTime;
     final long roundTripTime;
     final long preCompletionInterval;
+    final long queueInterval;
+    final long queueEmptyInterval;
 
     /**
      * Constructs a new WorkerSettingEvent.
@@ -26,7 +28,7 @@ public class WorkerSettingEvent extends TraceEvent {
      * @param computeTime
      * @param preCompletionInterval 
      */
-    public WorkerSettingEvent(ReceivePortIdentifier me, ReceivePortIdentifier port, long roundTripTime, long computeTime, long preCompletionInterval )
+    public WorkerSettingEvent(ReceivePortIdentifier me, ReceivePortIdentifier port, long roundTripTime, long computeTime, long preCompletionInterval, long queueInterval, long queueEmptyInterval )
     {
 	super( System.nanoTime() );
 	this.master = me;
@@ -34,6 +36,12 @@ public class WorkerSettingEvent extends TraceEvent {
 	this.preCompletionInterval = preCompletionInterval;
         this.roundTripTime = roundTripTime;
 	this.computeTime = computeTime;
+        this.queueInterval = queueInterval;
+        this.queueEmptyInterval = queueEmptyInterval;
+    }
+
+    public String getInfo() {
+        return "set worker " + worker + " preCompletionInterval=" + Service.formatNanoseconds( preCompletionInterval ) + " computeTime=" + Service.formatNanoseconds( computeTime ) + " roundTripTime=" + Service.formatNanoseconds( roundTripTime ) + " queueInterval=" + Service.formatNanoseconds(queueInterval) + " queueEmptyInterval=" + Service.formatNanoseconds(queueEmptyInterval);
     }
     
 }

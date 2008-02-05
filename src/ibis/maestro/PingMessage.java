@@ -14,7 +14,7 @@ public class PingMessage extends MasterMessage {
     private static final int PAYLOAD_SIZE = 10000;
 
     /** Minimal time in ms we want to run our benchmark. */
-    private static final long TARGET_INTERVAL = 100;
+    private static final long TARGET_INTERVAL = 30;
 
     /**
      * Constructs a new ping message. 
@@ -39,7 +39,8 @@ public class PingMessage extends MasterMessage {
      * seconds that was required to run one iteration of that benchmark.
      * @return The list of neighbors.
      */
-    public double runBenchmark() {
+    public double runBenchmark()
+    {
 	double sum = 0.0;
 	int iterations = 10;
 	long time;
@@ -53,8 +54,9 @@ public class PingMessage extends MasterMessage {
 		}
 	    }
 	    time = System.currentTimeMillis()-startTime;
+            System.out.println( "iterations=" + iterations + " time=" + time );
 	} while( time<TARGET_INTERVAL );
-	return (time/1000.0*iterations);
+	return (time/(1000.0*iterations) );
     }
 
     /**

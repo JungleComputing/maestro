@@ -81,7 +81,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
             pingTargets.remove( t );
         }
         synchronized( workers ){
-            workers.subscribeWorker( receivePort.identifier(), worker, workThreads, pingTime-benchmarkTime, m.getBenchmarkScore() );
+            workers.subscribeWorker( receivePort.identifier(), worker, workThreads, benchmarkTime, pingTime, m.getBenchmarkScore() );
             System.out.println( "A new worker " + worker + " has arrived" );
             workers.notifyAll();
         }

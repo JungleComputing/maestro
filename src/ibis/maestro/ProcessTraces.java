@@ -183,7 +183,8 @@ public class ProcessTraces {
 	    
 	    String master = getHostName( e.master );
 	    String worker = getHostName( e.worker );
-	    System.out.println( "@" + Service.formatNanoseconds(timeFromStart) + " master " + master + " set worker " + worker + " preCompletionInterval=" + Service.formatNanoseconds( e.preCompletionInterval ) + " computeTime=" + Service.formatNanoseconds( e.computeTime ) + " roundTripTime=" + Service.formatNanoseconds( e.roundTripTime ) );
+            String info = e.getInfo();
+	    System.out.println( "@" + Service.formatNanoseconds(timeFromStart) + " master " + master + " set worker " + worker + " " + info  );
 	}
 	else if( ev instanceof TransmissionEvent ) {
 	    TransmissionEvent e = (TransmissionEvent) ev;
