@@ -84,7 +84,6 @@ public class Node implements RegistryEventHandler {
     public Node( CompletionListener listener ) throws IbisCreationFailedException, IOException
     {
 	Properties ibisProperties = new Properties();
-	//ibisProperties.setProperty( "ibis.server.address", serverAddress );
 	ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
 	ibis = IbisFactory.createIbis(
 	    ibisCapabilities,
@@ -102,7 +101,6 @@ public class Node implements RegistryEventHandler {
         master.waitForSubscription(  worker.identifier() );
 	if( Settings.traceNodes ) {
 	    Globals.log.log( "Started a Maestro node" );
-            Globals.tracer.traceAlias( master.identifier(), worker.identifier() );
 	}
     }
     

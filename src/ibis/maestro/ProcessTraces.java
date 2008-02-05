@@ -169,7 +169,9 @@ public class ProcessTraces {
 	long timeFromStart = ev.time-startTime;
 
 	if( ev instanceof TraceAlias ){
-	    // Nothing interesting to do.
+            TraceAlias a = (TraceAlias) ev;
+            
+            System.out.println( "@" + Service.formatNanoseconds(timeFromStart) + " alias " + a.source + "," + a.dest );
 	}
 	else if( ev instanceof WorkerRegistrationEvent ) {
 	    WorkerRegistrationEvent e = (WorkerRegistrationEvent) ev;

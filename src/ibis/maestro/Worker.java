@@ -42,6 +42,9 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             workThreads[i] = t;
             t.start();
         }
+        if( Settings.traceNodes ){
+            Globals.tracer.traceAlias( master.identifier(), receivePort.identifier() );
+        }
         receivePort.enable();   // We're open for business.
     }
 
