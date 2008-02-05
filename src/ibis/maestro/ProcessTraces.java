@@ -46,6 +46,7 @@ public class ProcessTraces {
     {
 	if( p != null && !portMap.containsKey( p ) ){
             portMap.put( p, portNo++ );
+            System.out.println( "registerPort: P" + portMap.get(p) + ": " + p );
         }
     }
 
@@ -66,9 +67,7 @@ public class ProcessTraces {
         }
         else if( ev instanceof TraceAlias ) {
             TraceAlias a = (TraceAlias) ev;
-            
-            registerPort( a.source );
-            registerPort( a.dest );
+            registerAlias( a.source, a.dest );
         }
         else if( ev instanceof WorkerRegistrationEvent ) {
             WorkerRegistrationEvent e = (WorkerRegistrationEvent) ev;
@@ -153,6 +152,8 @@ public class ProcessTraces {
             int n = portNo++;
             portMap.put( source, n );
             portMap.put( dest, n );
+            System.out.println( "registerAlias: P" + n + ": " + source );
+            System.out.println( "registerAlias: P" + n + ": " + dest );
         }
     }
 
