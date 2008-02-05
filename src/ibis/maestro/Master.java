@@ -287,10 +287,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                     }
                     RunJobMessage msg = new RunJobMessage( job, receivePort.identifier(), jobId );
                     synchronized( workers ) {
-                        // FIXME: compute proper completion time.
-                        long completionTime = 0L;
-                        long arrivalTime = 0L;
-                	worker.registerJobStart( job, jobId, completionTime, arrivalTime );
+                	worker.registerJobStart( job, jobId );
                     }
                     try {
                         if( Settings.traceNodes ) {
@@ -303,7 +300,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                             queue.add( job );
                         }
                         worker.retractJob( jobId );
-                        Globals.log.reportError( "Could not send job to " + worker + ": put toothpaste back in the tube" );
+                        Globals.log.reportError( "Could not send job to " + worker + ": putting toothpaste back in the tube" );
                         e.printStackTrace();
                         // We don't try to roll back job start time, since the worker
                         // may in fact be busy.

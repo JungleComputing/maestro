@@ -13,7 +13,8 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
     private static final long serialVersionUID = 1L;
     private final Job job;
     final long jobId;
-    private transient long startTime;
+    private transient long queueTime;
+    private transient long runTime;
 
     RunJobMessage( Job job, ReceivePortIdentifier resultPort, long jobId )
     {
@@ -49,16 +50,35 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
     /** Set the start time of this job to the given time in ns.
      * @param t The start time.
      */
-    public void setStartTime(long t) {
-        startTime = t;
+    public void setQueueTime(long t) {
+        this.queueTime = t;
     }
+
+
+    /**
+     * Registers the given time as the moment this job started running.
+     * @param t The start time.
+     */
+    public void setRunTime(long t )
+    {
+        this.runTime = t;
+    }
+
+    /** Returns the registered enqueueing time.
+     * 
+     * @return The registered enqueueing time.
+     */
+    public long getQueueTime() {
+        return queueTime;
+    }
+
 
     /** Returns the registered start time.
      * 
      * @return The registered start time.
      */
-    public long getStartTime() {
-        return startTime;
+    public long getRunTime() {
+        return runTime;
     }
 
     /**

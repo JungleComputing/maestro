@@ -220,12 +220,12 @@ class WorkerInfo {
      * 
      * @param job The job that was started.
      * @param id The id given to the job.
-     * @param completionTime The estimated completion time of this job.
-     * @param arrivalTime The estimated arrival time of this job on the master.
      */
-    public void registerJobStart( Job job, long id, long completionTime, long arrivalTime )
+    public void registerJobStart( Job job, long id )
     {
         long startTime = System.nanoTime();
+        long arrivalTime = startTime+preCompletionInterval;
+        long completionTime = arrivalTime+computeTime;
         ActiveJob j = new ActiveJob( job, id, startTime, completionTime, arrivalTime );
 
         synchronized( activeJobs ) {

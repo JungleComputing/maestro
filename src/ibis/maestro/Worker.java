@@ -104,7 +104,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      */
     private void handleRunJobMessage( RunJobMessage msg )
     {
-        msg.setStartTime( System.nanoTime() );
+        msg.setQueueTime( System.nanoTime() );
         synchronized( queue ) {
             sawJobs = true;
             if( queueEmptyMoment>0 ){
@@ -314,14 +314,15 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     @Override
     public void reportJobResult( RunJobMessage jobMessage, JobReturn r )
     {
-        long computeTime = System.nanoTime()-jobMessage.getStartTime();
+        long computeTime = System.nanoTime()-jobMessage.getQueueTime();
         long interval;
         synchronized( queue ){
             interval = queueEmptyInterval;
             queueEmptyInterval = 0L;
         }
         try {
-            JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime, interval, 0L );
+            long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
+            JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime, interval, queueInterval );
             if( Settings.traceNodes ) {
                 Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
             }
