@@ -3,6 +3,8 @@ package ibis.maestro;
 import ibis.ipl.ReceivePortIdentifier;
 
 public class WorkerRegistrationEvent extends TraceEvent {
+    /** */
+    private static final long serialVersionUID = -5267884426979036349L;
     final ReceivePortIdentifier master;
     final ReceivePortIdentifier worker;
     final double benchmarkScore;

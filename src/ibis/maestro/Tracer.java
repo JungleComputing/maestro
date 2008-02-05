@@ -14,7 +14,6 @@ import java.io.OutputStream;
  * @author Kees van Reeuwijk
  */
 public class Tracer {
-
     private final ObjectOutputStream stream;
 
     /** Create a new logger. */
@@ -41,7 +40,7 @@ public class Tracer {
 	try {
 	    stream.writeObject( e );
 	} catch (IOException x ) {
-	    System.err.println( "Cannot write to trace file" );
+	    System.err.println( "Cannot write to trace file: " + x.getLocalizedMessage() );
 	}
     }
     
@@ -53,7 +52,7 @@ public class Tracer {
 		stream.writeObject( null );   // End-of-file marker
 		stream.close();
 	    } catch (IOException e) {
-		System.err.println( "Cannot close trace file" );
+		System.err.println( "Cannot close trace file: " + e.getLocalizedMessage() );
 	    }
 	}
     }
@@ -104,9 +103,9 @@ public class Tracer {
     /** Register the update of the settings for a worker in a master.
      * @param master The master that did the update.
      * @param worker The worker for which the update was done.
-     * @param roundTripTime The new estimated roundtrip time.
+     * @param roundTripTime The new estimated round-trip time.
      * @param computeTime The new estimated compute time.
-     * @param preCompletionInterval The new estimated precompletion interval.
+     * @param preCompletionInterval The new estimated pre-completion interval.
      */
     public void traceWorkerSettings(ReceivePortIdentifier master,
 	    ReceivePortIdentifier worker,
@@ -115,6 +114,14 @@ public class Tracer {
 	log( new WorkerSettingEvent( master, worker, roundTripTime, computeTime, preCompletionInterval ) );
     }
 
+    /**
+     * 
+     * @param master
+     * @param worker
+     * @param benchmarkScore
+     * @param pingTime
+     * @param computeTime
+     */
     public void traceWorkerRegistration(ReceivePortIdentifier master,
         ReceivePortIdentifier worker, double benchmarkScore, long pingTime,
         long computeTime) {

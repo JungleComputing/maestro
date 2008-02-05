@@ -2,11 +2,10 @@ package ibis.maestro;
 
 import ibis.ipl.ReceivePortIdentifier;
 
-import java.io.Serializable;
 import java.util.HashMap;
 
 /** An event in the trace of a run. */
-public class TransmissionEvent extends TraceEvent implements Serializable, Comparable<TransmissionEvent> {
+public class TransmissionEvent extends TraceEvent {
     /** */
     private static final long serialVersionUID = 2246454357626562870L;
     final ReceivePortIdentifier source;	// From where

@@ -70,6 +70,18 @@ public class ProcessTraces {
             registerPort( a.source );
             registerPort( a.dest );
         }
+        else if( ev instanceof WorkerRegistrationEvent ) {
+            WorkerRegistrationEvent e = (WorkerRegistrationEvent) ev;
+            
+            registerPort( e.master );
+            registerPort( e.worker );
+        }
+        else if( ev instanceof WorkerSettingEvent ) {
+            WorkerSettingEvent e = (WorkerSettingEvent) ev;
+            
+            registerPort( e.master );
+            registerPort( e.worker );
+        }
         else {
             System.err.println( "Don't know how to register an event of type " + ev.getClass() );
         }
@@ -144,32 +156,53 @@ public class ProcessTraces {
         }
     }
 
-    private static void printEvent(TraceEvent ev )
+    private static String getHostName( ReceivePortIdentifier p )
     {
+	if( portMap.containsKey(p) ) {
+	    return "P" + portMap.get( p );
+	}
+	return p.toString();
+    }
+
+    private static void printEvent( TraceEvent ev )
+    {
+	long timeFromStart = ev.time-startTime;
+
 	if( ev instanceof TraceAlias ){
-	    TraceAlias ta = (TraceAlias) ev;
-	    registerAlias( ta.source, ta.dest );
-	    return;
+	    // Nothing interesting to do.
+	}
+	else if( ev instanceof WorkerRegistrationEvent ) {
+	    WorkerRegistrationEvent e = (WorkerRegistrationEvent) ev;
+	    
+	    String master = getHostName( e.master );
+	    String worker = getHostName( e.worker );
+	    System.out.println( "@" + Service.formatNanoseconds(timeFromStart) + " master " + master + " registered worker " + worker + " pingTime=" + Service.formatNanoseconds( e.pingTime ) + " computeTime=" + Service.formatNanoseconds( e.computeTime ) + " benchmarkScore=" + e.benchmarkScore );
+	}
+	else if( ev instanceof WorkerSettingEvent ) {
+	    WorkerSettingEvent e = (WorkerSettingEvent) ev;
+	    
+	    String master = getHostName( e.master );
+	    String worker = getHostName( e.worker );
+	    System.out.println( "@" + Service.formatNanoseconds(timeFromStart) + " master " + master + " set worker " + worker + " preCompletionInterval=" + Service.formatNanoseconds( e.preCompletionInterval ) + " computeTime=" + Service.formatNanoseconds( e.computeTime ) + " roundTripTime=" + Service.formatNanoseconds( e.roundTripTime ) );
 	}
 	else if( ev instanceof TransmissionEvent ) {
 	    TransmissionEvent e = (TransmissionEvent) ev;
-	    long timeFromStart = e.time-startTime;
 	    if( e.sent ){
 		String lbl = e.getDescription( portMap );
 		Slot s = new Slot( e.id, e.time, lbl );
 		int slotno = slots.size();
 		slots.add( s );
-		System.out.println( spaces( slotno ) + '@' + timeFromStart + " sent " + lbl );
+		System.out.println( spaces( slotno ) + '@' + Service.formatNanoseconds(timeFromStart) + " sent " + lbl );
 	    }
 	    else {
 		// A received event.
 		int slotno = searchSlot( e.id );
 		if( slotno<0 ){
-		    System.out.println( "@"+timeFromStart + " No sent for receive event " + e );
+		    System.out.println( "@"+Service.formatNanoseconds(timeFromStart) + " No sent for receive event " + e );
 		    return;
 		}
 		Slot s = slots.get(slotno);
-		System.out.println( spaces( slotno ) + '@' + timeFromStart + " recv " + s.label + " (" + Service.formatNanoseconds(e.time-s.start) + ')' );
+		System.out.println( spaces( slotno ) + '@' + Service.formatNanoseconds(timeFromStart) + " recv " + s.label + " (" + Service.formatNanoseconds(e.time-s.start) + ')' );
 		slots.set(slotno, null );
 		cleanSlots();
 	    }
@@ -275,7 +308,7 @@ public class ProcessTraces {
      * @param slotno
      * @param s
      */
-    private static void placeBar(long endTime, int slotno, Slot s)
+    private static void placeBar( long endTime, int slotno, Slot s)
     {
         printSVGBar( timeScale*(s.start-startTime), slotOffset+(slotno*slotSeparation), timeScale*(endTime-s.start) );
         printText( timeScale*(s.start-startTime), slotOffset+textSeparation+(slotno*slotSeparation), s.label );

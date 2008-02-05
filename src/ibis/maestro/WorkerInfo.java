@@ -179,7 +179,7 @@ class WorkerInfo {
             completionListener.jobCompleted( e.job, result.result );
         }
         long now = System.nanoTime();
-        long newRoundTripTime = e.startTime-now; // The time to send the job, compute, and report the result.
+        long newRoundTripTime = now-e.startTime; // The time to send the job, compute, and report the result.
         long newComputeTime = result.getComputeTime();
 
         roundTripTime = (roundTripTime+newRoundTripTime)/2;

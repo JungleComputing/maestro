@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.io.Serializable;
+
 
 /**
  * A trace event.
@@ -7,7 +9,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-public class TraceEvent {
+public abstract class TraceEvent implements Serializable, Comparable<TraceEvent> {
 
     protected final long time;
 
@@ -20,4 +22,54 @@ public class TraceEvent {
 	this.time = time;
     }
 
+    /**
+     * Compares this trace event to another.
+     * We order the events on their moment of occurrence,
+     * or on their id number in the unlikely event that they
+     * have the same tine.
+     * @param other The other event to 
+     * @return The comparison result: 1: this event is larger, -1: this event is smaller, 0: both are equal.
+     */
+    public int compareTo( TraceEvent other )
+    {
+        if( this.time<other.time ){
+            return -1;
+        }
+        if( this.time>other.time ){
+            return 1;
+        }
+        if( this instanceof WorkerRegistrationEvent ) {
+            if( other instanceof WorkerRegistrationEvent ) {
+        	return 0;
+            }
+            return -1;
+        }
+        if( other instanceof WorkerRegistrationEvent ) {
+            return 1;
+        }
+        if( this instanceof WorkerSettingEvent ) {
+            if( other instanceof WorkerSettingEvent ) {
+        	return 0;
+            }
+            return -1;
+        }
+        if( other instanceof WorkerSettingEvent ) {
+            return 1;
+        }
+        if( this instanceof TransmissionEvent && other instanceof TransmissionEvent ) {
+            TransmissionEvent teThis = (TransmissionEvent) this;
+            TransmissionEvent teOther = (TransmissionEvent) other;
+            if( teThis.sent != teOther.sent) {
+        	// Put sent events before receive events.
+        	return teThis.sent?-1:1;
+            }
+            if( teThis.id<teOther.id ){
+        	return -1;
+            }
+            if( teThis.id>teOther.id ){
+        	return 1;
+            }
+        }
+        return 0;
+    }
 }
