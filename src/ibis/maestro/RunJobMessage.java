@@ -15,6 +15,7 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
     final long jobId;
     private transient long queueTime;
     private transient long runTime;
+    private transient long queueEmptyInterval;
 
     RunJobMessage( Job job, ReceivePortIdentifier resultPort, long jobId )
     {
@@ -118,5 +119,23 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
     protected TransmissionEvent.Type getMessageType()
     {
 	return TransmissionEvent.Type.JOB;
+    }
+
+    /**
+     * Sets the queue empty interval associated with this job.
+     * @param t The time interval the worker queue was empty before this
+     *          job entered its queue.
+     */
+    public void setQueueEmptyInterval(long t) {
+	this.queueEmptyInterval = t;
+    }
+
+    /**
+     * Gets the queue empty interval associated with this job.
+     * @return The time interval the worker queue was empty before this
+     *          job entered its queue.
+     */
+    public long getQueueEmptyInterval() {
+	return queueEmptyInterval;
     }
 }

@@ -30,9 +30,6 @@ public class PingMessage extends MasterMessage {
 	    payload[i] = Math.sin( (2*i*Math.PI)/PAYLOAD_SIZE );
 	}
     }
-    
-    // FIXME: remove this method.
-    ReceivePortIdentifier getMaster() { return source; }
 
     /**
      * Run a benchmark on the payload, and return the time in

@@ -106,6 +106,26 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         synchronized( pingTargets ){
             pingTargets.add( t );
         }
+        if( Settings.traceNodes ) {
+            // Send a message to the new worker to synchronize clocks.
+            // This message is only sent if we are tracing, because only the
+            // tracer is interested.
+            MasterTimeSyncMessage syncmsg = new MasterTimeSyncMessage( receivePort.identifier() );
+            if( Settings.traceWorkerProgress ){
+        	Globals.log.reportProgress( "Sending time sync message " + syncmsg + " to worker " + worker );
+            }            
+            try {
+        	Globals.tracer.traceSentMessage( syncmsg, worker );
+        	sendPort.send( syncmsg, worker );
+            }
+            catch( IOException x ){
+        	synchronized( pingTargets ){
+        	    pingTargets.remove( t );
+        	}
+        	Globals.log.reportError( "Cannot send ping message to worker " + worker );
+        	x.printStackTrace( Globals.log.getPrintStream() );
+            }
+        }
         PingMessage msg = new PingMessage( receivePort.identifier() );
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Sending ping message " + msg + " to worker " + worker );
@@ -153,6 +173,9 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
             PingReplyMessage m = (PingReplyMessage) msg;
 
             handlePingReplyMessage( m );
+        }
+        else if( msg instanceof WorkerTimeSyncMessage ) {
+            // Ignore this message, the fact that it was traced is enough.
         }
         else if( msg instanceof WorkerResignMessage ) {
             WorkerResignMessage m = (WorkerResignMessage) msg;

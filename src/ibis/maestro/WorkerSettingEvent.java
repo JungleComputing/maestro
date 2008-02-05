@@ -22,11 +22,11 @@ public class WorkerSettingEvent extends TraceEvent {
      * Constructs a new WorkerSettingEvent.
      * @param me The master that does the setting.
      * @param port For which worker the setting is updated.
-     * @param roundTripTime 
-     * @param benchmarkScore
-     * @param pingTime
-     * @param computeTime
-     * @param preCompletionInterval 
+     * @param roundTripTime  The estimated time in ns to transmit a job an get a result back.
+     * @param computeTime The estimated time in ns that is required to compute a job.
+     * @param preCompletionInterval The estimated time before a job is completed that we can submit a new job.
+     * @param queueInterval The time in ns the most recent job had to spend in the worker queue.
+     * @param queueEmptyInterval The time in ns the worker queue was idle before the most recent job entered its queue
      */
     public WorkerSettingEvent(ReceivePortIdentifier me, ReceivePortIdentifier port, long roundTripTime, long computeTime, long preCompletionInterval, long queueInterval, long queueEmptyInterval )
     {
@@ -40,7 +40,12 @@ public class WorkerSettingEvent extends TraceEvent {
         this.queueEmptyInterval = queueEmptyInterval;
     }
 
-    public String getInfo() {
+    /** Returns a string containing information about this event.
+     * 
+     * @return The information string.
+     */
+    public String getInfo()
+    {
         return "set worker " + worker + " preCompletionInterval=" + Service.formatNanoseconds( preCompletionInterval ) + " computeTime=" + Service.formatNanoseconds( computeTime ) + " roundTripTime=" + Service.formatNanoseconds( roundTripTime ) + " queueInterval=" + Service.formatNanoseconds(queueInterval) + " queueEmptyInterval=" + Service.formatNanoseconds(queueEmptyInterval);
     }
     

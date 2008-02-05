@@ -16,14 +16,12 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
     private long queueEmptyMoment = 0L;
-    private long queueEmptyInterval = 0L;
     private final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
     private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private final WorkThread workThreads[] = new WorkThread[numberOfProcessors];
     private boolean stopped = false;
     private ReceivePortIdentifier exclusiveMaster = null;
-    private boolean sawJobs = false;
 
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
@@ -107,14 +105,18 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      */
     private void handleRunJobMessage( RunJobMessage msg )
     {
-        msg.setQueueTime( System.nanoTime() );
+        long now = System.nanoTime();
+	msg.setQueueTime( now );
         synchronized( queue ) {
-            sawJobs = true;
+            long queueEmptyInterval = 0L;
             if( queueEmptyMoment>0 ){
-                // Compute a queue empty interval from this moment.
-                queueEmptyInterval = System.nanoTime() - queueEmptyMoment;
+        	// The queue was empty before we entered this
+        	// job in it. Register this with this job,
+        	// so that we can give feedback to the master.
+                queueEmptyInterval = now - queueEmptyMoment;
                 queueEmptyMoment = 0L;
             }
+            msg.setQueueEmptyInterval( queueEmptyInterval );
             queue.add( msg );
             queue.notifyAll();
         }
@@ -131,7 +133,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     
         benchmarkScore = msg.runBenchmark();
         long benchmarkTime = System.nanoTime()-startTime;
-        ReceivePortIdentifier master = msg.getMaster();
+        ReceivePortIdentifier master = msg.source;
         PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), workThreads.length, benchmarkScore, benchmarkTime );
         if( Settings.traceNodes ) {
             Globals.tracer.traceSentMessage( m, receivePort.identifier() );
@@ -141,6 +143,25 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         }
         catch( IOException x ){
             Globals.log.reportError( "Cannot send ping reply to master " + master );
+            x.printStackTrace( Globals.log.getPrintStream() );
+        }
+    }
+
+    /**
+     * @param msg The time sync message to handle.
+     */
+    private void handleTimeSyncMessage( MasterTimeSyncMessage msg )
+    {
+        ReceivePortIdentifier master = msg.source;
+        WorkerTimeSyncMessage m = new WorkerTimeSyncMessage( receivePort.identifier() );
+        if( Settings.traceNodes ) {
+            Globals.tracer.traceSentMessage( m, receivePort.identifier() );
+        }
+        try {
+            sendPort.send( m, master );
+        }
+        catch( IOException x ){
+            Globals.log.reportError( "Cannot send time sync reply to master " + master );
             x.printStackTrace( Globals.log.getPrintStream() );
         }
     }
@@ -162,6 +183,11 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             RunJobMessage runJobMessage = (RunJobMessage) msg;
     
             handleRunJobMessage( runJobMessage );
+        }
+        else if( msg instanceof MasterTimeSyncMessage ){
+            MasterTimeSyncMessage ping = (MasterTimeSyncMessage) msg;
+    
+            handleTimeSyncMessage( ping );
         }
         else if( msg instanceof PingMessage ){
             PingMessage ping = (PingMessage) msg;
@@ -283,9 +309,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             try {
                 synchronized( queue ) {
                     if( queue.isEmpty() ) {
-                        if( sawJobs ){
-                            queueEmptyMoment = System.nanoTime();
-                        }
+                	queueEmptyMoment = System.nanoTime();
                         if( isStopped() ) {
                             // No jobs in queue, and worker is stopped. Tell
                             // return null to indicate that there won't be further
@@ -318,11 +342,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     public void reportJobResult( RunJobMessage jobMessage, JobReturn r )
     {
         long computeTime = System.nanoTime()-jobMessage.getQueueTime();
-        long interval;
-        synchronized( queue ){
-            interval = queueEmptyInterval;
-            queueEmptyInterval = 0L;
-        }
+        long interval = jobMessage.getQueueEmptyInterval();
         try {
             long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
             JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime, interval, queueInterval );

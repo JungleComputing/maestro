@@ -28,16 +28,19 @@ public class TransmissionEvent extends TraceEvent {
 	RESULT ( "Result" ),
 	
 	/** A request from work from a worker. */
-	ASK_WORK( "Ask work" ),
-	
+	ASK_WORK( "Ask-work" ),
+
 	/** A ping from a master. */
 	PING ("Ping" ),
 
+	/** A ping from a master. */
+	TIME_SYNC ("Time-sync" ),
+
 	/** A ping reply from a worker. */
-	PING_REPLY( "Ping reply" ),
+	PING_REPLY( "Ping-reply" ),
 	
 	/** Inform a worker of new neighbors. */
-	ADD_NEIGHBORS( "Add neighbors" ),
+	ADD_NEIGHBORS( "Add-neighbors" ),
 	
 	/** Inform the master of a job result. */
 	JOB_RESULT( "Job-result" ),

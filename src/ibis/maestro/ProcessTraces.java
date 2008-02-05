@@ -33,6 +33,12 @@ public class ProcessTraces {
         final long start;
         final String label;
 
+        /**
+         * Constructs a new slot in the trace output of transmission events.
+         * @param id The job id associated with the transmission event.
+         * @param start The start time in ms of the transmission event.
+         * @param label The label of the transmission event.
+         */
         public Slot(final long id, final long start, final String label)
         {
             super();
@@ -67,7 +73,7 @@ public class ProcessTraces {
         }
         else if( ev instanceof TraceAlias ) {
             TraceAlias a = (TraceAlias) ev;
-            registerAlias( a.source, a.dest );
+            registerAlias( a.porta, a.portb );
         }
         else if( ev instanceof WorkerRegistrationEvent ) {
             WorkerRegistrationEvent e = (WorkerRegistrationEvent) ev;
@@ -172,7 +178,7 @@ public class ProcessTraces {
 	if( ev instanceof TraceAlias ){
             TraceAlias a = (TraceAlias) ev;
             
-            System.out.println( "@" + Service.formatNanoseconds(timeFromStart) + " alias " + a.source + "," + a.dest );
+            System.out.println( "@" + Service.formatNanoseconds(timeFromStart) + " alias " + a.porta + "," + a.portb );
 	}
 	else if( ev instanceof WorkerRegistrationEvent ) {
 	    WorkerRegistrationEvent e = (WorkerRegistrationEvent) ev;
@@ -278,7 +284,7 @@ public class ProcessTraces {
     {
 	if( ev instanceof TraceAlias ){
 	    TraceAlias ta = (TraceAlias) ev;
-	    registerAlias( ta.source, ta.dest );
+	    registerAlias( ta.porta, ta.portb );
 	    return;
 	}
 	else if( ev instanceof TransmissionEvent ) {

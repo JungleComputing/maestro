@@ -106,6 +106,8 @@ public class Tracer {
      * @param roundTripTime The new estimated round-trip time.
      * @param computeTime The new estimated compute time.
      * @param preCompletionInterval The new estimated pre-completion interval.
+     * @param queueInterval The time in ns the last job spent in the worker queue.
+     * @param queueEmptyInterval The time in ns the queue was empty before the last job entered the queue.
      */
     public void traceWorkerSettings(ReceivePortIdentifier master,
 	    ReceivePortIdentifier worker,
