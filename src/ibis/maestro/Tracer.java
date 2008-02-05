@@ -92,15 +92,33 @@ public class Tracer {
 	log( e );
     }
 
+    /** Register that the two given receive ports belong to the same node.
+     * @param a The first receive port.
+     * @param b The second receive port.
+     */
     public void traceAlias( ReceivePortIdentifier a, ReceivePortIdentifier b )
     {
         log( new TraceAlias( a, b ) );
     }
 
-    public void traceWorkerSettings(ReceivePortIdentifier me,
-	    ReceivePortIdentifier port, int workThreads, double benchmarkScore,
-	    long l, long computeTime, long preCompletionInterval) {
+    /** Register the update of the settings for a worker in a master.
+     * @param master The master that did the update.
+     * @param worker The worker for which the update was done.
+     * @param roundTripTime The new estimated roundtrip time.
+     * @param computeTime The new estimated compute time.
+     * @param preCompletionInterval The new estimated precompletion interval.
+     */
+    public void traceWorkerSettings(ReceivePortIdentifier master,
+	    ReceivePortIdentifier worker,
+	    long roundTripTime, long computeTime, long preCompletionInterval) {
 
-	log( new TraceWorkerSetting( me, port, workThreads, benchmarkScore, l, computeTime, preCompletionInterval ) );
+	log( new WorkerSettingEvent( master, worker, roundTripTime, computeTime, preCompletionInterval ) );
     }
+
+    public void traceWorkerRegistration(ReceivePortIdentifier master,
+        ReceivePortIdentifier worker, double benchmarkScore, long pingTime,
+        long computeTime) {
+
+    log( new WorkerRegistrationEvent( master, worker, benchmarkScore, pingTime, computeTime ) );
+}
 }

@@ -3,10 +3,10 @@
  */
 package ibis.maestro;
 
-import java.util.LinkedList;
-
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
+
+import java.util.LinkedList;
 
 class WorkerInfo {
     /** The receive port of this worker. */
@@ -162,10 +162,11 @@ class WorkerInfo {
 
     /**
      * Register a job result for an outstanding job.
+     * @param master The master this info belongs to.
      * @param result The job result message that tells about this job.
      * @param completionListener A completion listener to be notified.
      */
-    public void registerJobResult(JobResultMessage result, CompletionListener completionListener)
+    public void registerJobResult(ReceivePortIdentifier master, JobResultMessage result, CompletionListener completionListener)
     {
         final long id = result.jobId;    // The identifier of the job, as handed out by us.
 
@@ -184,11 +185,25 @@ class WorkerInfo {
         roundTripTime = (roundTripTime+newRoundTripTime)/2;
         computeTime = (computeTime+newComputeTime)/2;
 
+        long sPreCompletionInterval;
+        long sComputeTime;
+        long sRoundTripTime;
+
         synchronized( activeJobs ){
             activeJobs.remove( e );
             // Adjust the precompletion interval to avoid both empty queues and full queues.
             // The /2 is a dampening factor.
             preCompletionInterval += (result.queueEmptyInterval-result.queueEmptyInterval)/2;
+            roundTripTime = (roundTripTime+newRoundTripTime)/2;
+            computeTime = (computeTime+newComputeTime)/2;
+            sPreCompletionInterval = preCompletionInterval;
+            sRoundTripTime = roundTripTime;
+            sComputeTime = computeTime;
+        }
+        if( Settings.traceNodes ) {
+            Globals.tracer.traceWorkerSettings( master,
+                port,
+                sRoundTripTime, sComputeTime, sPreCompletionInterval);
         }
         System.out.println( "Master: retired job " + e );		
     }

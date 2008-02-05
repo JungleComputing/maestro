@@ -39,7 +39,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
             Globals.log.reportProgress( "Received a job result " + result );
         }
 	synchronized( workers ) {
-	    workers.registerJobResult( result, completionListener );
+	    workers.registerJobResult( receivePort.identifier(), result, completionListener );
 	    workers.notifyAll();
 	}
     }

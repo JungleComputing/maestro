@@ -1,9 +1,9 @@
 package ibis.maestro;
 
-import java.util.Vector;
-
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
+
+import java.util.Vector;
 
 /**
  * The list of workers of a master.
@@ -45,6 +45,7 @@ public class WorkerList {
         }
         return sumMultipliers/workerCount;
     }
+
     void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port, int workThreads, long pingTime, double benchmarkScore )
     {
         long computeTime = (long) (benchmarkScore*estimateMultiplier());
@@ -52,7 +53,8 @@ public class WorkerList {
         long preCompletionInterval = pingTime/2;
         WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime+computeTime, computeTime, preCompletionInterval );
         if( Settings.traceNodes ) {
-            Globals.tracer.traceWorkerSettings( me, port, workThreads, benchmarkScore, pingTime+computeTime, computeTime, preCompletionInterval );
+            Globals.tracer.traceWorkerRegistration( me, port, benchmarkScore, pingTime, computeTime );
+            Globals.tracer.traceWorkerSettings( me, port, pingTime+computeTime, computeTime, preCompletionInterval );
         }
         synchronized( workers ){
             workers.add( worker );
@@ -145,10 +147,11 @@ public class WorkerList {
 
     /**
      * Register a job result in the info of the worker that handled it.
+     * @param me Which master am I?
      * @param result The job result.
      * @param completionListener The completion listener that should be notified.
      */
-    public void registerJobResult( JobResultMessage result, CompletionListener completionListener )
+    public void registerJobResult( ReceivePortIdentifier me, JobResultMessage result, CompletionListener completionListener )
     {
 	int ix = searchWorker( workers, result.source );
 	if( ix<0 ) {
@@ -156,7 +159,7 @@ public class WorkerList {
 	    return;
 	}
 	WorkerInfo w = workers.elementAt( ix );
-	w.registerJobResult( result, completionListener );
+	w.registerJobResult( me, result, completionListener );
     }
 
     /**

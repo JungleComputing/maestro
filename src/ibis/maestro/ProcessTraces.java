@@ -16,7 +16,7 @@ import java.util.Vector;
  *
  */
 public class ProcessTraces {
-    private static PriorityQueue<TransmissionEvent> events = new PriorityQueue<TransmissionEvent>();
+    private static PriorityQueue<TraceEvent> events = new PriorityQueue<TraceEvent>();
     private static int portNo = 0;
     private static long startTime = Long.MAX_VALUE;
     private static long endTime = Long.MIN_VALUE;
@@ -49,17 +49,30 @@ public class ProcessTraces {
         }
     }
 
-    private static void registerEvent( TransmissionEvent e )
+    private static void registerEvent( TraceEvent ev )
     {
-        long t = e.time;
+        long t = ev.time;
+
         if( t<startTime ){
             startTime = t;
         }
         if( t>endTime ){
             endTime = t;
         }
-        registerPort( e.source );
-        registerPort( e.dest );
+        if( ev instanceof TransmissionEvent ) {
+            TransmissionEvent e = (TransmissionEvent) ev;
+            registerPort( e.source );
+            registerPort( e.dest );
+        }
+        else if( ev instanceof TraceAlias ) {
+            TraceAlias a = (TraceAlias) ev;
+            
+            registerPort( a.source );
+            registerPort( a.dest );
+        }
+        else {
+            System.err.println( "Don't know how to register an event of type " + ev.getClass() );
+        }
     }
 
     private static void readFile( String fnm )
@@ -68,7 +81,7 @@ public class ProcessTraces {
 	    InputStream fis = new FileInputStream( fnm );
 	    ObjectInputStream in = new ObjectInputStream( fis );
 	    while( true ) {
-		TransmissionEvent res = (TransmissionEvent) in.readObject();
+		TraceEvent res = (TraceEvent) in.readObject();
 		if( res == null ) {
                     // End of the trace file is marked by a null entry.
 		    break;
@@ -169,7 +182,7 @@ public class ProcessTraces {
     private static void printEvents()
     {
 	while( !events.isEmpty() ) {
-	    TransmissionEvent e = events.poll();
+	    TraceEvent e = events.poll();
 	    printEvent( e );
         }
         while( slots.size()>0 ){
@@ -273,7 +286,7 @@ public class ProcessTraces {
         System.out.println( "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>" );
         System.out.println( "<svg>" );
         while( !events.isEmpty() ) {
-            TransmissionEvent e = events.poll();
+            TraceEvent e = events.poll();
             printSVGEvent( e );
         }
         while( slots.size()>0 ){
