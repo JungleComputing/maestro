@@ -67,7 +67,13 @@ class WorkerInfo {
         return ix;
     }
 
-    private long computeSubmitTime(long now)
+    /**
+     * Given the current time, compute the earliest moment we should submit a new
+     * job to this worker.
+     * @param now The current time.
+     * @return The earliest submit time.
+     */
+    private long computeSubmitTime( long now )
     {
         long completionTime[] = new long[workThreads];
     
@@ -86,12 +92,11 @@ class WorkerInfo {
         // we in essence get a very early completion time.
         // That's ok.
         synchronized( activeJobs ) {
-    
             for( ActiveJob j: activeJobs ) {
         	int ix = indexOfLowest( completionTime );
-    
         	long t = j.getCompletionTime( now );
-        	if( completionTime[ix]<t ) {
+
+                if( completionTime[ix]<t ) {
         	    completionTime[ix] = t;
         	}
             }
@@ -99,6 +104,9 @@ class WorkerInfo {
         int ix = indexOfLowest( completionTime );
         // The time we should submit the job.
         long submitTime = Math.max( now, completionTime[ix]-preCompletionInterval );
+        if( Settings.traceMasterProgress ){
+            System.out.println( "computeSubmitTime(): submitTime-now=" + Service.formatNanoseconds(submitTime-now) + " completionTime[" + ix + "]-now=" + Service.formatNanoseconds(completionTime[ix]-now) );
+        }
         return submitTime;
     }
 
@@ -111,7 +119,10 @@ class WorkerInfo {
     public long getCompletionTime( long now )
     {
 	long submitTime = computeSubmitTime(now);
-	return submitTime+roundTripTime;
+        if( submitTime>now ){
+            return Long.MAX_VALUE;
+        }
+	return now+roundTripTime;
     }
 
     /**
@@ -122,7 +133,7 @@ class WorkerInfo {
      */
     public long getBusyInterval( long now )
     {
-	long submitTime = computeSubmitTime(now);
+	long submitTime = computeSubmitTime( now );
 	return submitTime-now;
     }
 
@@ -200,12 +211,14 @@ class WorkerInfo {
             sRoundTripTime = roundTripTime;
             sComputeTime = computeTime;
         }
-        if( Settings.traceNodes ) {
+        if( Settings.writeTrace ) {
             Globals.tracer.traceWorkerSettings( master,
                 port,
                 sRoundTripTime, sComputeTime, sPreCompletionInterval, result.queueInterval, result.queueEmptyInterval );
         }
-        System.out.println( "Master: retired job " + e );		
+        if( Settings.traceMasterProgress ){
+            System.out.println( "Master: retired job " + e );		
+        }
     }
 
     /**

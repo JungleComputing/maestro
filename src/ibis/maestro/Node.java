@@ -154,7 +154,7 @@ public class Node implements RegistryEventHandler {
 	    PacketBlockingReceivePort.portType
 	);
 	IbisIdentifier maestro = ibis.registry().elect( "maestro" );
-	isMaestro = maestro.equals( ibis );
+	isMaestro = maestro.equals( ibis.identifier() );
 	this.maestros.add( new MaestroInfo( maestro ) );
 	master = new Master( ibis, listener );
 	master.start();

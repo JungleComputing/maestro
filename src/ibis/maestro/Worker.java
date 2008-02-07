@@ -40,7 +40,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             workThreads[i] = t;
             t.start();
         }
-        if( Settings.traceNodes ){
+        if( Settings.writeTrace ){
             Globals.tracer.traceAlias( master.identifier(), receivePort.identifier() );
         }
         receivePort.enable();   // We're open for business.
@@ -82,7 +82,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private void sendResignMessage( ReceivePortIdentifier master ) throws IOException
     {
         WorkerResignMessage msg = new WorkerResignMessage( receivePort.identifier() );
-        if( Settings.traceNodes ) {
+        if( Settings.writeTrace ) {
             Globals.tracer.traceSentMessage( msg, master );
         }
         sendPort.send(msg, master);
@@ -135,7 +135,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         long benchmarkTime = System.nanoTime()-startTime;
         ReceivePortIdentifier master = msg.source;
         PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), workThreads.length, benchmarkScore, benchmarkTime );
-        if( Settings.traceNodes ) {
+        if( Settings.writeTrace ) {
             Globals.tracer.traceSentMessage( m, receivePort.identifier() );
         }
         try {
@@ -154,7 +154,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     {
         ReceivePortIdentifier master = msg.source;
         WorkerTimeSyncMessage m = new WorkerTimeSyncMessage( receivePort.identifier() );
-        if( Settings.traceNodes ) {
+        if( Settings.writeTrace ) {
             Globals.tracer.traceSentMessage( m, receivePort.identifier() );
         }
         try {
@@ -176,7 +176,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Worker: received message " + msg );
         }
-        if( Settings.traceNodes ) {
+        if( Settings.writeTrace ) {
             Globals.tracer.traceReceivedMessage( msg, p.identifier() );
         }
         if( msg instanceof RunJobMessage ){
@@ -229,7 +229,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         try {
             WorkRequestMessage msg = new WorkRequestMessage( receivePort.identifier() );
 
-            if( Settings.traceNodes ) {
+            if( Settings.writeTrace ) {
                 // FIXME: compute a receive port identifier for this one.
                 Globals.tracer.traceSentMessage( msg, null );
             }
@@ -346,7 +346,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         try {
             long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
             JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime, interval, queueInterval );
-            if( Settings.traceNodes ) {
+            if( Settings.writeTrace ) {
                 Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
             }
             sendPort.send( msg, jobMessage.getResultPort() );

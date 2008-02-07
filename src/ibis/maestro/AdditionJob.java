@@ -3,7 +3,7 @@ package ibis.maestro;
 /** A Maestro job that multiplies the array of values it is given. */
 public class AdditionJob implements Job {
     private static final int BLOCK_SIZE = 1000;
-    private static final int ITERATIONS = 20;  // The number of times we should do the addition.
+    private static final int ITERATIONS = 200;  // The number of times we should do the addition.
     private static final int LEVELS = 2;
     private static int level = 0;
     private static double sum = 0.0;
@@ -60,7 +60,7 @@ public class AdditionJob implements Job {
     @Override
     public String toString()
     {
-	return "(MultiplyJob [" + values[0] + ",...," + values[values.length-1] + "])";
+	return "(AdditionJob level=" + level + " [" + values[0] + ",...," + values[values.length-1] + "])";
     }
 
 }

@@ -2,8 +2,6 @@ package ibis.maestro;
 
 import ibis.server.Server;
 
-import java.util.Properties;
-
 /**
  * Small test program.
  * @author Kees van Reeuwijk
@@ -31,13 +29,6 @@ public class TestProg {
     @SuppressWarnings("synthetic-access")
     private void run() throws Exception
     {
-        if( false ){
-            // Create an ibis instance.
-            Properties serverProperties = new Properties();
-            //serverProperties.setProperty( "ibis.server.port", "12642" );
-            ibisServer = new Server( serverProperties );
-            String serveraddress = ibisServer.getLocalAddress();
-        }
         Node node = new Node( new Listener() );
 
         if( node.isMaestro() ) {

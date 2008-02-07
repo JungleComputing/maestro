@@ -52,7 +52,7 @@ public class WorkerList {
         long pingTime = benchmarkRoundtripTime-benchmarkComputeTime;
         long preCompletionInterval = (benchmarkRoundtripTime-benchmarkComputeTime)/2;
         WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime+estimatedComputeTime, estimatedComputeTime, preCompletionInterval );
-        if( Settings.traceNodes ) {
+        if( Settings.writeTrace ) {
             Globals.tracer.traceWorkerRegistration( me, port, benchmarkScore, benchmarkRoundtripTime, benchmarkComputeTime );
             Globals.tracer.traceWorkerSettings( me, port, pingTime+estimatedComputeTime, estimatedComputeTime, preCompletionInterval, 0L, 0L );
         }
@@ -80,21 +80,22 @@ public class WorkerList {
     WorkerInfo getFastestWorker()
     {
 	long now = System.nanoTime();
-	long maxIdle = -1;
+	long bestCompletionTime = Long.MAX_VALUE;
 	WorkerInfo bestWorker = null;
 
 	synchronized( workers ) {
 	    for( WorkerInfo worker: workers ) {
-		long idle = worker.getCompletionTime( now );
+	        long completionTime = worker.getCompletionTime( now );
 
-		if( idle>=0 ) {
-		    if( maxIdle<idle ) {
-			maxIdle = idle;
-			bestWorker = worker;
-		    }
-		}
+	        if( bestCompletionTime>completionTime ) {
+	            completionTime = bestCompletionTime;
+	            bestWorker = worker;
+	        }
 	    }
 	}
+        if( Settings.traceFastestWorker ){
+            System.out.println( "getFastestWorker(): bestWorker=" + bestWorker + " bestCompletionTime-now=" + Service.formatNanoseconds( bestCompletionTime-now ) );
+        }
 	return bestWorker;
     }
 

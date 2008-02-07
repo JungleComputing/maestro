@@ -106,7 +106,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         synchronized( pingTargets ){
             pingTargets.add( t );
         }
-        if( Settings.traceNodes ) {
+        if( Settings.writeTrace ) {
             // Send a message to the new worker to synchronize clocks.
             // This message is only sent if we are tracing, because only the
             // tracer is interested.
@@ -131,7 +131,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
             Globals.log.reportProgress( "Sending ping message " + msg + " to worker " + worker );
         }            
         try {
-            if( Settings.traceNodes ) {
+            if( Settings.writeTrace ) {
                 Globals.tracer.traceSentMessage( msg, worker );
             }
             sendPort.send( msg, worker );
@@ -156,7 +156,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Master: received message " + msg );
         }
-        if( Settings.traceNodes ) {
+        if( Settings.writeTrace ) {
             Globals.tracer.traceReceivedMessage( msg, p.identifier() );
         }
         if( msg instanceof JobResultMessage ) {
@@ -261,20 +261,28 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     @Override
     public void run()
     {
-        System.out.println( "Starting master thread" );
+        if( Settings.traceMasterProgress ){
+            System.out.println( "Starting master thread" );
+        }
         while( true ){
-            System.out.println( "Next round for master" );
+            if( Settings.traceMasterProgress ){
+                System.out.println( "Next round for master" );
+            }
             if( !areWaitingJobs() ) {
                 if( isStopped() ){
                     // No jobs, and we are stopped; don't try to send new jobs.
                     break;
                 }
-                System.out.println( "Nothing in the queue; waiting" );
+                if( Settings.traceMasterProgress ){
+                    System.out.println( "Nothing in the queue; waiting" );
+                }
                 // Since the queue is empty, we can only wait for new jobs.
                 try {
                     // There is nothing to do; Wait for new queue entries.
                     synchronized( queue ){
-                        System.out.println( "Master: waiting for new jobs in queue" );
+                        if( Settings.traceMasterProgress ){
+                            System.out.println( "Master: waiting for new jobs in queue" );
+                        }
                         queue.wait();
                     }
                 } catch (InterruptedException e) {
@@ -285,14 +293,18 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                 // We have at least one job, now try to give it to a worker.
                 WorkerInfo worker = workers.getFastestWorker();
                 if( worker == null ) {
-                    System.out.println( "No ready workers; waiting" );
+                    if( Settings.traceMasterProgress ){
+                        System.out.println( "No ready workers; waiting" );
+                    }
                     // FIXME: advertise for new workers.
                     long sleepTime = workers.getBusyInterval();
                     try {
                         // There is nothing to do; Wait for workers to complete
                         // or new workers.
                         synchronized( workers ){
-                            System.out.println( "Master: waiting for a ready worker" );
+                            if( Settings.traceMasterProgress ){
+                                System.out.println( "Master: waiting " + Service.formatNanoseconds( sleepTime )+ "for a ready worker" );
+                            }
                             workers.wait( sleepTime/1000000 );
                         }
                     } catch (InterruptedException e) {
@@ -301,9 +313,12 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                 }
                 else {
                     // We have a worker willing to the job, now get a job to do.
-                    System.out.println( "Submitting job to worker" );
                     Job job;
                     long jobId;
+
+                    if( Settings.traceMasterProgress ){
+                        System.out.println( "Submitting job to worker" );
+                    }
                     synchronized( queue ) {
                         job = queue.remove();
                         jobId = jobNo++;
@@ -313,7 +328,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                 	worker.registerJobStart( job, jobId );
                     }
                     try {
-                        if( Settings.traceNodes ) {
+                        if( Settings.writeTrace ) {
                             Globals.tracer.traceSentMessage( msg, worker.getPort() );
                         }
                         sendPort.send( msg, worker.getPort() );
