@@ -9,6 +9,7 @@ import ibis.ipl.RegistryEventHandler;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.Vector;
 
 /**
  * A node in the Maestro dataflow network.
@@ -17,10 +18,76 @@ import java.util.Properties;
  *
  */
 public class Node implements RegistryEventHandler {
-    IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE );
+    IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE, IbisCapabilities.ELECTIONS_STRICT );
     private final Ibis ibis;
     private final Master master;
     private final Worker worker;
+    
+    /** The list of maestro nodes in this computation. */
+    private Vector<MaestroInfo> maestros = new Vector<MaestroInfo>();
+    private boolean isMaestro;
+
+    /** The list of maestros in this computation. */
+    private static class MaestroInfo {
+	IbisIdentifier ibis;   // The identifier of the maestro.
+	boolean seen;          // Did we already see this maestro?
+
+	MaestroInfo(IbisIdentifier id ) {
+	    this.ibis = id;
+	}
+    }
+
+    /**
+     * Returns true iff this node is a maestro.
+     * @return True iff this node is a maestro.
+     */
+    public boolean isMaestro() { return isMaestro; }
+
+    /**
+     * Registers the ibis with the given identifier as one that has joined the
+     * computation.
+     * @param id The identifier of the ibis.
+     */
+    private void registerIbisJoined( IbisIdentifier id )
+    {
+	for( MaestroInfo m: maestros ) {
+	    if( m.ibis.equals( id ) ) {
+		m.seen = true;
+	    }
+	}
+    }
+
+    /** Registers the ibis with the given identifier as one that has left the
+     * computation.
+     * @param id The ibis that has left.
+     */
+    private void registerIbisLeft( IbisIdentifier id )
+    {
+	int ix = maestros.size();
+
+	while( ix>0 ) {
+	    MaestroInfo m = maestros.get(ix);
+	    if( m.ibis.equals( id )) {
+		maestros.remove(ix);
+	    }
+	}
+	if( maestros.size() == 0 ) {
+	    // Everyone has left, we might as well stop.
+	    finish();
+	}
+    }
+
+    /**
+     * A new Ibis joined the computation.
+     * @param theIbis The ibis that joined the computation.
+     */
+    @Override
+    public void joined( IbisIdentifier theIbis )
+    {
+        registerIbisJoined( theIbis );
+        master.addIbis( theIbis );
+        worker.addIbis( theIbis );
+    }
 
     /**
      * An ibis has died.
@@ -29,6 +96,19 @@ public class Node implements RegistryEventHandler {
     @Override
     public void died( IbisIdentifier theIbis )
     {
+	registerIbisLeft( theIbis );
+        worker.removeIbis( theIbis );
+        master.removeIbis( theIbis );
+    }
+
+    /**
+     * An ibis has explicitly left the computation.
+     * @param theIbis The ibis that left.
+     */
+    @Override
+    public void left( IbisIdentifier theIbis )
+    {
+        registerIbisLeft( theIbis );
         worker.removeIbis( theIbis );
         master.removeIbis( theIbis );
     }
@@ -55,31 +135,10 @@ public class Node implements RegistryEventHandler {
     }
 
     /**
-     * A new Ibis joined the computation.
-     * @param theIbis The ibis that joined the computation.
-     */
-    @Override
-    public void joined( IbisIdentifier theIbis )
-    {
-        master.addIbis( theIbis );
-        worker.addIbis( theIbis );
-    }
-
-    /**
-     * An ibis has explicitly left the computation.
-     * @param theIbis The ibis that left.
-     */
-    @Override
-    public void left(IbisIdentifier theIbis) {
-        worker.removeIbis( theIbis );
-        master.removeIbis( theIbis );
-    }
-
-    /**
      * Constructs a new Maestro node using the given name server and completion listener.
      * @param listener A completion listener for computations completed by this node.
-     * @throws IbisCreationFailedException
-     * @throws IOException
+     * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
+     * @throws IOException Thrown if for some reason we cannot communicate.
      */
     public Node( CompletionListener listener ) throws IbisCreationFailedException, IOException
     {
@@ -94,6 +153,9 @@ public class Node implements RegistryEventHandler {
 	    PacketUpcallReceivePort.portType,
 	    PacketBlockingReceivePort.portType
 	);
+	IbisIdentifier maestro = ibis.registry().elect( "maestro" );
+	isMaestro = maestro.equals( ibis );
+	this.maestros.add( new MaestroInfo( maestro ) );
 	master = new Master( ibis, listener );
 	master.start();
         worker = new Worker( ibis, master );

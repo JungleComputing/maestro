@@ -40,11 +40,13 @@ public class TestProg {
         }
         Node node = new Node( new Listener() );
 
-        for( int i=0; i<JOBCOUNT; i++ ){
-            MultiplyJob j = new MultiplyJob( 12*i );
-            node.submit( j );
+        if( node.isMaestro() ) {
+            for( int i=0; i<JOBCOUNT; i++ ){
+        	AdditionJob j = new AdditionJob( 12*i );
+        	node.submit( j );
+            }
+            node.finish();
         }
-        node.finish();
         Globals.tracer.close();
         if( ibisServer != null ){
             ibisServer.end( true );
