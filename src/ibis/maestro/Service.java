@@ -130,12 +130,27 @@ public class Service
      * @param t The time to format.
      * @return The formatted string.
      */
-    public static String formatNanoseconds( long t )
+    public static String formatNanoseconds( final long t )
     {
-        if( (t % 1000) == 0 ) {
-            return nsFormatter.format( t/1000 ) + "us";
-        }
-        return nsFormatter.format( t ) + "ns";
+	if( t == 0 ) {
+	    return "0 s";
+	}
+	if( false ) {
+	    if( (t % 1000) == 0 ) {
+		return nsFormatter.format( t/1000 ) + "us";
+	    }
+	    return nsFormatter.format( t ) + "ns";
+	}
+	if( t<2000L && t>-2000L ) {
+	    return String.format( "%+5d ns", t );
+	}
+	if( t<2000000L && t>-2000000L ) {
+	    return String.format( "% 4.2f us", t/1000.0 );
+	}
+	if( t<2000000000L && t>-2000000000L ) {
+	    return String.format( "% 4.2f ms", t/1000000.0 );
+	}
+	return String.format( "% 4.2f s", t/1000000000.0 );
     }
 
     /** Wait for the given thread to terminate.

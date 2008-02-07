@@ -231,7 +231,9 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
             queue.add( j );
             queue.notifyAll();
         }
-        System.out.println( "Submitted job " + j + " to master" );
+        if( Settings.traceMasterProgress ) {
+            System.out.println( "Master: received job " + j );
+        }
     }
 
     /**
@@ -421,5 +423,10 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                 }
             }
         }
+    }
+
+    /** Print some statistics about the entire master run. */
+    public void printStatistics()
+    {
     }
 }

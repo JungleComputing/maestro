@@ -194,6 +194,8 @@ public class Node implements RegistryEventHandler {
         System.out.println( "Node master has terminated; terminating worker" );
         worker.setStopped();
         Service.waitToTerminate( worker );
+        master.printStatistics();
+        worker.printStatistics();
         try {
             ibis.end();
         }

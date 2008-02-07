@@ -8,7 +8,7 @@ import ibis.server.Server;
  *
  */
 public class TestProg {
-    private static final int JOBCOUNT = 100;
+    private static final int JOBCOUNT = 1000;
 
     private class Listener implements CompletionListener
     {
@@ -19,7 +19,7 @@ public class TestProg {
 	 */
 	@Override
 	public void jobCompleted(Job j, JobReturn result ) {
-	    System.out.println( "Job " + j + ": result is " + result );
+	    //System.out.println( "Job " + j + ": result is " + result );
 	}
 	
     }

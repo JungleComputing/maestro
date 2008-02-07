@@ -27,14 +27,14 @@ public class Settings {
     /**
      * Produce a log file with information for a timing trace?
      */
-    public static final boolean writeTrace = true;
+    public static final boolean writeTrace = false;
 
     /**
      * Trace the selection of the fastest worker.
      */
     public static final boolean traceFastestWorker = false;
 
-    /*
+    /**
      * Trace the progress of masters?
      */
     public static final boolean traceMasterProgress = false;

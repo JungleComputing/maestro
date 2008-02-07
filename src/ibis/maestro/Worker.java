@@ -22,6 +22,11 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private final WorkThread workThreads[] = new WorkThread[numberOfProcessors];
     private boolean stopped = false;
     private ReceivePortIdentifier exclusiveMaster = null;
+    private final long startTime;
+    private long stopTime;
+    private long idleTime = 0;      // Cumulative idle time during the run.
+    private long queueTime = 0;     // Cumulative queue time of all jobs.
+    private int jobCount = 0;
 
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
@@ -44,6 +49,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             Globals.tracer.traceAlias( master.identifier(), receivePort.identifier() );
         }
         receivePort.enable();   // We're open for business.
+        startTime = System.nanoTime();
     }
 
     private synchronized boolean isStopped()
@@ -114,6 +120,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         	// job in it. Register this with this job,
         	// so that we can give feedback to the master.
                 queueEmptyInterval = now - queueEmptyMoment;
+                idleTime += queueEmptyInterval;
                 queueEmptyMoment = 0L;
             }
             msg.setQueueEmptyInterval( queueEmptyInterval );
@@ -251,6 +258,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             Service.waitToTerminate( workThreads[i] );
             System.out.println( "Ended work thread " + i );
         }
+        stopTime = System.nanoTime();
         System.out.println( "End of worker thread" );
     }
 
@@ -317,7 +325,9 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
                             break;
                         }
                         if( !findNewMaster() ) {
-                            System.out.println( "Worker: waiting for new jobs in queue" );
+                            if( Settings.traceWorkerProgress ) {
+                        	System.out.println( "Worker: waiting for new jobs in queue" );
+                            }
                             queue.wait();
                         }
                     }
@@ -345,12 +355,16 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         long interval = jobMessage.getQueueEmptyInterval();
         try {
             long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
+            queueTime += queueInterval;
+            jobCount++;
             JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime, interval, queueInterval );
             if( Settings.writeTrace ) {
                 Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
             }
             sendPort.send( msg, jobMessage.getResultPort() );
-            System.out.println( "Returned job result " + r + " for job "  + jobMessage );
+            if( Settings.traceWorkerProgress ) {
+        	System.out.println( "Returned job result " + r + " for job "  + jobMessage );
+            }
         }
         catch( IOException x ){
             // Something went wrong in sending the result back.
@@ -359,4 +373,17 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         }
     }
 
+
+    /** Print some statistics about the entire worker run. */
+    public void printStatistics()
+    {
+	if( stopTime<startTime ) {
+	    System.err.println( "Worker didn't stop yet" );
+	}
+	long workInterval = stopTime-startTime;
+	double idlePercentage = 100.0*((double) idleTime/(double) workInterval);
+	System.out.println( "Worker: run time   = " + Service.formatNanoseconds( workInterval ) );
+	System.out.println( "Worker: idle time  = " + Service.formatNanoseconds( idleTime ) + String.format( " (%.1f%%)", idlePercentage ) );
+	System.out.println( "Worker: av. queue time = " + Service.formatNanoseconds( queueTime/jobCount ) );
+    }
 }
