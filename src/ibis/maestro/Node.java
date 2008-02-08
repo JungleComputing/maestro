@@ -52,6 +52,7 @@ public class Node implements RegistryEventHandler {
     {
 	for( MaestroInfo m: maestros ) {
 	    if( m.ibis.equals( id ) ) {
+	        System.out.println( "Maestro ibis " + id + " was registered" );
 		m.seen = true;
 	    }
 	}
@@ -126,6 +127,7 @@ public class Node implements RegistryEventHandler {
     {
         if( name.equals( "meastro" ) ){
             maestros.add( new MaestroInfo( theIbis ) );
+            System.out.println( "Ibis " + theIbis + " got elected as maestro" );
         }
     }
 
