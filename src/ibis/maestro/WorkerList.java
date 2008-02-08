@@ -41,15 +41,24 @@ public class WorkerList {
             // There are no workers to compare to, so we will have to invent
             // an estimate. This magic number says that this job is just as
             // fast as the benchmark run we use to benchmark the nodes.
-            return 20.0;
+            return -1;
         }
         return sumMultipliers/workerCount;
     }
 
     void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port, int workThreads, long benchmarkComputeTime, long benchmarkRoundtripTime, double benchmarkScore )
     {
-        long estimatedComputeTime = (long) (benchmarkScore*estimateMultiplier());
         long pingTime = benchmarkRoundtripTime-benchmarkComputeTime;
+        long estimatedComputeTime;
+        if( workers.size() == 0 ) {
+            // We have no reference to estimate the compute time.
+            // Arbitrarily assume the compute time is the same as the
+            // ping time.
+            estimatedComputeTime = pingTime;
+        }
+        else {
+            estimatedComputeTime = (long) (benchmarkScore*estimateMultiplier());
+        }
         long preCompletionInterval = (benchmarkRoundtripTime-benchmarkComputeTime)/2;
         WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime+estimatedComputeTime, estimatedComputeTime, preCompletionInterval );
         if( Settings.writeTrace ) {

@@ -24,6 +24,10 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     private CompletionListener completionListener;
     private boolean stopped = false;
     private long jobNo = 1;
+    private long jobCount = 0;
+    private long workerCount = 0;
+    private final long startTime = System.nanoTime();
+    private long stopTime = 0;
 
     private void unsubscribeWorker( ReceivePortIdentifier worker )
     {
@@ -81,6 +85,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
             pingTargets.remove( t );
         }
         synchronized( workers ){
+            workerCount++;
             workers.subscribeWorker( receivePort.identifier(), worker, workThreads, benchmarkTime, pingTime, m.getBenchmarkScore() );
             System.out.println( "A new worker " + worker + " has arrived" );
             workers.notifyAll();
@@ -195,8 +200,6 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     public Master( Ibis ibis, CompletionListener l ) throws IOException
     {
         super( "Master" );
-        setDaemon(false);
-
         completionListener = l;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
@@ -228,6 +231,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     public void submit( Job j )
     {
         synchronized( queue ) {
+            jobCount++;
             queue.add( j );
             queue.notifyAll();
         }
@@ -371,6 +375,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         catch( IOException x ) {
             // Nothing we can do about it.
         }
+        stopTime = System.nanoTime();
         System.out.println( "End of master thread" );
     }
 
@@ -428,5 +433,12 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     /** Print some statistics about the entire master run. */
     public void printStatistics()
     {
+	if( stopTime<startTime ) {
+	    System.err.println( "Worker didn't stop yet" );
+	}
+	long workInterval = stopTime-startTime;
+	System.out.printf( "Master: # workers        = %5d\n", workerCount );
+	System.out.printf( "Worker: # jobs           = %5d\n", jobCount );
+	System.out.println( "Worker: run time         = " + Service.formatNanoseconds( workInterval ) );
     }
 }

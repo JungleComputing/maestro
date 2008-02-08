@@ -43,7 +43,7 @@ public class Tracer {
 	    System.err.println( "Cannot write to trace file: " + x.getLocalizedMessage() );
 	}
     }
-    
+
     /** Close the logger. */
     public void close()
     {
@@ -56,16 +56,16 @@ public class Tracer {
 	    }
 	}
     }
-    
+
     private long extractJobId( Message msg )
     {
-        if( msg instanceof RunJobMessage ){
-            return ((RunJobMessage) msg).jobId;
-        }
-        if( msg instanceof JobResultMessage ){
-            return ((JobResultMessage) msg).jobId;
-        }
-        return -1L;
+	if( msg instanceof RunJobMessage ){
+	    return ((RunJobMessage) msg).jobId;
+	}
+	if( msg instanceof JobResultMessage ){
+	    return ((JobResultMessage) msg).jobId;
+	}
+	return -1L;
     }
 
     /**
@@ -97,7 +97,7 @@ public class Tracer {
      */
     public void traceAlias( ReceivePortIdentifier a, ReceivePortIdentifier b )
     {
-        log( new TraceAlias( a, b ) );
+	log( new TraceAlias( a, b ) );
     }
 
     /** Register the update of the settings for a worker in a master.
@@ -112,23 +112,23 @@ public class Tracer {
     public void traceWorkerSettings(ReceivePortIdentifier master,
 	    ReceivePortIdentifier worker,
 	    long roundTripTime, long computeTime, long preCompletionInterval,
-            long queueInterval, long queueEmptyInterval ) {
+	    long queueInterval, long queueEmptyInterval ) {
 
 	log( new WorkerSettingEvent( master, worker, roundTripTime, computeTime, preCompletionInterval, queueInterval, queueEmptyInterval ) );
     }
 
     /**
      * 
-     * @param master
-     * @param worker
-     * @param benchmarkScore
-     * @param pingTime
-     * @param computeTime
+     * @param master The master that registered the worker
+     * @param worker The worker that was registered.
+     * @param benchmarkScore The benchmark score of the worker.
+     * @param pingTime The total time for the ping operation (including the benchmark ping)
+     * @param computeTime The time it took to run the benchmark.
      */
     public void traceWorkerRegistration(ReceivePortIdentifier master,
-        ReceivePortIdentifier worker, double benchmarkScore, long pingTime,
-        long computeTime) {
+	    ReceivePortIdentifier worker, double benchmarkScore, long pingTime,
+	    long computeTime) {
 
-    log( new WorkerRegistrationEvent( master, worker, benchmarkScore, pingTime, computeTime ) );
-}
+	log( new WorkerRegistrationEvent( master, worker, benchmarkScore, pingTime, computeTime ) );
+    }
 }

@@ -2,10 +2,10 @@ package ibis.maestro;
 
 /** A Maestro job that multiplies the array of values it is given. */
 public class AdditionJob implements Job {
-    private static final int BLOCK_SIZE = 2000;
-    private static final int ITERATIONS = 2000;  // The number of times we should do the addition.
+    private static final int BLOCK_SIZE = 1000;
+    private static final int ITERATIONS = 8000;  // The number of times we should do the addition.
     private static final int LEVELS = 2;
-    private static int level = 0;
+    private int level = 0;
     private static double sum = 0.0;
     private final double values[];
     /** Contractual obligation. */

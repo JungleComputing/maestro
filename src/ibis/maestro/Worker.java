@@ -27,6 +27,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private long idleTime = 0;      // Cumulative idle time during the run.
     private long queueTime = 0;     // Cumulative queue time of all jobs.
     private int jobCount = 0;
+    private long workTime = 0;
 
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
@@ -351,11 +352,13 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     @Override
     public void reportJobResult( RunJobMessage jobMessage, JobReturn r )
     {
-        long computeTime = System.nanoTime()-jobMessage.getQueueTime();
+        long now = System.nanoTime();
+	long computeTime = now-jobMessage.getQueueTime();
         long interval = jobMessage.getQueueEmptyInterval();
         try {
             long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
             queueTime += queueInterval;
+            workTime += now-jobMessage.getRunTime();
             jobCount++;
             JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime, interval, queueInterval );
             if( Settings.writeTrace ) {
@@ -382,8 +385,13 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
 	}
 	long workInterval = stopTime-startTime;
 	double idlePercentage = 100.0*((double) idleTime/(double) workInterval);
-	System.out.println( "Worker: run time   = " + Service.formatNanoseconds( workInterval ) );
-	System.out.println( "Worker: idle time  = " + Service.formatNanoseconds( idleTime ) + String.format( " (%.1f%%)", idlePercentage ) );
-	System.out.println( "Worker: av. queue time = " + Service.formatNanoseconds( queueTime/jobCount ) );
+	double workPercentage = 100.0*((double) workTime/(double) workInterval);
+	System.out.printf( "Worker: # threads        = %5d\n", workThreads.length );
+	System.out.printf( "Worker: # jobs           = %5d\n", jobCount );
+	System.out.println( "Worker: run time         = " + Service.formatNanoseconds( workInterval ) );
+	System.out.println( "Worker: total work time  = " + Service.formatNanoseconds( workTime ) + String.format( " (%.1f%%)", workPercentage )  );
+	System.out.println( "Worker: total idle time  = " + Service.formatNanoseconds( idleTime ) + String.format( " (%.1f%%)", idlePercentage ) );
+	System.out.println( "Worker: queue time/job   = " + Service.formatNanoseconds( queueTime/jobCount ) );
+	System.out.println( "Worker: compute time/job = " + Service.formatNanoseconds( workTime/jobCount ) );
     }
 }
