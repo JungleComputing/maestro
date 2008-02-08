@@ -39,7 +39,6 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     public Worker( Ibis ibis, Master master ) throws IOException
     {
         super( "Worker" );   // Create a thread with a name.
-        unusedNeighbors.add( ibis.identifier() );
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         for( int i=0; i<numberOfProcessors; i++ ) {
