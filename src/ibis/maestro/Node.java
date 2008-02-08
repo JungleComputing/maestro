@@ -203,6 +203,14 @@ public class Node implements RegistryEventHandler {
     public void finish()
     {
         master.setStopped();
+        waitToTerminate();
+    }
+
+    /**
+     * Wait for this node to finish.
+     */
+    public void waitToTerminate()
+    {
         /**
          * Everything interesting happens in the master and worker.
          * So all we do here is wait for the master and worker to terminate.

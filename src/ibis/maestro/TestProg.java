@@ -32,8 +32,11 @@ public class TestProg {
         	AdditionJob j = new AdditionJob( 12*i );
         	node.submit( j );
             }
+            node.finish();
         }
-        node.finish();
+        else {
+            node.waitToTerminate();
+        }
         Globals.tracer.close();
         System.out.println( "Test program has ended" );
     }
