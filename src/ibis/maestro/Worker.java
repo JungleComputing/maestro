@@ -28,6 +28,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private long queueTime = 0;     // Cumulative queue time of all jobs.
     private int jobCount = 0;
     private long workTime = 0;
+    private int runningJobs = 0;
 
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
@@ -137,10 +138,10 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     {
         // First force the benchmark to be compiled.
         double benchmarkScore = msg.runBenchmark();
-        long startTime = System.nanoTime();
+        long benchmarkStartTime = System.nanoTime();
     
         benchmarkScore = msg.runBenchmark();
-        long benchmarkTime = System.nanoTime()-startTime;
+        long benchmarkTime = System.nanoTime()-benchmarkStartTime;
         ReceivePortIdentifier master = msg.source;
         PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), workThreads.length, benchmarkScore, benchmarkTime );
         if( Settings.writeTrace ) {
@@ -319,13 +320,13 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
                 synchronized( queue ) {
                     if( queue.isEmpty() ) {
                 	queueEmptyMoment = System.nanoTime();
-                        if( isStopped() ) {
-                            // No jobs in queue, and worker is stopped. Tell
-                            // return null to indicate that there won't be further
-                            // jobs.
+                        if( isStopped() && runningJobs == 0 ) {
+                            // No jobs in queue, and worker is stopped. Return null to
+                            // indicate that there won't be further jobs.
                             break;
                         }
                         if( !findNewMaster() ) {
+                            // There was no new master to subscribe to.
                             if( Settings.traceWorkerProgress ) {
                         	System.out.println( "Worker: waiting for new jobs in queue" );
                             }
@@ -333,6 +334,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
                         }
                     }
                     else {
+                        runningJobs++;
                         return queue.remove();
                     }
 
@@ -357,9 +359,14 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         long interval = jobMessage.getQueueEmptyInterval();
         try {
             long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
-            queueTime += queueInterval;
-            workTime += now-jobMessage.getRunTime();
-            jobCount++;
+
+            synchronized( queue ){
+                queueTime += queueInterval;
+                workTime += now-jobMessage.getRunTime();
+                jobCount++;
+                runningJobs--;
+                queue.notifyAll();
+            }
             JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime, interval, queueInterval );
             if( Settings.writeTrace ) {
                 Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
@@ -387,7 +394,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
 	double idlePercentage = 100.0*((double) idleTime/(double) workInterval);
 	double workPercentage = 100.0*((double) workTime/(double) workInterval);
 	System.out.printf( "Worker: # threads        = %5d\n", workThreads.length );
-	System.out.printf( "Worker: # jobs           = %5d\n", jobCount );
+        System.out.printf( "Worker: # jobs           = %5d\n", jobCount );
 	System.out.println( "Worker: run time         = " + Service.formatNanoseconds( workInterval ) );
 	System.out.println( "Worker: total work time  = " + Service.formatNanoseconds( workTime ) + String.format( " (%.1f%%)", workPercentage )  );
 	System.out.println( "Worker: total idle time  = " + Service.formatNanoseconds( idleTime ) + String.format( " (%.1f%%)", idlePercentage ) );
