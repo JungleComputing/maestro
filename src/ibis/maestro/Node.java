@@ -190,6 +190,7 @@ public class Node implements RegistryEventHandler {
         master.start();
         worker = new Worker( ibis, master );
         worker.start();
+        registry.enableEvents();
         master.waitForSubscription(  worker.identifier() );
         if( Settings.traceNodes ) {
             Globals.log.log( "Started a Maestro node" );
