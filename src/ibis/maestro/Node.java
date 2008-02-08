@@ -125,6 +125,7 @@ public class Node implements RegistryEventHandler {
     @Override
     public void electionResult( String name, IbisIdentifier theIbis )
     {
+        System.out.println( "Election for '" + name + "' got result " + theIbis );
         if( name.equals( "maestro" ) ){
             maestros.add( new MaestroInfo( theIbis ) );
             System.out.println( "Ibis " + theIbis + " got elected as maestro" );
