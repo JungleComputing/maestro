@@ -65,13 +65,16 @@ public class Node implements RegistryEventHandler {
     {
 	int ix = maestros.size();
 
+        System.out.println( "Ibis " + id + " left the computation" );
 	while( ix>0 ) {
 	    MaestroInfo m = maestros.get(ix);
 	    if( m.ibis.equals( id )) {
 		maestros.remove(ix);
+                System.out.println( "Ibis " + id + " was a maestro" );
 	    }
 	}
 	if( maestros.size() == 0 ) {
+            System.out.println( "No maestros left; stopping.." );
 	    // Everyone has left, we might as well stop.
 	    finish();
 	}
@@ -194,7 +197,7 @@ public class Node implements RegistryEventHandler {
     }
 
     /** Set this node to a stopped mode. */
-    public void setStopped()
+    private void setStopped()
     {
         master.setStopped();
     }
