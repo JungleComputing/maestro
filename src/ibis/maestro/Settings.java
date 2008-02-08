@@ -12,7 +12,7 @@ public class Settings {
     /**
      * Trace the progress of workers?
      */
-    public static final boolean traceWorkerProgress = false;
+    public static final boolean traceWorkerProgress = true;
     
     /**
      * Trace the progress of the worker lists of masters.
@@ -37,5 +37,5 @@ public class Settings {
     /**
      * Trace the progress of masters?
      */
-    public static final boolean traceMasterProgress = false;
+    public static final boolean traceMasterProgress = true;
 }

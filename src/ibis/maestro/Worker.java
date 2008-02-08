@@ -285,7 +285,10 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         synchronized( unusedNeighbors ) {
             unusedNeighbors.remove( theIbis );
         }
-        // FIXME: remove any jobs from this ibis from our queue.
+        // This is a good reason to wake up the queue.
+        synchronized (queue ) {
+            queue.notifyAll();
+        }
     }
 
     /**
@@ -296,6 +299,10 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     {
         synchronized( unusedNeighbors ){
             unusedNeighbors.add( theIbis );
+        }
+        // This is a good reason to wake up the queue.
+        synchronized (queue ) {
+            queue.notifyAll();
         }
     }
 

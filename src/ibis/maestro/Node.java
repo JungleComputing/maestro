@@ -52,6 +52,8 @@ public class Node implements RegistryEventHandler {
      */
     private void registerIbisJoined( IbisIdentifier id )
     {
+        System.out.println( "Ibis " + id + " joined the computation" );
+        
 	for( MaestroInfo m: maestros ) {
 	    if( m.ibis.equals( id ) ) {
 	        System.out.println( "Maestro ibis " + id + " was registered" );
