@@ -82,7 +82,7 @@ public class Node implements RegistryEventHandler {
 	if( maestros.size() == 0 ) {
             System.out.println( "No maestros left; stopping.." );
 	    // Everyone has left, we might as well stop.
-	    finish();
+	    master.setStopped();
 	}
     }
 
@@ -95,7 +95,7 @@ public class Node implements RegistryEventHandler {
     {
         registerIbisJoined( theIbis );
         master.addIbis( theIbis );
-        worker.addIbis( theIbis );
+        worker.addUnusedNeighbor( theIbis );
     }
 
     /**
@@ -206,12 +206,6 @@ public class Node implements RegistryEventHandler {
     public void submit( Job j )
     {
 	master.submit( j );
-    }
-
-    /** Set this node to a stopped mode. */
-    private void setStopped()
-    {
-        master.setStopped();
     }
     
     /** Finish this node. */

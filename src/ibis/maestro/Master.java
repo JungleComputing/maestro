@@ -20,6 +20,8 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
     private final PriorityQueue<Job> queue = new PriorityQueue<Job>();
+    
+    /** Targets of outstanding ping messages. */
     private final LinkedList<PingTarget> pingTargets = new LinkedList<PingTarget>();
     private CompletionListener completionListener;
     private boolean stopped = false;
@@ -27,7 +29,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     private long incomingJobCount = 0;
     private long handledJobCount = 0;
     private long workerCount = 0;
-    private final long startTime = System.nanoTime();
+    private final long startTime;
     private long stopTime = 0;
 
     private void unsubscribeWorker( ReceivePortIdentifier worker )
@@ -161,7 +163,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
      * @param msg The message we received.
      */
     @Override
-    public void packetReceived( PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg )
+    public void messageReceived( PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg )
     {
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Master: received message " + msg );
@@ -208,8 +210,8 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         completionListener = l;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
-        receivePort.enable();
-    }
+        receivePort.enable();		// We're open for business.
+        startTime = System.nanoTime();    }
 
     synchronized void setStopped()
     {

@@ -39,7 +39,7 @@ class WorkerInfo {
         this.preCompletionInterval = preCompletionInterval;
     }
 
-    boolean hasId(ReceivePortIdentifier id )
+    boolean hasId( ReceivePortIdentifier id )
     {
         return port.equals( id );
     }
@@ -103,7 +103,10 @@ class WorkerInfo {
         }
         int ix = indexOfLowest( completionTime );
         // The time we should submit the job.
-        long submitTime = Math.max( now, completionTime[ix]-preCompletionInterval );
+        // We aim to keep each job about half its runtime in the queue; a reasonable compromise
+        // between buffering against idle time and not committing too much to a worker.
+        long idealSubmissionTime = completionTime[ix]-preCompletionInterval;
+	long submitTime = Math.max( now, idealSubmissionTime );
         if( Settings.traceMasterProgress ){
             System.out.println( "computeSubmitTime(): submitTime-now=" + Service.formatNanoseconds(submitTime-now) + " completionTime[" + ix + "]-now=" + Service.formatNanoseconds(completionTime[ix]-now) );
         }
@@ -204,9 +207,10 @@ class WorkerInfo {
             activeJobs.remove( e );
             // Adjust the precompletion interval to avoid both empty queues and full queues.
             // The /2 is a dampening factor.
-            preCompletionInterval += (result.queueEmptyInterval-result.queueInterval)/2;
             roundTripTime = (roundTripTime+newRoundTripTime)/2;
             computeTime = (computeTime+newComputeTime)/2;
+            // We're aiming for a queue interval of half the compute time.
+            preCompletionInterval += (result.queueEmptyInterval+(workThreads*computeTime/2)-result.queueInterval)/2;
             sPreCompletionInterval = preCompletionInterval;
             sRoundTripTime = roundTripTime;
             sComputeTime = computeTime;

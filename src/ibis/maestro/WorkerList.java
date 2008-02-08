@@ -59,7 +59,9 @@ public class WorkerList {
         else {
             estimatedComputeTime = (long) (benchmarkScore*estimateMultiplier());
         }
-        long preCompletionInterval = (benchmarkRoundtripTime-benchmarkComputeTime)/2;
+        // We're a bit paranoid, and start with a zero precompletion interval.
+        // That gives us a better chance at committing only one job to a new worker.
+        long preCompletionInterval = 0;
         WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime+estimatedComputeTime, estimatedComputeTime, preCompletionInterval );
         if( Settings.writeTrace ) {
             Globals.tracer.traceWorkerRegistration( me, port, benchmarkScore, benchmarkRoundtripTime, benchmarkComputeTime );

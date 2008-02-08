@@ -79,11 +79,15 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
 
     private void addNeighbors( IbisIdentifier l[] )
     {
-        synchronized( unusedNeighbors ){
-            for( IbisIdentifier n: l ){
-                unusedNeighbors.add( n );
-            }
-        }
+	synchronized( unusedNeighbors ){
+	    for( IbisIdentifier n: l ){
+		unusedNeighbors.add( n );
+	    }
+	}
+	// This is a good reason to wake up the queue.
+	synchronized (queue ) {
+	    queue.notifyAll();
+	}
     }
 
     private void sendResignMessage( ReceivePortIdentifier master ) throws IOException
@@ -179,7 +183,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      * @param p The port on which the packet was received.
      * @param msg The job we received and will put in the queue.
      */
-    public void packetReceived( PacketUpcallReceivePort<MasterMessage> p, MasterMessage msg )
+    public void messageReceived( PacketUpcallReceivePort<MasterMessage> p, MasterMessage msg )
     {
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Worker: received message " + msg );
@@ -295,7 +299,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      * A new ibis has joined the computation.
      * @param theIbis The ibis that has joined.
      */
-    public void addIbis( IbisIdentifier theIbis )
+    void addUnusedNeighbor( IbisIdentifier theIbis )
     {
         synchronized( unusedNeighbors ){
             unusedNeighbors.add( theIbis );
@@ -310,7 +314,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      * Send resign messages to all masters except for the one given here.
      * @param identifier the master we shouldn't resign from.
      */
-    public void workOnlyFor(ReceivePortIdentifier identifier)
+    public void workOnlyFor( ReceivePortIdentifier identifier )
     {
         exclusiveMaster = identifier;
     }
@@ -325,7 +329,9 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             try {
                 synchronized( queue ) {
                     if( queue.isEmpty() ) {
-                	queueEmptyMoment = System.nanoTime();
+                	if( queueEmptyMoment == 0 ) {
+                	    queueEmptyMoment = System.nanoTime();
+                	}
                         if( isStopped() && runningJobs == 0 ) {
                             // No jobs in queue, and worker is stopped. Return null to
                             // indicate that there won't be further jobs.

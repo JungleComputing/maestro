@@ -52,7 +52,7 @@ public class AdditionJob implements Job {
 	}
 	return 0;
     }
-    
+
     /**
      * Returns a string representation of this multiply job.
      * @return The string representation.

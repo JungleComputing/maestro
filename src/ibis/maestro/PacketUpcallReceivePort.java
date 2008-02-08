@@ -45,7 +45,7 @@ public class PacketUpcallReceivePort<T extends Serializable> implements MessageU
     {
         T data = (T) msg.readObject();
         //msg.finish();
-        listener.packetReceived( this, data );
+        listener.messageReceived( this, data );
     }
     
     /**

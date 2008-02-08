@@ -12,7 +12,7 @@ public class Settings {
     /**
      * Trace the progress of workers?
      */
-    public static final boolean traceWorkerProgress = true;
+    public static final boolean traceWorkerProgress = false;
     
     /**
      * Trace the progress of the worker lists of masters.
@@ -22,12 +22,12 @@ public class Settings {
     /**
      * Trace the creation and destruction of Nodes.
      */
-    public static final boolean traceNodes = true;
+    public static final boolean traceNodes = false;
     
     /**
      * Produce a log file with information for a timing trace?
      */
-    public static final boolean writeTrace = false;
+    public static final boolean writeTrace = true;
 
     /**
      * Trace the selection of the fastest worker.
@@ -37,5 +37,5 @@ public class Settings {
     /**
      * Trace the progress of masters?
      */
-    public static final boolean traceMasterProgress = true;
+    public static final boolean traceMasterProgress = false;
 }

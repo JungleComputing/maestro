@@ -14,5 +14,5 @@ public interface PacketReceiveListener<T extends Serializable> {
      * @param p The port the packet was received on.
      * @param packet The packet that was received.
      */
-    void packetReceived( PacketUpcallReceivePort<T> p, T packet );
+    void messageReceived( PacketUpcallReceivePort<T> p, T packet );
 }

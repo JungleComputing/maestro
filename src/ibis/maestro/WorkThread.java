@@ -41,6 +41,4 @@ class WorkThread extends Thread
         }
         System.out.println( "Work thread terminated" );
     }
-    
-    
 }
