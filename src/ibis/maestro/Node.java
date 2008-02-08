@@ -5,6 +5,7 @@ import ibis.ipl.IbisCapabilities;
 import ibis.ipl.IbisCreationFailedException;
 import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.Registry;
 import ibis.ipl.RegistryEventHandler;
 
 import java.io.IOException;
@@ -18,11 +19,12 @@ import java.util.Vector;
  *
  */
 public class Node implements RegistryEventHandler {
-    IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE, IbisCapabilities.ELECTIONS_STRICT );
+    final IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE, IbisCapabilities.ELECTIONS_STRICT );
     private final Ibis ibis;
     private final Master master;
     private final Worker worker;
-    
+    private static final String MAESTRO_ELECTION_NAME = "maestro-election";
+
     /** The list of maestro nodes in this computation. */
     private Vector<MaestroInfo> maestros = new Vector<MaestroInfo>();
     private boolean isMaestro;
@@ -126,7 +128,7 @@ public class Node implements RegistryEventHandler {
     public void electionResult( String name, IbisIdentifier theIbis )
     {
         System.out.println( "Election for '" + name + "' got result " + theIbis );
-        if( name.equals( "maestro" ) ){
+        if( name.equals( MAESTRO_ELECTION_NAME ) ){
             maestros.add( new MaestroInfo( theIbis ) );
             System.out.println( "Ibis " + theIbis + " got elected as maestro" );
         }
@@ -164,6 +166,7 @@ public class Node implements RegistryEventHandler {
     public Node(CompletionListener listener, boolean runForMaestro) throws IbisCreationFailedException, IOException
     {
         Properties ibisProperties = new Properties();
+        IbisIdentifier maestro;
         ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
         ibis = IbisFactory.createIbis(
                 ibisCapabilities,
@@ -174,12 +177,14 @@ public class Node implements RegistryEventHandler {
                 PacketUpcallReceivePort.portType,
                 PacketBlockingReceivePort.portType
         );
+        Registry registry = ibis.registry();
         if( runForMaestro ){
-            IbisIdentifier maestro = ibis.registry().elect( "maestro" );
+            maestro = registry.elect( MAESTRO_ELECTION_NAME );
             isMaestro = maestro.equals( ibis.identifier() );
         }
         else {
             isMaestro = false;
+            
         }
         master = new Master( ibis, listener );
         master.start();
