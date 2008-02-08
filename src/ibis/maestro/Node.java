@@ -72,6 +72,7 @@ public class Node implements RegistryEventHandler {
 
         System.out.println( "Ibis " + id + " left the computation" );
 	while( ix>0 ) {
+            ix--;
 	    MaestroInfo m = maestros.get(ix);
 	    if( m.ibis.equals( id )) {
 		maestros.remove(ix);
