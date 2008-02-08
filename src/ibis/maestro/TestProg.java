@@ -1,14 +1,12 @@
 package ibis.maestro;
 
-import ibis.server.Server;
-
 /**
  * Small test program.
  * @author Kees van Reeuwijk
  *
  */
 public class TestProg {
-    private static final int JOBCOUNT = 1000;
+    private static final int JOBCOUNT = 200;
 
     private class Listener implements CompletionListener
     {
@@ -23,8 +21,6 @@ public class TestProg {
 	}
 	
     }
-    
-    private Server ibisServer = null;
 
     @SuppressWarnings("synthetic-access")
     private void run( boolean goForMaestro ) throws Exception
@@ -36,12 +32,9 @@ public class TestProg {
         	AdditionJob j = new AdditionJob( 12*i );
         	node.submit( j );
             }
-            node.finish();
         }
+        node.finish();
         Globals.tracer.close();
-        if( ibisServer != null ){
-            ibisServer.end( true );
-        }
         System.out.println( "Test program has ended" );
     }
 

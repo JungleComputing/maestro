@@ -37,5 +37,5 @@ public class Settings {
     /**
      * Trace the progress of masters?
      */
-    public static final boolean traceMasterProgress = true;
+    public static final boolean traceMasterProgress = false;
 }
