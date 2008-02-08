@@ -115,13 +115,15 @@ public class Node implements RegistryEventHandler {
 
     /**
      * The results of an election are known.
-     * @param arg0 The name of the election.
-     * @param arg1 The ibis that was elected.
+     * @param name The name of the election.
+     * @param theIbis The ibis that was elected.
      */
     @Override
-    public void electionResult( String arg0, IbisIdentifier arg1 )
+    public void electionResult( String name, IbisIdentifier theIbis )
     {
-        // Not interested.
+        if( name.equals( "meastro" ) ){
+            maestros.add( new MaestroInfo( theIbis ) );
+        }
     }
 
     /**
@@ -142,30 +144,47 @@ public class Node implements RegistryEventHandler {
      */
     public Node( CompletionListener listener ) throws IbisCreationFailedException, IOException
     {
-	Properties ibisProperties = new Properties();
-	ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
-	ibis = IbisFactory.createIbis(
-	    ibisCapabilities,
-	    ibisProperties,
-	    true,
-	    this,
-	    PacketSendPort.portType,
-	    PacketUpcallReceivePort.portType,
-	    PacketBlockingReceivePort.portType
-	);
-	IbisIdentifier maestro = ibis.registry().elect( "maestro" );
-	isMaestro = maestro.equals( ibis.identifier() );
-	this.maestros.add( new MaestroInfo( maestro ) );
-	master = new Master( ibis, listener );
-	master.start();
+        this( listener, true );
+    }
+    
+
+    /**
+     * Constructs a new Maestro node using the given name server and completion listener.
+     * @param listener A completion listener for computations completed by this node.
+     * @param runForMaestro If true, try to get elected as maestro.
+     * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
+     * @throws IOException Thrown if for some reason we cannot communicate.
+     */
+    public Node(CompletionListener listener, boolean runForMaestro) throws IbisCreationFailedException, IOException
+    {
+        Properties ibisProperties = new Properties();
+        ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
+        ibis = IbisFactory.createIbis(
+                ibisCapabilities,
+                ibisProperties,
+                true,
+                this,
+                PacketSendPort.portType,
+                PacketUpcallReceivePort.portType,
+                PacketBlockingReceivePort.portType
+        );
+        if( runForMaestro ){
+            IbisIdentifier maestro = ibis.registry().elect( "maestro" );
+            isMaestro = maestro.equals( ibis.identifier() );
+        }
+        else {
+            isMaestro = false;
+        }
+        master = new Master( ibis, listener );
+        master.start();
         worker = new Worker( ibis, master );
         worker.start();
         master.waitForSubscription(  worker.identifier() );
-	if( Settings.traceNodes ) {
-	    Globals.log.log( "Started a Maestro node" );
-	}
+        if( Settings.traceNodes ) {
+            Globals.log.log( "Started a Maestro node" );
+        }
     }
-    
+
     /** Submits the given job to this node.
      * @param j The job to submit.
      */

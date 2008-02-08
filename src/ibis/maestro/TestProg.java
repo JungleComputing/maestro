@@ -27,9 +27,9 @@ public class TestProg {
     private Server ibisServer = null;
 
     @SuppressWarnings("synthetic-access")
-    private void run() throws Exception
+    private void run( boolean goForMaestro ) throws Exception
     {
-        Node node = new Node( new Listener() );
+        Node node = new Node( new Listener(), goForMaestro );
 
         if( node.isMaestro() ) {
             for( int i=0; i<JOBCOUNT; i++ ){
@@ -51,9 +51,10 @@ public class TestProg {
      */
     public static void main( String args[] )
     {
-	System.out.println( "Running on platform " + Service.getPlatformVersion() );
+	System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length );
+        boolean goForMaestro = args.length == 0;
 	try {
-            new TestProg().run();            
+            new TestProg().run( goForMaestro );
         }
         catch( Exception e ) {
             e.printStackTrace( System.err );
