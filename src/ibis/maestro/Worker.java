@@ -30,6 +30,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private int jobCount = 0;
     private long workTime = 0;
     private int runningJobs = 0;
+    private long resultMessageSize = -1;
 
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
@@ -380,11 +381,11 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
                 runningJobs--;
                 queue.notifyAll();
             }
-            JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeInterval, emptyQueueInterval, queueInterval );
+            JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeInterval, emptyQueueInterval, queueInterval, resultMessageSize );
             if( Settings.writeTrace ) {
                 Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
             }
-            sendPort.send( msg, jobMessage.getResultPort() );
+            resultMessageSize = sendPort.send( msg, jobMessage.getResultPort() );
             if( Settings.traceWorkerProgress ) {
         	System.out.println( "Returned job result " + r + " for job "  + jobMessage );
             }

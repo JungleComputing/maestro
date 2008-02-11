@@ -31,6 +31,8 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     private long workerCount = 0;
     private final long startTime;
     private long stopTime = 0;
+    private long sendSize = -1;
+    private long receiveSize = -1;
 
     private void unsubscribeWorker( ReceivePortIdentifier worker )
     {
@@ -44,6 +46,14 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     {
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Received a job result " + result );
+        }
+        if( receiveSize<0 ) {
+            receiveSize = result.resultMessageSize;
+        }
+        else {
+            if( result.resultMessageSize>=0 ) {
+        	receiveSize = (receiveSize+result.resultMessageSize)/2;
+            }
         }
         synchronized( workers ) {
             workers.registerJobResult( receivePort.identifier(), result, completionListener );
@@ -311,7 +321,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         	long now = System.nanoTime();
 
         	sel.reset();
-        	workers.setBestWorker( now, sel );
+        	workers.setBestWorker( now, sel, sendSize, receiveSize );
         	if( sel.bestWorker == null ) {
         	    // There are no workers yet. All we can do is wait
         	    // for a worker to arrive.
@@ -362,7 +372,13 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                             if( Settings.writeTrace ) {
                                 Globals.tracer.traceSentMessage( msg, worker.getPort() );
                             }
-                            sendPort.send( msg, worker.getPort() );
+                            long len = sendPort.send( msg, worker.getPort() );
+                            if( sendSize<0 ) {
+                        	sendSize = len;
+                            }
+                            else {
+                        	sendSize = (sendSize+len)/2;
+                            }
                         } catch (IOException e) {
                             // Try to put the paste back in the tube.
                             synchronized( queue ){

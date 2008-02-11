@@ -149,10 +149,10 @@ public class WorkerList {
      * @param now The current time.
      * @param sel The selector that keeps track of the best worker.
      */
-    public void setBestWorker(long now, WorkerSelector sel)
+    public void setBestWorker(long now, WorkerSelector sel, long sendSize, long receiveSize )
     {
 	for( WorkerInfo w: workers ) {
-	    w.setBestWorker(now, sel);
+	    w.setBestWorker(now, sel, sendSize, receiveSize );
 	}
     }
 }

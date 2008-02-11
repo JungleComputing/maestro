@@ -76,8 +76,10 @@ class WorkerInfo {
      * job to thus far, update it with information of this worker.
      * @param now The current time.
      * @param sel The worker selector.
+     * @param sendSize The number of bytes in a job submission message.
+     * @param receiveSize The number of bytes in a job result message.
      */
-    public void setBestWorker( long now, WorkerSelector sel )
+    public void setBestWorker( long now, WorkerSelector sel, long sendSize, long receiveSize )
     {
         long completionTime[] = new long[workThreads];
 
@@ -110,7 +112,8 @@ class WorkerInfo {
         // We aim to keep each job about half its runtime in the queue; a reasonable compromise
         // between buffering against idle time and not committing too much to a worker.
         long ourCompletionTime = completionTime[ix];
-        long ourResultTime = ourCompletionTime+(roundTripTime-computeTime)/2;
+        long l = estimateResultTransmissionTime( sendSize, receiveSize );
+	long ourResultTime = ourCompletionTime+l;
 	long idealSubmissionTime = ourCompletionTime-preCompletionInterval;
 	long submitTime = idealSubmissionTime;
         if( now>idealSubmissionTime ) {
@@ -134,6 +137,20 @@ class WorkerInfo {
             sel.resultTime = ourResultTime;
             sel.startTime = submitTime;
         }
+    }
+
+    private long estimateResultTransmissionTime( long sendSize, long receiveSize ) {
+	long transmissionTime = roundTripTime-computeTime;
+	long res;
+
+	if( sendSize<=0 || receiveSize<=0 ) {
+	    res = transmissionTime/2;
+	}
+	else {
+	    double fraction = ((double) receiveSize)/((double) sendSize+receiveSize);
+	    res = (long) (transmissionTime*fraction);
+	}
+	return res;
     }
 
     /** Returns the current estimated multiplier from benchmark score
@@ -176,7 +193,7 @@ class WorkerInfo {
      * @param result The job result message that tells about this job.
      * @param completionListener A completion listener to be notified.
      */
-    public void registerJobResult(ReceivePortIdentifier master, JobResultMessage result, CompletionListener completionListener)
+    public void registerJobResult( ReceivePortIdentifier master, JobResultMessage result, CompletionListener completionListener)
     {
         final long id = result.jobId;    // The identifier of the job, as handed out by us.
 
