@@ -37,6 +37,9 @@ class WorkerInfo {
         this.roundTripTime = roundTripTime;
         this.computeTime = computeTime;
         this.preCompletionInterval = preCompletionInterval;
+        if( Settings.tracePrecompletionInterval ) {
+            System.out.println( "Initial PCI is " + preCompletionInterval );
+        }
     }
 
     boolean hasId( ReceivePortIdentifier id )
@@ -210,7 +213,12 @@ class WorkerInfo {
             roundTripTime = (roundTripTime+newRoundTripTime)/2;
             computeTime = (computeTime+newComputeTime)/2;
             // We're aiming for a queue interval of half the compute time.
-            preCompletionInterval += (result.queueEmptyInterval+(workThreads*computeTime/2)-result.queueInterval)/2;
+            long idealinterval = (workThreads*computeTime/2);
+            long step = (result.queueEmptyInterval+idealinterval-result.queueInterval)/2;
+            preCompletionInterval += step;
+            if( Settings.tracePrecompletionInterval ) {
+                System.out.println( "old PCI: " + (preCompletionInterval-step) + " queueEmptyInterval=" + result.queueEmptyInterval + " queueInterval=" + result.queueInterval + " ideal queueInterval=" + idealinterval + " new PCI=" + preCompletionInterval );
+            }
             sPreCompletionInterval = preCompletionInterval;
             sRoundTripTime = roundTripTime;
             sComputeTime = computeTime;

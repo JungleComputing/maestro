@@ -38,4 +38,7 @@ public class Settings {
      * Trace the progress of masters?
      */
     public static final boolean traceMasterProgress = false;
+
+    /** Trace the adventures of the precompletion interval variable? */
+    public static final boolean tracePrecompletionInterval = true;
 }
