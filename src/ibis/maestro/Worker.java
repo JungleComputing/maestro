@@ -19,6 +19,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
     private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
+    //private final static int numberOfProcessors = 1;
     private final WorkThread workThreads[] = new WorkThread[numberOfProcessors];
     private boolean stopped = false;
     private ReceivePortIdentifier exclusiveMaster = null;
@@ -39,6 +40,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     public Worker( Ibis ibis, Master master ) throws IOException
     {
         super( "Worker" );   // Create a thread with a name.
+        setPriority( Thread.NORM_PRIORITY+1 );
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         for( int i=0; i<numberOfProcessors; i++ ) {
@@ -96,7 +98,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         if( Settings.writeTrace ) {
             Globals.tracer.traceSentMessage( msg, master );
         }
-        sendPort.send(msg, master);
+        sendPort.send( msg, master );
     }
 
     /**

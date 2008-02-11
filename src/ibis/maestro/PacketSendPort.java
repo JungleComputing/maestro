@@ -33,25 +33,35 @@ public class PacketSendPort<T extends Serializable> {
      * Sends the given data to the given port.
      * @param data The data to send.
      * @param receiver The port to send it to.
+     * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
-    public void send( T data, ReceivePortIdentifier receiver ) throws IOException
+    public long send( T data, ReceivePortIdentifier receiver ) throws IOException
     {
+	long len;
+
+	long startTime = System.nanoTime();
+	long setupTime;
 	if( USE_DISCONNECT ) {
 	    globalport.connect(receiver);
 	    WriteMessage msg = globalport.newMessage();
+	    setupTime = System.nanoTime();
 	    msg.writeObject( data );
-	    msg.finish();
+	    len = msg.finish();
 	    globalport.disconnect(receiver);
 	}
 	else {
 	    SendPort port = ibis.createSendPort( portType );
 	    port.connect( receiver );
 	    WriteMessage msg = port.newMessage();
+	    setupTime = System.nanoTime();
 	    msg.writeObject( data );
-	    msg.finish();
+	    len = msg.finish();
 	    port.close();
 	}
+	long stopTime = System.nanoTime();
+	System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) );
+	return len;
     }
 
     /**
@@ -59,25 +69,35 @@ public class PacketSendPort<T extends Serializable> {
      * @param data The data to send.
      * @param receiver The port to send it to.
      * @param portname The name of the port to send to.
+     * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
-    public void send( T data, IbisIdentifier receiver, String portname ) throws IOException
+    public long send( T data, IbisIdentifier receiver, String portname ) throws IOException
     {
+	long len;
+
+	long startTime = System.nanoTime();
+	long setupTime;
 	if( USE_DISCONNECT ) {
 	    ReceivePortIdentifier rp = globalport.connect( receiver, portname );
 	    WriteMessage msg = globalport.newMessage();
+	    setupTime = System.nanoTime();
 	    msg.writeObject( data );
-	    msg.finish();
+	    len = msg.finish();
 	    globalport.disconnect(rp);
 	}
 	else {
 	    SendPort port = ibis.createSendPort(portType);
 	    port.connect( receiver, portname );
 	    WriteMessage msg = port.newMessage();
+	    setupTime = System.nanoTime();
 	    msg.writeObject( data );
-	    msg.finish();
+	    len = msg.finish();
 	    port.close();
 	}
+	long stopTime = System.nanoTime();
+	System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) );
+	return len;
     }
 
 }

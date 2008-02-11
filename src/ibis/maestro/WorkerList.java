@@ -83,50 +83,6 @@ public class WorkerList {
 	}
     }
 
-    /** Return a worker to execute a job for us.
-     * This method may return <code>null</code> if at the moment
-     * there is no suitable worker. 
-     * @return The worker to execute the job.
-     */
-    WorkerInfo getFastestWorker()
-    {
-	long now = System.nanoTime();
-	long bestCompletionTime = Long.MAX_VALUE;
-	WorkerInfo bestWorker = null;
-
-	synchronized( workers ) {
-	    for( WorkerInfo worker: workers ) {
-	        long completionTime = worker.getCompletionTime( now );
-
-	        if( bestCompletionTime>completionTime ) {
-	            completionTime = bestCompletionTime;
-	            bestWorker = worker;
-	        }
-	    }
-	}
-        if( Settings.traceFastestWorker ){
-            System.out.println( "getFastestWorker(): bestWorker=" + bestWorker + " bestCompletionTime-now=" + Service.formatNanoseconds( bestCompletionTime-now ) );
-        }
-	return bestWorker;
-    }
-
-    /**
-     * Returns the estimated time span, in ns, until the first worker should
-     * be send its next job.
-     * @return The interval in ns to the next useful job submission.
-     */
-    public long getBusyInterval() {
-        long res = Long.MAX_VALUE;
-        long now = System.nanoTime();
-
-        synchronized( workers ){
-            for( WorkerInfo worker: workers ){
-                res = Math.min( res, worker.getBusyInterval( now ) );
-            }
-        }
-        return res;
-    }
-
     /**
      * We know the given ibis has disappeared from the computation.
      * Remove any workers on that ibis.
@@ -186,5 +142,17 @@ public class WorkerList {
 	    }
 	}
 	return true;
+    }
+
+    /** Fill the work selector with the best worker from our list.
+     *
+     * @param now The current time.
+     * @param sel The selector that keeps track of the best worker.
+     */
+    public void setBestWorker(long now, WorkerSelector sel)
+    {
+	for( WorkerInfo w: workers ) {
+	    w.setBestWorker(now, sel);
+	}
     }
 }

@@ -6,7 +6,7 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
-import java.util.LinkedList;
+import java.util.Vector;
 
 class WorkerInfo {
     /** The receive port of this worker. */
@@ -14,12 +14,12 @@ class WorkerInfo {
     
     /** How many work threads does this worker have? */
     private final int workThreads;
-    
+
     /** The time in seconds to do one iteration of a standard benchmark on this worker. */
     private final double benchmarkScore;
-    
+
     /** The active jobs of this worker. */
-    private final LinkedList<ActiveJob> activeJobs = new LinkedList<ActiveJob>();
+    private final Vector<ActiveJob> activeJobs = new Vector<ActiveJob>();
 
     /** Estimated time to complete a job, including communication. */
     private long roundTripTime;
@@ -30,7 +30,8 @@ class WorkerInfo {
     /** Estimated interval, before one job completes, that we should submit a new job. In ns. */
     private long preCompletionInterval;
 
-    WorkerInfo( ReceivePortIdentifier port, int workThreads, double benchmarkScore, long roundTripTime, long computeTime, long preCompletionInterval ){
+    WorkerInfo( ReceivePortIdentifier port, int workThreads, double benchmarkScore, long roundTripTime, long computeTime, long preCompletionInterval )
+    {
         this.port = port;
         this.workThreads = workThreads;
         this.benchmarkScore = benchmarkScore;
@@ -71,15 +72,15 @@ class WorkerInfo {
     }
 
     /**
-     * Given the current time, compute the earliest moment we should submit a new
-     * job to this worker.
+     * Given a worker selector describing the best worker to submit a 
+     * job to thus far, update it with information of this worker.
      * @param now The current time.
-     * @return The earliest submit time.
+     * @param sel The worker selector.
      */
-    private long computeSubmitTime( long now )
+    public void setBestWorker( long now, WorkerSelector sel )
     {
         long completionTime[] = new long[workThreads];
-    
+
         // For /n/ worker threads, we want the /n/th latest
         // completion time. We compute this by maintaining
         // an array of the /n/ latest completion times, and
@@ -97,7 +98,7 @@ class WorkerInfo {
         synchronized( activeJobs ) {
             for( ActiveJob j: activeJobs ) {
         	int ix = indexOfLowest( completionTime );
-        	long t = j.getCompletionTime( now );
+        	long t = j.getCompletionTime( completionTime[ix], now, roundTripTime, computeTime );
 
                 if( completionTime[ix]<t ) {
         	    completionTime[ix] = t;
@@ -108,39 +109,29 @@ class WorkerInfo {
         // The time we should submit the job.
         // We aim to keep each job about half its runtime in the queue; a reasonable compromise
         // between buffering against idle time and not committing too much to a worker.
-        long idealSubmissionTime = completionTime[ix]-preCompletionInterval;
-	long submitTime = Math.max( now, idealSubmissionTime );
+        long ourCompletionTime = completionTime[ix];
+        long ourResultTime = ourCompletionTime+(roundTripTime-computeTime)/2;
+	long idealSubmissionTime = ourCompletionTime-preCompletionInterval;
+	long submitTime = idealSubmissionTime;
+        if( now>idealSubmissionTime ) {
+            System.err.println( "You asked " + Service.formatNanoseconds(now-idealSubmissionTime)+ " too late for ideal submit time" );
+            long delta = now-idealSubmissionTime;
+            submitTime = now;
+            // Updating our estimate with this knowledge.§
+            ourCompletionTime += delta;
+            ourResultTime += delta;
+        }
         if( Settings.traceMasterProgress ){
-            System.out.println( "computeSubmitTime(): submitTime-now=" + Service.formatNanoseconds(submitTime-now) + " completionTime[" + ix + "]-now=" + Service.formatNanoseconds(completionTime[ix]-now) );
+            System.out.println( "setBestWorker(): submitTime-now=" + Service.formatNanoseconds(submitTime-now) + " ourCompletionTime-now=" + Service.formatNanoseconds(ourCompletionTime-now) + " ourResultTime-now=" + Service.formatNanoseconds(ourResultTime-now) );
         }
-        return submitTime;
-    }
-
-    /** 
-     * Given the current time, estimate how long this worker would take to complete
-     * a job, taking the current load of the worker into account.
-     * @param now The current time in ns.
-     * @return The completion time of this worker in ns.
-     */
-    public long getCompletionTime( long now )
-    {
-	long submitTime = computeSubmitTime(now);
-        if( submitTime>now ){
-            return Long.MAX_VALUE;
+        if( sel.resultTime>ourResultTime ) {
+            if( Settings.traceMasterProgress ) {
+        	System.out.println( "Worker " + this + " is the best pick thus far" );
+            }
+            sel.bestWorker = this;
+            sel.resultTime = ourResultTime;
+            sel.startTime = submitTime;
         }
-	return now+roundTripTime;
-    }
-
-    /**
-     * Returns the estimated time span, in ms, until this worker should
-     * be send its next job.
-     * @param now The current time in nanoseconds.
-     * @return The interval in ns to the next useful job submission.
-     */
-    public long getBusyInterval( long now )
-    {
-	long submitTime = computeSubmitTime( now );
-	return submitTime-now;
     }
 
     /** Returns the current estimated multiplier from benchmark score
@@ -199,9 +190,6 @@ class WorkerInfo {
         long newRoundTripTime = now-e.startTime; // The time to send the job, compute, and report the result.
         long newComputeTime = result.getComputeTime();
 
-        roundTripTime = (roundTripTime+newRoundTripTime)/2;
-        computeTime = (computeTime+newComputeTime)/2;
-
         long sPreCompletionInterval;
         long sComputeTime;
         long sRoundTripTime;
@@ -217,7 +205,7 @@ class WorkerInfo {
             long step = (result.queueEmptyInterval+idealinterval-result.queueInterval)/2;
             preCompletionInterval += step;
             if( Settings.tracePrecompletionInterval ) {
-                System.out.println( "old PCI: " + (preCompletionInterval-step) + " queueEmptyInterval=" + result.queueEmptyInterval + " queueInterval=" + result.queueInterval + " ideal queueInterval=" + idealinterval + " new PCI=" + preCompletionInterval );
+                System.out.println( "old PCI=" + Service.formatNanoseconds(preCompletionInterval-step) + " queueEmptyInterval=" + Service.formatNanoseconds(result.queueEmptyInterval) + " queueInterval=" + Service.formatNanoseconds(result.queueInterval) + " ideal queueInterval=" + Service.formatNanoseconds(idealinterval) + " new PCI=" + Service.formatNanoseconds(preCompletionInterval) );
             }
             sPreCompletionInterval = preCompletionInterval;
             sRoundTripTime = roundTripTime;
@@ -249,9 +237,7 @@ class WorkerInfo {
     public void registerJobStart( Job job, long id )
     {
         long startTime = System.nanoTime();
-        long arrivalTime = startTime+preCompletionInterval;
-        long completionTime = arrivalTime+computeTime;
-        ActiveJob j = new ActiveJob( job, id, startTime, completionTime, arrivalTime );
+        ActiveJob j = new ActiveJob( job, id, startTime );
 
         synchronized( activeJobs ) {
             activeJobs.add( j );

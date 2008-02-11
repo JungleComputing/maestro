@@ -297,6 +297,8 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     @Override
     public void run()
     {
+	WorkerSelector sel = new WorkerSelector();
+	
         if( Settings.traceMasterProgress ){
             System.out.println( "Starting master thread" );
         }
@@ -305,61 +307,75 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                 System.out.println( "Next round for master" );
             }
             if( areWaitingJobs() ) {
-                // We have at least one job, now try to give it to a worker.
-                WorkerInfo worker = workers.getFastestWorker();
+        	// We have at least one job queued, now try to give it to a worker.
+        	long now = System.nanoTime();
 
-                if( worker == null ) {
-                    if( Settings.traceMasterProgress ){
-                        System.out.println( "No ready workers; waiting" );
-                    }
-                    // FIXME: advertise for new workers.
-                    long sleepTime = workers.getBusyInterval();
-                    try {
-                        // There is nothing to do; Wait for workers to complete
-                        // or new workers.
-                        synchronized( workers ){
-                            if( Settings.traceMasterProgress ){
-                                System.out.println( "Master: waiting " + Service.formatNanoseconds( sleepTime )+ " for a ready worker" );
+        	sel.reset();
+        	workers.setBestWorker( now, sel );
+        	if( sel.bestWorker == null ) {
+        	    // There are no workers yet. All we can do is wait
+        	    // for a worker to arrive.
+        	    synchronized( workers ) {
+        		try {
+			    workers.wait();
+			} catch (InterruptedException e) {
+			    // Nothing to do.
+			}
+        	    }
+        	}
+        	else {
+        	    long sleepTime = (sel.startTime-now);
+        	    long sleepMS = sleepTime/1000000;
+        	    
+        	    if( sleepMS>0 ) {
+                        try {
+                            // There is nothing to do; Wait for workers to complete
+                            // or new workers.
+                            synchronized( workers ){
+                                if( Settings.traceMasterProgress ){
+                                    System.out.println( "Master: waiting " + Service.formatNanoseconds( sleepTime ) + " for a ready worker" );
+                                }
+                            	workers.wait( sleepMS );
                             }
-                            workers.wait( sleepTime/1000000 );
-                        }
-                    } catch (InterruptedException e) {
-                        // Not interested.
-                    }
-                }
-                else {
-                    // We have a worker willing to the job, now get a job to do.
-                    Job job;
-                    long jobId;
+                        } catch (InterruptedException e) {
+                            // Not interested.
+                        }        		
+        	    }
+        	    else {
+                        // We have a worker willing to the job, now get a job to do.
+        		WorkerInfo worker = sel.bestWorker;
+                        Job job;
+                        long jobId;
 
-                    if( Settings.traceMasterProgress ){
-                        System.out.println( "Submitting job to worker" );
-                    }
-                    synchronized( queue ) {
-                        job = queue.remove();
-                        jobId = jobNo++;
-                    }
-                    RunJobMessage msg = new RunJobMessage( job, receivePort.identifier(), jobId );
-                    synchronized( workers ) {
-                        worker.registerJobStart( job, jobId );
-                    }
-                    try {
-                        if( Settings.writeTrace ) {
-                            Globals.tracer.traceSentMessage( msg, worker.getPort() );
+                        if( Settings.traceMasterProgress ){
+                            System.out.println( "Submitting job to worker" );
                         }
-                        sendPort.send( msg, worker.getPort() );
-                    } catch (IOException e) {
-                        // Try to put the paste back in the tube.
-                        synchronized( queue ){
-                            queue.add( job );
+                        synchronized( queue ) {
+                            job = queue.remove();
+                            jobId = jobNo++;
                         }
-                        worker.retractJob( jobId );
-                        Globals.log.reportError( "Could not send job to " + worker + ": putting toothpaste back in the tube" );
-                        e.printStackTrace();
-                        // We don't try to roll back job start time, since the worker
-                        // may in fact be busy.
-                    }
-                }
+                        RunJobMessage msg = new RunJobMessage( job, receivePort.identifier(), jobId );
+                        synchronized( workers ) {
+                            worker.registerJobStart( job, jobId );
+                        }
+                        try {
+                            if( Settings.writeTrace ) {
+                                Globals.tracer.traceSentMessage( msg, worker.getPort() );
+                            }
+                            sendPort.send( msg, worker.getPort() );
+                        } catch (IOException e) {
+                            // Try to put the paste back in the tube.
+                            synchronized( queue ){
+                                queue.add( job );
+                            }
+                            worker.retractJob( jobId );
+                            Globals.log.reportError( "Could not send job to " + worker + ": putting toothpaste back in the tube" );
+                            e.printStackTrace();
+                            // We don't try to roll back job start time, since the worker
+                            // may in fact be busy.
+                        }        		
+        	    }
+        	}
             }
             else {
                 // There are no jobs in the queue.
@@ -399,7 +415,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
      * Make sure we don't talk to it.
      * @param theIbis The ibis that was gone.
      */
-    public void removeIbis(IbisIdentifier theIbis)
+    public void removeIbis( IbisIdentifier theIbis )
     {
         workers.removeIbis( theIbis );
         // FIXME: reschedule any outstanding jobs on this ibis.

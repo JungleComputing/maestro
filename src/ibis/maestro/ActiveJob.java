@@ -13,22 +13,12 @@ class ActiveJob implements Comparable<ActiveJob> {
     
     /** The time this job was sent to the worker. */
     final long startTime;
-    
-    /** The estimated time this job will be completed, and
-     * the worker thread will be available for the next job.
-     */
-    private long completionTime;
-    
-    /** The estimated time this job will arrive back on this master. */
-    private long arrivalTime;
 
-    ActiveJob( Job job, long id, long startTime, long completionTime, long arrivalTime )
+    ActiveJob( Job job, long id, long startTime )
     {
         this.job = job;
         this.id = id;
         this.startTime = startTime;
-        this.completionTime = completionTime;
-        this.arrivalTime = arrivalTime;
     }
 
     /**
@@ -60,22 +50,32 @@ class ActiveJob implements Comparable<ActiveJob> {
     public String toString() {
 	return "(ActiveJob id=" + id + ", job=" + job + ", start time " + Service.formatNanoseconds( startTime ) + ')';
     }
+    
+    /**
+     * Given the computation time of  a job, return the ideal queue time of the job.
+     */
+    private static long computeIdealQueueTime( long computeTime )
+    {
+	return computeTime/2;
+    }
 
     /**
      * Returns the estimated this job will no longer need a work thread.
+     * @param previousCompletionTime The completion time of the previous job for this work thread.
      * @param now The current time.
-     * @return The estimated completion time.
+     * @param roundTripTime Average time from send to return of a job.
+     * @param computeTime Average computation time of a job.
+     * @return The estimated completion time on the worker.
      */
-    public long getCompletionTime(long now) {
-	if( now>arrivalTime ) {
-	    // Our estimated arrival time was wrong.
-	    // We still assume the difference between
-	    // Completion and arrival time is correct,
-	    // but we essentially assume the job result
-	    // will arrive right now.
-	    return now-(arrivalTime-completionTime);
-	}
-	return completionTime;
+    public long getCompletionTime( long previousCompletionTime, long now, long roundTripTime, long computeTime )
+    {
+	long emptyArrivalTime = startTime+roundTripTime;
+	long busyCompletionTime = previousCompletionTime+computeIdealQueueTime( computeTime )+computeTime;
+	long arrivalTime = Math.max( emptyArrivalTime, now );
+	long communicationTime = roundTripTime-computeTime;
+	long res = Math.max( busyCompletionTime, arrivalTime-communicationTime/2 );
+	System.out.println( "emptyArrivalTime-now=" + Service.formatNanoseconds( emptyArrivalTime-now ) + " arrivalTime-now=" + Service.formatNanoseconds( arrivalTime-now ) + " busyCompletionTime-now=" + Service.formatNanoseconds( busyCompletionTime-now ) + " res-now=" + Service.formatNanoseconds(res-now) );
+	return res;
     }
  
-}
+ }
