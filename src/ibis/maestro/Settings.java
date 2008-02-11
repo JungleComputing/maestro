@@ -32,13 +32,16 @@ public class Settings {
     /**
      * Trace the selection of the fastest worker.
      */
-    public static final boolean traceFastestWorker = true;
+    public static final boolean traceFastestWorker = false;
 
     /**
      * Trace the progress of masters?
      */
-    public static final boolean traceMasterProgress = true;
+    public static final boolean traceMasterProgress = false;
 
     /** Trace the adventures of the precompletion interval variable? */
-    public static final boolean tracePrecompletionInterval = true;
+    public static final boolean tracePrecompletionInterval = false;
+
+    /** Trace all send events. */
+    public static final boolean traceSends = false;
 }

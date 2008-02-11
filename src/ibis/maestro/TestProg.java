@@ -6,7 +6,7 @@ package ibis.maestro;
  *
  */
 public class TestProg {
-    private static final int JOBCOUNT = 200;
+    private static final int JOBCOUNT = 500;
 
     private class Listener implements CompletionListener
     {

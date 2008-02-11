@@ -114,7 +114,9 @@ class WorkerInfo {
 	long idealSubmissionTime = ourCompletionTime-preCompletionInterval;
 	long submitTime = idealSubmissionTime;
         if( now>idealSubmissionTime ) {
-            System.err.println( "You asked " + Service.formatNanoseconds(now-idealSubmissionTime)+ " too late for ideal submit time" );
+            if( Settings.traceFastestWorker ) {
+        	System.err.println( "You asked " + Service.formatNanoseconds(now-idealSubmissionTime)+ " too late for ideal submit time" );
+            }
             long delta = now-idealSubmissionTime;
             submitTime = now;
             // Updating our estimate with this knowledge.§

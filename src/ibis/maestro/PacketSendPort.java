@@ -60,7 +60,9 @@ public class PacketSendPort<T extends Serializable> {
 	    port.close();
 	}
 	long stopTime = System.nanoTime();
-	System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) );
+	if( Settings.traceSends ) {
+	    System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) );
+	}
 	return len;
     }
 

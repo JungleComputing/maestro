@@ -74,7 +74,9 @@ class ActiveJob implements Comparable<ActiveJob> {
 	long arrivalTime = Math.max( emptyArrivalTime, now );
 	long communicationTime = roundTripTime-computeTime;
 	long res = Math.max( busyCompletionTime, arrivalTime-communicationTime/2 );
-	System.out.println( "emptyArrivalTime-now=" + Service.formatNanoseconds( emptyArrivalTime-now ) + " arrivalTime-now=" + Service.formatNanoseconds( arrivalTime-now ) + " busyCompletionTime-now=" + Service.formatNanoseconds( busyCompletionTime-now ) + " res-now=" + Service.formatNanoseconds(res-now) );
+	if( Settings.traceFastestWorker ) {
+	    System.out.println( "computeTime=" + Service.formatNanoseconds(computeTime ) + " roundTripTime=" + Service.formatNanoseconds(roundTripTime) + " emptyArrivalTime-now=" + Service.formatNanoseconds( emptyArrivalTime-now ) + " arrivalTime-now=" + Service.formatNanoseconds( arrivalTime-now ) + " busyCompletionTime-now=" + Service.formatNanoseconds( busyCompletionTime-now ) + " res-now=" + Service.formatNanoseconds(res-now) );
+	}
 	return res;
     }
  

@@ -18,6 +18,7 @@ class WorkThread extends Thread
     WorkThread( WorkSource source, Master localMaster )
     {
         super( "Work thread" );
+        setPriority( NORM_PRIORITY+1 );
         this.source = source;
         this.localMaster = localMaster;
     }

@@ -40,7 +40,6 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     public Worker( Ibis ibis, Master master ) throws IOException
     {
         super( "Worker" );   // Create a thread with a name.
-        setPriority( Thread.NORM_PRIORITY+1 );
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         for( int i=0; i<numberOfProcessors; i++ ) {
@@ -369,8 +368,8 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     public void reportJobResult( RunJobMessage jobMessage, JobReturn r )
     {
         long now = System.nanoTime();
-	long computeTime = now-jobMessage.getQueueTime();
-        long interval = jobMessage.getQueueEmptyInterval();
+	long computeInterval = now-jobMessage.getRunTime();
+        long emptyQueueInterval = jobMessage.getQueueEmptyInterval();
         try {
             long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
 
@@ -381,7 +380,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
                 runningJobs--;
                 queue.notifyAll();
             }
-            JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeTime, interval, queueInterval );
+            JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeInterval, emptyQueueInterval, queueInterval );
             if( Settings.writeTrace ) {
                 Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
             }
