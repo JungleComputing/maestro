@@ -28,48 +28,48 @@ public class WorkerList {
      */
     private double estimateMultiplier()
     {
-        double sumMultipliers = 0.0;
-        int workerCount;
-        synchronized( workers ){
-            workerCount = workers.size();
-            
-            for( WorkerInfo w: workers ){
-                sumMultipliers += w.calculateMultiplier();
-            }
-        }
-        if( workerCount<1 ){
-            // There are no workers to compare to, so we will have to invent
-            // an estimate. This magic number says that this job is just as
-            // fast as the benchmark run we use to benchmark the nodes.
-            return -1;
-        }
-        return sumMultipliers/workerCount;
+	double sumMultipliers = 0.0;
+	int workerCount;
+	synchronized( workers ){
+	    workerCount = workers.size();
+
+	    for( WorkerInfo w: workers ){
+		sumMultipliers += w.calculateMultiplier();
+	    }
+	}
+	if( workerCount<1 ){
+	    // There are no workers to compare to, so we will have to invent
+	    // an estimate. This magic number says that this job is just as
+	    // fast as the benchmark run we use to benchmark the nodes.
+	    return -1;
+	}
+	return sumMultipliers/workerCount;
     }
 
     void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port, int workThreads, long benchmarkComputeTime, long benchmarkRoundtripTime, double benchmarkScore )
     {
-        long pingTime = benchmarkRoundtripTime-benchmarkComputeTime;
-        long estimatedComputeTime;
-        if( workers.size() == 0 ) {
-            // We have no reference to estimate the compute time.
-            // Arbitrarily assume the compute time is the same as the
-            // ping time.
-            estimatedComputeTime = pingTime;
-        }
-        else {
-            estimatedComputeTime = (long) (benchmarkScore*estimateMultiplier());
-        }
-        // We're a bit paranoid, and start with a zero precompletion interval.
-        // That gives us a better chance at committing only one job to a new worker.
-        long preCompletionInterval = 0;
-        WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime+estimatedComputeTime, estimatedComputeTime, preCompletionInterval );
-        if( Settings.writeTrace ) {
-            Globals.tracer.traceWorkerRegistration( me, port, benchmarkScore, benchmarkRoundtripTime, benchmarkComputeTime );
-            Globals.tracer.traceWorkerSettings( me, port, pingTime+estimatedComputeTime, estimatedComputeTime, preCompletionInterval, 0L, 0L );
-        }
-        synchronized( workers ){
-            workers.add( worker );
-        }
+	long pingTime = benchmarkRoundtripTime-benchmarkComputeTime;
+	long estimatedComputeTime;
+	if( workers.size() == 0 ) {
+	    // We have no reference to estimate the compute time.
+	    // Arbitrarily assume the compute time is the same as the
+	    // ping time.
+	    estimatedComputeTime = pingTime;
+	}
+	else {
+	    estimatedComputeTime = (long) (benchmarkScore*estimateMultiplier());
+	}
+	// We're a bit paranoid, and start with a zero precompletion interval.
+	// That gives us a better chance at committing only one job to a new worker.
+	long preCompletionInterval = 0;
+	WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime+estimatedComputeTime, estimatedComputeTime, preCompletionInterval );
+	if( Settings.writeTrace ) {
+	    Globals.tracer.traceWorkerRegistration( me, port, benchmarkScore, benchmarkRoundtripTime, benchmarkComputeTime );
+	    Globals.tracer.traceWorkerSettings( me, port, pingTime+estimatedComputeTime, estimatedComputeTime, preCompletionInterval, 0L, 0L );
+	}
+	synchronized( workers ){
+	    workers.add( worker );
+	}
     }
 
     void unsubscribeWorker( ReceivePortIdentifier worker )
@@ -90,16 +90,16 @@ public class WorkerList {
      */
     public void removeIbis( IbisIdentifier theIbis )
     {
-        synchronized( workers ){
-            int ix = workers.size();
-            while( ix>0 ){
-                ix--;
-                WorkerInfo worker = workers.get(ix);
-                if( worker.hasIbis( theIbis ) ){
-                    workers.remove(ix);
-                }
-            }
-        }
+	synchronized( workers ){
+	    int ix = workers.size();
+	    while( ix>0 ){
+		ix--;
+		WorkerInfo worker = workers.get(ix);
+		if( worker.hasIbis( theIbis ) ){
+		    workers.remove(ix);
+		}
+	    }
+	}
     }
 
     /** Returns true iff we have a worker on our list with the
@@ -137,11 +137,11 @@ public class WorkerList {
     public boolean areIdle()
     {
 	synchronized( workers ){
-		for( WorkerInfo w: workers ) {
-		    if( !w.isIdle() ) {
-			return false;
-		    }
+	    for( WorkerInfo w: workers ) {
+		if( !w.isIdle() ) {
+		    return false;
 		}
+	    }
 	}
 	return true;
     }
