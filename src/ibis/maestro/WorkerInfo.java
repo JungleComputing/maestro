@@ -21,14 +21,14 @@ class WorkerInfo {
     /** The active jobs of this worker. */
     private final Vector<ActiveJob> activeJobs = new Vector<ActiveJob>();
 
-    private final JobInfo jobInfo;
+    private final WorkerJobInfo workerJobInfo;
     
     WorkerInfo( ReceivePortIdentifier port, int workThreads, double benchmarkScore, long roundTripTime, long computeTime, long preCompletionInterval )
     {
         this.port = port;
         this.workThreads = workThreads;
         this.benchmarkScore = benchmarkScore;
-        this.jobInfo = new JobInfo( roundTripTime, computeTime, preCompletionInterval );
+        this.workerJobInfo = new WorkerJobInfo( roundTripTime, computeTime, preCompletionInterval );
         if( Settings.tracePrecompletionInterval ) {
             System.out.println( "Initial PCI is " + preCompletionInterval );
         }
@@ -66,11 +66,12 @@ class WorkerInfo {
      * Given a worker selector describing the best worker to submit a 
      * job to thus far, update it with information of this worker.
      * @param now The current time.
+     * @param jobInfo Information for the type of job we're trying to run.
      * @param sel The worker selector.
      * @param sendSize The number of bytes in a job submission message.
      * @param receiveSize The number of bytes in a job result message.
      */
-    public void setBestWorker( long now, WorkerSelector sel, long sendSize, long receiveSize )
+    public void setBestWorker( long now, JobInfo jobInfo, WorkerSelector sel )
     {
         long completionTime[] = new long[workThreads];
 
@@ -91,7 +92,7 @@ class WorkerInfo {
         synchronized( activeJobs ) {
             for( ActiveJob j: activeJobs ) {
         	int ix = indexOfLowest( completionTime );
-        	long t = j.getCompletionTime( completionTime[ix], now, jobInfo.getRoundTripTime(), jobInfo.getComputeTime() );
+        	long t = j.getCompletionTime( completionTime[ix], now );
 
                 if( completionTime[ix]<t ) {
         	    completionTime[ix] = t;
@@ -103,9 +104,9 @@ class WorkerInfo {
         // We aim to keep each job about half its runtime in the queue; a reasonable compromise
         // between buffering against idle time and not committing too much to a worker.
         long ourCompletionTime = completionTime[ix];
-        long l = estimateResultTransmissionTime( sendSize, receiveSize );
+        long l = workerJobInfo.estimateResultTransmissionTime( jobInfo );
 	long ourResultTime = ourCompletionTime+l;
-	long idealSubmissionTime = ourCompletionTime-jobInfo.getPreCompletionInterval();
+	long idealSubmissionTime = ourCompletionTime-workerJobInfo.getPreCompletionInterval();
 	long submitTime = idealSubmissionTime;
         if( now>idealSubmissionTime ) {
             if( Settings.traceFastestWorker ) {
@@ -130,26 +131,13 @@ class WorkerInfo {
         }
     }
 
-    private long estimateResultTransmissionTime( long sendSize, long receiveSize ) {
-	long transmissionTime = jobInfo.getTransmissionTime();
-	long res;
-
-	if( sendSize<=0 || receiveSize<=0 ) {
-	    res = transmissionTime/2;
-	}
-	else {
-	    double fraction = ((double) receiveSize)/((double) (sendSize+receiveSize));
-	    res = (long) (transmissionTime*fraction);
-	}
-	return res;
-    }
-
     /** Returns the current estimated multiplier from benchmark score
      * to predicted job computation time in ns.
      * @return Estimated multiplier.
      */
-    public double calculateMultiplier() {
-        return jobInfo.getComputeTime()/benchmarkScore;
+    public double calculateMultiplier()
+    {
+        return workerJobInfo.getComputeTime()/benchmarkScore;
     }
 
     /**
@@ -157,7 +145,8 @@ class WorkerInfo {
      * @param ibis The ibis to compare to.
      * @return True iff this worker lives on the given ibis.
      */
-    public boolean hasIbis(IbisIdentifier ibis) {
+    public boolean hasIbis( IbisIdentifier ibis )
+    {
         return port.ibisIdentifier().equals(ibis);
     }
 
@@ -202,7 +191,7 @@ class WorkerInfo {
         synchronized( activeJobs ){
             activeJobs.remove( e );
         }
-        jobInfo.update(this, master, result, newRoundTripTime);
+        workerJobInfo.update(this, master, result, newRoundTripTime);
         if( Settings.traceMasterProgress ){
             System.out.println( "Master: retired job " + e );		
         }
@@ -224,7 +213,7 @@ class WorkerInfo {
     public void registerJobStart( Job job, long id )
     {
         long startTime = System.nanoTime();
-        ActiveJob j = new ActiveJob( job, id, startTime );
+        ActiveJob j = new ActiveJob( job, id, startTime, workerJobInfo );
 
         synchronized( activeJobs ) {
             activeJobs.add( j );

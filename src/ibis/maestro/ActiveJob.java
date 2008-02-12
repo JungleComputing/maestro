@@ -10,15 +10,17 @@ class ActiveJob implements Comparable<ActiveJob> {
     private static final long serialVersionUID = 1L;
     final Job job;
     final long id;
+    final WorkerJobInfo jobInfo;
     
     /** The time this job was sent to the worker. */
     final long startTime;
 
-    ActiveJob( Job job, long id, long startTime )
+    ActiveJob( Job job, long id, long startTime, WorkerJobInfo jobInfo )
     {
         this.job = job;
         this.id = id;
         this.startTime = startTime;
+        this.jobInfo = jobInfo;
     }
 
     /**
@@ -63,12 +65,15 @@ class ActiveJob implements Comparable<ActiveJob> {
      * Returns the estimated this job will no longer need a work thread.
      * @param previousCompletionTime The completion time of the previous job for this work thread.
      * @param now The current time.
+     * @param  
      * @param roundTripTime Average time from send to return of a job.
      * @param computeTime Average computation time of a job.
      * @return The estimated completion time on the worker.
      */
-    public long getCompletionTime( long previousCompletionTime, long now, long roundTripTime, long computeTime )
+    public long getCompletionTime( long previousCompletionTime, long now )
     {
+	long roundTripTime = jobInfo.getRoundTripTime();
+	long computeTime = jobInfo.getComputeTime();
 	long emptyArrivalTime = startTime+roundTripTime;
 	long busyCompletionTime = previousCompletionTime+computeIdealQueueTime( computeTime )+computeTime;
 	long arrivalTime = Math.max( emptyArrivalTime, now );

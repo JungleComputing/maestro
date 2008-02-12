@@ -88,7 +88,7 @@ public class WorkerList {
      * Remove any workers on that ibis.
      * @param theIbis The ibis that was gone.
      */
-    public void removeIbis(IbisIdentifier theIbis)
+    public void removeIbis( IbisIdentifier theIbis )
     {
         synchronized( workers ){
             int ix = workers.size();
@@ -147,14 +147,13 @@ public class WorkerList {
     /** Fill the work selector with the best worker from our list.
      *
      * @param now The current time.
+     * @param jobInfo Information about the type of job we're trying to schedule.
      * @param sel The selector that keeps track of the best worker.
-     * @param sendSize The estimated size of the job submission message.
-     * @param receiveSize The estimated size of the job result message.
      */
-    public void setBestWorker(long now, WorkerSelector sel, long sendSize, long receiveSize )
+    public void setBestWorker(long now, JobInfo jobInfo, WorkerSelector sel )
     {
 	for( WorkerInfo w: workers ) {
-	    w.setBestWorker(now, sel, sendSize, receiveSize );
+	    w.setBestWorker(now, jobInfo, sel );
 	}
     }
 }

@@ -1,11 +1,11 @@
 /**
- * 
+ * Information about a particular job type on a particular worker.
  */
 package ibis.maestro;
 
 import ibis.ipl.ReceivePortIdentifier;
 
-class JobInfo {
+class WorkerJobInfo {
     /** Estimated time in ns to complete a job, including communication. */
     private long roundTripTime;
 
@@ -31,7 +31,7 @@ class JobInfo {
      * @param computeTime The estimated compute time on this job on this particular worker.
      * @param preCompletionInterval
      */
-    public JobInfo(long roundTripTime, long computeTime,
+    public WorkerJobInfo(long roundTripTime, long computeTime,
 	    long preCompletionInterval) {
 	this.roundTripTime = roundTripTime;
 	this.computeTime = computeTime;
@@ -89,11 +89,19 @@ class JobInfo {
 	return preCompletionInterval;
     }
 
-    /**
-     * Returns the estimated transmission time of this job.
-     * @return
-     */
-    public long getTransmissionTime() {
-	return roundTripTime-computeTime;
+    long estimateResultTransmissionTime( JobInfo jobInfo )
+    {
+	long transmissionTime = roundTripTime-computeTime;
+	long res;
+
+	if( jobInfo.getSendSize()<=0 || jobInfo.getReceiveSize()<=0 ) {
+	    res = transmissionTime/2;
+	}
+	else {
+	    double fraction = ((double) jobInfo.getReceiveSize())/((double) (jobInfo.getSendSize()+jobInfo.getReceiveSize()));
+	    res = (long) (transmissionTime*fraction);
+	}
+	return res;
     }
+
 }
