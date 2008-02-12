@@ -10,10 +10,10 @@ import java.util.Vector;
 
 class WorkerInfo {
     /** The receive port of this worker. */
-    private final ReceivePortIdentifier port;
+    final ReceivePortIdentifier port;
     
     /** How many work threads does this worker have? */
-    private final int workThreads;
+    final int workThreads;
 
     /** The time in seconds to do one iteration of a standard benchmark on this worker. */
     private final double benchmarkScore;
@@ -21,23 +21,14 @@ class WorkerInfo {
     /** The active jobs of this worker. */
     private final Vector<ActiveJob> activeJobs = new Vector<ActiveJob>();
 
-    /** Estimated time to complete a job, including communication. */
-    private long roundTripTime;
+    private final JobInfo jobInfo;
     
-    /** Estimated time to complete a job, excluding communication. */
-    private long computeTime;
-    
-    /** Estimated interval, before one job completes, that we should submit a new job. In ns. */
-    private long preCompletionInterval;
-
     WorkerInfo( ReceivePortIdentifier port, int workThreads, double benchmarkScore, long roundTripTime, long computeTime, long preCompletionInterval )
     {
         this.port = port;
         this.workThreads = workThreads;
         this.benchmarkScore = benchmarkScore;
-        this.roundTripTime = roundTripTime;
-        this.computeTime = computeTime;
-        this.preCompletionInterval = preCompletionInterval;
+        this.jobInfo = new JobInfo( roundTripTime, computeTime, preCompletionInterval );
         if( Settings.tracePrecompletionInterval ) {
             System.out.println( "Initial PCI is " + preCompletionInterval );
         }
@@ -100,7 +91,7 @@ class WorkerInfo {
         synchronized( activeJobs ) {
             for( ActiveJob j: activeJobs ) {
         	int ix = indexOfLowest( completionTime );
-        	long t = j.getCompletionTime( completionTime[ix], now, roundTripTime, computeTime );
+        	long t = j.getCompletionTime( completionTime[ix], now, jobInfo.getRoundTripTime(), jobInfo.getComputeTime() );
 
                 if( completionTime[ix]<t ) {
         	    completionTime[ix] = t;
@@ -114,7 +105,7 @@ class WorkerInfo {
         long ourCompletionTime = completionTime[ix];
         long l = estimateResultTransmissionTime( sendSize, receiveSize );
 	long ourResultTime = ourCompletionTime+l;
-	long idealSubmissionTime = ourCompletionTime-preCompletionInterval;
+	long idealSubmissionTime = ourCompletionTime-jobInfo.getPreCompletionInterval();
 	long submitTime = idealSubmissionTime;
         if( now>idealSubmissionTime ) {
             if( Settings.traceFastestWorker ) {
@@ -140,14 +131,14 @@ class WorkerInfo {
     }
 
     private long estimateResultTransmissionTime( long sendSize, long receiveSize ) {
-	long transmissionTime = roundTripTime-computeTime;
+	long transmissionTime = jobInfo.getTransmissionTime();
 	long res;
 
 	if( sendSize<=0 || receiveSize<=0 ) {
 	    res = transmissionTime/2;
 	}
 	else {
-	    double fraction = ((double) receiveSize)/((double) sendSize+receiveSize);
+	    double fraction = ((double) receiveSize)/((double) (sendSize+receiveSize));
 	    res = (long) (transmissionTime*fraction);
 	}
 	return res;
@@ -158,7 +149,7 @@ class WorkerInfo {
      * @return Estimated multiplier.
      */
     public double calculateMultiplier() {
-        return computeTime/benchmarkScore;
+        return jobInfo.getComputeTime()/benchmarkScore;
     }
 
     /**
@@ -207,34 +198,11 @@ class WorkerInfo {
         }
         long now = System.nanoTime();
         long newRoundTripTime = now-e.startTime; // The time to send the job, compute, and report the result.
-        long newComputeTime = result.getComputeTime();
-
-        long sPreCompletionInterval;
-        long sComputeTime;
-        long sRoundTripTime;
 
         synchronized( activeJobs ){
             activeJobs.remove( e );
-            // Adjust the precompletion interval to avoid both empty queues and full queues.
-            // The /2 is a dampening factor.
-            roundTripTime = (roundTripTime+newRoundTripTime)/2;
-            computeTime = (computeTime+newComputeTime)/2;
-            // We're aiming for a queue interval of half the compute time.
-            long idealinterval = (workThreads*computeTime/2);
-            long step = (result.queueEmptyInterval+idealinterval-result.queueInterval)/2;
-            preCompletionInterval += step;
-            if( Settings.tracePrecompletionInterval ) {
-                System.out.println( "old PCI=" + Service.formatNanoseconds(preCompletionInterval-step) + " queueEmptyInterval=" + Service.formatNanoseconds(result.queueEmptyInterval) + " queueInterval=" + Service.formatNanoseconds(result.queueInterval) + " ideal queueInterval=" + Service.formatNanoseconds(idealinterval) + " new PCI=" + Service.formatNanoseconds(preCompletionInterval) );
-            }
-            sPreCompletionInterval = preCompletionInterval;
-            sRoundTripTime = roundTripTime;
-            sComputeTime = computeTime;
         }
-        if( Settings.writeTrace ) {
-            Globals.tracer.traceWorkerSettings( master,
-                port,
-                sRoundTripTime, sComputeTime, sPreCompletionInterval, result.queueInterval, result.queueEmptyInterval );
-        }
+        jobInfo.update(this, master, result, newRoundTripTime);
         if( Settings.traceMasterProgress ){
             System.out.println( "Master: retired job " + e );		
         }
