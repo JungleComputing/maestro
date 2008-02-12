@@ -6,7 +6,7 @@ package ibis.maestro;
  *
  */
 public class TestProg {
-    private static final int JOBCOUNT = 500;
+    private static final int JOBCOUNT = 3000;
 
     private class Listener implements CompletionListener
     {
@@ -27,7 +27,9 @@ public class TestProg {
     {
         Node node = new Node( new Listener(), goForMaestro );
 
+	System.out.println( "Node created" );
         if( node.isMaestro() ) {
+		System.out.println( "I am maestro; submitting " + JOBCOUNT + " jobs" );
             for( int i=0; i<JOBCOUNT; i++ ){
         	AdditionJob j = new AdditionJob( 12*i );
         	node.submit( j );
@@ -47,8 +49,8 @@ public class TestProg {
      */
     public static void main( String args[] )
     {
-	System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length );
         boolean goForMaestro = args.length == 0;
+	System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro );
 	try {
             new TestProg().run( goForMaestro );
         }

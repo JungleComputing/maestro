@@ -13,7 +13,7 @@ public class Settings {
      * Trace the progress of workers?
      */
     public static final boolean traceWorkerProgress = false;
-    
+
     /**
      * Trace the progress of the worker lists of masters.
      */
@@ -23,7 +23,7 @@ public class Settings {
      * Trace the creation and destruction of Nodes.
      */
     public static final boolean traceNodes = false;
-    
+
     /**
      * Produce a log file with information for a timing trace?
      */

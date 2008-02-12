@@ -70,7 +70,6 @@ public class Node implements RegistryEventHandler {
     {
 	int ix = maestros.size();
 
-        System.out.println( "Ibis " + id + " left the computation" );
 	while( ix>0 ) {
             ix--;
 	    MaestroInfo m = maestros.get(ix);
@@ -131,7 +130,7 @@ public class Node implements RegistryEventHandler {
     public void electionResult( String name, IbisIdentifier theIbis )
     {
         System.out.println( "Election for '" + name + "' got result " + theIbis );
-        if( name.equals( MAESTRO_ELECTION_NAME ) ){
+        if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
             maestros.add( new MaestroInfo( theIbis ) );
             System.out.println( "Ibis " + theIbis + " got elected as maestro" );
         }
@@ -180,6 +179,9 @@ public class Node implements RegistryEventHandler {
                 PacketUpcallReceivePort.portType,
                 PacketBlockingReceivePort.portType
         );
+        if( Settings.traceNodes ) {
+	    System.out.println( "Created ibis " + ibis );
+	}
         Registry registry = ibis.registry();
         if( runForMaestro ){
             maestro = registry.elect( MAESTRO_ELECTION_NAME );
@@ -189,12 +191,15 @@ public class Node implements RegistryEventHandler {
             isMaestro = false;
             
         }
+        if( Settings.traceNodes ) {
+	    System.out.println( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
+	}
         master = new Master( ibis, listener );
         master.start();
         worker = new Worker( ibis, master );
         worker.start();
         registry.enableEvents();
-        master.waitForSubscription(  worker.identifier() );
+        master.waitForSubscription( worker.identifier() );
         if( Settings.traceNodes ) {
             Globals.log.log( "Started a Maestro node" );
         }
@@ -233,6 +238,7 @@ public class Node implements RegistryEventHandler {
         master.printStatistics();
         worker.printStatistics();
         try {
+System.err.println( "Ending ibis " + ibis.identifier() );
             ibis.end();
         }
         catch( IOException x ) {

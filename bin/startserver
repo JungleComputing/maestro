@@ -1,2 +1,2 @@
 #!/bin/sh
-exec $IBIS_HOME/bin/ibis-server --events --port 5437
+exec $IBIS_HOME/bin/ibis-server --stats --errors --events --port 5437

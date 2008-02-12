@@ -291,7 +291,6 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                 queueEmpty = queue.isEmpty();
             }
         }
-        System.out.println( "Master  is stopped, workersIdle=" + workersIdle + " queueEmpty=" + queueEmpty );
         return workersIdle && queueEmpty;
     }
 
@@ -317,6 +316,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         	if( sel.bestWorker == null ) {
         	    // There are no workers yet. All we can do is wait
         	    // for a worker to arrive.
+		    System.out.println( "Master: no workers yet; waiting for them to arrive." );
         	    synchronized( workers ) {
         		try {
 			    workers.wait();
