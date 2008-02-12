@@ -6,6 +6,7 @@ public class MultiplyJob implements Job {
     private final double values[];
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
+    private static final JobType jobType = new JobType( "MultiplyJob" );
 
     MultiplyJob( int n )
     {
@@ -88,4 +89,8 @@ public class MultiplyJob implements Job {
 	return "(MultiplyJob [" + values[0] + ",...," + values[values.length-1] + "])";
     }
 
+    @Override
+    public JobType getType() {
+	return jobType;
+    }
 }

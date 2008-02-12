@@ -10,16 +10,18 @@ class ActiveJob implements Comparable<ActiveJob> {
     private static final long serialVersionUID = 1L;
     final Job job;
     final long id;
-    final WorkerJobInfo jobInfo;
-    
+    final WorkerJobInfo workerJobInfo;
+    final JobInfo jobInfo;
+
     /** The time this job was sent to the worker. */
     final long startTime;
 
-    ActiveJob( Job job, long id, long startTime, WorkerJobInfo jobInfo )
+    ActiveJob( Job job, long id, long startTime, WorkerJobInfo workerJobInfo, JobInfo jobInfo )
     {
         this.job = job;
         this.id = id;
         this.startTime = startTime;
+        this.workerJobInfo = workerJobInfo;
         this.jobInfo = jobInfo;
     }
 
@@ -72,8 +74,8 @@ class ActiveJob implements Comparable<ActiveJob> {
      */
     public long getCompletionTime( long previousCompletionTime, long now )
     {
-	long roundTripTime = jobInfo.getRoundTripTime();
-	long computeTime = jobInfo.getComputeTime();
+	long roundTripTime = workerJobInfo.getRoundTripTime();
+	long computeTime = workerJobInfo.getComputeTime();
 	long emptyArrivalTime = startTime+roundTripTime;
 	long busyCompletionTime = previousCompletionTime+computeIdealQueueTime( computeTime )+computeTime;
 	long arrivalTime = Math.max( emptyArrivalTime, now );

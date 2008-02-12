@@ -13,7 +13,20 @@ public class JobInfo {
     
     /** Average size of job result messages, or -1 if unknown. */
     private long receiveSize = -1;
-    
+
+    /** The type of this job. */
+    public final JobType type;
+
+    /**
+     * Constructs a new job info class instance for the job with the given type.
+     * 
+     * @param type The type of job this info class instance describes.
+     */
+    public JobInfo(JobType type)
+    {
+	this.type = type;
+    }
+
     /**
      * Update the estimate for the job message size with a new actual
      * message size.
@@ -35,7 +48,8 @@ public class JobInfo {
      * for the result.
      * @param sz The new message size of a result message.
      */
-    public void updateReceiveSize( long sz ) {
+    public void updateReceiveSize( long sz )
+    {
 	if( receiveSize<0 ) {
 	    receiveSize = sz;
 	}
@@ -46,10 +60,18 @@ public class JobInfo {
 	}
     }
 
+    /** 
+     * Returns the average size of the job submission message of this job.
+     * @return The average job submission message size.
+     */
     public long getSendSize() {
 	return sendSize;
     }
     
+    /**
+     * Returns the average size of the job result message of this job.
+     * @return The average job result message size.
+     */
     public long getReceiveSize()
     {
 	return receiveSize;

@@ -156,7 +156,6 @@ public class Node implements RegistryEventHandler {
     {
         this( listener, true );
     }
-    
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
@@ -238,7 +237,6 @@ public class Node implements RegistryEventHandler {
         master.printStatistics();
         worker.printStatistics();
         try {
-System.err.println( "Ending ibis " + ibis.identifier() );
             ibis.end();
         }
         catch( IOException x ) {

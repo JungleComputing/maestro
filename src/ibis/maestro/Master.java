@@ -5,6 +5,7 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
+import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
 
@@ -20,7 +21,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
     private final PriorityQueue<Job> queue = new PriorityQueue<Job>();
-    private JobInfo jobInfo = new JobInfo();
+    private Hashtable<JobType,JobInfo> jobInfoTable = new Hashtable<JobType, JobInfo>();
 
     /** Targets of outstanding ping messages. */
     private final LinkedList<PingTarget> pingTargets = new LinkedList<PingTarget>();
@@ -46,7 +47,6 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Received a job result " + result );
         }
-        jobInfo.updateReceiveSize( result.resultMessageSize );
         synchronized( workers ) {
             workers.registerJobResult( receivePort.identifier(), result, completionListener );
             workers.notifyAll();
@@ -310,8 +310,18 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
             if( areWaitingJobs() ) {
         	// We have at least one job queued, now try to give it to a worker.
         	long now = System.nanoTime();
+        	JobType jobType;
 
         	sel.reset();
+        	synchronized( queue ) {
+        	    Job job = queue.peek();
+        	    jobType = job.getType();
+        	}
+        	JobInfo jobInfo = jobInfoTable.get( jobType );
+        	if( jobInfo == null ) {
+        	    jobInfo = new JobInfo( jobType );
+        	    jobInfoTable.put( jobType, jobInfo );
+        	}
         	workers.setBestWorker( now, jobInfo, sel );
         	if( sel.bestWorker == null ) {
         	    // There are no workers yet. All we can do is wait
@@ -320,13 +330,14 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
         	    synchronized( workers ) {
         		try {
 			    workers.wait();
-			} catch (InterruptedException e) {
+			}
+        		catch (InterruptedException e) {
 			    // Nothing to do.
 			}
         	    }
         	}
         	else {
-        	    long sleepTime = (sel.startTime-now);
+        	    long sleepTime = sel.startTime-now;
         	    long sleepMS = sleepTime/1000000;
         	    
         	    if( sleepMS>0 ) {
@@ -358,7 +369,7 @@ public class Master extends Thread  implements PacketReceiveListener<WorkerMessa
                         }
                         RunJobMessage msg = new RunJobMessage( job, receivePort.identifier(), jobId );
                         synchronized( workers ) {
-                            worker.registerJobStart( job, jobId );
+                            worker.registerJobStart( job, jobInfo, jobId );
                         }
                         try {
                             if( Settings.writeTrace ) {

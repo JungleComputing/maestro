@@ -14,4 +14,11 @@ public interface Job extends Comparable<Job>, Serializable {
      * @return The result of the job.
      */
     JobReturn run( Master master );
+
+    /**
+     * Returns the type of this job.
+     * Different job types get different scheduling statistics.
+     * @return The type of this job.
+     */
+    JobType getType();
 }

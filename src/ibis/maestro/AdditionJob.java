@@ -10,6 +10,7 @@ public class AdditionJob implements Job {
     private final double values[];
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
+    private static final JobType jobType = new JobType( "AdditionJob" );
 
     AdditionJob( int n )
     {
@@ -61,6 +62,15 @@ public class AdditionJob implements Job {
     public String toString()
     {
 	return "(AdditionJob level=" + level + " [" + values[0] + ",...," + values[values.length-1] + "])";
+    }
+
+    /**
+     * Returns the type of this job.
+     * @return The type of this job.
+     */
+    @Override
+    public JobType getType() {
+	return jobType;
     }
 
 }

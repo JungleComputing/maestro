@@ -6,6 +6,7 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
+import java.util.Hashtable;
 import java.util.Vector;
 
 class WorkerInfo {
@@ -17,21 +18,19 @@ class WorkerInfo {
 
     /** The time in seconds to do one iteration of a standard benchmark on this worker. */
     private final double benchmarkScore;
+    private final long benchmarkTransmissionTime;
 
     /** The active jobs of this worker. */
     private final Vector<ActiveJob> activeJobs = new Vector<ActiveJob>();
 
-    private final WorkerJobInfo workerJobInfo;
+    private final Hashtable<JobType,WorkerJobInfo> workerJobInfoTable = new Hashtable<JobType, WorkerJobInfo>();
     
-    WorkerInfo( ReceivePortIdentifier port, int workThreads, double benchmarkScore, long roundTripTime, long computeTime, long preCompletionInterval )
+    WorkerInfo( ReceivePortIdentifier port, int workThreads, double benchmarkScore, long benchmarkTransmissionTime )
     {
         this.port = port;
         this.workThreads = workThreads;
         this.benchmarkScore = benchmarkScore;
-        this.workerJobInfo = new WorkerJobInfo( roundTripTime, computeTime, preCompletionInterval );
-        if( Settings.tracePrecompletionInterval ) {
-            System.out.println( "Initial PCI is " + preCompletionInterval );
-        }
+        this.benchmarkTransmissionTime = benchmarkTransmissionTime;
     }
 
     boolean hasId( ReceivePortIdentifier id )
@@ -104,8 +103,9 @@ class WorkerInfo {
         // We aim to keep each job about half its runtime in the queue; a reasonable compromise
         // between buffering against idle time and not committing too much to a worker.
         long ourCompletionTime = completionTime[ix];
-        long l = workerJobInfo.estimateResultTransmissionTime( jobInfo );
-	long ourResultTime = ourCompletionTime+l;
+        WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobInfo.type );
+        long rtt = workerJobInfo.estimateResultTransmissionTime( jobInfo );
+	long ourResultTime = ourCompletionTime+rtt;
 	long idealSubmissionTime = ourCompletionTime-workerJobInfo.getPreCompletionInterval();
 	long submitTime = idealSubmissionTime;
         if( now>idealSubmissionTime ) {
@@ -121,12 +121,15 @@ class WorkerInfo {
         if( Settings.traceMasterProgress ){
             System.out.println( "setBestWorker(): submitTime-now=" + Service.formatNanoseconds(submitTime-now) + " ourCompletionTime-now=" + Service.formatNanoseconds(ourCompletionTime-now) + " ourResultTime-now=" + Service.formatNanoseconds(ourResultTime-now) );
         }
-        if( sel.resultTime>ourResultTime ) {
+        // Pick the best completion time. It may take some time to get
+        // the result back, but we don't care.
+        //if( sel.resultTime>ourResultTime ) {
+        if( sel.completionTime>ourCompletionTime ) {
             if( Settings.traceMasterProgress ) {
         	System.out.println( "Worker " + this + " is the best pick thus far" );
             }
             sel.bestWorker = this;
-            sel.resultTime = ourResultTime;
+            sel.completionTime = ourCompletionTime;
             sel.startTime = submitTime;
         }
     }
@@ -135,8 +138,12 @@ class WorkerInfo {
      * to predicted job computation time in ns.
      * @return Estimated multiplier.
      */
-    public double calculateMultiplier()
+    public double calculateMultiplier( JobType type )
     {
+	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( type );
+	if( workerJobInfo == null ) {
+	    return -1;
+	}
         return workerJobInfo.getComputeTime()/benchmarkScore;
     }
 
@@ -182,6 +189,7 @@ class WorkerInfo {
             Globals.log.reportInternalError( "ignoring reported result from job with unknown id " + id );
             return;
         }
+        e.jobInfo.updateReceiveSize( result.resultMessageSize );
         if( completionListener != null ) {
             completionListener.jobCompleted( e.job, result.result );
         }
@@ -191,7 +199,7 @@ class WorkerInfo {
         synchronized( activeJobs ){
             activeJobs.remove( e );
         }
-        workerJobInfo.update(this, master, result, newRoundTripTime);
+        e.workerJobInfo.update(this, master, result, newRoundTripTime);
         if( Settings.traceMasterProgress ){
             System.out.println( "Master: retired job " + e );		
         }
@@ -208,12 +216,14 @@ class WorkerInfo {
     /** Register the start of a new job.
      * 
      * @param job The job that was started.
+     * @param jobInfo Information about the job.
      * @param id The id given to the job.
      */
-    public void registerJobStart( Job job, long id )
+    public void registerJobStart( Job job, JobInfo jobInfo, long id )
     {
         long startTime = System.nanoTime();
-        ActiveJob j = new ActiveJob( job, id, startTime, workerJobInfo );
+        WorkerJobInfo workerJobInfo = workerJobInfoTable.get( job.getType() );
+        ActiveJob j = new ActiveJob( job, id, startTime, workerJobInfo, jobInfo );
 
         synchronized( activeJobs ) {
             activeJobs.add( j );
@@ -234,5 +244,32 @@ class WorkerInfo {
         activeJobs.remove( e );
         System.out.println( "Master: retired job " + e );		
 	
+    }
+
+    /**
+     * Returns true iff this worker has information about the given job type.
+     * @param type The job type we want to know about.
+     * @return True iff this worker has information about the given type.
+     */
+    public boolean knowsJobType( JobType type )
+    {
+	return workerJobInfoTable.containsKey( type );
+    }
+
+    /**
+     * @param type The job type to register for.
+     */
+    public void registerJobType( JobType type, double multiplier )
+    {
+	long computeTime;
+	if( multiplier<0 ) {
+	    computeTime = benchmarkTransmissionTime;
+	}
+	else {
+	    computeTime = (long) (multiplier*benchmarkScore);
+	}
+	// FIXME: initial PCI estimate could use job submit & result message size.
+	WorkerJobInfo info = new WorkerJobInfo( computeTime+benchmarkTransmissionTime, computeTime, benchmarkTransmissionTime/2 );
+	workerJobInfoTable.put( type, info );
     }
 }

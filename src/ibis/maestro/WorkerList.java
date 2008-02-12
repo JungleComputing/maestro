@@ -26,7 +26,7 @@ public class WorkerList {
     /** Estimate the multiplier between benchmark score and compute time of this job,
      * by averaging the multipliers of all known workers.
      */
-    private double estimateMultiplier()
+    private double estimateMultiplier( JobType type )
     {
 	double sumMultipliers = 0.0;
 	int workerCount;
@@ -34,7 +34,7 @@ public class WorkerList {
 	    workerCount = workers.size();
 
 	    for( WorkerInfo w: workers ){
-		sumMultipliers += w.calculateMultiplier();
+		sumMultipliers += w.calculateMultiplier( type );
 	    }
 	}
 	if( workerCount<1 ){
@@ -49,23 +49,9 @@ public class WorkerList {
     void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port, int workThreads, long benchmarkComputeTime, long benchmarkRoundtripTime, double benchmarkScore )
     {
 	long pingTime = benchmarkRoundtripTime-benchmarkComputeTime;
-	long estimatedComputeTime;
-	if( workers.size() == 0 ) {
-	    // We have no reference to estimate the compute time.
-	    // Arbitrarily assume the compute time is the same as the
-	    // ping time.
-	    estimatedComputeTime = pingTime;
-	}
-	else {
-	    estimatedComputeTime = (long) (benchmarkScore*estimateMultiplier());
-	}
-	// We're a bit paranoid, and start with a zero precompletion interval.
-	// That gives us a better chance at committing only one job to a new worker.
-	long preCompletionInterval = 0;
-	WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime+estimatedComputeTime, estimatedComputeTime, preCompletionInterval );
+	WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime );
 	if( Settings.writeTrace ) {
 	    Globals.tracer.traceWorkerRegistration( me, port, benchmarkScore, benchmarkRoundtripTime, benchmarkComputeTime );
-	    Globals.tracer.traceWorkerSettings( me, port, pingTime+estimatedComputeTime, estimatedComputeTime, preCompletionInterval, 0L, 0L );
 	}
 	synchronized( workers ){
 	    workers.add( worker );
@@ -152,10 +138,24 @@ public class WorkerList {
      * @param jobInfo Information about the type of job we're trying to schedule.
      * @param sel The selector that keeps track of the best worker.
      */
-    public void setBestWorker(long now, JobInfo jobInfo, WorkerSelector sel )
+    public void setBestWorker( long now, JobInfo jobInfo, WorkerSelector sel )
     {
 	for( WorkerInfo w: workers ) {
-	    w.setBestWorker(now, jobInfo, sel );
+	    if( !w.knowsJobType( jobInfo.type ) ) {
+		double sum = 0;
+		int n = 0;
+		
+		for( WorkerInfo w1: workers ) {
+		    double multiplier = w1.calculateMultiplier( jobInfo.type );
+		    if( multiplier>0 ) {
+			n++;
+			sum += multiplier;
+		    }
+		}
+		double m = (n==0)?-1:(sum/n);
+		w.registerJobType( jobInfo.type, m );
+	    }
+	    w.setBestWorker( now, jobInfo, sel );
 	}
     }
 }

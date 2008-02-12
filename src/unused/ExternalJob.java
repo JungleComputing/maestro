@@ -2,6 +2,7 @@ package unused;
 
 import ibis.maestro.Job;
 import ibis.maestro.JobReturn;
+import ibis.maestro.JobType;
 import ibis.maestro.Master;
 import ibis.util.RunProcess;
 
@@ -25,6 +26,7 @@ public class ExternalJob implements Job {
     private Vector<String> command;
     private static final boolean traceCommands = true;
     private static long label = 0L;
+    private static final JobType jobType = new JobType( "ExternalJob" );
 
     /** Given a sandbox directory remove its contents and the
      * directory itself.
@@ -154,6 +156,11 @@ public class ExternalJob implements Job {
         // There is no reason to impose a special ordering on these job.
         // TODO: add a priority number.
         return 0;
+    }
+
+    @Override
+    public JobType getType() {
+	return jobType;
     }
 
 }

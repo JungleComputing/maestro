@@ -29,5 +29,4 @@ add_to_libclasspath "${MAESTRO_HOME}"/lib
 exec java \
     -classpath "$CLASSPATH:$LIBCLASSPATH" \
     -Dlog4j.configuration=file:"$MAESTRO_HOME"/log4j.properties \
-    -Xmx1G \
      ibis.server.Server --stats --errors --events --port 5437

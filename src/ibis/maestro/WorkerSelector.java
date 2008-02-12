@@ -10,7 +10,7 @@ package ibis.maestro;
 public class WorkerSelector {
     WorkerInfo bestWorker;
     long startTime;
-    long resultTime;
+    long completionTime;
 
     WorkerSelector()
     {
@@ -21,6 +21,6 @@ public class WorkerSelector {
     public void reset() {
 	bestWorker = null;
 	startTime = Long.MAX_VALUE;
-	resultTime = Long.MAX_VALUE;
+	completionTime = Long.MAX_VALUE;
     }
 }

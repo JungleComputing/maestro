@@ -409,10 +409,12 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
 	double workPercentage = 100.0*((double) workTime/(double) workInterval);
 	System.out.printf( "Worker: # threads        = %5d\n", workThreads.length );
         System.out.printf( "Worker: # jobs           = %5d\n", jobCount );
-	System.out.println( "Worker: run time         = " + Service.formatNanoseconds( workInterval ) );
-	System.out.println( "Worker: total work time  = " + Service.formatNanoseconds( workTime ) + String.format( " (%.1f%%)", workPercentage )  );
-	System.out.println( "Worker: total idle time  = " + Service.formatNanoseconds( idleTime ) + String.format( " (%.1f%%)", idlePercentage ) );
-	System.out.println( "Worker: queue time/job   = " + Service.formatNanoseconds( queueTime/jobCount ) );
-	System.out.println( "Worker: compute time/job = " + Service.formatNanoseconds( workTime/jobCount ) );
+        System.out.println( "Worker: run time         = " + Service.formatNanoseconds( workInterval ) );
+        System.out.println( "Worker: total work time  = " + Service.formatNanoseconds( workTime ) + String.format( " (%.1f%%)", workPercentage )  );
+        System.out.println( "Worker: total idle time  = " + Service.formatNanoseconds( idleTime ) + String.format( " (%.1f%%)", idlePercentage ) );
+        if( jobCount>0 ) {
+            System.out.println( "Worker: queue time/job   = " + Service.formatNanoseconds( queueTime/jobCount ) );
+            System.out.println( "Worker: compute time/job = " + Service.formatNanoseconds( workTime/jobCount ) );
+        }
     }
 }
