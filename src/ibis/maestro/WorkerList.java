@@ -136,10 +136,12 @@ public class WorkerList {
      */
     public boolean areIdle()
     {
-	for( WorkerInfo w: workers ) {
-	    if( !w.isIdle() ) {
-		return false;
-	    }
+	synchronized( workers ){
+		for( WorkerInfo w: workers ) {
+		    if( !w.isIdle() ) {
+			return false;
+		    }
+		}
 	}
 	return true;
     }
