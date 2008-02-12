@@ -11,7 +11,7 @@ import ibis.ipl.ReceivePortIdentifier;
 public class RunJobMessage extends MasterMessage implements Comparable<Object> {
     /** */
     private static final long serialVersionUID = 1L;
-    private final Job job;
+    final Job job;
     final long jobId;
     private transient long queueTime;
     private transient long runTime;
@@ -22,22 +22,6 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
 	super( resultPort );
 	this.job = job;
         this.jobId = jobId;
-    }
-
-    /** Returns the job contained in this job message.
-     * FIXME: inline this.
-     * @return The job.
-     */
-    public Job getJob() {
-        return job;
-    }
-
-    /** Returns the id of this job. // FIXME: inline this.
-     * @return The job ID.
-     */
-    public long getId()
-    {
-	return jobId;
     }
 
     /**

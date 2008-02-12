@@ -148,6 +148,8 @@ public class WorkerList {
      *
      * @param now The current time.
      * @param sel The selector that keeps track of the best worker.
+     * @param sendSize The estimated size of the job submission message.
+     * @param receiveSize The estimated size of the job result message.
      */
     public void setBestWorker(long now, WorkerSelector sel, long sendSize, long receiveSize )
     {

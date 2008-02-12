@@ -381,7 +381,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
                 runningJobs--;
                 queue.notifyAll();
             }
-            JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.getId(), computeInterval, emptyQueueInterval, queueInterval, resultMessageSize );
+            JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.jobId, computeInterval, emptyQueueInterval, queueInterval, resultMessageSize );
             if( Settings.writeTrace ) {
                 Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
             }

@@ -37,7 +37,7 @@ class WorkThread extends Thread
                 break;
             }
             job.setRunTime( System.nanoTime() );
-            JobReturn r = job.getJob().run( localMaster );
+            JobReturn r = job.job.run( localMaster );
             source.reportJobResult( job, r );
         }
         System.out.println( "Work thread terminated" );
