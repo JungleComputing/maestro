@@ -3,7 +3,8 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
-import java.util.Vector;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * The list of workers of a master.
@@ -11,9 +12,9 @@ import java.util.Vector;
  * @author Kees van Reeuwijk
  */
 public class WorkerList {
-    private final Vector<WorkerInfo> workers = new Vector<WorkerInfo>();
+    private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
 
-    private static int searchWorker( Vector<WorkerInfo> workers, ReceivePortIdentifier id ) {
+    private static int searchWorker( List<WorkerInfo> workers, ReceivePortIdentifier id ) {
 	for( int i=0; i<workers.size(); i++ ) {
 	    WorkerInfo w = workers.get(i);
 	    if( w.hasId( id ) ) {
@@ -58,14 +59,11 @@ public class WorkerList {
 	}
     }
 
-    void unsubscribeWorker( ReceivePortIdentifier worker )
+    void removeWorker( ReceivePortIdentifier worker )
     {
 	int i = searchWorker(workers, worker);
 	if( i>=0 ) {
 	    workers.remove(i);
-	}
-	if( Settings.traceWorkerList ) {
-	    System.out.println( "unsubscribe of worker " + worker );
 	}
     }
 
@@ -74,15 +72,15 @@ public class WorkerList {
      * Remove any workers on that ibis.
      * @param theIbis The ibis that was gone.
      */
-    public void removeIbis( IbisIdentifier theIbis )
+    public void removeWorkers( IbisIdentifier theIbis )
     {
 	synchronized( workers ){
 	    int ix = workers.size();
 	    while( ix>0 ){
 		ix--;
-		WorkerInfo worker = workers.get(ix);
+		WorkerInfo worker = workers.get( ix );
 		if( worker.hasIbis( theIbis ) ){
-		    workers.remove(ix);
+		    workers.remove( ix );
 		}
 	    }
 	}
@@ -112,7 +110,7 @@ public class WorkerList {
 	    System.err.println( "Job result from unknown worker " + result.source );
 	    return;
 	}
-	WorkerInfo w = workers.elementAt( ix );
+	WorkerInfo w = workers.get( ix );
 	w.registerJobResult( me, result, completionListener );
     }
 

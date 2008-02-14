@@ -152,12 +152,16 @@ public class ExternalJob implements Job {
      * @param other The other job to compare to.
      * @return The result of the comparison.
      */
-    public int compareTo(Job other) {
+    public int compareTo( Job other )
+    {
         // There is no reason to impose a special ordering on these job.
         // TODO: add a priority number.
         return 0;
     }
 
+    /**
+     * @return The type of this job.
+     */
     @Override
     public JobType getType() {
 	return jobType;

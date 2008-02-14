@@ -6,9 +6,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.PriorityQueue;
-import java.util.Vector;
 
 /** Process trace files to generate a coherent time trace.
  * 
@@ -24,7 +24,7 @@ public class ProcessTraces {
     private static double slotSeparation = 100;
     private static double textSeparation = 20;
     private static HashMap<ReceivePortIdentifier, Integer> portMap = new HashMap<ReceivePortIdentifier,Integer>();
-    private static final Vector<Slot> slots = new Vector<Slot>();
+    private static final ArrayList<Slot> slots = new ArrayList<Slot>();
 
     private static final double timeScale = 0.000003;
 

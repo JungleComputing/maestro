@@ -6,8 +6,8 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
+import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.Vector;
 
 class WorkerInfo {
     /** The receive port of this worker. */
@@ -21,7 +21,7 @@ class WorkerInfo {
     private final long benchmarkTransmissionTime;
 
     /** The active jobs of this worker. */
-    private final Vector<ActiveJob> activeJobs = new Vector<ActiveJob>();
+    private final ArrayList<ActiveJob> activeJobs = new ArrayList<ActiveJob>();
 
     private final Hashtable<JobType,WorkerJobInfo> workerJobInfoTable = new Hashtable<JobType, WorkerJobInfo>();
     
@@ -136,6 +136,7 @@ class WorkerInfo {
 
     /** Returns the current estimated multiplier from benchmark score
      * to predicted job computation time in ns.
+     * @param type The job type to calculate the multiplier for.
      * @return Estimated multiplier.
      */
     public double calculateMultiplier( JobType type )
@@ -258,6 +259,8 @@ class WorkerInfo {
 
     /**
      * @param type The job type to register for.
+     * @param multiplier The estated multiplier for this kind
+     *        of job relative to the benchmark.
      */
     public void registerJobType( JobType type, double multiplier )
     {

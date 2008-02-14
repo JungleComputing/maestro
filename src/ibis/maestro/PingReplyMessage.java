@@ -12,7 +12,7 @@ class PingReplyMessage extends WorkerMessage {
     private static final long serialVersionUID = 1L;
     
     /** The score of the worker in the benchmark. */
-    private final double benchmarkScore;
+    final double benchmarkScore;
     
     /** The time it took to run the benchmark.
      * This time is different from the benchmark score because it may take
@@ -20,15 +20,10 @@ class PingReplyMessage extends WorkerMessage {
      * Also, the benchmark score is the time for one iteration, but is computed from
      * at least 20, and possibly more, iterations.
      */
-    private long benchmarkTime;
+    long benchmarkTime;
 
     /** The number of work threads of this worker. */
     public final int workThreads;
-
-    // FIXME: inline this.
-    ReceivePortIdentifier getWorker() { return source; }
-    double getBenchmarkScore() { return benchmarkScore; }
-    long getBenchmarkTime() { return benchmarkTime; }
 
     PingReplyMessage( ReceivePortIdentifier worker, int workThreads, double benchmarkScore, long benchmarkTime ){
 	super( worker );

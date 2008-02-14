@@ -89,6 +89,9 @@ public class MultiplyJob implements Job {
 	return "(MultiplyJob [" + values[0] + ",...," + values[values.length-1] + "])";
     }
 
+    /**
+     * @return The type of this job.
+     */
     @Override
     public JobType getType() {
 	return jobType;
