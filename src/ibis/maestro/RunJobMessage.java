@@ -8,7 +8,7 @@ import ibis.ipl.ReceivePortIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-public class RunJobMessage extends MasterMessage implements Comparable<Object> {
+public class RunJobMessage extends MasterMessage {
     /** */
     private static final long serialVersionUID = 1L;
     final Job job;
@@ -76,25 +76,6 @@ public class RunJobMessage extends MasterMessage implements Comparable<Object> {
 	return "Job message for job " + jobId;
     }
 
-    /**
-     * Compares this run job to the given RunJobMessage.
-     * @param o The RunJobMessage to compare to.
-     * @return The comparison result.
-     */
-    public int compareTo(Object o) {
-        RunJobMessage other = (RunJobMessage) o;
-        int res = this.job.compareTo( other.job );
-        if( res != 0 ){
-            return res;
-        }
-        if( this.jobId>other.jobId ){
-            return 1;
-        }
-        if( this.jobId<other.jobId ){
-            return -1;
-        }
-        return 0;
-    }
 
     /**
      * Returns the event type of this message.

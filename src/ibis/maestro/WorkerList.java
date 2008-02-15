@@ -47,10 +47,10 @@ public class WorkerList {
 	return sumMultipliers/workerCount;
     }
 
-    void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port, int workThreads, long benchmarkComputeTime, long benchmarkRoundtripTime, double benchmarkScore )
+    void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port, ArrayList<JobType> allowedTypes, int workThreads, long benchmarkComputeTime, long benchmarkRoundtripTime, double benchmarkScore )
     {
 	long pingTime = benchmarkRoundtripTime-benchmarkComputeTime;
-	WorkerInfo worker = new WorkerInfo( port, workThreads, benchmarkScore, pingTime );
+	WorkerInfo worker = new WorkerInfo( port, workThreads, allowedTypes, benchmarkScore, pingTime );
 	if( Settings.writeTrace ) {
 	    Globals.tracer.traceWorkerRegistration( me, port, benchmarkScore, benchmarkRoundtripTime, benchmarkComputeTime );
 	}

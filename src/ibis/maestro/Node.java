@@ -9,6 +9,7 @@ import ibis.ipl.Registry;
 import ibis.ipl.RegistryEventHandler;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Properties;
 import java.util.Vector;
 
@@ -149,25 +150,28 @@ public class Node implements RegistryEventHandler {
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
      * @param listener A completion listener for computations completed by this node.
+     * @param allowedTypes The list of job types this node allows.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public Node( CompletionListener listener ) throws IbisCreationFailedException, IOException
+    public Node( CompletionListener listener, ArrayList<JobType> allowedTypes ) throws IbisCreationFailedException, IOException
     {
-        this( listener, true );
+        this( listener, allowedTypes, true );
     }
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
      * @param listener A completion listener for computations completed by this node.
+     * @param allowedTypes The list of types tis job allows.
      * @param runForMaestro If true, try to get elected as maestro.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public Node(CompletionListener listener, boolean runForMaestro) throws IbisCreationFailedException, IOException
+    public Node(CompletionListener listener, ArrayList<JobType> allowedTypes, boolean runForMaestro) throws IbisCreationFailedException, IOException
     {
         Properties ibisProperties = new Properties();
         IbisIdentifier maestro;
+
         ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
         ibis = IbisFactory.createIbis(
                 ibisCapabilities,
@@ -195,7 +199,7 @@ public class Node implements RegistryEventHandler {
 	}
         master = new Master( ibis, listener );
         master.start();
-        worker = new Worker( ibis, master );
+        worker = new Worker( ibis, master, allowedTypes );
         worker.start();
         registry.enableEvents();
         master.waitForSubscription( worker.identifier() );

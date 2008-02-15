@@ -5,7 +5,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-class ActiveJob implements Comparable<ActiveJob> {
+class ActiveJob {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     final Job job;
@@ -23,27 +23,6 @@ class ActiveJob implements Comparable<ActiveJob> {
         this.startTime = startTime;
         this.workerJobInfo = workerJobInfo;
         this.jobInfo = jobInfo;
-    }
-
-    /**
-     * Returns a comparison result for this queue entry compared
-     * to the given other entry.
-     * @param other The other queue entry to compare to.
-     */
-    @Override
-    public int compareTo(ActiveJob other) {
-        int res = this.job.compareTo( other.job );
-        if( res == 0 ) {
-            if( this.id<other.id ) {
-                res = -1;
-            }
-            else {
-                if( this.id>other.id ) {
-                    res = 1;
-                }
-            }
-        }
-        return res;
     }
 
     /**

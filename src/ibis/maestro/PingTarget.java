@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.util.ArrayList;
+
 import ibis.ipl.ReceivePortIdentifier;
 
 /**
@@ -15,14 +17,17 @@ public class PingTarget {
     /** The time in ns we sent the ping. */
     private final long sendTime;
 
+    final ArrayList<JobType> allowedTypes;
+
     /**
      * Constructs a new entry in the list of outstanding pings.
      * @param worker The worker we sent the ping to.
      * @param sendTime The time in ns we sent the ping.
      */
-    PingTarget( ReceivePortIdentifier worker, long sendTime ){
+    PingTarget( ReceivePortIdentifier worker, long sendTime, ArrayList<JobType> allowedTypes ){
 	this.worker = worker;
 	this.sendTime = sendTime;
+	this.allowedTypes = allowedTypes;
     }
 
     long getSendTime() { return sendTime; }

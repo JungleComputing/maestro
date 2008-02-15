@@ -65,19 +65,6 @@ public class MultiplyJob implements Job {
         }
 	return new DoubleReturnValue( res );
     }
-
-    /**
-     * Compare this job instance to another one.
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
-    @Override
-    public int compareTo( Job o) {
-	if( o instanceof MultiplyJob ) {
-	    MultiplyJob other = (MultiplyJob) o;
-	    return this.values.length-other.values.length;
-	}
-	return 0;
-    }
     
     /**
      * Returns a string representation of this multiply job.

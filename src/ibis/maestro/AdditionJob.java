@@ -10,7 +10,7 @@ public class AdditionJob implements Job {
     private final double values[];
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
-    private static final JobType jobType = new JobType( "AdditionJob" );
+    static final JobType jobType = new JobType( "AdditionJob" );
 
     AdditionJob( int n )
     {
@@ -39,19 +39,6 @@ public class AdditionJob implements Job {
 	    master.submit( this );
 	}
 	return new DoubleReturnValue( sum );
-    }
-
-    /**
-     * Compare this job instance to another one.
-     * @see java.lang.Comparable#compareTo(java.lang.Object)
-     */
-    @Override
-    public int compareTo( Job o) {
-	if( o instanceof AdditionJob ) {
-	    AdditionJob other = (AdditionJob) o;
-	    return this.values.length-other.values.length;
-	}
-	return 0;
     }
 
     /**

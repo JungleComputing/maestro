@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.util.ArrayList;
+
 /**
  * Small test program.
  * @author Kees van Reeuwijk
@@ -25,7 +27,10 @@ public class TestProg {
     @SuppressWarnings("synthetic-access")
     private void run( boolean goForMaestro ) throws Exception
     {
-        Node node = new Node( new Listener(), goForMaestro );
+	ArrayList<JobType> allowedTypes = new ArrayList<JobType>();
+	
+	allowedTypes.add( AdditionJob.jobType );
+        Node node = new Node( new Listener(), allowedTypes, goForMaestro );
 
 	System.out.println( "Node created" );
         if( node.isMaestro() ) {

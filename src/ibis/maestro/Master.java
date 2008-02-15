@@ -5,6 +5,7 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.LinkedList;
 
@@ -77,6 +78,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         final long benchmarkTime = m.benchmarkTime;
         final int workThreads = m.workThreads;
         long pingTime = 0L;
+        ArrayList<JobType> allowedTypes;
 
         // First, search for the worker in our list of
         // outstanding pings.
@@ -94,11 +96,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 return;
             }
             pingTime = receiveTime-t.getSendTime();
+            allowedTypes = t.allowedTypes;
             pingTargets.remove( t );
         }
         synchronized( workers ){
             workerCount++;
-            workers.subscribeWorker( receivePort.identifier(), worker, workThreads, benchmarkTime, pingTime, m.benchmarkScore );
+            workers.subscribeWorker( receivePort.identifier(), worker, allowedTypes, workThreads, benchmarkTime, pingTime, m.benchmarkScore );
             System.out.println( "A new worker " + worker + " has arrived" );
             workers.notifyAll();
         }
@@ -114,12 +117,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private void handleWorkRequestMessage( WorkRequestMessage m )
     {
-        ReceivePortIdentifier worker = m.getPort();
+        ReceivePortIdentifier worker = m.source;
         long now = System.nanoTime();
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Received work request message " + m + " from worker " + worker + " at " + Service.formatNanoseconds(now) );
         }
-        PingTarget t = new PingTarget( worker, now );
+        PingTarget t = new PingTarget( worker, now, m.allowedTypes );
         synchronized( pingTargets ){
             pingTargets.add( t );
         }
@@ -197,7 +200,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         else if( msg instanceof WorkerResignMessage ) {
             WorkerResignMessage m = (WorkerResignMessage) msg;
 
-            unsubscribeWorker( m.getPort() );
+            unsubscribeWorker( m.source );
         }
         else {
             Globals.log.reportInternalError( "the master should handle message of type " + msg.getClass() );
@@ -459,8 +462,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     public void removeIbis( IbisIdentifier theIbis )
     {
+	        // FIXME: reschedule any outstanding jobs on this ibis.	    
         workers.removeWorkers( theIbis );
-        // FIXME: reschedule any outstanding jobs on this ibis.
     }
 
     /**

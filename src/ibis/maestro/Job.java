@@ -7,7 +7,7 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  *
  */
-public interface Job extends Comparable<Job>, Serializable {
+public interface Job extends Serializable {
     /**
      * Runs the job.
      * @param master The master to submit any new jobs to.

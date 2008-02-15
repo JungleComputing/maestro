@@ -5,6 +5,7 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -13,6 +14,7 @@ import java.util.LinkedList;
  */
 @SuppressWarnings("synthetic-access")
 public class Worker extends Thread implements WorkSource, PacketReceiveListener<MasterMessage> {
+    private final ArrayList<JobType> allowedTypes;
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
     private long queueEmptyMoment = 0L;
@@ -36,11 +38,13 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      * Create a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to.
      * @param master The master that jobs may submit new jobs to.
+     * @param allowedTypes The types of job this worker can handle.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis, Master master ) throws IOException
+    public Worker( Ibis ibis, Master master, ArrayList<JobType> allowedTypes ) throws IOException
     {
         super( "Worker" );   // Create a thread with a name.
+        this.allowedTypes = allowedTypes;
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         for( int i=0; i<numberOfProcessors; i++ ) {
@@ -241,7 +245,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             Globals.log.reportProgress( "Asking neighbor " + m + " for work" );
         }
         try {
-            WorkRequestMessage msg = new WorkRequestMessage( receivePort.identifier() );
+            WorkRequestMessage msg = new WorkRequestMessage( receivePort.identifier(), allowedTypes );
 
             if( Settings.writeTrace ) {
                 // FIXME: compute a receive port identifier for this one.

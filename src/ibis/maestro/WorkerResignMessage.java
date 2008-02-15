@@ -11,9 +11,6 @@ class WorkerResignMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
-    // FIXME: inline this
-    ReceivePortIdentifier getPort() { return source; }
-    
     WorkerResignMessage( ReceivePortIdentifier worker ){
 	super( worker );
     }

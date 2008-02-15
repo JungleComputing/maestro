@@ -16,6 +16,9 @@ class WorkerInfo {
     /** How many work threads does this worker have? */
     final int workThreads;
 
+    /** Which types of job does it allow? */
+    final ArrayList<JobType> allowedTypes;
+
     /** The time in seconds to do one iteration of a standard benchmark on this worker. */
     private final double benchmarkScore;
     private final long benchmarkTransmissionTime;
@@ -25,10 +28,11 @@ class WorkerInfo {
 
     private final Hashtable<JobType,WorkerJobInfo> workerJobInfoTable = new Hashtable<JobType, WorkerJobInfo>();
     
-    WorkerInfo( ReceivePortIdentifier port, int workThreads, double benchmarkScore, long benchmarkTransmissionTime )
+    WorkerInfo( ReceivePortIdentifier port, int workThreads, ArrayList<JobType> allowedTypes, double benchmarkScore, long benchmarkTransmissionTime )
     {
         this.port = port;
         this.workThreads = workThreads;
+        this.allowedTypes = allowedTypes;
         this.benchmarkScore = benchmarkScore;
         this.benchmarkTransmissionTime = benchmarkTransmissionTime;
     }

@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.util.ArrayList;
+
 import ibis.ipl.ReceivePortIdentifier;
 
 /**
@@ -11,12 +13,16 @@ import ibis.ipl.ReceivePortIdentifier;
 public class WorkRequestMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
+    final ArrayList<JobType> allowedTypes;
 
-    // FIXME: inline this.
-    ReceivePortIdentifier getPort() { return source; }
-    
-    WorkRequestMessage( ReceivePortIdentifier worker ){
+    /**
+     * Constructs a new work request message.
+     * @param worker Who is asking for work?
+     * @param allowedTypes Which types of jobs can it handle?
+     */
+    WorkRequestMessage( ReceivePortIdentifier worker, ArrayList<JobType> allowedTypes ){
 	super( worker );
+	this.allowedTypes = allowedTypes;
     }
 
     /**
