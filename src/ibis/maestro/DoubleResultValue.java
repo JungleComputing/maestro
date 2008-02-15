@@ -5,7 +5,7 @@ package ibis.maestro;
  *
  * A return value for a job that returns a double.
  */
-public class DoubleReturnValue implements JobReturn {
+public class DoubleResultValue implements JobProgressValue {
     /** Contractual obligation. */
     private static final long serialVersionUID = 5711465613411304317L;
     private final double value;
@@ -14,7 +14,7 @@ public class DoubleReturnValue implements JobReturn {
      * value.
      * @param value The value to return.
      */
-    public DoubleReturnValue( double value )
+    public DoubleResultValue( double value )
     {
         this.value = value;
     }

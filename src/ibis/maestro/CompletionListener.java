@@ -12,5 +12,5 @@ public interface CompletionListener {
      * @param j The Maestro job that was completed.
      * @param result The result of the job.
      */
-    void jobCompleted( Job j, JobReturn result );
+    void jobCompleted( Job j, JobProgressValue result );
 }

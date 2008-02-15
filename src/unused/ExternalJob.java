@@ -1,9 +1,9 @@
 package unused;
 
 import ibis.maestro.Job;
-import ibis.maestro.JobReturn;
+import ibis.maestro.JobContext;
+import ibis.maestro.JobProgressValue;
 import ibis.maestro.JobType;
-import ibis.maestro.Master;
 import ibis.util.RunProcess;
 
 import java.io.File;
@@ -43,7 +43,7 @@ public class ExternalJob implements Job {
         f.delete();
     }
 
-    static class RunResult implements JobReturn {
+    static class RunResult implements JobProgressValue {
         /** Contractual obligation. */
         private static final long serialVersionUID = 881469549150557400L;
         private final int exitcode;
@@ -87,10 +87,10 @@ public class ExternalJob implements Job {
     
     /**
      * Runs this job.
-     * @return The return value of this job.
+     * @param context The context of this run.
      */
     @Override
-    public JobReturn run( Master master )
+    public void run( JobContext context )
     {
         File sandbox;
         ProcessBuilder builder;
@@ -112,7 +112,7 @@ public class ExternalJob implements Job {
         catch ( IOException x ){
             // FIXME: more robust error handling.
             x.printStackTrace();
-            return null;
+            return;
         }
         String a[] = new String[command.size()];
         command.toArray(a);
@@ -129,7 +129,7 @@ public class ExternalJob implements Job {
             }
         }
         removeSandbox( sandbox );
-        return new RunResult( exitcode, o, e );
+        context.reportResult( this, new RunResult( exitcode, o, e ) );
     }
 
     /** Constructs a new job.

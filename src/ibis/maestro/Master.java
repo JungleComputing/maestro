@@ -16,7 +16,7 @@ import java.util.LinkedList;
  * 
  */
 @SuppressWarnings("synthetic-access")
-public class Master extends Thread implements PacketReceiveListener<WorkerMessage>
+public class Master extends Thread implements PacketReceiveListener<WorkerMessage>, JobContext
 {
     private final WorkerList workers = new WorkerList();
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
@@ -241,9 +241,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * Adds the given job to the work queue of this master.
      * Note that the master uses a priority queue for its scheduling,
      * so jobs may not be executed in chronological order.
+     * @param submitter The job that submitted this job.
      * @param j The job to add to the queue.
      */
-    public void submit( Job j )
+    public void submit( Job submitter, Job j )
     {
         synchronized( queue ) {
             incomingJobCount++;
@@ -517,5 +518,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         System.out.printf( "Master: # incoming jobs  = %5d\n", incomingJobCount );
         System.out.printf( "Master: # handled jobs   = %5d\n", handledJobCount );
         System.out.println( "Master: run time         = " + Service.formatNanoseconds( workInterval ) );
+    }
+
+    @Override
+    public void reportResult(Job job, JobProgressValue value) {
+	System.err.println( "FIXME: implement reportResult() job=" + job + " value=" + value );
     }
 }

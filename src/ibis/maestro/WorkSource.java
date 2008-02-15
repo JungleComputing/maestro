@@ -15,8 +15,7 @@ public interface WorkSource
 
     /** Reports the result of executing a job.
      * @param job The executed job
-     * @param r The job result
      */
-    void reportJobResult( RunJobMessage job, JobReturn r );
+    void reportJobCompletion( RunJobMessage job );
 
 }

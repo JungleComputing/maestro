@@ -10,10 +10,9 @@ import java.io.Serializable;
 public interface Job extends Serializable {
     /**
      * Runs the job.
-     * @param master The master to submit any new jobs to.
-     * @return The result of the job.
+     * @param context The context of this job submission.
      */
-    JobReturn run( Master master );
+    void run( JobContext context );
 
     /**
      * Returns the type of this job.

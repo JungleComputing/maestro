@@ -139,10 +139,10 @@ public class Node implements RegistryEventHandler {
 
     /**
      * Our ibis got a signal.
-     * @param arg0 The signal.
+     * @param signal The signal.
      */
     @Override
-    public void gotSignal( String arg0 )
+    public void gotSignal( String signal )
     {
         // Not interested.
     }
@@ -162,7 +162,7 @@ public class Node implements RegistryEventHandler {
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
      * @param listener A completion listener for computations completed by this node.
-     * @param allowedTypes The list of types tis job allows.
+     * @param allowedTypes The list of types this job allows.
      * @param runForMaestro If true, try to get elected as maestro.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
@@ -213,7 +213,7 @@ public class Node implements RegistryEventHandler {
      */
     public void submit( Job j )
     {
-	master.submit( j );
+	master.submit( null, j );
     }
     
     /** Finish this node. */

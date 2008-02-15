@@ -24,10 +24,9 @@ public class AdditionJob implements Job {
 
     /**
      * Runs this job.
-     * @return The result of this run.
      */
     @Override
-    public DoubleReturnValue run( Master master )
+    public void run( JobContext master )
     {
 	for( int i=0; i<ITERATIONS; i++ ) {
 	    for( double v: values ) {
@@ -36,9 +35,11 @@ public class AdditionJob implements Job {
 	}
 	if( level<LEVELS ) {
 	    level++;
-	    master.submit( this );
+	    master.submit( this, this );
 	}
-	return new DoubleReturnValue( sum );
+	else {
+	    master.reportResult( this, new DoubleResultValue( sum ) );
+	}
     }
 
     /**
@@ -59,5 +60,4 @@ public class AdditionJob implements Job {
     public JobType getType() {
 	return jobType;
     }
-
 }

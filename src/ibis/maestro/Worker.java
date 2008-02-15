@@ -32,7 +32,6 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private int jobCount = 0;
     private long workTime = 0;
     private int runningJobs = 0;
-    private long resultMessageSize = -1;
 
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
@@ -370,7 +369,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      * @param r The returned value of this job.
      */
     @Override
-    public void reportJobResult( RunJobMessage jobMessage, JobReturn r )
+    public void reportJobCompletion( RunJobMessage jobMessage )
     {
         long now = System.nanoTime();
 	long computeInterval = now-jobMessage.getRunTime();
@@ -385,13 +384,13 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
                 runningJobs--;
                 queue.notifyAll();
             }
-            JobResultMessage msg = new JobResultMessage( receivePort.identifier(), r, jobMessage.jobId, computeInterval, emptyQueueInterval, queueInterval, resultMessageSize );
+            WorkerMessage msg = new WorkerStatusMessage( receivePort.identifier(), jobMessage.jobId, computeInterval, emptyQueueInterval, queueInterval );
             if( Settings.writeTrace ) {
                 Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
             }
-            resultMessageSize = sendPort.send( msg, jobMessage.getResultPort() );
+            sendPort.send( msg, jobMessage.getResultPort() );
             if( Settings.traceWorkerProgress ) {
-        	System.out.println( "Returned job result " + r + " for job "  + jobMessage );
+        	System.out.println( "Completed job "  + jobMessage );
             }
         }
         catch( IOException x ){

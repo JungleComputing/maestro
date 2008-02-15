@@ -20,10 +20,10 @@ public class MultiplyJob implements Job {
 
     /**
      * Runs this job.
-     * @return The result of this run.
+     * @param master The context of this job.
      */
     @Override
-    public DoubleReturnValue run( Master master )
+    public void run( JobContext context )
     {
 	double res = 1;
 	
@@ -63,7 +63,7 @@ public class MultiplyJob implements Job {
         for( double v: values ) {
             res *= v;
         }
-	return new DoubleReturnValue( res );
+	context.reportResult( this, new DoubleResultValue( res ) );
     }
     
     /**
