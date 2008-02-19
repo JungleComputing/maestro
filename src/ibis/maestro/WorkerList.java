@@ -27,7 +27,7 @@ public class WorkerList {
     /** Estimate the multiplier between benchmark score and compute time of this job,
      * by averaging the multipliers of all known workers.
      */
-    private double estimateMultiplier( JobType type )
+    double estimateMultiplier( JobType type )
     {
 	double sumMultipliers = 0.0;
 	int workerCount;
@@ -119,7 +119,6 @@ public class WorkerList {
      * Register a job result in the info of the worker that handled it.
      * @param me Which master am I?
      * @param result The job result.
-     * @param completionListener The completion listener that should be notified.
      */
     public void registerWorkerStatus( ReceivePortIdentifier me, WorkerStatusMessage result )
     {
@@ -148,21 +147,6 @@ public class WorkerList {
 	return true;
     }
 
-    /** Fill the work selector with the best worker from our list.
-     *
-     * @param now The current time.
-     * @param jobInfo Information about the type of job we're trying to schedule.
-     * @param sel The selector that keeps track of the best worker.
-     */
-    public void setBestWorker( long now, JobInfo jobInfo, WorkerSelector sel )
-    {
-	for( WorkerInfo w: workers ) {
-	    if( w.knowsJobType( jobInfo.type ) ) {
-		w.setBestWorker( now, jobInfo, sel );
-	    }
-	}
-    }
-
     /**
      * Returns the next time we should wake up to submit a job to a worker.
      * @return The next wakeup time.
@@ -177,5 +161,26 @@ public class WorkerList {
 	    }
 	}
 	return res;
+    }
+
+    /** 
+     * Returns a list of workers who are ready for a new job.
+     * @param now The current time.
+     * @return The workers.
+     */
+    public ArrayList<WorkerInfo> getReadyWorkers( long now )
+    {
+        ArrayList<WorkerInfo> res = new ArrayList<WorkerInfo>();
+        for( WorkerInfo w: workers ) {
+            long t = w.getNextSubmissionTime();
+            if( t<now ) {
+                // This worker is ready for a new job.
+                res.add( w );
+                if( Settings.traceFastestWorker ) {
+                    System.out.println( "Worker " + w + " has been ready for a new job for " + Service.formatNanoseconds( now-t ) );
+                }
+            }
+        }
+        return res;
     }
 }

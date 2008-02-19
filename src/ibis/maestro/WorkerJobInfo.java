@@ -49,7 +49,7 @@ class WorkerJobInfo {
 	computeTime = (computeTime+newComputeTime)/2;
     }
 
-    private void updatePrecompletionInterval( int workThreads, WorkerStatusMessage result )
+    private void updateSubmissionInterval( int workThreads, WorkerStatusMessage result )
     {
 	// We're aiming for a queue interval of half the compute time.
 	long idealinterval = workThreads*computeTime/2;
@@ -64,7 +64,7 @@ class WorkerJobInfo {
 	synchronized( this ) {
 	    updateRoundTripTime( newRoundTripTime );
 	    updateComputeTime( result.getComputeTime() );
-	    updatePrecompletionInterval( workerInfo.workThreads, result );
+	    updateSubmissionInterval( workerInfo.workThreads, result );
 	}
 	if( Settings.writeTrace ) {
 	    synchronized( this ) {
@@ -91,18 +91,11 @@ class WorkerJobInfo {
 	return submissionInterval;
     }
 
-    // FIXME: do we really need this estimate?
-    long estimateResultTransmissionTime( JobInfo jobInfo )
-    {
-	long transmissionTime = roundTripTime-computeTime;
-	return transmissionTime/3;
-    }
-
     /**
      * Returns the most recent time ns that a job was submitted to this worker.
      * @return The most recent submission time.
      */
-    public long getLastSubmission()
+    public long getLatestSubmission()
     {
 	return latestSubmission;
     }

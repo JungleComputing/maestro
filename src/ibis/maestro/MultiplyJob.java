@@ -20,7 +20,7 @@ public class MultiplyJob implements Job {
 
     /**
      * Runs this job.
-     * @param master The context of this job.
+     * @param context The context of this job.
      */
     @Override
     public void run( JobContext context )

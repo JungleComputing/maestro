@@ -365,8 +365,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     }
 
     /** Reports the result of the execution of a job. (Overrides method in superclass.)
-     * @param jobMessage The job to run.
-     * @param r The returned value of this job.
+     * @param jobMessage The job that was run run.
      */
     @Override
     public void reportJobCompletion( RunJobMessage jobMessage )

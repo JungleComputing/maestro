@@ -5,7 +5,7 @@ SERVERHOST=fs0.das3.cs.vu.nl
 
 # Check setting of MAESTRO_HOME
 if [ -z "$MAESTRO_HOME" ];  then
-    echo "please set MAESTRO_HOME to the location of your Tweaker installation" 1>&2
+    echo "please set MAESTRO_HOME to the location of your Maestro installation" 1>&2
     exit 1
 fi
 
@@ -23,7 +23,7 @@ add_to_libclasspath () {
 }
 
 # Add the jar files in the Tweaker lib dir to the classpath.
-add_to_libclasspath "${MAESTRO_HOME}"/lib
+add_to_libclasspath "${MAESTRO_HOME}"/ibis
 
 # And finally, run ...
 exec java \

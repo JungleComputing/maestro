@@ -9,7 +9,7 @@ package ibis.maestro;
  */
 public class WorkerSelector {
     WorkerInfo bestWorker;
-    public long bestSubmissionInterval;
+    long bestSubmissionInterval;
 
     WorkerSelector()
     {

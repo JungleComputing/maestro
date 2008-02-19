@@ -30,6 +30,16 @@ class WorkerInfo {
 
     private final Hashtable<JobType,WorkerJobInfo> workerJobInfoTable = new Hashtable<JobType, WorkerJobInfo>();
     
+    /**
+     * Returns a string representation of this worker info. (Overrides method in superclass.)
+     * @return The worker info.
+     */
+    @Override
+    public String toString()
+    {
+        return "Worker " + port;
+    }
+
     WorkerInfo( ReceivePortIdentifier port, int workThreads, ArrayList<JobType> allowedTypes, double benchmarkScore, long benchmarkTransmissionTime )
     {
         this.port = port;
@@ -47,51 +57,6 @@ class WorkerInfo {
     ReceivePortIdentifier getPort()
     {
         return port;
-    }
-
-    /** Given an array, return the index of the lowest value in
-     * the index. We blindly assume that the array is at least 1
-     * element long.
-     * @param val The array of values.
-     * @return The index of the lowest values.
-     */
-    private static int indexOfLowest( long val[] )
-    {
-        int ix = 0;
-        
-        for( int i=1; i<val.length; i++ ){
-            if( val[i]<val[ix] ){
-                ix = i;
-            }
-        }
-        return ix;
-    }
-
-    /**
-     * Given a worker selector describing the best worker to submit a 
-     * job to thus far, update it with information of this worker.
-     * @param now The current time.
-     * @param jobInfo Information for the type of job we're trying to run.
-     * @param sel The worker selector.
-     * @param sendSize The number of bytes in a job submission message.
-     * @param receiveSize The number of bytes in a job result message.
-     */
-    public void setBestWorker( long now, JobInfo jobInfo, WorkerSelector sel )
-    {
-        WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobInfo.type );
-        long submissionInterval = workerJobInfo.getSubmissionInterval();
-        long lastSubmission = workerJobInfo.getLastSubmission();
-
-        if( now>lastSubmission+submissionInterval ) {
-            // We have room on this worker for a new job.
-            if( sel.bestSubmissionInterval>submissionInterval ) {
-                sel.bestWorker = this;
-                sel.bestSubmissionInterval = submissionInterval;
-                if( Settings.traceFastestWorker ) {
-                    System.out.println( "setBestWorker(): best worker is now " + this + "); submissionInterval=" + Service.formatNanoseconds(submissionInterval) );
-                }
-            }
-        }
     }
 
     /** Returns the current estimated multiplier from benchmark score
@@ -141,7 +106,7 @@ class WorkerInfo {
      * @param result The job result message that tells about this job.
      * @param completionListener A completion listener to be notified.
      */
-    public void registerJobResult( ReceivePortIdentifier master, JobResultMessage result, CompletionListener completionListener)
+    public void registerJobResult( ReceivePortIdentifier master, JobResultMessage result, CompletionListener completionListener )
     {
         final long id = result.jobId;    // The identifier of the job, as handed out by us.
 
@@ -166,7 +131,6 @@ class WorkerInfo {
      * Register a job result for an outstanding job.
      * @param master The master this info belongs to.
      * @param result The job result message that tells about this job.
-     * @param completionListener A completion listener to be notified.
      */
     public void registerWorkerStatus( ReceivePortIdentifier master, WorkerStatusMessage result )
     {
@@ -202,11 +166,17 @@ class WorkerInfo {
      * @param job The job that was started.
      * @param jobInfo Information about the job.
      * @param id The id given to the job.
+     * @param startTime The time this job was started.
      */
-    public void registerJobStart( Job job, JobInfo jobInfo, long id )
+    public void registerJobStart( Job job, JobInfo jobInfo, long id, long startTime )
     {
-        long startTime = System.nanoTime();
         WorkerJobInfo workerJobInfo = workerJobInfoTable.get( job.getType() );
+        if( workerJobInfo == null ) {
+            System.err.println( "No worker job info for job type " + job.getType() );
+            return;
+        }
+        setNextSubmissionTime( startTime+workerJobInfo.getSubmissionInterval() );
+        workerJobInfo.setLastSubmission( startTime );
         ActiveJob j = new ActiveJob( job, id, startTime, workerJobInfo, jobInfo );
 
         synchronized( activeJobs ) {
@@ -245,7 +215,7 @@ class WorkerInfo {
      * @param multiplier The estated multiplier for this kind
      *        of job relative to the benchmark.
      */
-    public void registerJobType( JobType type, double multiplier )
+    private void registerJobType( JobType type, double multiplier )
     {
 	long computeTime;
 	if( multiplier<0 ) {
@@ -265,8 +235,34 @@ class WorkerInfo {
      * Returns the next time a job should be submitted to this worker.
      * @return The next submission time.
      */
-    public long getNextSubmissionTime() {
-	// TODO: Auto-generated method stub
+    public long getNextSubmissionTime()
+    {
 	return nextSubmissionTime;
+    }
+    
+    void setNextSubmissionTime( long val )
+    {
+        nextSubmissionTime = val;
+    }
+
+    /** Given a job type, return the submission interval for this job type, or
+     * -1 if the job type is not allowed on this worker.
+     * @param jobType The job type for which we want to know the submission interval.
+     * @param allWorkers The list of all workers. Used to estimate a job interval if not yet known.
+     * @return The submission interval, or -1 if this type of job is not allowed.
+     */
+    public long getSubmissionInterval( JobType jobType, WorkerList allWorkers )
+    {
+        // FIXME: enable this again.
+        //if( !allowedTypes.contains( jobType ) ) {
+        //    return -1;
+        //}
+        WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
+        if( workerJobInfo == null ) {
+            double multiplier = allWorkers.estimateMultiplier( jobType );
+            registerJobType( jobType, multiplier );
+            workerJobInfo = workerJobInfoTable.get( jobType );           
+        }
+        return workerJobInfo.getSubmissionInterval();
     }
 }
