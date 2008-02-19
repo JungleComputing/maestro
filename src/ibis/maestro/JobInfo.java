@@ -10,9 +10,6 @@ public class JobInfo {
 
     /** Average size of job submission messages, or -1 if unknown. */
     private long sendSize= -1;
-    
-    /** Average size of job result messages, or -1 if unknown. */
-    private long receiveSize = -1;
 
     /** The type of this job. */
     public final JobType type;
@@ -43,37 +40,11 @@ public class JobInfo {
 	}
     }
 
-    /**
-     * Update the estimated result message size with a new message size
-     * for the result.
-     * @param sz The new message size of a result message.
-     */
-    public void updateReceiveSize( long sz )
-    {
-	if( receiveSize<0 ) {
-	    receiveSize = sz;
-	}
-	else {
-	    if( sz>0 ) {
-		receiveSize = (receiveSize+sz)/2;
-	    }
-	}
-    }
-
     /** 
      * Returns the average size of the job submission message of this job.
      * @return The average job submission message size.
      */
     public long getSendSize() {
 	return sendSize;
-    }
-    
-    /**
-     * Returns the average size of the job result message of this job.
-     * @return The average job result message size.
-     */
-    public long getReceiveSize()
-    {
-	return receiveSize;
     }
 }

@@ -19,6 +19,8 @@ class WorkerInfo {
     /** Which types of job does it allow? */
     final ArrayList<JobType> allowedTypes;
 
+    private long nextSubmissionTime;
+    
     /** The time in seconds to do one iteration of a standard benchmark on this worker. */
     private final double benchmarkScore;
     private final long benchmarkTransmissionTime;
@@ -76,65 +78,19 @@ class WorkerInfo {
      */
     public void setBestWorker( long now, JobInfo jobInfo, WorkerSelector sel )
     {
-        long completionTime[] = new long[workThreads];
-
-        // For /n/ worker threads, we want the /n/th latest
-        // completion time. We compute this by maintaining
-        // an array of the /n/ latest completion times, and
-        // always replacing the lowest value by a higher one
-        // if appropriate.
-        // Note that we may arrive at a completion
-        // time that is in the past. That's ok, it just means
-        // that the result is still in transition. However, if
-        // we are past the estimated arrival time, the completion
-        // time is also adjusted.
-        //
-        // Also note that if there are less than /n/ active jobs,
-        // we in essence get a very early completion time.
-        // That's ok.
-        synchronized( activeJobs ) {
-            for( ActiveJob j: activeJobs ) {
-        	int ix = indexOfLowest( completionTime );
-        	long t = j.getCompletionTime( completionTime[ix], now );
-
-                if( completionTime[ix]<t ) {
-        	    completionTime[ix] = t;
-        	}
-            }
-        }
-        int ix = indexOfLowest( completionTime );
-        // The time we should submit the job.
-        // We aim to keep each job about half its runtime in the queue; a reasonable compromise
-        // between buffering against idle time and not committing too much to a worker.
-        long ourCompletionTime = completionTime[ix];
         WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobInfo.type );
-        long rtt = workerJobInfo.estimateResultTransmissionTime( jobInfo );
-	long ourResultTime = ourCompletionTime+rtt;
-	long idealSubmissionTime = ourCompletionTime-workerJobInfo.getPreCompletionInterval();
-	long submitTime = idealSubmissionTime;
-        if( now>idealSubmissionTime ) {
-            if( Settings.traceFastestWorker ) {
-        	System.err.println( "You asked " + Service.formatNanoseconds(now-idealSubmissionTime)+ " too late for ideal submit time" );
+        long submissionInterval = workerJobInfo.getSubmissionInterval();
+        long lastSubmission = workerJobInfo.getLastSubmission();
+
+        if( now>lastSubmission+submissionInterval ) {
+            // We have room on this worker for a new job.
+            if( sel.bestSubmissionInterval>submissionInterval ) {
+                sel.bestWorker = this;
+                sel.bestSubmissionInterval = submissionInterval;
+                if( Settings.traceFastestWorker ) {
+                    System.out.println( "setBestWorker(): best worker is now " + this + "); submissionInterval=" + Service.formatNanoseconds(submissionInterval) );
+                }
             }
-            long delta = now-idealSubmissionTime;
-            submitTime = now;
-            // Updating our estimate with this knowledge.§
-            ourCompletionTime += delta;
-            ourResultTime += delta;
-        }
-        if( Settings.traceMasterProgress ){
-            System.out.println( "setBestWorker(): submitTime-now=" + Service.formatNanoseconds(submitTime-now) + " ourCompletionTime-now=" + Service.formatNanoseconds(ourCompletionTime-now) + " ourResultTime-now=" + Service.formatNanoseconds(ourResultTime-now) );
-        }
-        // Pick the best completion time. It may take some time to get
-        // the result back, but we don't care.
-        //if( sel.resultTime>ourResultTime ) {
-        if( sel.completionTime>ourCompletionTime ) {
-            if( Settings.traceMasterProgress ) {
-        	System.out.println( "Worker " + this + " is the best pick thus far" );
-            }
-            sel.bestWorker = this;
-            sel.completionTime = ourCompletionTime;
-            sel.startTime = submitTime;
         }
     }
 
@@ -194,9 +150,32 @@ class WorkerInfo {
             Globals.log.reportInternalError( "ignoring reported result from job with unknown id " + id );
             return;
         }
-        e.jobInfo.updateReceiveSize( result.resultMessageSize );
         if( completionListener != null ) {
             completionListener.jobCompleted( e.job, result.result );
+        }
+
+        synchronized( activeJobs ){
+            activeJobs.remove( e );
+        }
+        if( Settings.traceMasterProgress ){
+            System.out.println( "Master: retired job " + e );		
+        }
+    }
+
+    /**
+     * Register a job result for an outstanding job.
+     * @param master The master this info belongs to.
+     * @param result The job result message that tells about this job.
+     * @param completionListener A completion listener to be notified.
+     */
+    public void registerWorkerStatus( ReceivePortIdentifier master, WorkerStatusMessage result )
+    {
+        final long id = result.jobId;    // The identifier of the job, as handed out by us.
+
+        ActiveJob e = searchQueueEntry( id );
+        if( e == null ) {
+            Globals.log.reportInternalError( "ignoring reported result from job with unknown id " + id );
+            return;
         }
         long now = System.nanoTime();
         long newRoundTripTime = now-e.startTime; // The time to send the job, compute, and report the result.
@@ -204,7 +183,7 @@ class WorkerInfo {
         synchronized( activeJobs ){
             activeJobs.remove( e );
         }
-        e.workerJobInfo.update(this, master, result, newRoundTripTime);
+        e.workerJobInfo.update( this, master, result, newRoundTripTime );
         if( Settings.traceMasterProgress ){
             System.out.println( "Master: retired job " + e );		
         }
@@ -275,8 +254,19 @@ class WorkerInfo {
 	else {
 	    computeTime = (long) (multiplier*benchmarkScore);
 	}
-	// FIXME: initial PCI estimate could use job submit & result message size.
-	WorkerJobInfo info = new WorkerJobInfo( computeTime+benchmarkTransmissionTime, computeTime, benchmarkTransmissionTime/2 );
+	// We start with a very pessimistic job submission interval to
+	// avoid committing too much work to this worker before it has
+	// given some feedback.
+	WorkerJobInfo info = new WorkerJobInfo( computeTime+benchmarkTransmissionTime, computeTime, 3*(computeTime+benchmarkTransmissionTime) );
 	workerJobInfoTable.put( type, info );
+    }
+
+    /**
+     * Returns the next time a job should be submitted to this worker.
+     * @return The next submission time.
+     */
+    public long getNextSubmissionTime() {
+	// TODO: Auto-generated method stub
+	return nextSubmissionTime;
     }
 }

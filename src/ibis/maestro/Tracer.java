@@ -105,16 +105,16 @@ public class Tracer {
      * @param worker The worker for which the update was done.
      * @param roundTripTime The new estimated round-trip time.
      * @param computeTime The new estimated compute time.
-     * @param preCompletionInterval The new estimated pre-completion interval.
+     * @param submissionInterval The new estimated submission interval.
      * @param queueInterval The time in ns the last job spent in the worker queue.
      * @param queueEmptyInterval The time in ns the queue was empty before the last job entered the queue.
      */
     public void traceWorkerSettings(ReceivePortIdentifier master,
 	    ReceivePortIdentifier worker,
-	    long roundTripTime, long computeTime, long preCompletionInterval,
+	    long roundTripTime, long computeTime, long submissionInterval,
 	    long queueInterval, long queueEmptyInterval ) {
 
-	log( new WorkerSettingEvent( master, worker, roundTripTime, computeTime, preCompletionInterval, queueInterval, queueEmptyInterval ) );
+	log( new WorkerSettingEvent( master, worker, roundTripTime, computeTime, submissionInterval, queueInterval, queueEmptyInterval ) );
     }
 
     /**

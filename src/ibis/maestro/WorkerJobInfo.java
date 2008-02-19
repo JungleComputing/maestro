@@ -12,8 +12,10 @@ class WorkerJobInfo {
     /** Estimated time in ns to complete a job, excluding communication. */
     private long computeTime;
 
-    /** Estimated interval in ns, before one job completes, that we should submit a new job. */
-    private long preCompletionInterval;
+    private long latestSubmission = 0;
+
+    /** Ideal time in ns between job submissions. */
+    private long submissionInterval;
 
     private void updateRoundTripTime( long newRoundTripTime )
     {
@@ -29,13 +31,13 @@ class WorkerJobInfo {
      * for a particular worker.
      * @param roundTripTime The estimated send-to-receive time for this job for this particular worker.
      * @param computeTime The estimated compute time on this job on this particular worker.
-     * @param preCompletionInterval
+     * @param submissionInterval
      */
     public WorkerJobInfo(long roundTripTime, long computeTime,
-	    long preCompletionInterval) {
+	    long submissionInterval) {
 	this.roundTripTime = roundTripTime;
 	this.computeTime = computeTime;
-	this.preCompletionInterval = preCompletionInterval;
+	this.submissionInterval = submissionInterval;
     }
 
     /** Register a newly learned compute time.
@@ -47,18 +49,18 @@ class WorkerJobInfo {
 	computeTime = (computeTime+newComputeTime)/2;
     }
 
-    private void updatePrecompletionInterval( int workThreads, JobResultMessage result )
+    private void updatePrecompletionInterval( int workThreads, WorkerStatusMessage result )
     {
 	// We're aiming for a queue interval of half the compute time.
 	long idealinterval = workThreads*computeTime/2;
 	long step = (result.queueEmptyInterval+idealinterval-result.queueInterval)/2;
-	preCompletionInterval += step;
+	submissionInterval += step;
 	if( Settings.tracePrecompletionInterval ) {
-	    System.out.println( "old PCI=" + Service.formatNanoseconds(preCompletionInterval-step) + " queueEmptyInterval=" + Service.formatNanoseconds(result.queueEmptyInterval) + " queueInterval=" + Service.formatNanoseconds(result.queueInterval) + " ideal queueInterval=" + Service.formatNanoseconds(idealinterval) + " new PCI=" + Service.formatNanoseconds(preCompletionInterval) );
+	    System.out.println( "old submission interval=" + Service.formatNanoseconds(submissionInterval-step) + " queueEmptyInterval=" + Service.formatNanoseconds(result.queueEmptyInterval) + " queueInterval=" + Service.formatNanoseconds(result.queueInterval) + " ideal queueInterval=" + Service.formatNanoseconds(idealinterval) + " new submissionInterval=" + Service.formatNanoseconds(submissionInterval) );
 	}
     }
 
-    void update(WorkerInfo workerInfo, ReceivePortIdentifier master, JobResultMessage result, long newRoundTripTime) {
+    void update(WorkerInfo workerInfo, ReceivePortIdentifier master, WorkerStatusMessage result, long newRoundTripTime) {
 	synchronized( this ) {
 	    updateRoundTripTime( newRoundTripTime );
 	    updateComputeTime( result.getComputeTime() );
@@ -68,7 +70,7 @@ class WorkerJobInfo {
 	    synchronized( this ) {
 		Globals.tracer.traceWorkerSettings( master,
 			workerInfo.port,
-			roundTripTime, computeTime, preCompletionInterval, result.queueInterval, result.queueEmptyInterval );
+			roundTripTime, computeTime, submissionInterval, result.queueInterval, result.queueEmptyInterval );
 	    }
 	}
     }
@@ -82,26 +84,35 @@ class WorkerJobInfo {
     }
 
     /**
-     * Returns the current precompletion interval for this job and worker.
-     * @return The precompletion interval.
+     * Returns the current submission interval for this job and worker.
+     * @return The submission interval.
      */
-    public long getPreCompletionInterval() {
-	return preCompletionInterval;
+    public long getSubmissionInterval() {
+	return submissionInterval;
     }
 
+    // FIXME: do we really need this estimate?
     long estimateResultTransmissionTime( JobInfo jobInfo )
     {
 	long transmissionTime = roundTripTime-computeTime;
-	long res;
-
-	if( jobInfo.getSendSize()<=0 || jobInfo.getReceiveSize()<=0 ) {
-	    res = transmissionTime/2;
-	}
-	else {
-	    double fraction = ((double) jobInfo.getReceiveSize())/((double) (jobInfo.getSendSize()+jobInfo.getReceiveSize()));
-	    res = (long) (transmissionTime*fraction);
-	}
-	return res;
+	return transmissionTime/3;
     }
 
+    /**
+     * Returns the most recent time ns that a job was submitted to this worker.
+     * @return The most recent submission time.
+     */
+    public long getLastSubmission()
+    {
+	return latestSubmission;
+    }
+
+    /**
+     * Set the last submission time to the given value.
+     * @param val The new latest submission time.
+     */
+    public void setLastSubmission( long val )
+    {
+	latestSubmission = val;
+    }
 }

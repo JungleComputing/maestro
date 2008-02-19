@@ -114,6 +114,24 @@ public class WorkerList {
 	w.registerJobResult( me, result, completionListener );
     }
 
+
+    /**
+     * Register a job result in the info of the worker that handled it.
+     * @param me Which master am I?
+     * @param result The job result.
+     * @param completionListener The completion listener that should be notified.
+     */
+    public void registerWorkerStatus( ReceivePortIdentifier me, WorkerStatusMessage result )
+    {
+	int ix = searchWorker( workers, result.source );
+	if( ix<0 ) {
+	    System.err.println( "Job result from unknown worker " + result.source );
+	    return;
+	}
+	WorkerInfo w = workers.get( ix );
+	w.registerWorkerStatus( me, result );
+    }
+
     /**
      * Returns true iff all workers in our list are idle.
      * @return True iff all workers in our list are idle.
@@ -139,21 +157,25 @@ public class WorkerList {
     public void setBestWorker( long now, JobInfo jobInfo, WorkerSelector sel )
     {
 	for( WorkerInfo w: workers ) {
-	    if( !w.knowsJobType( jobInfo.type ) ) {
-		double sum = 0;
-		int n = 0;
-		
-		for( WorkerInfo w1: workers ) {
-		    double multiplier = w1.calculateMultiplier( jobInfo.type );
-		    if( multiplier>0 ) {
-			n++;
-			sum += multiplier;
-		    }
-		}
-		double m = (n==0)?-1:(sum/n);
-		w.registerJobType( jobInfo.type, m );
+	    if( w.knowsJobType( jobInfo.type ) ) {
+		w.setBestWorker( now, jobInfo, sel );
 	    }
-	    w.setBestWorker( now, jobInfo, sel );
 	}
+    }
+
+    /**
+     * Returns the next time we should wake up to submit a job to a worker.
+     * @return The next wakeup time.
+     */
+    public long getNextSubmissionTime() {
+	long res = Long.MAX_VALUE;
+
+	for( WorkerInfo w: workers ) {
+	    long t = w.getNextSubmissionTime();
+	    if( t<res ) {
+		res = t;
+	    }
+	}
+	return res;
     }
 }

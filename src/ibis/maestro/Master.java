@@ -46,6 +46,21 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	}
     }
 
+    private void handleWorkerStatusMessage( WorkerStatusMessage result )
+    {
+        if( Settings.traceWorkerProgress ){
+            Globals.log.reportProgress( "Received a worker status message " + result );
+        }
+        synchronized( workers ) {
+            workers.registerWorkerStatus( receivePort.identifier(), result );
+            workers.notifyAll();
+        }
+        synchronized( queue ){
+            queue.notifyAll();
+            handledJobCount++;
+        }
+    }
+
     private void handleJobResultMessage( JobResultMessage result )
     {
         if( Settings.traceWorkerProgress ){
@@ -178,6 +193,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
         if( Settings.writeTrace ) {
             Globals.tracer.traceReceivedMessage( msg, p.identifier() );
+        }
+        if( msg instanceof WorkerStatusMessage ) {
+            WorkerStatusMessage result = (WorkerStatusMessage) msg;
+
+            handleWorkerStatusMessage( result );
         }
         if( msg instanceof JobResultMessage ) {
             JobResultMessage result = (JobResultMessage) msg;
@@ -348,7 +368,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * @param sel The worker administration class to use. Passed in to
      *            prevent creating a new one for every iteration.
      */
-    private void submitWaitingJobs(WorkerSelector sel) {
+    private void submitWaitingJobs( WorkerSelector sel )
+    {
 	// We have at least one job queued, now try to give it to a worker.
 	long now = System.nanoTime();
 	JobType jobType;
@@ -378,7 +399,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    }
 	}
 	else {
-	    long sleepTime = sel.startTime-now;
+	    long sleepTime = workers.getNextSubmissionTime();
 	    long sleepMS = sleepTime/1000000;
 
 	    if( sleepMS>0 ) {

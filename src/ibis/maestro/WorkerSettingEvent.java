@@ -14,7 +14,7 @@ public class WorkerSettingEvent extends TraceEvent {
     final ReceivePortIdentifier worker;
     final long computeTime;
     final long roundTripTime;
-    final long preCompletionInterval;
+    final long submissionInterval;
     final long queueInterval;
     final long queueEmptyInterval;
 
@@ -24,16 +24,16 @@ public class WorkerSettingEvent extends TraceEvent {
      * @param port For which worker the setting is updated.
      * @param roundTripTime  The estimated time in ns to transmit a job an get a result back.
      * @param computeTime The estimated time in ns that is required to compute a job.
-     * @param preCompletionInterval The estimated time before a job is completed that we can submit a new job.
+     * @param submissionInterval The estimated interval between job submissions.
      * @param queueInterval The time in ns the most recent job had to spend in the worker queue.
      * @param queueEmptyInterval The time in ns the worker queue was idle before the most recent job entered its queue
      */
-    public WorkerSettingEvent(ReceivePortIdentifier me, ReceivePortIdentifier port, long roundTripTime, long computeTime, long preCompletionInterval, long queueInterval, long queueEmptyInterval )
+    public WorkerSettingEvent(ReceivePortIdentifier me, ReceivePortIdentifier port, long roundTripTime, long computeTime, long submissionInterval, long queueInterval, long queueEmptyInterval )
     {
 	super( System.nanoTime() );
 	this.master = me;
 	this.worker = port;
-	this.preCompletionInterval = preCompletionInterval;
+	this.submissionInterval = submissionInterval;
         this.roundTripTime = roundTripTime;
 	this.computeTime = computeTime;
         this.queueInterval = queueInterval;
@@ -46,7 +46,7 @@ public class WorkerSettingEvent extends TraceEvent {
      */
     public String getInfo()
     {
-        return "set worker " + worker + " preCompletionInterval=" + Service.formatNanoseconds( preCompletionInterval ) + " computeTime=" + Service.formatNanoseconds( computeTime ) + " roundTripTime=" + Service.formatNanoseconds( roundTripTime ) + " queueInterval=" + Service.formatNanoseconds(queueInterval) + " queueEmptyInterval=" + Service.formatNanoseconds(queueEmptyInterval);
+        return "set worker " + worker + " submissionInterval=" + Service.formatNanoseconds( submissionInterval ) + " computeTime=" + Service.formatNanoseconds( computeTime ) + " roundTripTime=" + Service.formatNanoseconds( roundTripTime ) + " queueInterval=" + Service.formatNanoseconds(queueInterval) + " queueEmptyInterval=" + Service.formatNanoseconds(queueEmptyInterval);
     }
     
 }
