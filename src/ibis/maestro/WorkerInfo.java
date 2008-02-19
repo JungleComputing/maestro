@@ -147,9 +147,10 @@ class WorkerInfo {
         synchronized( activeJobs ){
             activeJobs.remove( e );
         }
-        e.workerJobInfo.update( this, master, result, newRoundTripTime );
+        long step = e.workerJobInfo.update( this, master, result, newRoundTripTime );
+        nextSubmissionTime += step;
         if( Settings.traceMasterProgress ){
-            System.out.println( "Master: retired job " + e );		
+            System.out.println( "Master: retired job " + e + "; added " + Service.formatNanoseconds( step ) + " to nextSubmissionTime" );
         }
     }
 

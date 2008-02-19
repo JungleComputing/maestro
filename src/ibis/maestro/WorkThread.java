@@ -36,7 +36,6 @@ class WorkThread extends Thread
             if( job == null ) {
                 break;
             }
-            job.setRunTime( System.nanoTime() );
             job.job.run( localMaster );
             source.reportJobCompletion( job );
         }

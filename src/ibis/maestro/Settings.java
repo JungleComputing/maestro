@@ -40,7 +40,7 @@ public class Settings {
     public static final boolean traceMasterProgress = true;
 
     /** Trace the adventures of the precompletion interval variable? */
-    public static final boolean tracePrecompletionInterval = false;
+    public static final boolean traceSubmissionInterval = true;
 
     /** Trace all send events. */
     public static final boolean traceSends = false;

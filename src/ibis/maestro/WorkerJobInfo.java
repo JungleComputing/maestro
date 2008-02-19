@@ -49,22 +49,29 @@ class WorkerJobInfo {
 	computeTime = (computeTime+newComputeTime)/2;
     }
 
-    private void updateSubmissionInterval( int workThreads, WorkerStatusMessage result )
+    private long updateSubmissionInterval( int workThreads, WorkerStatusMessage result )
     {
 	// We're aiming for a queue interval of half the compute time.
 	long idealinterval = workThreads*computeTime/2;
-	long step = (result.queueEmptyInterval+idealinterval-result.queueInterval)/2;
+	long step = (result.queueInterval-result.queueEmptyInterval+idealinterval)/2;
 	submissionInterval += step;
-	if( Settings.tracePrecompletionInterval ) {
+	if( Settings.traceSubmissionInterval ) {
 	    System.out.println( "old submission interval=" + Service.formatNanoseconds(submissionInterval-step) + " queueEmptyInterval=" + Service.formatNanoseconds(result.queueEmptyInterval) + " queueInterval=" + Service.formatNanoseconds(result.queueInterval) + " ideal queueInterval=" + Service.formatNanoseconds(idealinterval) + " new submissionInterval=" + Service.formatNanoseconds(submissionInterval) );
 	}
+	return step;
     }
 
-    void update(WorkerInfo workerInfo, ReceivePortIdentifier master, WorkerStatusMessage result, long newRoundTripTime) {
-	synchronized( this ) {
+    long update(WorkerInfo workerInfo, ReceivePortIdentifier master, WorkerStatusMessage result, long newRoundTripTime)
+    {
+        long step;
+
+        synchronized( this ) {
 	    updateRoundTripTime( newRoundTripTime );
 	    updateComputeTime( result.getComputeTime() );
-	    updateSubmissionInterval( workerInfo.workThreads, result );
+	    step = updateSubmissionInterval( workerInfo.workThreads, result );
+	}
+	if( Settings.traceWorkerProgress ) {
+	    System.out.println( "New submission interval " + Service.formatNanoseconds( submissionInterval ) + " compute time " + Service.formatNanoseconds( computeTime ) + " roundtrip time " + Service.formatNanoseconds( roundTripTime ) );
 	}
 	if( Settings.writeTrace ) {
 	    synchronized( this ) {
@@ -73,6 +80,7 @@ class WorkerJobInfo {
 			roundTripTime, computeTime, submissionInterval, result.queueInterval, result.queueEmptyInterval );
 	    }
 	}
+	return step;
     }
 
     /**

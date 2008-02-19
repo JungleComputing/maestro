@@ -541,7 +541,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * this method is only safe for local workers.
      * @param identifier The worker.
      */
-    public void waitForSubscription(ReceivePortIdentifier identifier)
+    void waitForSubscription(ReceivePortIdentifier identifier)
     {
         while( true ) {
             synchronized( workers ) {

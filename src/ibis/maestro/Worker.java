@@ -352,7 +352,13 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
                     }
                     else {
                         runningJobs++;
-                        return queue.remove();
+                        RunJobMessage job = queue.remove();
+                        long now = System.nanoTime();
+                        job.setRunTime( now );
+                        if( Settings.traceWorkerProgress ) {
+                            System.out.println( "Worker: handed out job " + job + "; it was queued for " + Service.formatNanoseconds( now-job.getQueueTime() ) + "; there are now " + runningJobs + " running jobs" );
+                        }
+                        return job;
                     }
 
                 }
