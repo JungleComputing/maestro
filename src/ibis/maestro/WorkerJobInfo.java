@@ -52,11 +52,11 @@ class WorkerJobInfo {
     private long updateSubmissionInterval( int workThreads, WorkerStatusMessage result )
     {
 	// We're aiming for a queue interval of half the compute time.
-	long idealinterval = workThreads*computeTime/2;
-	long step = (result.queueInterval-result.queueEmptyInterval+idealinterval)/2;
+	long idealQueueInterval = workThreads*computeTime/2;
+	long step = (result.queueInterval-(result.queueEmptyInterval+idealQueueInterval))/3;
 	submissionInterval += step;
 	if( Settings.traceSubmissionInterval ) {
-	    System.out.println( "old submission interval=" + Service.formatNanoseconds(submissionInterval-step) + " queueEmptyInterval=" + Service.formatNanoseconds(result.queueEmptyInterval) + " queueInterval=" + Service.formatNanoseconds(result.queueInterval) + " ideal queueInterval=" + Service.formatNanoseconds(idealinterval) + " new submissionInterval=" + Service.formatNanoseconds(submissionInterval) );
+	    System.out.println( "old submission interval=" + Service.formatNanoseconds(submissionInterval-step) + " queueEmptyInterval=" + Service.formatNanoseconds(result.queueEmptyInterval) + " queueInterval=" + Service.formatNanoseconds(result.queueInterval) + " ideal queueInterval=" + Service.formatNanoseconds(idealQueueInterval) + " new submissionInterval=" + Service.formatNanoseconds(submissionInterval) );
 	}
 	return step;
     }

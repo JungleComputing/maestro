@@ -19,8 +19,9 @@ class WorkerInfo {
     /** Which types of job does it allow? */
     final ArrayList<JobType> allowedTypes;
 
-    private long nextSubmissionTime;
-    
+    /** The next moment we can submit a job to each thread of this worker. */
+    private final long nextSubmissionTime[];
+
     /** The time in seconds to do one iteration of a standard benchmark on this worker. */
     private final double benchmarkScore;
     private final long benchmarkTransmissionTime;
@@ -47,6 +48,7 @@ class WorkerInfo {
         this.allowedTypes = allowedTypes;
         this.benchmarkScore = benchmarkScore;
         this.benchmarkTransmissionTime = benchmarkTransmissionTime;
+        this.nextSubmissionTime = new long[workThreads];
     }
 
     boolean hasId( ReceivePortIdentifier id )
@@ -148,7 +150,9 @@ class WorkerInfo {
             activeJobs.remove( e );
         }
         long step = e.workerJobInfo.update( this, master, result, newRoundTripTime );
-        nextSubmissionTime += step;
+        for( int i=0; i<nextSubmissionTime.length; i++ ) {
+            nextSubmissionTime[i] += step;
+        }
         if( Settings.traceMasterProgress ){
             System.out.println( "Master: retired job " + e + "; added " + Service.formatNanoseconds( step ) + " to nextSubmissionTime" );
         }
@@ -233,17 +237,37 @@ class WorkerInfo {
     }
 
     /**
+     * Returns the index in the entries of nextSubmission time with the
+     * lowest value.
+     */
+    private int indexOfEarliestNextSubmissionTime()
+    {
+	int ix=0;
+	long min = nextSubmissionTime[0];
+	
+	for( int i=1; i<nextSubmissionTime.length; i++ ) {
+	    if( nextSubmissionTime[i]<min ) {
+		min = nextSubmissionTime[i];
+		ix = i;
+	    }
+	}
+	return ix;
+    }
+
+    /**
      * Returns the next time a job should be submitted to this worker.
      * @return The next submission time.
      */
     public long getNextSubmissionTime()
     {
-	return nextSubmissionTime;
+	int ix = indexOfEarliestNextSubmissionTime();
+	return nextSubmissionTime[ix];
     }
     
     void setNextSubmissionTime( long val )
     {
-        nextSubmissionTime = val;
+	int ix = indexOfEarliestNextSubmissionTime();
+        nextSubmissionTime[ix] = val;
     }
 
     /** Given a job type, return the submission interval for this job type, or
