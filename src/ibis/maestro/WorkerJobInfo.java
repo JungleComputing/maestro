@@ -56,18 +56,27 @@ class WorkerJobInfo {
 	long idealQueueInterval = workThreads*computeTime/2;
         // Positive: too long in the queue. Negative: not long enough in the queue.
 	final long queueDeviation = result.queueInterval-idealQueueInterval;
-	submissionInterval += -queueDeviation/2-result.queueEmptyInterval/2;
+	submissionInterval += queueDeviation/3;
+	submissionInterval -= result.queueEmptyInterval/4;
+	if( submissionInterval<(computeTime/workThreads) ) {
+	    submissionInterval = computeTime/workThreads;
+	    System.err.println( "Clamped submissionInterval to compute time" );
+	}
+	if( submissionInterval>roundTripTime ) {
+	    System.err.println( "Clammped submissionInterval to roundTripTime" );
+	    submissionInterval = roundTripTime;
+	}
 	if( Settings.traceSubmissionInterval ) {
 	    System.out.println(
-                "old submission interval=" + Service.formatNanoseconds(oldSubmissionInterval) +
+	        "idealQueueInterval=" + Service.formatNanoseconds(idealQueueInterval) +
+                " old submissionInterval=" + Service.formatNanoseconds(oldSubmissionInterval) +
                 " queueDeviation=" + Service.formatNanoseconds( queueDeviation ) +
                 " queueEmptyInterval=" + Service.formatNanoseconds(result.queueEmptyInterval) +
                 " queueInterval=" + Service.formatNanoseconds(result.queueInterval) +
-                " ideal queueInterval=" + Service.formatNanoseconds(idealQueueInterval) +
                 " new submissionInterval=" + Service.formatNanoseconds(submissionInterval)
             );
 	}
-	return 0;
+	return -result.queueEmptyInterval/2;
     }
 
     long update(WorkerInfo workerInfo, ReceivePortIdentifier master, WorkerStatusMessage result, long newRoundTripTime)
