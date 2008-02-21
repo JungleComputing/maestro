@@ -464,8 +464,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 }
             }
         }
-        long sleepTime = workers.getNextSubmissionTime()-now;
-        long sleepMS = sleepTime/1000000;
+        long sleepInterval = workers.getNextSubmissionTime()-now;
+        long sleepMS = (sleepInterval+500000)/1000000;
 
         if( sleepMS>0 ) {
             try {
@@ -473,13 +473,18 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 // or new workers.
                 synchronized( workers ){
                     if( Settings.traceMasterProgress ){
-                        System.out.println( "Master: waiting " + Service.formatNanoseconds( sleepTime ) + " for a ready worker" );
+                        System.out.println( "Master: waiting " + Service.formatNanoseconds( sleepInterval ) + " for a ready worker" );
                     }
                     workers.wait( sleepMS );
                 }
             } catch (InterruptedException e) {
                 // Not interested.
             }        		
+        }
+        else {
+            if( Settings.traceMasterProgress ){
+                System.out.println( "It is useless to go to sleep for " + Service.formatNanoseconds( sleepInterval ) );
+            }
         }
     }
 
