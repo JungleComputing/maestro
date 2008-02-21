@@ -54,19 +54,20 @@ class WorkerJobInfo {
         long oldSubmissionInterval = submissionInterval;
 	// We're aiming for a queue interval of half the compute time.
 	long idealQueueInterval = workThreads*computeTime/2;
-	long step = (result.queueInterval-result.queueEmptyInterval)/2;
-	submissionInterval += step;
-        step += (result.queueInterval-idealQueueInterval)/2;
+        // Positive: too long in the queue. Negative: not long enough in the queue.
+	final long queueDeviation = result.queueInterval-idealQueueInterval;
+	submissionInterval += -queueDeviation/2-result.queueEmptyInterval/2;
 	if( Settings.traceSubmissionInterval ) {
 	    System.out.println(
                 "old submission interval=" + Service.formatNanoseconds(oldSubmissionInterval) +
+                " queueDeviation=" + Service.formatNanoseconds( queueDeviation ) +
                 " queueEmptyInterval=" + Service.formatNanoseconds(result.queueEmptyInterval) +
                 " queueInterval=" + Service.formatNanoseconds(result.queueInterval) +
                 " ideal queueInterval=" + Service.formatNanoseconds(idealQueueInterval) +
                 " new submissionInterval=" + Service.formatNanoseconds(submissionInterval)
             );
 	}
-	return step;
+	return 0;
     }
 
     long update(WorkerInfo workerInfo, ReceivePortIdentifier master, WorkerStatusMessage result, long newRoundTripTime)
