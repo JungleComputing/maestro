@@ -104,31 +104,22 @@ public class Tracer {
      * @param master The master that did the update.
      * @param worker The worker for which the update was done.
      * @param roundTripTime The new estimated round-trip time.
-     * @param computeTime The new estimated compute time.
-     * @param submissionInterval The new estimated submission interval.
-     * @param queueInterval The time in ns the last job spent in the worker queue.
-     * @param queueEmptyInterval The time in ns the queue was empty before the last job entered the queue.
      */
     public void traceWorkerSettings(ReceivePortIdentifier master,
 	    ReceivePortIdentifier worker,
-	    long roundTripTime, long computeTime, long submissionInterval,
-	    long queueInterval, long queueEmptyInterval ) {
+	    long roundTripTime ) {
 
-	log( new WorkerSettingEvent( master, worker, roundTripTime, computeTime, submissionInterval, queueInterval, queueEmptyInterval ) );
+	log( new WorkerSettingEvent( master, worker, roundTripTime ) );
     }
 
     /**
      * 
      * @param master The master that registered the worker
      * @param worker The worker that was registered.
-     * @param benchmarkScore The benchmark score of the worker.
-     * @param pingTime The total time for the ping operation (including the benchmark ping)
-     * @param computeTime The time it took to run the benchmark.
      */
     public void traceWorkerRegistration(ReceivePortIdentifier master,
-	    ReceivePortIdentifier worker, double benchmarkScore, long pingTime,
-	    long computeTime) {
+	    ReceivePortIdentifier worker) {
 
-	log( new WorkerRegistrationEvent( master, worker, benchmarkScore, pingTime, computeTime ) );
+	log( new WorkerRegistrationEvent( master, worker ) );
     }
 }

@@ -185,7 +185,7 @@ public class ProcessTraces {
 	    
 	    String master = getHostName( e.master );
 	    String worker = getHostName( e.worker );
-	    System.out.println( "@" + Service.formatNanoseconds(timeFromStart) + " master " + master + " registered worker " + worker + " pingTime=" + Service.formatNanoseconds( e.pingTime ) + " computeTime=" + Service.formatNanoseconds( e.computeTime ) + " benchmarkScore=" + e.benchmarkScore );
+	    System.out.println( "@" + Service.formatNanoseconds(timeFromStart) + " master " + master + " registered worker " + worker );
 	}
 	else if( ev instanceof WorkerSettingEvent ) {
 	    WorkerSettingEvent e = (WorkerSettingEvent) ev;

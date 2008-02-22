@@ -24,35 +24,11 @@ public class WorkerList {
 	return -1;
     }
 
-    /** Estimate the multiplier between benchmark score and compute time of this job,
-     * by averaging the multipliers of all known workers.
-     */
-    double estimateMultiplier( JobType type )
+    void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port, ArrayList<JobType> allowedTypes )
     {
-	double sumMultipliers = 0.0;
-	int workerCount;
-	synchronized( workers ){
-	    workerCount = workers.size();
-
-	    for( WorkerInfo w: workers ){
-		sumMultipliers += w.calculateMultiplier( type );
-	    }
-	}
-	if( workerCount<1 ){
-	    // There are no workers to compare to, so we will have to invent
-	    // an estimate. This magic number says that this job is just as
-	    // fast as the benchmark run we use to benchmark the nodes.
-	    return -1;
-	}
-	return sumMultipliers/workerCount;
-    }
-
-    void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port, ArrayList<JobType> allowedTypes, int workThreads, long benchmarkComputeTime, long benchmarkRoundtripTime, double benchmarkScore )
-    {
-	long pingTime = benchmarkRoundtripTime-benchmarkComputeTime;
-	WorkerInfo worker = new WorkerInfo( port, workThreads, allowedTypes, benchmarkScore, pingTime );
+	WorkerInfo worker = new WorkerInfo( port, allowedTypes );
 	if( Settings.writeTrace ) {
-	    Globals.tracer.traceWorkerRegistration( me, port, benchmarkScore, benchmarkRoundtripTime, benchmarkComputeTime );
+	    Globals.tracer.traceWorkerRegistration( me, port );
 	}
 	synchronized( workers ){
 	    workers.add( worker );
@@ -147,22 +123,6 @@ public class WorkerList {
 	return true;
     }
 
-    /**
-     * Returns the next time we should wake up to submit a job to a worker.
-     * @return The next wakeup time.
-     */
-    public long getNextSubmissionTime() {
-	long res = Long.MAX_VALUE;
-
-	for( WorkerInfo w: workers ) {
-	    long t = w.getNextSubmissionTime();
-	    if( t<res ) {
-		res = t;
-	    }
-	}
-	return res;
-    }
-
     /** 
      * Returns a list of workers who are ready for a new job.
      * @param now The current time.
@@ -172,12 +132,11 @@ public class WorkerList {
     {
         ArrayList<WorkerInfo> res = new ArrayList<WorkerInfo>();
         for( WorkerInfo w: workers ) {
-            long t = w.getNextSubmissionTime();
-            if( t<now ) {
+            if( w.hasSlotAvailable() ) {
                 // This worker is ready for a new job.
                 res.add( w );
                 if( Settings.traceFastestWorker ) {
-                    System.out.println( "Worker " + w + " has been ready for a new job for " + Service.formatNanoseconds( now-t ) );
+                    System.out.println( "Worker " + w + " is ready for a new job" );
                 }
             }
         }

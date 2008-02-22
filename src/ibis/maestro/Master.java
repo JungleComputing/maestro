@@ -28,7 +28,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final LinkedList<PingTarget> pingTargets = new LinkedList<PingTarget>();
     private CompletionListener completionListener;
     private boolean stopped = false;
-    private long jobNo = 0;
+    private long nextJobNo = 0;
     private long incomingJobCount = 0;
     private long handledJobCount = 0;
     private long workerCount = 0;
@@ -90,8 +90,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private void handlePingReplyMessage( PingReplyMessage m )
     {
         final long receiveTime = System.nanoTime();
-        final long benchmarkTime = m.benchmarkTime;
-        final int workThreads = m.workThreads;
         long pingTime = 0L;
         ArrayList<JobType> allowedTypes;
 
@@ -116,7 +114,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
         synchronized( workers ){
             workerCount++;
-            workers.subscribeWorker( receivePort.identifier(), worker, allowedTypes, workThreads, benchmarkTime, pingTime, m.benchmarkScore );
+            workers.subscribeWorker( receivePort.identifier(), worker, allowedTypes );
             System.out.println( "A new worker " + worker + " has arrived" );
             workers.notifyAll();
         }
@@ -366,18 +364,17 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * one with the fastest submission frequency.
      * @param readyWorkers The list of workers.
      * @param jobType The job type.
-     * @param allWorkers 
      * @return The index in <code>workers</code> of the fastest worker for this job type, or
      *         -1 if none of the workers can handle this job.
      */
-    private int selectBestWorker( ArrayList<WorkerInfo> readyWorkers, JobType jobType, WorkerList allWorkers ) {
+    private int selectBestWorker( ArrayList<WorkerInfo> readyWorkers, JobType jobType ) {
         int best = -1;
         long bestInterval = Long.MAX_VALUE;
 
         System.out.println( "Selecting best of " + readyWorkers.size() + " workers for job of type " + jobType );
         for( int ix=0; ix<readyWorkers.size(); ix++ ) {
             WorkerInfo wi = readyWorkers.get( ix );
-            long val = wi.getSubmissionInterval( jobType, allWorkers );
+            long val = wi.getSubmissionInterval( jobType );
 
             if( val<bestInterval ) {
                 bestInterval = val;
@@ -414,7 +411,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                     
                     Job job = queue.get( ix );
                     JobType jobType = job.getType();
-                    int worker = selectBestWorker( readyWorkers, jobType, workers );
+                    int worker = selectBestWorker( readyWorkers, jobType );
                     if( worker>=0 ) {
                         // We have a job that we can run.
                         workerToRun = worker;
@@ -430,7 +427,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
                 synchronized( queue ) {
                     job = queue.remove( jobToRun );
-                    jobId = jobNo++;
+                    jobId = nextJobNo++;
                 }
                 JobType jobType = job.getType();
                 JobInfo jobInfo = jobInfoTable.get( jobType );

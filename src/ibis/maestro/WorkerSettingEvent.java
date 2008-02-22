@@ -12,11 +12,7 @@ public class WorkerSettingEvent extends TraceEvent {
     private static final long serialVersionUID = -7896488360789423920L;
     final ReceivePortIdentifier master;
     final ReceivePortIdentifier worker;
-    final long computeTime;
     final long roundTripTime;
-    final long submissionInterval;
-    final long queueInterval;
-    final long queueEmptyInterval;
 
     /**
      * Constructs a new WorkerSettingEvent.
@@ -28,16 +24,12 @@ public class WorkerSettingEvent extends TraceEvent {
      * @param queueInterval The time in ns the most recent job had to spend in the worker queue.
      * @param queueEmptyInterval The time in ns the worker queue was idle before the most recent job entered its queue
      */
-    public WorkerSettingEvent(ReceivePortIdentifier me, ReceivePortIdentifier port, long roundTripTime, long computeTime, long submissionInterval, long queueInterval, long queueEmptyInterval )
+    public WorkerSettingEvent(ReceivePortIdentifier me, ReceivePortIdentifier port, long roundTripTime )
     {
 	super( System.nanoTime() );
 	this.master = me;
 	this.worker = port;
-	this.submissionInterval = submissionInterval;
         this.roundTripTime = roundTripTime;
-	this.computeTime = computeTime;
-        this.queueInterval = queueInterval;
-        this.queueEmptyInterval = queueEmptyInterval;
     }
 
     /** Returns a string containing information about this event.
@@ -46,7 +38,7 @@ public class WorkerSettingEvent extends TraceEvent {
      */
     public String getInfo()
     {
-        return "set worker " + worker + " submissionInterval=" + Service.formatNanoseconds( submissionInterval ) + " computeTime=" + Service.formatNanoseconds( computeTime ) + " roundTripTime=" + Service.formatNanoseconds( roundTripTime ) + " queueInterval=" + Service.formatNanoseconds(queueInterval) + " queueEmptyInterval=" + Service.formatNanoseconds(queueEmptyInterval);
+        return "set worker " + worker + " roundTripTime=" + Service.formatNanoseconds( roundTripTime );
     }
     
 }

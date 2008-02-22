@@ -10,26 +10,9 @@ import ibis.ipl.ReceivePortIdentifier;
 class PingReplyMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
-    
-    /** The score of the worker in the benchmark. */
-    final double benchmarkScore;
-    
-    /** The time it took to run the benchmark.
-     * This time is different from the benchmark score because it may take
-     * several attempts to get a long enough benchmark run.
-     * Also, the benchmark score is the time for one iteration, but is computed from
-     * at least 20, and possibly more, iterations.
-     */
-    long benchmarkTime;
 
-    /** The number of work threads of this worker. */
-    public final int workThreads;
-
-    PingReplyMessage( ReceivePortIdentifier worker, int workThreads, double benchmarkScore, long benchmarkTime ){
+    PingReplyMessage( ReceivePortIdentifier worker ){
 	super( worker );
-	this.workThreads = workThreads;
-        this.benchmarkScore = benchmarkScore;
-        this.benchmarkTime = benchmarkTime;
     }
 
     /**
@@ -39,7 +22,7 @@ class PingReplyMessage extends WorkerMessage {
     @Override
     public String toString()
     {
-	return "Ping reply message from worker " + source + " score=" + benchmarkScore + " time=" + Service.formatNanoseconds( benchmarkTime );
+	return "Ping reply message from worker " + source;
     }
 
     /**

@@ -7,131 +7,53 @@ import ibis.ipl.ReceivePortIdentifier;
 
 class WorkerJobInfo {
     /** Estimated time in ns to complete a job, including communication. */
-    private long roundTripTime;
+    private long roundTripInterval;
+    
+    /** How many instances of this job does this worker currently have? */
+    private int outstandingJobs = 0;
 
-    /** Estimated time in ns to complete a job, excluding communication. */
-    private long computeTime;
-
-    private long latestSubmission = 0;
-
-    /** Ideal time in ns between job submissions. */
-    private long submissionInterval;
+    /** How many instance of this job should this worker maximally have? */
+    private int maximalOutstandingJobs;
 
     private void updateRoundTripTime( long newRoundTripTime )
     {
-	roundTripTime = (roundTripTime+newRoundTripTime)/2;
+	roundTripInterval = (roundTripInterval+newRoundTripTime)/2;
     }
 
     long getRoundTripTime() {
-	return roundTripTime;
+	return roundTripInterval;
     }
 
     /**
      * Constructs a new information class for a particular job type
      * for a particular worker.
-     * @param roundTripTime The estimated send-to-receive time for this job for this particular worker.
-     * @param computeTime The estimated compute time on this job on this particular worker.
-     * @param submissionInterval
+     * @param roundTripInterval The estimated send-to-receive time for this job for this particular worker.
      */
-    public WorkerJobInfo(long roundTripTime, long computeTime,
-	    long submissionInterval) {
-	this.roundTripTime = roundTripTime;
-	this.computeTime = computeTime;
-	this.submissionInterval = submissionInterval;
+    public WorkerJobInfo( long roundTripInterval ) {
+	this.roundTripInterval = roundTripInterval;
     }
 
-    /** Register a newly learned compute time.
-     * 
-     * @param newComputeTime The newly learned compute time.
-     */
-    private void updateComputeTime( long newComputeTime )
+    void registerJobCompleted(WorkerInfo workerInfo, ReceivePortIdentifier master, WorkerStatusMessage result, long newRoundTripInterval)
     {
-	computeTime = (computeTime+newComputeTime)/2;
-    }
-
-    private long updateSubmissionInterval( int workThreads, WorkerStatusMessage result )
-    {
-        long oldSubmissionInterval = submissionInterval;
-	// We're aiming for a queue interval of half the compute time.
-	long idealQueueInterval = workThreads*computeTime/2;
-        // Positive: too long in the queue. Negative: not long enough in the queue.
-	final long queueDeviation = result.queueInterval-idealQueueInterval;
-	submissionInterval += queueDeviation/3;
-	submissionInterval -= result.queueEmptyInterval/4;
-	if( submissionInterval<(computeTime/workThreads) ) {
-	    submissionInterval = computeTime/workThreads;
-	    System.err.println( "Clamped submissionInterval to compute time" );
-	}
-	if( submissionInterval>roundTripTime ) {
-	    System.err.println( "Clammped submissionInterval to roundTripTime" );
-	    submissionInterval = roundTripTime;
-	}
-	if( Settings.traceSubmissionInterval ) {
-	    System.out.println(
-	        "idealQueueInterval=" + Service.formatNanoseconds(idealQueueInterval) +
-                " old submissionInterval=" + Service.formatNanoseconds(oldSubmissionInterval) +
-                " queueDeviation=" + Service.formatNanoseconds( queueDeviation ) +
-                " queueEmptyInterval=" + Service.formatNanoseconds(result.queueEmptyInterval) +
-                " queueInterval=" + Service.formatNanoseconds(result.queueInterval) +
-                " new submissionInterval=" + Service.formatNanoseconds(submissionInterval)
-            );
-	}
-	return -result.queueEmptyInterval/2;
-    }
-
-    long update(WorkerInfo workerInfo, ReceivePortIdentifier master, WorkerStatusMessage result, long newRoundTripTime)
-    {
-        long step;
-
         synchronized( this ) {
-	    updateRoundTripTime( newRoundTripTime );
-	    updateComputeTime( result.getComputeTime() );
-	    step = updateSubmissionInterval( workerInfo.workThreads, result );
+	    updateRoundTripTime( newRoundTripInterval );
+	    outstandingJobs--;
 	}
 	if( Settings.traceWorkerProgress ) {
-	    System.out.println( "New submission interval " + Service.formatNanoseconds( submissionInterval ) + " compute time " + Service.formatNanoseconds( computeTime ) + " roundtrip time " + Service.formatNanoseconds( roundTripTime ) );
+	    System.out.println( "New roundtrip time " + Service.formatNanoseconds( newRoundTripInterval )  );
 	}
 	if( Settings.writeTrace ) {
 	    synchronized( this ) {
 		Globals.tracer.traceWorkerSettings( master,
 			workerInfo.port,
-			roundTripTime, computeTime, submissionInterval, result.queueInterval, result.queueEmptyInterval );
+			roundTripInterval );
 	    }
 	}
-	return step;
     }
 
-    /**
-     * Returns the estimated compute time for this job on this worker.
-     * @return The estimated compute time.
-     */
-    public long getComputeTime() {
-	return computeTime;
-    }
-
-    /**
-     * Returns the current submission interval for this job and worker.
-     * @return The submission interval.
-     */
-    public long getSubmissionInterval() {
-	return submissionInterval;
-    }
-
-    /**
-     * Returns the most recent time ns that a job was submitted to this worker.
-     * @return The most recent submission time.
-     */
-    public long getLatestSubmission()
+    /** Register a new outstanding job. */
+    public synchronized void incrementOutstandingJobs()
     {
-	return latestSubmission;
-    }
-
-    /**
-     * Set the last submission time to the given value.
-     * @param val The new latest submission time.
-     */
-    public void setLastSubmission( long val )
-    {
-	latestSubmission = val;
+	outstandingJobs++;
     }
 }

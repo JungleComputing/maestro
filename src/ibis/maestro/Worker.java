@@ -21,7 +21,6 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
     private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
-    //private final static int numberOfProcessors = 1;
     private final WorkThread workThreads[] = new WorkThread[numberOfProcessors];
     private boolean stopped = false;
     private ReceivePortIdentifier exclusiveMaster = null;
@@ -144,14 +143,8 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      */
     private void handlePingMessage( PingMessage msg )
     {
-        // First force the benchmark to be compiled.
-        double benchmarkScore = msg.runBenchmark();
-        long benchmarkStartTime = System.nanoTime();
-    
-        benchmarkScore = msg.runBenchmark();
-        long benchmarkTime = System.nanoTime()-benchmarkStartTime;
         ReceivePortIdentifier master = msg.source;
-        PingReplyMessage m = new PingReplyMessage( receivePort.identifier(), workThreads.length, benchmarkScore, benchmarkTime );
+        PingReplyMessage m = new PingReplyMessage( receivePort.identifier() );
         if( Settings.writeTrace ) {
             Globals.tracer.traceSentMessage( m, receivePort.identifier() );
         }
@@ -377,8 +370,6 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     public void reportJobCompletion( RunJobMessage jobMessage )
     {
         long now = System.nanoTime();
-	long computeInterval = now-jobMessage.getRunTime();
-        long emptyQueueInterval = jobMessage.getQueueEmptyInterval();
         try {
             long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
 
@@ -389,7 +380,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
                 runningJobs--;
                 queue.notifyAll();
             }
-            WorkerMessage msg = new WorkerStatusMessage( receivePort.identifier(), jobMessage.jobId, computeInterval, emptyQueueInterval, queueInterval );
+            WorkerMessage msg = new WorkerStatusMessage( receivePort.identifier(), jobMessage.jobId );
             if( Settings.writeTrace ) {
                 Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
             }
