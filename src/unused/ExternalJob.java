@@ -4,6 +4,7 @@ import ibis.maestro.Job;
 import ibis.maestro.JobContext;
 import ibis.maestro.JobProgressValue;
 import ibis.maestro.JobType;
+import ibis.maestro.ReportReceiver;
 import ibis.util.RunProcess;
 
 import java.io.File;
@@ -24,6 +25,7 @@ public class ExternalJob implements Job {
     private FileContents inputFiles[];
     private String outputFiles[];
     private Vector<String> command;
+    private ReportReceiver watcher;
     private static final boolean traceCommands = true;
     private static long label = 0L;
     private static final JobType jobType = new JobType( "ExternalJob" );
@@ -129,7 +131,7 @@ public class ExternalJob implements Job {
             }
         }
         removeSandbox( sandbox );
-        context.reportResult( this, new RunResult( exitcode, o, e ) );
+        context.reportResult( watcher, new RunResult( exitcode, o, e ) );
     }
 
     /** Constructs a new job.

@@ -24,7 +24,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final LinkedList<Job> queue = new LinkedList<Job>();
     private Hashtable<JobType,JobInfo> jobInfoTable = new Hashtable<JobType, JobInfo>();
 
-    private CompletionListener completionListener;
     private boolean stopped = false;
     private long nextJobId = 0;
     private long incomingJobCount = 0;
@@ -59,21 +58,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
     }
 
-    private void handleJobResultMessage( JobResultMessage result )
-    {
-        if( Settings.traceWorkerProgress ){
-            Globals.log.reportProgress( "Received a job result " + result );
-        }
-        synchronized( workers ) {
-            workers.registerJobResult( result, completionListener );
-            workers.notifyAll();
-        }
-        synchronized( queue ){
-            queue.notifyAll();
-            handledJobCount++;
-        }
-    }
-
     /**
      * A (presumably unregistered) worker has sent us a message asking for work.
      * 
@@ -94,7 +78,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         synchronized( queue ){
             for( Job e: queue ){
                 if( allowedTypes.isEmpty() ){
-                    // Apparantely, we've handled all types of job this worker knows about.
+                    // We've handled all types of job this worker knows about.
                     break;
                 }
                 JobType jobType = e.getType();
@@ -135,11 +119,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
             handleWorkerStatusMessage( result );
         }
-        else if( msg instanceof JobResultMessage ) {
-            JobResultMessage result = (JobResultMessage) msg;
-
-            handleJobResultMessage( result );
-        }
         else if( msg instanceof WorkRequestMessage ) {
             WorkRequestMessage m = (WorkRequestMessage) msg;
 
@@ -163,10 +142,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * @param l The completion listener to use.
      * @throws IOException Thrown if the master cannot be created.
      */
-    public Master( Ibis ibis, CompletionListener l ) throws IOException
+    public Master( Ibis ibis ) throws IOException
     {
         super( "Master" );
-        completionListener = l;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
         receivePort.enable();		// We're open for business.
@@ -207,15 +185,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
     }
 
-    /**
-     * Registers a completion listener with this master.
-     * @param l The completion listener to register.
-     */
-    public synchronized void setCompletionListener( CompletionListener l )
-    {
-        completionListener = l;
-    }
-    
     /**
      * Returns true iff this master is in stopped mode, has no
      * jobs in its queue, and has not outstanding jobs on its workers.
@@ -332,9 +301,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 if( Settings.writeTrace ) {
                     Globals.tracer.traceSentMessage( msg, worker.getPort() );
                 }
-                long len = sendPort.send( msg, worker.getPort() );
-                jobInfo.updateSendSize( len );
-            } catch (IOException e) {
+                sendPort.send( msg, worker.getPort() );
+            }
+            catch (IOException e) {
                 // Try to put the paste back in the tube.
                 synchronized( queue ){
                     queue.add( job );
@@ -455,9 +424,26 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         System.out.println( "Master: run time         = " + Service.formatNanoseconds( workInterval ) );
     }
 
+    /**
+     * Report the 
+     * @param job
+     * @param value
+     */
     @Override
-    public void reportResult(Job job, JobProgressValue value) {
-	System.err.println( "FIXME: implement reportResult() job=" + job + " value=" + value );
+    public void reportResult( ReportReceiver receiver, JobProgressValue value )
+    {
+	ReceivePortIdentifier port = receiver.getPort();
+
+	JobResultMessage msg = new JobResultMessage( receivePort.identifier(), value, receiver.getId() );
+        try {
+            if( Settings.writeTrace ) {
+                Globals.tracer.traceSentMessage( msg, port );
+            }
+            sendPort.send( msg, port );
+        }
+        catch (IOException e) {
+            e.printStackTrace( System.err );
+        }
     }
 
 }

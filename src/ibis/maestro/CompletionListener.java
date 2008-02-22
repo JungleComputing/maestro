@@ -9,8 +9,8 @@ package ibis.maestro;
 public interface CompletionListener {
     /**
      * Registers that a job is completed.
-     * @param j The Maestro job that was completed.
+     * @param id The id of the job that was completed.
      * @param result The result of the job.
      */
-    void jobCompleted( Job j, JobProgressValue result );
+    void jobCompleted( long id, JobProgressValue result );
 }

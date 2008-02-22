@@ -197,9 +197,9 @@ public class Node implements RegistryEventHandler {
         if( Settings.traceNodes ) {
 	    System.out.println( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
 	}
-        master = new Master( ibis, listener );
+        master = new Master( ibis );
         master.start();
-        worker = new Worker( ibis, master, allowedTypes );
+        worker = new Worker( ibis, master, allowedTypes, listener );
         worker.start();
         registry.enableEvents();
         master.waitForSubscription( worker.identifier() );
@@ -248,5 +248,16 @@ public class Node implements RegistryEventHandler {
             // Nothing we can do about it.
         }
         System.out.println( "Node has terminated" );
+    }
+
+    /**
+     * Given a job identifier, create a ReportReceiver object.
+     * This object can be added to a job to allow results to be reported back.
+     * @param id The identifier that should be put in the report.
+     * @return The ReportReceiver object.
+     */
+    public ReportReceiver createReportReceiver( long id )
+    {
+	return new ReportReceiver( worker.identifier(), id );
     }
 }

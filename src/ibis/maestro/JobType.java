@@ -31,6 +31,11 @@ public class JobType implements Serializable
 	return "job type " + name;
     }
 
+    /**
+     * Compute a hash code for this job type.
+     * Since we compare on name, we can simply use the hash of the name.
+     * @return The hash code.
+     */
     @Override
     public int hashCode()
     {

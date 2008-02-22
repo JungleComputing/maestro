@@ -18,7 +18,7 @@ public class TestProg {
 	 * @param result The result of the job.
 	 */
 	@Override
-	public void jobCompleted(Job j, JobProgressValue result ) {
+	public void jobCompleted(long id, JobProgressValue result ) {
 	    //System.out.println( "Job " + j + ": result is " + result );
 	}
 	
@@ -36,7 +36,8 @@ public class TestProg {
         if( node.isMaestro() ) {
             System.out.println( "I am maestro; submitting " + JOBCOUNT + " jobs" );
             for( int i=0; i<JOBCOUNT; i++ ){
-        	AdditionJob j = new AdditionJob( 12*i );
+        	ReportReceiver watcher = node.createReportReceiver( i );
+		AdditionJob j = new AdditionJob( 12*i, watcher  );
         	node.submit( j );
             }
             node.finish();

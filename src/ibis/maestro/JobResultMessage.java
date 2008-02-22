@@ -8,7 +8,7 @@ import ibis.ipl.ReceivePortIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-class JobResultMessage extends WorkerMessage {
+class JobResultMessage extends MasterMessage {
     /** */
     private static final long serialVersionUID = 5158947332427678656L;
     final JobProgressValue result;

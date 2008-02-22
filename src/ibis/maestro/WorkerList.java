@@ -90,7 +90,7 @@ public class WorkerList {
 	    return;
 	}
 	WorkerInfo w = workers.get( ix );
-	w.registerJobResult( result, completionListener );
+	w.registerJobResult( result );
     }
 
 
@@ -126,6 +126,14 @@ public class WorkerList {
 	return true;
     }
 
+    /**
+     * Given a job type, select the best worker from the list that has a
+     * free slot. In this context 'best' is simply the worker with the
+     * shortest round-trip interval.
+     * @param jobType The type of job we want to execute.
+     * @return The info of the best worker for this job, or <code>null</code>
+     *         if there currently aren't any workers for this job type.
+     */
     public WorkerInfo selectBestWorker( JobType jobType )
     {
         WorkerInfo best = null;
@@ -156,7 +164,13 @@ public class WorkerList {
         int ix = searchWorker( workers, worker );
         return ix>=0;
     }
-    
+
+    /**
+     * Increment the maximal number of outstanding jobs for the given worker
+     * for the given job type.
+     * @param worker The worker that should get a higher number of outstanding jobs.
+     * @param jobType The job type for which we want to increment.
+     */
     public void incrementAllowance( ReceivePortIdentifier worker, JobType jobType )
     {
         int ix = searchWorker(workers, worker);
@@ -166,6 +180,11 @@ public class WorkerList {
         }
     }
 
+    /**
+     * Register the job types of the given worker.
+     * @param worker The worker for which we have job types.
+     * @param allowedTypes The allowed job types for the given worker.
+     */
     public void registerWorkerJobTypes(ReceivePortIdentifier worker, ArrayList<JobType> allowedTypes) {
         int ix = searchWorker(workers, worker);
         if( ix>=0 ){

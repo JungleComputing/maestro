@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.ipl.ReceivePortIdentifier;
+
 import java.io.Serializable;
 
 /**

@@ -18,6 +18,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private final ArrayList<JobType> allowedTypes;
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
+    private CompletionListener completionListener;
     private long queueEmptyMoment = 0L;
     private final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
     private final ArrayList<IbisIdentifier> jobSources = new ArrayList<IbisIdentifier>();
@@ -38,12 +39,14 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      * @param ibis The Ibis instance this worker belongs to.
      * @param master The master that jobs may submit new jobs to.
      * @param allowedTypes The types of job this worker can handle.
+     * @param completionListener The listener for job completion reports.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis, Master master, ArrayList<JobType> allowedTypes ) throws IOException
+    public Worker( Ibis ibis, Master master, ArrayList<JobType> allowedTypes, CompletionListener completionListener ) throws IOException
     {
         super( "Worker" );   // Create a thread with a name.
         this.allowedTypes = allowedTypes;
+        this.completionListener = completionListener;
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         for( int i=0; i<numberOfProcessors; i++ ) {
@@ -183,6 +186,16 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         }
     }
 
+    private void handleJobResultMessage( JobResultMessage result )
+    {
+        if( Settings.traceWorkerProgress ){
+            Globals.log.reportProgress( "Received a job result " + result );
+        }
+        if( completionListener != null ) {
+            completionListener.jobCompleted( result.jobId, result.result );
+        }
+    }
+
     /**
      * @param msg The time sync message to handle.
      */
@@ -219,6 +232,11 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             RunJobMessage runJobMessage = (RunJobMessage) msg;
     
             handleRunJobMessage( runJobMessage );
+        }
+        else if( msg instanceof JobResultMessage ) {
+            JobResultMessage result = (JobResultMessage) msg;
+
+            handleJobResultMessage( result );
         }
         else if( msg instanceof MasterTimeSyncMessage ){
             MasterTimeSyncMessage ping = (MasterTimeSyncMessage) msg;
@@ -367,6 +385,14 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         }
     }
 
+    /**
+     * Registers a completion listener with this master.
+     * @param l The completion listener to register.
+     */
+    public synchronized void setCompletionListener( CompletionListener l )
+    {
+        completionListener = l;
+    }
 
     /** Print some statistics about the entire worker run. */
     public void printStatistics()

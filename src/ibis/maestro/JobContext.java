@@ -19,6 +19,6 @@ public interface JobContext {
      * @param job The job from which the result was reported.
      * @param value The result value to report.
      */
-    void reportResult(Job job, JobProgressValue value);
+    void reportResult( ReportReceiver receiver, JobProgressValue value );
 
 }

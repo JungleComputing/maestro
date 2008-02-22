@@ -74,9 +74,8 @@ class WorkerInfo {
      * Register a job result for an outstanding job.
      * @param master The master this info belongs to.
      * @param result The job result message that tells about this job.
-     * @param completionListener A completion listener to be notified.
      */
-    public void registerJobResult( JobResultMessage result, CompletionListener completionListener )
+    public void registerJobResult( JobResultMessage result )
     {
         final long id = result.jobId;    // The identifier of the job, as handed out by us.
 
@@ -85,10 +84,6 @@ class WorkerInfo {
             Globals.log.reportInternalError( "ignoring reported result from job with unknown id " + id );
             return;
         }
-        if( completionListener != null ) {
-            completionListener.jobCompleted( e.job, result.result );
-        }
-
         synchronized( activeJobs ){
             activeJobs.remove( e );
         }
@@ -205,7 +200,10 @@ class WorkerInfo {
         return workerJobInfo.getRoundTripInterval();
     }
 
-    /** Increments the maximal number of outstanding jobs for this worker. */
+    /**
+     *  Increments the maximal number of outstanding jobs for this worker.
+     *  @param jobType The job type for which we want to increase our allowance.
+     */
     public void incrementAllowance( JobType jobType ) {
         WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
         if( workerJobInfo == null ) {
@@ -215,7 +213,10 @@ class WorkerInfo {
         workerJobInfo.incrementAllowance();
     }
 
-    /** Registers that the worker can support the given types. */
+    /** Registers that the worker can support the given types.
+     * @param allowedTypes The list of allowed types that are allowed by
+     *        this worker.
+     */
     public void updateAllowedTypes(ArrayList<JobType> allowedTypes )
     {
         for( JobType t: allowedTypes ){
