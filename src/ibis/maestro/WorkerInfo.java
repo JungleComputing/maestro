@@ -72,7 +72,6 @@ class WorkerInfo {
 
     /**
      * Register a job result for an outstanding job.
-     * @param master The master this info belongs to.
      * @param result The job result message that tells about this job.
      */
     public void registerJobResult( JobResultMessage result )

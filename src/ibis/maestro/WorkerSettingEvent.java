@@ -19,10 +19,6 @@ public class WorkerSettingEvent extends TraceEvent {
      * @param me The master that does the setting.
      * @param port For which worker the setting is updated.
      * @param roundTripTime  The estimated time in ns to transmit a job an get a result back.
-     * @param computeTime The estimated time in ns that is required to compute a job.
-     * @param submissionInterval The estimated interval between job submissions.
-     * @param queueInterval The time in ns the most recent job had to spend in the worker queue.
-     * @param queueEmptyInterval The time in ns the worker queue was idle before the most recent job entered its queue
      */
     public WorkerSettingEvent(ReceivePortIdentifier me, ReceivePortIdentifier port, long roundTripTime )
     {

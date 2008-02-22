@@ -139,7 +139,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
     /** Creates a new master instance.
      * @param ibis The Ibis instance this master belongs to.
-     * @param l The completion listener to use.
      * @throws IOException Thrown if the master cannot be created.
      */
     public Master( Ibis ibis ) throws IOException
@@ -426,7 +425,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
     /**
      * Report the 
-     * @param job
+     * @param receiver
      * @param value
      */
     @Override

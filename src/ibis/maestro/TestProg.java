@@ -14,7 +14,7 @@ public class TestProg {
     {
 
 	/** Handle the completion of job 'j': the result is 'result'.
-	 * @param j The job that was completed.
+	 * @param id The job that was completed.
 	 * @param result The result of the job.
 	 */
 	@Override

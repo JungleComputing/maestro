@@ -78,7 +78,6 @@ public class WorkerList {
 
     /**
      * Register a job result in the info of the worker that handled it.
-     * @param me Which master am I?
      * @param result The job result.
      * @param completionListener The completion listener that should be notified.
      */
