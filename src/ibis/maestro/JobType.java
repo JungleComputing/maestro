@@ -30,4 +30,22 @@ public class JobType implements Serializable
     {
 	return "job type " + name;
     }
+
+    @Override
+    public int hashCode()
+    {
+        return name.hashCode();
+    }
+
+    /**
+     * Returns true iff the given jobtype is equal to this one.
+     */
+    @Override
+    public boolean equals( Object other )
+    {
+        if( other instanceof JobType ){
+            return this.name.equals( ((JobType) other).name );
+        }
+        return false;
+    }
 }

@@ -39,7 +39,6 @@ public class RunJobMessage extends MasterMessage {
         this.queueTime = t;
     }
 
-
     /**
      * Registers the given time as the moment this job started running.
      * @param t The start time.

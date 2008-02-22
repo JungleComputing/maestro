@@ -34,7 +34,7 @@ public class TestProg {
 
 	System.out.println( "Node created" );
         if( node.isMaestro() ) {
-		System.out.println( "I am maestro; submitting " + JOBCOUNT + " jobs" );
+            System.out.println( "I am maestro; submitting " + JOBCOUNT + " jobs" );
             for( int i=0; i<JOBCOUNT; i++ ){
         	AdditionJob j = new AdditionJob( 12*i );
         	node.submit( j );

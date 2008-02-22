@@ -24,13 +24,16 @@ public class WorkerList {
 	return -1;
     }
 
-    void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port, ArrayList<JobType> allowedTypes )
+    void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port )
     {
-	WorkerInfo worker = new WorkerInfo( port, allowedTypes );
+	WorkerInfo worker = new WorkerInfo( port );
 	if( Settings.writeTrace ) {
 	    Globals.tracer.traceWorkerRegistration( me, port );
 	}
-	synchronized( workers ){
+        if( Settings.traceMasterProgress ){
+            System.out.println( "Master " + me + ": subscribing worker " + port );
+        }
+ 	synchronized( workers ){
 	    workers.add( worker );
 	}
     }
@@ -79,7 +82,7 @@ public class WorkerList {
      * @param result The job result.
      * @param completionListener The completion listener that should be notified.
      */
-    public void registerJobResult( ReceivePortIdentifier me, JobResultMessage result, CompletionListener completionListener )
+    public void registerJobResult( JobResultMessage result, CompletionListener completionListener )
     {
 	int ix = searchWorker( workers, result.source );
 	if( ix<0 ) {
@@ -87,7 +90,7 @@ public class WorkerList {
 	    return;
 	}
 	WorkerInfo w = workers.get( ix );
-	w.registerJobResult( me, result, completionListener );
+	w.registerJobResult( result, completionListener );
     }
 
 
@@ -123,23 +126,51 @@ public class WorkerList {
 	return true;
     }
 
-    /** 
-     * Returns a list of workers who are ready for a new job.
-     * @param now The current time.
-     * @return The workers.
-     */
-    public ArrayList<WorkerInfo> getReadyWorkers( long now )
+    public WorkerInfo selectBestWorker( JobType jobType )
     {
-        ArrayList<WorkerInfo> res = new ArrayList<WorkerInfo>();
-        for( WorkerInfo w: workers ) {
-            if( w.hasSlotAvailable() ) {
-                // This worker is ready for a new job.
-                res.add( w );
-                if( Settings.traceFastestWorker ) {
-                    System.out.println( "Worker " + w + " is ready for a new job" );
-                }
+        WorkerInfo best = null;
+        long bestInterval = Long.MAX_VALUE;
+
+        if( Settings.traceFastestWorker ){
+            System.out.println( "Selecting best of " + workers.size() + " workers for job of type " + jobType );
+        }
+        for( WorkerInfo wi: workers ){
+            long val = wi.getRoundTripInterval( jobType );
+            if( val<bestInterval ) {
+                bestInterval = val;
+                best = wi;
             }
         }
-        return res;
+        if( Settings.traceFastestWorker ){
+            System.out.println( "Selected worker " + best + " for job of type " + jobType + "; roundTripTime=" + Service.formatNanoseconds( bestInterval ) );
+        }
+        return best;
+    }
+
+    /**
+     * Given a worker, return true iff we know about this worker.
+     * @param worker The worker we want to know about.
+     * @return True iff this is a known worker.
+     */
+    public boolean isKnownWorker(ReceivePortIdentifier worker) {
+        int ix = searchWorker( workers, worker );
+        return ix>=0;
+    }
+    
+    public void incrementAllowance( ReceivePortIdentifier worker, JobType jobType )
+    {
+        int ix = searchWorker(workers, worker);
+        if( ix>=0 ){
+            WorkerInfo wi = workers.get( ix );
+            wi.incrementAllowance( jobType );
+        }
+    }
+
+    public void registerWorkerJobTypes(ReceivePortIdentifier worker, ArrayList<JobType> allowedTypes) {
+        int ix = searchWorker(workers, worker);
+        if( ix>=0 ){
+            WorkerInfo wi = workers.get( ix );
+            wi.updateAllowedTypes( allowedTypes );
+        }        
     }
 }

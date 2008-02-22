@@ -95,7 +95,7 @@ public class Node implements RegistryEventHandler {
     {
         registerIbisJoined( theIbis );
         master.addIbis( theIbis );
-        worker.addUnusedNeighbor( theIbis );
+        worker.addJobSource( theIbis );
     }
 
     /**
@@ -219,6 +219,7 @@ public class Node implements RegistryEventHandler {
     /** Finish this node. */
     public void finish()
     {
+        master.waitForEmptyQueue();
         master.setStopped();
         waitToTerminate();
     }
@@ -235,8 +236,8 @@ public class Node implements RegistryEventHandler {
          * for one to terminate, and then the other.
          */
         Service.waitToTerminate( master );
-        System.out.println( "Node master has terminated; terminating worker" );
         worker.setStopped();
+        System.out.println( "Node master has terminated; terminating worker" );
         Service.waitToTerminate( worker );
         master.printStatistics();
         worker.printStatistics();

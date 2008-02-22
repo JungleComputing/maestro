@@ -13,14 +13,22 @@ class WorkerJobInfo {
     private int outstandingJobs = 0;
 
     /** How many instance of this job should this worker maximally have? */
-    private int maximalOutstandingJobs;
+    private int maximalOutstandingJobs = 1;
 
     private void updateRoundTripTime( long newRoundTripTime )
     {
 	roundTripInterval = (roundTripInterval+newRoundTripTime)/2;
     }
 
-    long getRoundTripTime() {
+    /**
+     * Returns the round-trip interval for this worker and this job type, or
+     * a very large number if currently there are no job slots.
+     * @return The tround-trip interval.
+     */
+    synchronized long getRoundTripInterval() {
+        if( outstandingJobs>=maximalOutstandingJobs ){
+            return Long.MAX_VALUE;
+        }
 	return roundTripInterval;
     }
 
@@ -29,11 +37,12 @@ class WorkerJobInfo {
      * for a particular worker.
      * @param roundTripInterval The estimated send-to-receive time for this job for this particular worker.
      */
-    public WorkerJobInfo( long roundTripInterval ) {
+    public WorkerJobInfo( long roundTripInterval )
+    {
 	this.roundTripInterval = roundTripInterval;
     }
 
-    void registerJobCompleted(WorkerInfo workerInfo, ReceivePortIdentifier master, WorkerStatusMessage result, long newRoundTripInterval)
+    void registerJobCompleted(WorkerInfo workerInfo, ReceivePortIdentifier master, long newRoundTripInterval )
     {
         synchronized( this ) {
 	    updateRoundTripTime( newRoundTripInterval );
@@ -55,5 +64,13 @@ class WorkerJobInfo {
     public synchronized void incrementOutstandingJobs()
     {
 	outstandingJobs++;
+    }
+
+    /**
+     * Increment the maximal number of outstanding jobs for this worker and this type of work.
+     */
+    public void incrementAllowance()
+    {
+        maximalOutstandingJobs++;
     }
 }

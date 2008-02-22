@@ -7,6 +7,7 @@ import ibis.ipl.ReceivePortIdentifier;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.Random;
 
 /**
  * A worker in the Maestro multiple master-worker system.
@@ -19,11 +20,10 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private final PacketSendPort<WorkerMessage> sendPort;
     private long queueEmptyMoment = 0L;
     private final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
-    private final LinkedList<IbisIdentifier> unusedNeighbors = new LinkedList<IbisIdentifier>();
+    private final ArrayList<IbisIdentifier> jobSources = new ArrayList<IbisIdentifier>();
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private final WorkThread workThreads[] = new WorkThread[numberOfProcessors];
     private boolean stopped = false;
-    private ReceivePortIdentifier exclusiveMaster = null;
     private final long startTime;
     private long stopTime;
     private long idleTime = 0;      // Cumulative idle time during the run.
@@ -31,6 +31,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     private int jobCount = 0;
     private long workTime = 0;
     private int runningJobs = 0;
+    private final Random rng = new Random();
 
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
@@ -71,36 +72,80 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         return receivePort.identifier();
     }
 
-    private IbisIdentifier getUnusedNeighbor()
+    /** Removes and returns a random job source from the list of
+     * known job sources. Returns null if the list is empty.
+     * 
+     * @return The job source, or null if there isn't one.
+     */
+    private IbisIdentifier getRandomJobSource()
     {
         IbisIdentifier res;
 
-        synchronized( unusedNeighbors ){
-            res = unusedNeighbors.pollFirst();
+        synchronized( jobSources ){
+            final int size = jobSources.size();
+            if( size == 0 ){
+                return null;
+            }
+            int ix = rng.nextInt( size );
+            res = jobSources.remove( ix );
         }
         return res;
     }
 
-    private void addNeighbors( IbisIdentifier l[] )
+    private void addJobSources( IbisIdentifier l[] )
     {
-	synchronized( unusedNeighbors ){
-	    for( IbisIdentifier n: l ){
-		unusedNeighbors.add( n );
-	    }
-	}
-	// This is a good reason to wake up the queue.
-	synchronized (queue ) {
-	    queue.notifyAll();
-	}
+        synchronized( jobSources ){
+            for( IbisIdentifier n: l ){
+                if( !jobSources.contains(n) ){
+                    jobSources.add( n );
+                }
+            }
+        }
+        // This is a good reason to wake up the queue.
+        synchronized (queue ) {
+            queue.notifyAll();
+        }
     }
 
-    private void sendResignMessage( ReceivePortIdentifier master ) throws IOException
+    /**
+     * A new ibis has joined the computation.
+     * @param theIbis The ibis that has joined.
+     */
+    void addJobSource( IbisIdentifier theIbis )
     {
-        WorkerResignMessage msg = new WorkerResignMessage( receivePort.identifier() );
-        if( Settings.writeTrace ) {
-            Globals.tracer.traceSentMessage( msg, master );
+        synchronized( jobSources ){
+            if( !jobSources.contains(theIbis) ){
+                jobSources.add( theIbis );
+            }
         }
-        sendPort.send( msg, master );
+        // This is a good reason to wake up the queue.
+        synchronized (queue ) {
+            queue.notifyAll();
+        }
+    }
+
+    private void findNewMaster()
+    {
+        IbisIdentifier m = getRandomJobSource();
+        if( m == null ){
+            return;
+        }
+        if( Settings.traceWorkerProgress ){
+            Globals.log.reportProgress( "Asking neighbor " + m + " for work" );
+        }
+        try {
+            WorkRequestMessage msg = new WorkRequestMessage( receivePort.identifier(), allowedTypes );
+    
+            if( Settings.writeTrace ) {
+                // FIXME: compute a receive port identifier for this one.
+                Globals.tracer.traceSentMessage( msg, null );
+            }
+            sendPort.send( msg, m, Globals.masterReceivePortName );
+        }
+        catch( IOException x ){
+            Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
+            x.printStackTrace();
+        }
     }
 
     /**
@@ -110,7 +155,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      */
     private void handleAddNeighborsMessage(AddNeighborsMessage msg)
     {
-        addNeighbors( msg.getNeighbors() );
+        addJobSources( msg.getNeighbors() );
     }
 
     /**
@@ -135,25 +180,6 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             msg.setQueueEmptyInterval( queueEmptyInterval );
             queue.add( msg );
             queue.notifyAll();
-        }
-    }
-
-    /**
-     * @param msg The ping message to handle.
-     */
-    private void handlePingMessage( PingMessage msg )
-    {
-        ReceivePortIdentifier master = msg.source;
-        PingReplyMessage m = new PingReplyMessage( receivePort.identifier() );
-        if( Settings.writeTrace ) {
-            Globals.tracer.traceSentMessage( m, receivePort.identifier() );
-        }
-        try {
-            sendPort.send( m, master );
-        }
-        catch( IOException x ){
-            Globals.log.reportError( "Cannot send ping reply to master " + master );
-            x.printStackTrace( Globals.log.getPrintStream() );
         }
     }
 
@@ -199,11 +225,6 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     
             handleTimeSyncMessage( ping );
         }
-        else if( msg instanceof PingMessage ){
-            PingMessage ping = (PingMessage) msg;
-    
-            handlePingMessage( ping );
-        }
         else if( msg instanceof AddNeighborsMessage ){
             AddNeighborsMessage addMsg = (AddNeighborsMessage) msg;
     
@@ -212,44 +233,6 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
         else {
             Globals.log.reportInternalError( "FIXME: handle " + msg );
         }
-        // Now send an unsubscribe message if we only handle work from a specific master.
-        if( exclusiveMaster != null && !exclusiveMaster.equals( msg.source ) ){
-            // Resign from the given master.
-            try {
-                sendResignMessage( msg.source );
-            }
-            catch( IOException x ){
-                // Nothing we can do about it.
-            }
-        }
-    }
-
-    private boolean findNewMaster()
-    {
-        IbisIdentifier m = getUnusedNeighbor();
-        if( m == null ){
-            if( Settings.traceWorkerProgress ){
-                Globals.log.reportProgress( "No neighbors to ask for work" );
-            }
-            return false;
-        }
-        if( Settings.traceWorkerProgress ){
-            Globals.log.reportProgress( "Asking neighbor " + m + " for work" );
-        }
-        try {
-            WorkRequestMessage msg = new WorkRequestMessage( receivePort.identifier(), allowedTypes );
-
-            if( Settings.writeTrace ) {
-                // FIXME: compute a receive port identifier for this one.
-                Globals.tracer.traceSentMessage( msg, null );
-            }
-            sendPort.send( msg, m, Globals.masterReceivePortName );
-        }
-        catch( IOException x ){
-            Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
-            x.printStackTrace();
-        }
-        return true;
     }
 
     /** Runs this worker. */
@@ -284,37 +267,13 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      */
     public void removeIbis( IbisIdentifier theIbis )
     {
-        synchronized( unusedNeighbors ) {
-            unusedNeighbors.remove( theIbis );
+        synchronized( jobSources ) {
+            jobSources.remove( theIbis );
         }
         // This is a good reason to wake up the queue.
         synchronized (queue ) {
             queue.notifyAll();
         }
-    }
-
-    /**
-     * A new ibis has joined the computation.
-     * @param theIbis The ibis that has joined.
-     */
-    void addUnusedNeighbor( IbisIdentifier theIbis )
-    {
-        synchronized( unusedNeighbors ){
-            unusedNeighbors.add( theIbis );
-        }
-        // This is a good reason to wake up the queue.
-        synchronized (queue ) {
-            queue.notifyAll();
-        }
-    }
-
-    /**
-     * Send resign messages to all masters except for the one given here.
-     * @param identifier the master we shouldn't resign from.
-     */
-    public void workOnlyFor( ReceivePortIdentifier identifier )
-    {
-        exclusiveMaster = identifier;
     }
 
     /** Gets a job to execute.
@@ -324,6 +283,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
     public RunJobMessage getJob()
     {
         while( true ) {
+            boolean askForWork = false;
             try {
                 synchronized( queue ) {
                     if( queue.isEmpty() ) {
@@ -335,10 +295,17 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
                             // indicate that there won't be further jobs.
                             break;
                         }
-                        if( !findNewMaster() ) {
+                        boolean areJobSources;
+                        synchronized( jobSources ){
+                            areJobSources = !jobSources.isEmpty();
+                        }
+                        if( areJobSources ){
+                            askForWork = true;
+                        }
+                        else {
                             // There was no new master to subscribe to.
                             if( Settings.traceWorkerProgress ) {
-                        	System.out.println( "Worker: waiting for new jobs in queue" );
+                                System.out.println( "Worker: waiting for new jobs in queue" );
                             }
                             queue.wait();
                         }
@@ -353,7 +320,9 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
                         }
                         return job;
                     }
-
+                }
+                if( askForWork ){
+                    findNewMaster();
                 }
             }
             catch( InterruptedException e ){
@@ -384,7 +353,9 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
             if( Settings.writeTrace ) {
                 Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
             }
-            sendPort.send( msg, jobMessage.getResultPort() );
+            final ReceivePortIdentifier master = jobMessage.getResultPort();
+            sendPort.send( msg, master );
+            addJobSource( master.ibisIdentifier() );
             if( Settings.traceWorkerProgress ) {
         	System.out.println( "Completed job "  + jobMessage );
             }

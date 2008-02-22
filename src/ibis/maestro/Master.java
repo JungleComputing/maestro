@@ -24,11 +24,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final LinkedList<Job> queue = new LinkedList<Job>();
     private Hashtable<JobType,JobInfo> jobInfoTable = new Hashtable<JobType, JobInfo>();
 
-    /** Targets of outstanding ping messages. */
-    private final LinkedList<PingTarget> pingTargets = new LinkedList<PingTarget>();
     private CompletionListener completionListener;
     private boolean stopped = false;
-    private long nextJobNo = 0;
+    private long nextJobId = 0;
     private long incomingJobCount = 0;
     private long handledJobCount = 0;
     private long workerCount = 0;
@@ -67,59 +65,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             Globals.log.reportProgress( "Received a job result " + result );
         }
         synchronized( workers ) {
-            workers.registerJobResult( receivePort.identifier(), result, completionListener );
+            workers.registerJobResult( result, completionListener );
             workers.notifyAll();
         }
         synchronized( queue ){
             queue.notifyAll();
             handledJobCount++;
-        }
-    }
-
-    /**
-     * A new worker has sent a reply to our ping message.
-     * The reply contains the performance of the worker on a benchmark,
-     * and the time it took to complete the benchmark (the two are
-     * not necessarily related).
-     * From the round-trip time of our ping request we compute communication
-     * overhead. Together all this information gives us a reasonable guess
-     * for the performance of the new worker relative to our other workers.
-     *
-     * @param m The message to handle.
-     */
-    private void handlePingReplyMessage( PingReplyMessage m )
-    {
-        final long receiveTime = System.nanoTime();
-        long pingTime = 0L;
-        ArrayList<JobType> allowedTypes;
-
-        // First, search for the worker in our list of
-        // outstanding pings.
-        ReceivePortIdentifier worker = m.source;
-        synchronized( pingTargets ){
-            PingTarget t = null;
-
-            for( PingTarget w: pingTargets ){
-                if( w.hasIdentifier( worker ) ){
-                    t = w;
-                }
-            }
-            if( t == null ){
-                Globals.log.reportInternalError( "Worker " + worker + " replied to a ping that wasn't sent: ignoring" );
-                return;
-            }
-            pingTime = receiveTime-t.getSendTime();
-            allowedTypes = t.allowedTypes;
-            pingTargets.remove( t );
-        }
-        synchronized( workers ){
-            workerCount++;
-            workers.subscribeWorker( receivePort.identifier(), worker, allowedTypes );
-            System.out.println( "A new worker " + worker + " has arrived" );
-            workers.notifyAll();
-        }
-        synchronized( queue ) {
-            queue.notifyAll();
         }
     }
 
@@ -131,50 +82,37 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private void handleWorkRequestMessage( WorkRequestMessage m )
     {
         ReceivePortIdentifier worker = m.source;
+        ArrayList<JobType> allowedTypes = m.allowedTypes;
         long now = System.nanoTime();
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Received work request message " + m + " from worker " + worker + " at " + Service.formatNanoseconds(now) );
         }
-        PingTarget t = new PingTarget( worker, now, m.allowedTypes );
-        synchronized( pingTargets ){
-            pingTargets.add( t );
+        if( !workers.isKnownWorker( worker ) ){
+            workers.subscribeWorker(receivePort.identifier(), worker );
         }
-        if( Settings.writeTrace ) {
-            // Send a message to the new worker to synchronize clocks.
-            // This message is only sent if we are tracing, because only the
-            // tracer is interested.
-            MasterTimeSyncMessage syncmsg = new MasterTimeSyncMessage( receivePort.identifier() );
-            if( Settings.traceWorkerProgress ){
-                Globals.log.reportProgress( "Sending time sync message " + syncmsg + " to worker " + worker );
-            }            
-            try {
-                Globals.tracer.traceSentMessage( syncmsg, worker );
-                sendPort.send( syncmsg, worker );
-            }
-            catch( IOException x ){
-                synchronized( pingTargets ){
-                    pingTargets.remove( t );
+        workers.registerWorkerJobTypes( worker, allowedTypes );
+        synchronized( queue ){
+            for( Job e: queue ){
+                if( allowedTypes.isEmpty() ){
+                    // Apparantely, we've handled all types of job this worker knows about.
+                    break;
                 }
-                Globals.log.reportError( "Cannot send ping message to worker " + worker );
-                x.printStackTrace( Globals.log.getPrintStream() );
+                JobType jobType = e.getType();
+
+                int ix = allowedTypes.indexOf( jobType );
+                if( ix>=0 ){
+                    // We're in need of a worker for this type of job; increase the allowance
+                    // of this worker.
+                    workers.incrementAllowance(worker, jobType);
+
+                    // Now remove it from the list to make sure other jobs of the same
+                    // type don't trigger this again.
+                    allowedTypes.remove( ix );
+                }
             }
         }
-        PingMessage msg = new PingMessage( receivePort.identifier() );
-        if( Settings.traceWorkerProgress ){
-            Globals.log.reportProgress( "Sending ping message " + msg + " to worker " + worker );
-        }            
-        try {
-            if( Settings.writeTrace ) {
-                Globals.tracer.traceSentMessage( msg, worker );
-            }
-            sendPort.send( msg, worker );
-        }
-        catch( IOException x ){
-            synchronized( pingTargets ){
-                pingTargets.remove( t );
-            }
-            Globals.log.reportError( "Cannot send ping message to worker " + worker );
-            x.printStackTrace( Globals.log.getPrintStream() );
+        synchronized (workers ) {
+            workers.notifyAll();            
         }
     }
 
@@ -206,11 +144,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             WorkRequestMessage m = (WorkRequestMessage) msg;
 
             handleWorkRequestMessage( m );
-        }
-        else if( msg instanceof PingReplyMessage ) {
-            PingReplyMessage m = (PingReplyMessage) msg;
-
-            handlePingReplyMessage( m );
         }
         else if( msg instanceof WorkerTimeSyncMessage ) {
             // Ignore this message, the fact that it was traced is enough.
@@ -282,20 +215,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     {
         completionListener = l;
     }
-
-    /**
-     * Returns true iff there are jobs in the queue.
-     * @return Are there jobs in the queue?
-     */
-    private boolean areWaitingJobs()
-    {
-        boolean res;
-
-        synchronized( queue ) {
-            res = !queue.isEmpty();
-        }
-        return res;
-    }
     
     /**
      * Returns true iff this master is in stopped mode, has no
@@ -332,11 +251,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	// Since the queue is empty, we can only wait for new jobs.
 	try {
 	    // There is nothing to do; Wait for new queue entries.
+	    if( Settings.traceMasterProgress ){
+	        System.out.println( "Master: waiting for new jobs in queue" );
+	    }
 	    synchronized( queue ){
-		if( Settings.traceMasterProgress ){
-		    System.out.println( "Master: waiting for new jobs in queue" );
-		}
-		queue.wait();
+	        queue.wait();
 	    }
 	} catch (InterruptedException e) {
 	    // Not interested.
@@ -344,63 +263,30 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	return true;
     }
 
-    private boolean submitJobs( WorkerSelector sel )
+    private boolean submitJobs()
     {
 	boolean res = true;
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Next round for master" );
 	}
-	if( areWaitingJobs() ) {
-	    submitWaitingJobs( sel );
-	}
-	else {
-	    res = waitForNewJobs();
-	}
+	submitWaitingJobs();
+	res = waitForNewJobs();
 	return res; // We're still busy.
-    }
-
-    /**
-     * Given a list of workers and a job type, return the index in workers of the
-     * one with the fastest submission frequency.
-     * @param readyWorkers The list of workers.
-     * @param jobType The job type.
-     * @return The index in <code>workers</code> of the fastest worker for this job type, or
-     *         -1 if none of the workers can handle this job.
-     */
-    private int selectBestWorker( ArrayList<WorkerInfo> readyWorkers, JobType jobType ) {
-        int best = -1;
-        long bestInterval = Long.MAX_VALUE;
-
-        System.out.println( "Selecting best of " + readyWorkers.size() + " workers for job of type " + jobType );
-        for( int ix=0; ix<readyWorkers.size(); ix++ ) {
-            WorkerInfo wi = readyWorkers.get( ix );
-            long val = wi.getSubmissionInterval( jobType );
-
-            if( val<bestInterval ) {
-                bestInterval = val;
-                best = ix;
-            }
-        }
-        System.out.println( "Selected worker " + best + " for job of type " + jobType );
-        return best;
     }
 
     /**
      * We know there are jobs in the queue. Try to submit as many as possible,
      * but make sure we don't over-fill the queue of the workers too much.
      * Once we submit them we cannot get them back.
-     * @param sel The worker administration class to use. Passed in to
-     *            prevent creating a new one for every iteration.
      */
-    private void submitWaitingJobs( WorkerSelector sel )
+    private void submitWaitingJobs()
     {
         long now = System.nanoTime();
-        ArrayList<WorkerInfo> readyWorkers = workers.getReadyWorkers( now );
         
-        while( readyWorkers.size()>0 ) {
+        while( true ) {
             // Try to find a job for each worker, best worker first.
             int jobToRun = -1;
-            int workerToRun = -1;
+            WorkerInfo worker = null;
 
             synchronized( queue ) {
                 // This is a pretty big operation to do in one atomic
@@ -408,79 +294,56 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 int ix = queue.size();
                 while( ix>0 ) {
                     ix--;
-                    
+
                     Job job = queue.get( ix );
                     JobType jobType = job.getType();
-                    int worker = selectBestWorker( readyWorkers, jobType );
-                    if( worker>=0 ) {
+                    worker = workers.selectBestWorker( jobType );
+                    if( worker != null ) {
                         // We have a job that we can run.
-                        workerToRun = worker;
                         jobToRun = ix;
                         break;
                     }
                 }
             }
-            if( jobToRun>=0 ) {
-                Job job;
-                long jobId;
-                WorkerInfo worker = readyWorkers.remove( workerToRun );
-
-                synchronized( queue ) {
-                    job = queue.remove( jobToRun );
-                    jobId = nextJobNo++;
-                }
-                JobType jobType = job.getType();
-                JobInfo jobInfo = jobInfoTable.get( jobType );
-                if( jobInfo == null ) {
-                    jobInfo = new JobInfo( jobType );
-                    jobInfoTable.put( jobType, jobInfo );
-                }
-                if( Settings.traceFastestWorker ) {
-                    System.out.println( "Selected worker " + worker + " as best node for job " + job );
-                }
-                RunJobMessage msg = new RunJobMessage( job, receivePort.identifier(), jobId );
-                synchronized( workers ) {
-                    worker.registerJobStart( job, jobInfo, jobId, now );
-                }
-                try {
-                    if( Settings.writeTrace ) {
-                        Globals.tracer.traceSentMessage( msg, worker.getPort() );
-                    }
-                    long len = sendPort.send( msg, worker.getPort() );
-                    jobInfo.updateSendSize( len );
-                } catch (IOException e) {
-                    // Try to put the paste back in the tube.
-                    synchronized( queue ){
-                        queue.add( job );
-                    }
-                    worker.retractJob( jobId );
-                    Globals.log.reportError( "Could not send job to " + worker + ": putting toothpaste back in the tube" );
-                    e.printStackTrace();
-                    // We don't try to roll back job start time, since the worker
-                    // may in fact be busy.
-                }
+            if( worker == null ){
+                break;
             }
-        }
-        long sleepInterval = workers.getNextSubmissionTime()-now;
-        long sleepMS = (sleepInterval+500000)/1000000;
+            Job job;
+            long jobId;
 
-        if( sleepMS>0 ) {
+            synchronized( queue ) {
+                job = queue.remove( jobToRun );
+                jobId = nextJobId++;
+            }
+            JobType jobType = job.getType();
+            JobInfo jobInfo = jobInfoTable.get( jobType );
+            if( jobInfo == null ) {
+                jobInfo = new JobInfo( jobType );
+                jobInfoTable.put( jobType, jobInfo );
+            }
+            if( Settings.traceFastestWorker ) {
+                System.out.println( "Selected worker " + worker + " as best for job " + job );
+            }
+            RunJobMessage msg = new RunJobMessage( job, receivePort.identifier(), jobId );
+            synchronized( workers ) {
+                worker.registerJobStart( job, jobInfo, jobId, now );
+            }
             try {
-                // There is nothing to do; Wait for workers to complete
-                // or new workers.
-                synchronized( workers ){
-                    if( Settings.traceMasterProgress ){
-                        System.out.println( "Master: waiting " + Service.formatNanoseconds( sleepInterval ) + " for a ready worker" );
-                    }
-                    workers.wait( sleepMS );
+                if( Settings.writeTrace ) {
+                    Globals.tracer.traceSentMessage( msg, worker.getPort() );
                 }
-            } catch (InterruptedException e) {
-                // Not interested.
-            }        		
-        }
-        else {
-            if( Settings.traceMasterProgress ){
-                System.out.println( "It is useless to go to sleep for " + Service.formatNanoseconds( sleepInterval ) );
+                long len = sendPort.send( msg, worker.getPort() );
+                jobInfo.updateSendSize( len );
+            } catch (IOException e) {
+                // Try to put the paste back in the tube.
+                synchronized( queue ){
+                    queue.add( job );
+                }
+                worker.retractJob( jobId );
+                Globals.log.reportError( "Could not send job to " + worker + ": putting toothpaste back in the tube" );
+                e.printStackTrace();
+                // We don't try to roll back job start time, since the worker
+                // may in fact be busy.
             }
         }
     }
@@ -489,14 +352,13 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     @Override
     public void run()
     {
-	WorkerSelector sel = new WorkerSelector();
 	boolean busy = true;
 
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Starting master thread" );
 	}
 	while( busy ){
-	    busy = submitJobs( sel );
+	    busy = submitJobs( );
 	}
         try {
             receivePort.close();
@@ -559,6 +421,27 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
     }
 
+    /**
+     * Wait until the work queue is empty.
+     * 
+     * Used to make sure we drain the work queue as efficiently as possible
+     * before we shut down the master.
+     */
+    public void waitForEmptyQueue() {
+        while( true ) {
+            synchronized( queue ) {
+                if( queue.isEmpty() ) {
+                    return;
+                }
+                try {
+                    queue.wait();
+                } catch (InterruptedException e) {
+                    // Ignore.
+                }
+            }
+        }
+    }
+
     /** Print some statistics about the entire master run. */
     public void printStatistics()
     {
@@ -576,4 +459,5 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     public void reportResult(Job job, JobProgressValue value) {
 	System.err.println( "FIXME: implement reportResult() job=" + job + " value=" + value );
     }
+
 }

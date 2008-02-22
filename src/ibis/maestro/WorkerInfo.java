@@ -13,9 +13,6 @@ class WorkerInfo {
     /** The receive port of this worker. */
     final ReceivePortIdentifier port;
 
-    /** Which types of job does it allow? */
-    final ArrayList<JobType> allowedTypes;
-
     /** The active jobs of this worker. */
     private final ArrayList<ActiveJob> activeJobs = new ArrayList<ActiveJob>();
 
@@ -31,10 +28,9 @@ class WorkerInfo {
         return "Worker " + port;
     }
 
-    WorkerInfo( ReceivePortIdentifier port, ArrayList<JobType> allowedTypes )
+    WorkerInfo( ReceivePortIdentifier port )
     {
         this.port = port;
-        this.allowedTypes = allowedTypes;
     }
 
     boolean hasId( ReceivePortIdentifier id )
@@ -80,7 +76,7 @@ class WorkerInfo {
      * @param result The job result message that tells about this job.
      * @param completionListener A completion listener to be notified.
      */
-    public void registerJobResult( ReceivePortIdentifier master, JobResultMessage result, CompletionListener completionListener )
+    public void registerJobResult( JobResultMessage result, CompletionListener completionListener )
     {
         final long id = result.jobId;    // The identifier of the job, as handed out by us.
 
@@ -112,7 +108,7 @@ class WorkerInfo {
 
         ActiveJob e = searchQueueEntry( id );
         if( e == null ) {
-            Globals.log.reportInternalError( "ignoring reported result from job with unknown id " + id );
+            Globals.log.reportInternalError( "Master " + master + ": ignoring reported result from job with unknown id " + id );
             return;
         }
         long now = System.nanoTime();
@@ -121,9 +117,9 @@ class WorkerInfo {
         synchronized( activeJobs ){
             activeJobs.remove( e );
         }
-        e.workerJobInfo.registerJobCompleted( this, master, result, newRoundTripTime );
+        e.workerJobInfo.registerJobCompleted( this, master, newRoundTripTime );
         if( Settings.traceMasterProgress ){
-            System.out.println( "Master: retired job " + e );
+            System.out.println( "Master " + master + ": retired job " + e + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripTime ) );
         }
     }
 
@@ -201,15 +197,32 @@ class WorkerInfo {
      */
     public long getRoundTripInterval( JobType jobType )
     {
-        // FIXME: enable this again.
-        //if( !allowedTypes.contains( jobType ) ) {
-        //    return -1;
-        //}
         WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
         if( workerJobInfo == null ) {
-            registerJobType( jobType );
-            workerJobInfo = workerJobInfoTable.get( jobType );           
+            System.err.println( "Cannot get round-trip interval for unregistered job type " + jobType );
+            return -1;
         }
-        return workerJobInfo.getSubmissionInterval();
+        return workerJobInfo.getRoundTripInterval();
+    }
+
+    /** Increments the maximal number of outstanding jobs for this worker. */
+    public void incrementAllowance( JobType jobType ) {
+        WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
+        if( workerJobInfo == null ) {
+            System.err.println( "Cannot increment allowance for unregistered job type " + jobType );
+            return;
+        }
+        workerJobInfo.incrementAllowance();
+    }
+
+    /** Registers that the worker can support the given types. */
+    public void updateAllowedTypes(ArrayList<JobType> allowedTypes )
+    {
+        for( JobType t: allowedTypes ){
+            WorkerJobInfo workerJobInfo = workerJobInfoTable.get( t );
+            if( workerJobInfo == null ) {
+                registerJobType( t );
+            }
+        }
     }
 }
