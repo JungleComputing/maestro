@@ -1,4 +1,4 @@
-package ibis.maestro;
+ package ibis.maestro;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;

@@ -30,13 +30,17 @@ public class ReportReceiver implements Serializable {
     }
 
     /**
-     * 
+     * Returns the port the report should be sent to.
      * @return The port to send the result to.
      */
     public ReceivePortIdentifier getPort() {
         return port;
     }
 
+    /** Returns the identifier of the job this report is for.
+     * 
+     * @return The identifier.
+     */
     public long getId() {
         return id;
     }

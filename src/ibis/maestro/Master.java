@@ -5,9 +5,9 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
+import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.Hashtable;
-import java.util.LinkedList;
 
 /**
  * A master in the Maestro flow graph framework.
@@ -21,7 +21,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final WorkerList workers = new WorkerList();
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
-    private final LinkedList<Job> queue = new LinkedList<Job>();
+    private final AbstractList<Job> queue = new ArrayList<Job>();
     private Hashtable<JobType,JobInfo> jobInfoTable = new Hashtable<JobType, JobInfo>();
 
     private boolean stopped = false;
@@ -31,6 +31,18 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private long workerCount = 0;
     private final long startTime;
     private long stopTime = 0;
+
+    /** Creates a new master instance.
+     * @param ibis The Ibis instance this master belongs to.
+     * @throws IOException Thrown if the master cannot be created.
+     */
+    public Master( Ibis ibis ) throws IOException
+    {
+        super( "Master" );
+        sendPort = new PacketSendPort<MasterMessage>( ibis );
+        receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
+        receivePort.enable();		// We're open for business.
+        startTime = System.nanoTime();    }
 
     private void unsubscribeWorker( ReceivePortIdentifier worker )
     {
@@ -72,7 +84,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             Globals.log.reportProgress( "Received work request message " + m + " from worker " + worker + " at " + Service.formatNanoseconds(now) );
         }
         if( !workers.isKnownWorker( worker ) ){
-            workers.subscribeWorker(receivePort.identifier(), worker );
+            workers.subscribeWorker( receivePort.identifier(), worker );
         }
         workers.registerWorkerJobTypes( worker, allowedTypes );
         synchronized( queue ){
@@ -87,7 +99,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 if( ix>=0 ){
                     // We're in need of a worker for this type of job; increase the allowance
                     // of this worker.
-                    workers.incrementAllowance(worker, jobType);
+                    workers.incrementAllowance( worker, jobType );
 
                     // Now remove it from the list to make sure other jobs of the same
                     // type don't trigger this again.
@@ -136,18 +148,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             Globals.log.reportInternalError( "the master should handle message of type " + msg.getClass() );
         }
     }
-
-    /** Creates a new master instance.
-     * @param ibis The Ibis instance this master belongs to.
-     * @throws IOException Thrown if the master cannot be created.
-     */
-    public Master( Ibis ibis ) throws IOException
-    {
-        super( "Master" );
-        sendPort = new PacketSendPort<MasterMessage>( ibis );
-        receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
-        receivePort.enable();		// We're open for business.
-        startTime = System.nanoTime();    }
 
     synchronized void setStopped()
     {
@@ -206,129 +206,126 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         return workersIdle && queueEmpty;
     }
 
-    private boolean waitForNewJobs()
+    /** Keep submitting jobs until the queue is empty.
+     * @return True iff we want to keep running.
+     */
+    private boolean submitAllJobs()
     {
-	// There are no jobs in the queue.
-	if( isFinished() ){
-	    // No jobs, and we are stopped; don't try to send new jobs.
-	    return false;   // We're no longer busy.
-	}
-	if( Settings.traceMasterProgress ){
-	    System.out.println( "Nothing in the queue; waiting" );
-	}
-	// Since the queue is empty, we can only wait for new jobs.
-	try {
-	    // There is nothing to do; Wait for new queue entries.
-	    if( Settings.traceMasterProgress ){
-	        System.out.println( "Master: waiting for new jobs in queue" );
-	    }
-	    synchronized( queue ){
-                if( queue.isEmpty() ){
-                    queue.wait();
-                }
-	    }
-	} catch (InterruptedException e) {
-	    // Not interested.
-	}
-	return true;
-    }
-
-    private boolean submitJobs()
-    {
-	boolean res = true;
+	boolean keepRunning = true;
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Next round for master" );
 	}
-	submitWaitingJobs();
-	res = waitForNewJobs();
-	return res; // We're still busy.
-    }
+	long now = System.nanoTime();
 
-    /**
-     * We know there are jobs in the queue. Try to submit as many as possible,
-     * but make sure we don't over-fill the queue of the workers too much.
-     * Once we submit them we cannot get them back.
-     */
-    private void submitWaitingJobs()
-    {
-        long now = System.nanoTime();
-        
-        while( true ) {
-            // Try to find a job for each worker, best worker first.
-            int jobToRun = -1;
-            WorkerInfo worker = null;
-
-            synchronized( queue ) {
-                // This is a pretty big operation to do in one atomic
-                // 'gulp'. TODO: see if we can break it up somehow.
-                int ix = queue.size();
-                while( ix>0 ) {
-                    ix--;
-
-                    Job job = queue.get( ix );
-                    JobType jobType = job.getType();
-                    worker = workers.selectBestWorker( jobType );
-                    if( worker != null ) {
-                        // We have a job that we can run.
-                        jobToRun = ix;
-                        break;
-                    }
-                }
-            }
-            if( worker == null ){
-                break;
-            }
-            Job job;
-            long jobId;
-
-            synchronized( queue ) {
-                job = queue.remove( jobToRun );
-                jobId = nextJobId++;
-            }
-            JobType jobType = job.getType();
-            JobInfo jobInfo = jobInfoTable.get( jobType );
-            if( jobInfo == null ) {
-                jobInfo = new JobInfo( jobType );
-                jobInfoTable.put( jobType, jobInfo );
-            }
-            if( Settings.traceFastestWorker ) {
-                System.out.println( "Selected worker " + worker + " as best for job " + job );
-            }
-            RunJobMessage msg = new RunJobMessage( job, receivePort.identifier(), jobId );
-            synchronized( workers ) {
-                worker.registerJobStart( job, jobInfo, jobId, now );
-            }
-            try {
-                if( Settings.writeTrace ) {
-                    Globals.tracer.traceSentMessage( msg, worker.getPort() );
-                }
-                sendPort.send( msg, worker.getPort() );
-            }
-            catch (IOException e) {
-                // Try to put the paste back in the tube.
-                synchronized( queue ){
-                    queue.add( job );
-                }
-                worker.retractJob( jobId );
-                Globals.log.reportError( "Could not send job to " + worker + ": putting toothpaste back in the tube" );
-                e.printStackTrace();
-                // We don't try to roll back job start time, since the worker
-                // may in fact be busy.
-            }
-        }
+	while( true ) {
+	    // Try to find a job for each worker, best worker first.
+	    int jobToRun = -1;
+	    WorkerInfo worker = null;
+	
+	    // Try to get some work handed out. We can't just get the first job
+	    // from the queue and hand it out, since there may not be
+	    // a ready worker for that type of job, while there are for the
+	    // type of job of a subsequent job.
+	    //
+	    // FIXME: however, once we've tried to place one instance of
+	    // a job type, it is no use trying to place other instances
+	    // of that same job type. What we now do is potentially
+	    // very expensive.
+	    synchronized( queue ) {
+	        // This is a pretty big operation to do in one atomic
+	        // 'gulp'. TODO: see if we can break it up somehow.
+	        int ix = queue.size();
+	        while( ix>0 ) {
+	            ix--;
+	
+	            Job job = queue.get( ix );
+	            JobType jobType = job.getType();
+	            worker = workers.selectBestWorker( jobType );
+	            if( worker != null ) {
+	                // We have a job that we can run.
+	                jobToRun = ix;
+	                break;
+	            }
+	        }
+	    }
+	    if( worker == null ){
+	        break;
+	    }
+	    Job job;
+	    long jobId;
+	
+	    synchronized( queue ) {
+	        job = queue.remove( jobToRun );
+	        jobId = nextJobId++;
+	    }
+	    JobType jobType = job.getType();
+	    JobInfo jobInfo = jobInfoTable.get( jobType );
+	    if( jobInfo == null ) {
+	        jobInfo = new JobInfo( jobType );
+	        jobInfoTable.put( jobType, jobInfo );
+	    }
+	    if( Settings.traceFastestWorker ) {
+	        System.out.println( "Selected worker " + worker + " as best for job " + job );
+	    }
+	    RunJobMessage msg = new RunJobMessage( job, receivePort.identifier(), jobId );
+	    synchronized( workers ) {
+	        worker.registerJobStart( job, jobInfo, jobId, now );
+	    }
+	    try {
+	        if( Settings.writeTrace ) {
+	            Globals.tracer.traceSentMessage( msg, worker.getPort() );
+	        }
+	        sendPort.send( msg, worker.getPort() );
+	    }
+	    catch (IOException e) {
+	        // Try to put the paste back in the tube.
+	        synchronized( queue ){
+	            queue.add( job );
+	        }
+	        worker.retractJob( jobId );
+	        Globals.log.reportError( "Could not send job to " + worker + ": putting toothpaste back in the tube" );
+	        e.printStackTrace();
+	        // We don't try to roll back job start time, since the worker
+	        // may in fact be busy.
+	    }
+	}
+	// There are no jobs in the queue, or there are no workers ready.
+	if( isFinished() ){
+	    // No jobs, and we are stopped; don't try to send new jobs.
+	    keepRunning = false;   // We're no longer busy.
+	}
+	else {
+	    if( Settings.traceMasterProgress ){
+		System.out.println( "Nothing in the queue; waiting" );
+	    }
+	    // Since the queue is empty, we can only wait for new jobs.
+	    try {
+		// There is nothing to do; Wait for new queue entries.
+		if( Settings.traceMasterProgress ){
+		    System.out.println( "Master: waiting for new jobs in queue" );
+		}
+		synchronized( queue ){
+		    queue.wait();
+		}
+	    } catch (InterruptedException e) {
+		// Not interested.
+	    }
+	    keepRunning = true;
+	}
+	return keepRunning; // We're still busy.
     }
 
     /** Runs this master. */
     @Override
     public void run()
     {
-	boolean busy = true;
+	boolean active = true;  // Not yet stopped?
 
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Starting master thread" );
 	}
-	while( busy ){
-	    busy = submitJobs( );
+	while( active ){
+	    active = submitAllJobs( );
 	}
         try {
             receivePort.close();

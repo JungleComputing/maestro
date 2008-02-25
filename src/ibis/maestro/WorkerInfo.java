@@ -216,7 +216,7 @@ class WorkerInfo {
      * @param allowedTypes The list of allowed types that are allowed by
      *        this worker.
      */
-    public void updateAllowedTypes(ArrayList<JobType> allowedTypes )
+    public void updateAllowedTypes( ArrayList<JobType> allowedTypes )
     {
         for( JobType t: allowedTypes ){
             WorkerJobInfo workerJobInfo = workerJobInfoTable.get( t );
