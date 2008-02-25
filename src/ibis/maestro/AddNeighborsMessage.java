@@ -11,7 +11,7 @@ import ibis.ipl.ReceivePortIdentifier;
 public class AddNeighborsMessage extends MasterMessage {
     /** Contractual obligation */
     private static final long serialVersionUID = 1L;
-    private final IbisIdentifier l[];
+    final IbisIdentifier neighbors[];
 
     /**
      * Constructs a new neighbor update message. 
@@ -21,16 +21,7 @@ public class AddNeighborsMessage extends MasterMessage {
     public AddNeighborsMessage( ReceivePortIdentifier source, IbisIdentifier l[])
     {
 	super( source );
-	this.l = l;
-    }
-
-    /**
-     * Returns the list of neighbors in this message.
-     * @return The list of neighbors.
-     */
-    public IbisIdentifier[] getNeighbors()
-    {
-        return l;
+	this.neighbors = l;
     }
 
     /**
@@ -42,7 +33,7 @@ public class AddNeighborsMessage extends MasterMessage {
         String res = "AddNeighborsMessage[" ;
         boolean first = true;
 
-        for( IbisIdentifier i: l ){
+        for( IbisIdentifier i: neighbors ){
             if( first ){
                 first = false;
             }

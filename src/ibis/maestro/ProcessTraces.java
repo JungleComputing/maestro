@@ -193,7 +193,7 @@ public class ProcessTraces {
 	    String master = getHostName( e.master );
 	    String worker = getHostName( e.worker );
             String info = e.getInfo();
-	    System.out.println( "@" + Service.formatNanoseconds(timeFromStart) + " master " + master + " set worker " + worker + " " + info  );
+	    System.out.println( "@" + Service.formatNanoseconds(timeFromStart) + " master " + master + " set worker " + worker + ' ' + info  );
 	}
 	else if( ev instanceof TransmissionEvent ) {
 	    TransmissionEvent e = (TransmissionEvent) ev;

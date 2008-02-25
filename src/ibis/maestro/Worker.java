@@ -14,7 +14,7 @@ import java.util.Random;
  * @author Kees van Reeuwijk
  */
 @SuppressWarnings("synthetic-access")
-public class Worker extends Thread implements WorkSource, PacketReceiveListener<MasterMessage> {
+public final class Worker extends Thread implements WorkSource, PacketReceiveListener<MasterMessage> {
     private final ArrayList<JobType> allowedTypes;
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
@@ -158,7 +158,7 @@ public class Worker extends Thread implements WorkSource, PacketReceiveListener<
      */
     private void handleAddNeighborsMessage(AddNeighborsMessage msg)
     {
-        addJobSources( msg.getNeighbors() );
+        addJobSources( msg.neighbors );
     }
 
     /**

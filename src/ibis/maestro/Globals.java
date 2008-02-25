@@ -16,8 +16,8 @@ public class Globals {
     public static final String workerReceivePortName = "workerReceivePort";
     
     /** The logger. */
-    public static Logger log = new Logger();
+    public final static Logger log = new Logger();
     
     /** The event tracer. */
-    public static Tracer tracer = new Tracer( new File( "tracefile" ) );
+    public final static Tracer tracer = new Tracer( new File( "tracefile" ) );
 }

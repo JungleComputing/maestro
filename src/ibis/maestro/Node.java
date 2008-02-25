@@ -19,7 +19,7 @@ import java.util.Vector;
  * @author Kees van Reeuwijk
  *
  */
-public class Node implements RegistryEventHandler {
+public final class Node implements RegistryEventHandler {
     final IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE, IbisCapabilities.ELECTIONS_STRICT );
     private final Ibis ibis;
     private final Master master;
@@ -33,7 +33,6 @@ public class Node implements RegistryEventHandler {
     /** The list of maestros in this computation. */
     private static class MaestroInfo {
 	IbisIdentifier ibis;   // The identifier of the maestro.
-	boolean seen;          // Did we already see this maestro?
 
 	MaestroInfo(IbisIdentifier id ) {
 	    this.ibis = id;
@@ -58,7 +57,6 @@ public class Node implements RegistryEventHandler {
 	for( MaestroInfo m: maestros ) {
 	    if( m.ibis.equals( id ) ) {
 	        System.out.println( "Maestro ibis " + id + " was registered" );
-		m.seen = true;
 	    }
 	}
     }

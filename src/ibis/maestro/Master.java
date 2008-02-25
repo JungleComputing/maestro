@@ -223,7 +223,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	        System.out.println( "Master: waiting for new jobs in queue" );
 	    }
 	    synchronized( queue ){
-	        queue.wait();
+                if( queue.isEmpty() ){
+                    queue.wait();
+                }
 	    }
 	} catch (InterruptedException e) {
 	    // Not interested.

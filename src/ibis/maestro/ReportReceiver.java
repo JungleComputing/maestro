@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.io.Serializable;
+
 import ibis.ipl.ReceivePortIdentifier;
 
 /**
@@ -10,7 +12,11 @@ import ibis.ipl.ReceivePortIdentifier;
  *
  * @author Kees van Reeuwijk.
  */
-public class ReportReceiver {
+public class ReportReceiver implements Serializable {
+    /**
+     * 
+     */
+    private static final long serialVersionUID = 415829450459994671L;
     private final ReceivePortIdentifier port;
     private final long id;
 

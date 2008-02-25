@@ -2,10 +2,6 @@
 
 package ibis.maestro;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -19,72 +15,6 @@ import java.text.DecimalFormat;
  */
 public class Service
 {
-
-    /**
-     * Given the path of a file or directory, delete that file or directory, and
-     * any contained files.
-     * 
-     * @param path The path of the file or directory to delete.
-     */
-    public static void delete_directory_tree( File path )
-    {
-        File files[] = path.listFiles();
-
-        if( files != null ){
-        	for( File f: files ){
-                delete_directory_tree( f );
-            }
-        }
-        path.delete();
-    }
-
-    /**
-     * Given a path, make sure that there is a directory there. If Necessary
-     * create it.
-     * 
-     * @param path The path of the directory to ensure is there.
-     */
-    public static void ensure_dir_presence( File path )
-    {
-        path.mkdirs();
-    }
-
-    /**
-     * Given a file <code>f</code> and a string <code>s</code>, create the given file, and fill it
-     * with the text in <code>s</code>.
-     * @param f The file to create.
-     * @param s The contents of the file.
-     * @throws IOException
-     */
-    public static void writeFile( File f, String s ) throws IOException
-    {
-    	f.delete();  // First make sure it doesn't exist.
-        FileWriter output = new FileWriter( f );
-        output.write( s );
-        output.close();
-    }
-
-    /**
-     * Given a filename, try to read that file.
-     * @param f The name of the file to read.
-     * @return The contents of the file, or null.
-     */
-    public static String readFile( File f)
-    {
-        final int len = (int) f.length(); 
-        char buf[] = new char[len];
-
-        try {
-            BufferedReader br = new BufferedReader( new FileReader( f ) );
-            br.read( buf, 0, len );
-            br.close();
-        }
-        catch( IOException e ) {
-            return null;
-        }
-        return new String( buf );
-    }
-
     /** Prints the platform version that is used. */
     static String getPlatformVersion()
     {

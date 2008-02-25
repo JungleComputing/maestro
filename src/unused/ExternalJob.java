@@ -103,7 +103,7 @@ public class ExternalJob implements Job {
         try {
             // FIXME: more robust sandbox creation.
             sandbox = new File( "/tmp/sandbox-" + label++ );
-            sandbox.mkdir();
+            boolean res = sandbox.mkdir();
             for( FileContents c: inputFiles ) {
                 c.create( sandbox );
             }
