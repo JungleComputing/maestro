@@ -71,9 +71,9 @@ public final class Node implements RegistryEventHandler {
 
 	while( ix>0 ) {
             ix--;
-	    MaestroInfo m = maestros.get(ix);
-	    if( m.ibis.equals( id )) {
-		maestros.remove(ix);
+	    MaestroInfo m = maestros.get( ix );
+	    if( m.ibis.equals( id ) ) {
+		maestros.remove( ix );
                 System.out.println( "Ibis " + id + " was a maestro" );
 	    }
 	}
@@ -234,6 +234,8 @@ public final class Node implements RegistryEventHandler {
          * for one to terminate, and then the other.
          */
         Service.waitToTerminate( master );
+
+        /** Once the master has stopped, stop the worker. */
         worker.setStopped();
         System.out.println( "Node master has terminated; terminating worker" );
         Service.waitToTerminate( worker );

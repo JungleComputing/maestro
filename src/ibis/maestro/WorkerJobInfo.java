@@ -73,4 +73,14 @@ class WorkerJobInfo {
     {
         maximalOutstandingJobs++;
     }
+
+    /** Since there are no jobs in our work queue, reduce the maximal number of
+     * outstanding jobs.
+     */
+    void reduceAllowance()
+    {
+	int n  = maximalOutstandingJobs-outstandingJobs;
+	
+	maximalOutstandingJobs -= n/2;
+    }
 }

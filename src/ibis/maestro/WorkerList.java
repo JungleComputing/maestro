@@ -51,7 +51,7 @@ public class WorkerList {
      * Remove any workers on that ibis.
      * @param theIbis The ibis that was gone.
      */
-    public void removeWorkers( IbisIdentifier theIbis )
+    public void removeWorker( IbisIdentifier theIbis )
     {
 	synchronized( workers ){
 	    int ix = workers.size();
@@ -149,7 +149,9 @@ public class WorkerList {
             }
         }
         if( Settings.traceFastestWorker ){
-            System.out.println( "Selected worker " + best + " for job of type " + jobType + "; roundTripTime=" + Service.formatNanoseconds( bestInterval ) );
+            if( best != null ) {
+        	System.out.println( "Selected worker " + best + " for job of type " + jobType + "; roundTripTime=" + Service.formatNanoseconds( bestInterval ) );
+            }
         }
         return best;
     }
@@ -190,5 +192,15 @@ public class WorkerList {
             WorkerInfo wi = workers.get( ix );
             wi.updateAllowedTypes( allowedTypes );
         }        
+    }
+
+    /** We don't have work in the queue. Reduce all excessive allowances,
+     * so that they don't come to haunt us once we get more work.
+     */
+    public void reduceAllowances()
+    {
+	for( WorkerInfo wi: workers ) {
+	    wi.reduceAllowances();
+	}
     }
 }

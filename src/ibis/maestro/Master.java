@@ -206,7 +206,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         return workersIdle && queueEmpty;
     }
 
-    /** Keep submitting jobs until the queue is empty.
+    /** Keep submitting jobs until the queue is empty. We occasionally may
+     * have to wait for workers to get ready.
+     * 
      * @return True iff we want to keep running.
      */
     private boolean submitAllJobs()
@@ -216,6 +218,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    System.out.println( "Next round for master" );
 	}
 	long now = System.nanoTime();
+	boolean noWork;
 
 	while( true ) {
 	    // Try to find a job for each worker, best worker first.
@@ -235,6 +238,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	        // This is a pretty big operation to do in one atomic
 	        // 'gulp'. TODO: see if we can break it up somehow.
 	        int ix = queue.size();
+	        noWork = (ix == 0);
 	        while( ix>0 ) {
 	            ix--;
 	
@@ -254,6 +258,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    Job job;
 	    long jobId;
 	
+	    // We have a job and a worker. Submit the job.
 	    synchronized( queue ) {
 	        job = queue.remove( jobToRun );
 	        jobId = nextJobId++;
@@ -261,6 +266,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    JobType jobType = job.getType();
 	    JobInfo jobInfo = jobInfoTable.get( jobType );
 	    if( jobInfo == null ) {
+		// We don't have an entry yet for this job type. Create one.
 	        jobInfo = new JobInfo( jobType );
 	        jobInfoTable.put( jobType, jobInfo );
 	    }
@@ -289,8 +295,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	        // may in fact be busy.
 	    }
 	}
+	if( noWork ) {
+	    workers.reduceAllowances();
+	}
 	// There are no jobs in the queue, or there are no workers ready.
-	if( isFinished() ){
+	if( noWork && isFinished() ){
 	    // No jobs, and we are stopped; don't try to send new jobs.
 	    keepRunning = false;   // We're no longer busy.
 	}
@@ -345,7 +354,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     public void removeIbis( IbisIdentifier theIbis )
     {
         // FIXME: reschedule any outstanding jobs on this ibis.	    
-        workers.removeWorkers( theIbis );
+        workers.removeWorker( theIbis );
     }
 
     /**

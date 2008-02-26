@@ -7,6 +7,7 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.Hashtable;
 
 class WorkerInfo {
@@ -224,5 +225,15 @@ class WorkerInfo {
                 registerJobType( t );
             }
         }
+    }
+
+    /** The queue is empty; don't allow too many outstanding jobs.
+     */
+    public void reduceAllowances() {
+	for (Enumeration<WorkerJobInfo> iterator = workerJobInfoTable.elements(); iterator.hasMoreElements();) {
+	    WorkerJobInfo wji =  iterator.nextElement();
+	    wji.reduceAllowance();
+	    
+	}
     }
 }
