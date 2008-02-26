@@ -78,23 +78,6 @@ public class WorkerList {
 
     /**
      * Register a job result in the info of the worker that handled it.
-     * @param result The job result.
-     * @param completionListener The completion listener that should be notified.
-     */
-    public void registerJobResult( JobResultMessage result, CompletionListener completionListener )
-    {
-	int ix = searchWorker( workers, result.source );
-	if( ix<0 ) {
-	    System.err.println( "Job result from unknown worker " + result.source );
-	    return;
-	}
-	WorkerInfo w = workers.get( ix );
-	w.registerJobResult( result );
-    }
-
-
-    /**
-     * Register a job result in the info of the worker that handled it.
      * @param me Which master am I?
      * @param result The job result.
      */

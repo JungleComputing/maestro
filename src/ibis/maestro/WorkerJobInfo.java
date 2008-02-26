@@ -69,7 +69,7 @@ class WorkerJobInfo {
     /**
      * Increment the maximal number of outstanding jobs for this worker and this type of work.
      */
-    public void incrementAllowance()
+    public synchronized void incrementAllowance()
     {
         maximalOutstandingJobs++;
     }
@@ -77,9 +77,9 @@ class WorkerJobInfo {
     /** Since there are no jobs in our work queue, reduce the maximal number of
      * outstanding jobs.
      */
-    void reduceAllowance()
+    synchronized void reduceAllowance()
     {
-	int n  = maximalOutstandingJobs-outstandingJobs;
+	int n = maximalOutstandingJobs-outstandingJobs;
 	
 	maximalOutstandingJobs -= n/2;
     }

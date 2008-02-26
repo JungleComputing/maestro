@@ -22,6 +22,28 @@ public abstract class TraceEvent implements Serializable, Comparable<TraceEvent>
 	this.time = time;
     }
 
+    @Override
+    public int hashCode() {
+        final int PRIME = 31;
+        int result = 1;
+        result = PRIME * result + (int) (time ^ (time >>> 32));
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        final TraceEvent other = (TraceEvent) obj;
+        if (time != other.time)
+            return false;
+        return true;
+    }
+
     /**
      * Compares this trace event to another.
      * We order the events on their moment of occurrence,
