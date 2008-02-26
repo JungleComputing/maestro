@@ -187,4 +187,16 @@ public class WorkerList {
 	    }
 	}
     }
+
+    /** Print some statistics.
+     * @param master Which master are we talking about.
+     */
+    public void printStats( ReceivePortIdentifier master )
+    {
+	synchronized( workers ) {
+	    for( WorkerInfo wi: workers ) {
+		wi.printStats( master );
+	    }
+	}
+    }
 }

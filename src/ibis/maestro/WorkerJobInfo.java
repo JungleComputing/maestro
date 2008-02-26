@@ -83,4 +83,9 @@ class WorkerJobInfo {
 	
 	maximalOutstandingJobs -= n/2;
     }
+
+    void printStats(ReceivePortIdentifier master,
+	    ReceivePortIdentifier worker) {
+	System.out.println( "Master: " + master + " worker: " + worker + " maximal allowance: " + maximalOutstandingJobs );
+    }
 }

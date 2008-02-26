@@ -84,6 +84,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             Globals.log.reportProgress( "Received work request message " + m + " from worker " + worker + " at " + Service.formatNanoseconds(now) );
         }
         if( !workers.isKnownWorker( worker ) ){
+            workerCount++;
             workers.subscribeWorker( receivePort.identifier(), worker );
         }
         workers.registerWorkerJobTypes( worker, allowedTypes );
@@ -429,6 +430,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         System.out.printf( "Master: # incoming jobs  = %5d\n", incomingJobCount );
         System.out.printf( "Master: # handled jobs   = %5d\n", handledJobCount );
         System.out.println( "Master: run time         = " + Service.formatNanoseconds( workInterval ) );
+        sendPort.printStats( "master send port" );
+        workers.printStats( receivePort.identifier() );
     }
 
     /**

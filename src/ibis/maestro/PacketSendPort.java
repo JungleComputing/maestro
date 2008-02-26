@@ -22,6 +22,10 @@ public class PacketSendPort<T extends Serializable> {
     private final Ibis ibis;
     private static boolean USE_DISCONNECT = false;
     private final SendPort globalport;
+    private long sentBytes = 0;
+    private long sendTime = 0;
+    private long adminTime = 0;
+    private int sentCount = 0;
 
     PacketSendPort( Ibis ibis ) throws IOException
     {
@@ -61,10 +65,23 @@ public class PacketSendPort<T extends Serializable> {
 	    port.close();
 	}
 	long stopTime = System.nanoTime();
+	adminTime += (setupTime-startTime);
+	sendTime += (stopTime-setupTime);
+	sentBytes += len;
+	sentCount++;
 	if( Settings.traceSends ) {
 	    System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) );
 	}
 	return len;
+    }
+    
+    /** Given the name of this port, prints some statistics about this port.
+     * 
+     * @param portname The name of the port.
+     */
+    public void printStats( String portname )
+    {
+	System.out.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " messages; total send time " + Service.formatNanoseconds( sendTime ) + " total setup time " + Service.formatNanoseconds( adminTime ) );
     }
 
     /**
@@ -103,6 +120,10 @@ public class PacketSendPort<T extends Serializable> {
 	if( Settings.traceSends ) {
 	    System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) );
 	}
+	adminTime += (setupTime-startTime);
+	sendTime += (stopTime-setupTime);
+	sentBytes += len;
+	sentCount++;
 	return len;
     }
 

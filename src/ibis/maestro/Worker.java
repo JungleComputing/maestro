@@ -20,6 +20,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
     private CompletionListener completionListener;
+    private ReceivePortIdentifier exclusiveMaster = null;
     private long queueEmptyMoment = 0L;
     private final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
     private final ArrayList<IbisIdentifier> jobSources = new ArrayList<IbisIdentifier>();
@@ -38,6 +39,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to.
+     * @param node The node this worker belongs to.
      * @param master The master that jobs may submit new jobs to.
      * @param allowedTypes The types of job this worker can handle.
      * @param completionListener The listener for job completion reports.
@@ -59,8 +61,8 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         if( Settings.writeTrace ){
             Globals.tracer.traceAlias( master.identifier(), receivePort.identifier() );
         }
-        receivePort.enable();   // We're open for business.
         startTime = System.nanoTime();
+        receivePort.enable();   // We're open for business.
     }
 
     private synchronized boolean isStopped()
@@ -76,6 +78,11 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     {
         return receivePort.identifier();
     }
+    
+    synchronized void setExclusiveMaster( ReceivePortIdentifier port )
+    {
+	exclusiveMaster = port;
+    }
 
     /** Removes and returns a random job source from the list of
      * known job sources. Returns null if the list is empty.
@@ -86,6 +93,11 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     {
         IbisIdentifier res;
 
+        synchronized( this ) {
+            if( exclusiveMaster != null ) {
+        	return null;
+            }
+        }
         synchronized( jobSources ){
             final int size = jobSources.size();
             if( size == 0 ){
@@ -410,6 +422,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         System.out.println( "Worker: run time         = " + Service.formatNanoseconds( workInterval ) );
         System.out.println( "Worker: total work time  = " + Service.formatNanoseconds( workTime ) + String.format( " (%.1f%%)", workPercentage )  );
         System.out.println( "Worker: total idle time  = " + Service.formatNanoseconds( idleTime ) + String.format( " (%.1f%%)", idlePercentage ) );
+        sendPort.printStats( "worker send port" );
         if( jobCount>0 ) {
             System.out.println( "Worker: queue time/job   = " + Service.formatNanoseconds( queueTime/jobCount ) );
             System.out.println( "Worker: compute time/job = " + Service.formatNanoseconds( workTime/jobCount ) );

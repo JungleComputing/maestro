@@ -209,9 +209,14 @@ public final class Node implements RegistryEventHandler {
 	master.submit( null, j );
     }
     
+    /** Set this node to the stopped state.
+     * This does not mean that the node stops immediately,
+     * but it does mean the master and worker try to wind down the work.
+     */
     public void setStopped()
     {
         master.setStopped();
+        worker.setExclusiveMaster( master.identifier() );
     }
 
     /** Finish this node. */

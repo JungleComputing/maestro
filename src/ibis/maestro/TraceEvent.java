@@ -22,6 +22,10 @@ public abstract class TraceEvent implements Serializable, Comparable<TraceEvent>
 	this.time = time;
     }
 
+    /**
+     * Returns a hash code for this value.
+     * @return The hash code.
+     */
     @Override
     public int hashCode() {
         final int PRIME = 31;
@@ -30,6 +34,10 @@ public abstract class TraceEvent implements Serializable, Comparable<TraceEvent>
         return result;
     }
 
+    /**
+     * @param obj The other object to compare to.
+     * @return True iff we consider this and another object equal.
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj)
