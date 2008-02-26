@@ -281,7 +281,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	        if( Settings.writeTrace ) {
 	            Globals.tracer.traceSentMessage( msg, worker.getPort() );
 	        }
-	        sendPort.send( msg, worker.getPort() );
+	        sendPort.send( msg, worker.getPort(), Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	    }
 	    catch (IOException e) {
 	        // Try to put the paste back in the tube.
@@ -446,7 +446,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             if( Settings.writeTrace ) {
                 Globals.tracer.traceSentMessage( msg, port );
             }
-            sendPort.send( msg, port );
+            sendPort.send( msg, port, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         }
         catch (IOException e) {
             e.printStackTrace( System.err );

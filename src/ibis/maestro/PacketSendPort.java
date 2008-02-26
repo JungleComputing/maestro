@@ -33,26 +33,27 @@ public class PacketSendPort<T extends Serializable> {
      * Sends the given data to the given port.
      * @param data The data to send.
      * @param receiver The port to send it to.
+     * @param timeout The timeout of the transmission.
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
-    public long send( T data, ReceivePortIdentifier receiver ) throws IOException
+    public long send( T data, ReceivePortIdentifier receiver, int timeout ) throws IOException
     {
 	long len;
 
 	long startTime = System.nanoTime();
 	long setupTime;
 	if( USE_DISCONNECT ) {
-	    globalport.connect(receiver);
+	    globalport.connect( receiver, timeout, true  );
 	    WriteMessage msg = globalport.newMessage();
 	    setupTime = System.nanoTime();
 	    msg.writeObject( data );
 	    len = msg.finish();
-	    globalport.disconnect(receiver);
+	    globalport.disconnect( receiver );
 	}
 	else {
 	    SendPort port = ibis.createSendPort( portType );
-	    port.connect( receiver );
+	    port.connect( receiver, timeout, true );
 	    WriteMessage msg = port.newMessage();
 	    setupTime = System.nanoTime();
 	    msg.writeObject( data );
@@ -71,17 +72,18 @@ public class PacketSendPort<T extends Serializable> {
      * @param data The data to send.
      * @param receiver The port to send it to.
      * @param portname The name of the port to send to.
+     * @param timeout The timeout on the port.
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
-    public long send( T data, IbisIdentifier receiver, String portname ) throws IOException
+    public long send( T data, IbisIdentifier receiver, String portname, int timeout ) throws IOException
     {
 	long len;
 
 	long startTime = System.nanoTime();
 	long setupTime;
 	if( USE_DISCONNECT ) {
-	    ReceivePortIdentifier rp = globalport.connect( receiver, portname );
+	    ReceivePortIdentifier rp = globalport.connect( receiver, portname, timeout, true );
 	    WriteMessage msg = globalport.newMessage();
 	    setupTime = System.nanoTime();
 	    msg.writeObject( data );
@@ -90,7 +92,7 @@ public class PacketSendPort<T extends Serializable> {
 	}
 	else {
 	    SendPort port = ibis.createSendPort(portType);
-	    port.connect( receiver, portname );
+	    port.connect( receiver, portname, timeout, true );
 	    WriteMessage msg = port.newMessage();
 	    setupTime = System.nanoTime();
 	    msg.writeObject( data );

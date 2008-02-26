@@ -7,6 +7,14 @@ package ibis.maestro;
  *
  */
 public class Settings {
+    // Timeout values.
+    
+    /** Work request timeout in ms on optional communication. */
+    public static final int OPTIONAL_COMMUNICATION_TIMEOUT = 4000;
+    
+    /** Messate transmission timeout in ms on essential communications. */
+    public static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 60000;
+
     // Debugging flags.
     
     /**

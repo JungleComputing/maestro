@@ -143,7 +143,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
                 // FIXME: compute a receive port identifier for this one.
                 Globals.tracer.traceSentMessage( msg, null );
             }
-            sendPort.send( msg, m, Globals.masterReceivePortName );
+            sendPort.send( msg, m, Globals.masterReceivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
         }
         catch( IOException x ){
             Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
@@ -207,7 +207,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             Globals.tracer.traceSentMessage( m, receivePort.identifier() );
         }
         try {
-            sendPort.send( m, master );
+            sendPort.send( m, master, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
         }
         catch( IOException x ){
             Globals.log.reportError( "Cannot send time sync reply to master " + master );
@@ -372,7 +372,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
                 Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
             }
             final ReceivePortIdentifier master = jobMessage.getResultPort();
-            sendPort.send( msg, master );
+            sendPort.send( msg, master, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
             addJobSource( master.ibisIdentifier() );
             if( Settings.traceWorkerProgress ) {
         	System.out.println( "Completed job "  + jobMessage );
