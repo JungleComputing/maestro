@@ -121,16 +121,15 @@ public class WorkerList {
         WorkerInfo best = null;
         long bestInterval = Long.MAX_VALUE;
 
-        if( Settings.traceFastestWorker ){
-            System.out.println( "Selecting best of " + workers.size() + " workers for job of type " + jobType );
-        }
-        for( WorkerInfo wi: workers ){
-            long val = wi.getRoundTripInterval( jobType );
-            if( val<bestInterval ) {
-                bestInterval = val;
-                best = wi;
-            }
-        }
+	synchronized( workers ){
+	    for( WorkerInfo wi: workers ){
+		long val = wi.getRoundTripInterval( jobType );
+		if( val<bestInterval ) {
+		    bestInterval = val;
+		    best = wi;
+		}
+	    }
+	}
         if( Settings.traceFastestWorker ){
             if( best != null ) {
         	System.out.println( "Selected worker " + best + " for job of type " + jobType + "; roundTripTime=" + Service.formatNanoseconds( bestInterval ) );
@@ -182,8 +181,10 @@ public class WorkerList {
      */
     public void reduceAllowances()
     {
-	for( WorkerInfo wi: workers ) {
-	    wi.reduceAllowances();
+	synchronized( workers ){
+	    for( WorkerInfo wi: workers ) {
+		wi.reduceAllowances();
+	    }
 	}
     }
 }

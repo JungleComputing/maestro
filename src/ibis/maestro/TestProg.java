@@ -8,7 +8,7 @@ import java.util.ArrayList;
  *
  */
 public class TestProg {
-    private static final int JOBCOUNT = 100;
+    private static final int JOBCOUNT = 20000;
 
     private static class Listener implements CompletionListener
     {
@@ -20,7 +20,7 @@ public class TestProg {
 	 */
 	@Override
 	public void jobCompleted( Node node, long id, JobProgressValue result ) {
-	    System.out.println( "result is " + result );
+	    //System.out.println( "result is " + result );
             jobsCompleted++;
             if( jobsCompleted>=JOBCOUNT ){
                 node.setStopped();
