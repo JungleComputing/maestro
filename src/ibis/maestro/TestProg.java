@@ -12,14 +12,19 @@ public class TestProg {
 
     private static class Listener implements CompletionListener
     {
+        int jobsCompleted = 0;
 
 	/** Handle the completion of job 'j': the result is 'result'.
 	 * @param id The job that was completed.
 	 * @param result The result of the job.
 	 */
 	@Override
-	public void jobCompleted(long id, JobProgressValue result ) {
-	    //System.out.println( "Job " + j + ": result is " + result );
+	public void jobCompleted( Node node, long id, JobProgressValue result ) {
+	    System.out.println( "result is " + result );
+            jobsCompleted++;
+            if( jobsCompleted>=JOBCOUNT ){
+                node.setStopped();
+            }
 	}
 	
     }
@@ -40,11 +45,8 @@ public class TestProg {
 		AdditionJob j = new AdditionJob( 12*i, watcher  );
         	node.submit( j );
             }
-            node.finish();
         }
-        else {
-            node.waitToTerminate();
-        }
+        node.waitToTerminate();
         Globals.tracer.close();
         System.out.println( "Test program has ended" );
     }

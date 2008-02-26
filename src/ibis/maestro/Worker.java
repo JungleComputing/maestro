@@ -15,6 +15,7 @@ import java.util.Random;
  */
 @SuppressWarnings("synthetic-access")
 public final class Worker extends Thread implements WorkSource, PacketReceiveListener<MasterMessage> {
+    private final Node node;
     private final ArrayList<JobType> allowedTypes;
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
@@ -42,9 +43,10 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      * @param completionListener The listener for job completion reports.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis, Master master, ArrayList<JobType> allowedTypes, CompletionListener completionListener ) throws IOException
+    public Worker( Ibis ibis, Node node, Master master, ArrayList<JobType> allowedTypes, CompletionListener completionListener ) throws IOException
     {
         super( "Worker" );   // Create a thread with a name.
+        this.node = node;
         this.allowedTypes = allowedTypes;
         this.completionListener = completionListener;
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
@@ -192,7 +194,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             Globals.log.reportProgress( "Received a job result " + result );
         }
         if( completionListener != null ) {
-            completionListener.jobCompleted( result.jobId, result.result );
+            completionListener.jobCompleted( node, result.jobId, result.result );
         }
     }
 

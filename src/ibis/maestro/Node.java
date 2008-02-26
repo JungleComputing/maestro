@@ -197,7 +197,7 @@ public final class Node implements RegistryEventHandler {
 	}
         master = new Master( ibis );
         master.start();
-        worker = new Worker( ibis, master, allowedTypes, listener );
+        worker = new Worker( ibis, this, master, allowedTypes, listener );
         worker.start();
         registry.enableEvents();
         master.waitForSubscription( worker.identifier() );
@@ -214,6 +214,11 @@ public final class Node implements RegistryEventHandler {
 	master.submit( null, j );
     }
     
+    public void setStopped()
+    {
+        master.setStopped();
+    }
+
     /** Finish this node. */
     public void finish()
     {

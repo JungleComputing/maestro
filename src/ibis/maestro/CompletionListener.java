@@ -12,5 +12,5 @@ public interface CompletionListener {
      * @param id The id of the job that was completed.
      * @param result The result of the job.
      */
-    void jobCompleted( long id, JobProgressValue result );
+    void jobCompleted( Node node, long id, JobProgressValue result );
 }
