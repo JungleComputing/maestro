@@ -48,7 +48,6 @@ public class TestProg {
         }
         node.waitToTerminate();
         Globals.tracer.close();
-        System.out.println( "Test program has ended" );
     }
 
     /** The command-line interface of this program.

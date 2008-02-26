@@ -52,8 +52,6 @@ public final class Node implements RegistryEventHandler {
      */
     private void registerIbisJoined( IbisIdentifier id )
     {
-        System.out.println( "Ibis " + id + " joined the computation" );
-        
 	for( MaestroInfo m: maestros ) {
 	    if( m.ibis.equals( id ) ) {
 	        System.out.println( "Maestro ibis " + id + " was registered" );
@@ -74,7 +72,6 @@ public final class Node implements RegistryEventHandler {
 	    MaestroInfo m = maestros.get( ix );
 	    if( m.ibis.equals( id ) ) {
 		maestros.remove( ix );
-                System.out.println( "Ibis " + id + " was a maestro" );
 	    }
 	}
 	if( maestros.size() == 0 ) {
@@ -128,10 +125,8 @@ public final class Node implements RegistryEventHandler {
     @Override
     public void electionResult( String name, IbisIdentifier theIbis )
     {
-        System.out.println( "Election for '" + name + "' got result " + theIbis );
         if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
             maestros.add( new MaestroInfo( theIbis ) );
-            System.out.println( "Ibis " + theIbis + " got elected as maestro" );
         }
     }
 
@@ -242,7 +237,6 @@ public final class Node implements RegistryEventHandler {
 
         /** Once the master has stopped, stop the worker. */
         worker.setStopped();
-        System.out.println( "Node master has terminated; terminating worker" );
         Service.waitToTerminate( worker );
         master.printStatistics();
         worker.printStatistics();
@@ -252,7 +246,9 @@ public final class Node implements RegistryEventHandler {
         catch( IOException x ) {
             // Nothing we can do about it.
         }
+        if( Settings.traceNodes ) {
         System.out.println( "Node has terminated" );
+	}
     }
 
     /**
