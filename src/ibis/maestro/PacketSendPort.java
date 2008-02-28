@@ -49,8 +49,8 @@ public class PacketSendPort<T extends Serializable> {
 	long setupTime;
 	if( USE_DISCONNECT ) {
 	    globalport.connect( receiver, timeout, true  );
-	    WriteMessage msg = globalport.newMessage();
 	    setupTime = System.nanoTime();
+	    WriteMessage msg = globalport.newMessage();
 	    msg.writeObject( data );
 	    len = msg.finish();
 	    globalport.disconnect( receiver );
@@ -58,8 +58,8 @@ public class PacketSendPort<T extends Serializable> {
 	else {
 	    SendPort port = ibis.createSendPort( portType );
 	    port.connect( receiver, timeout, true );
-	    WriteMessage msg = port.newMessage();
 	    setupTime = System.nanoTime();
+	    WriteMessage msg = port.newMessage();
 	    msg.writeObject( data );
 	    len = msg.finish();
 	    port.close();

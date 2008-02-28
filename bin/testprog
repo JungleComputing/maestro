@@ -29,6 +29,7 @@ add_to_libclasspath "${MAESTRO_HOME}"/lib
 exec java \
     -classpath "$CLASSPATH:$LIBCLASSPATH" \
     -Dlog4j.configuration=file:"$MAESTRO_HOME"/log4j.properties \
+    -Dsmartsockets.file="$MAESTRO_HOME"/smartsockets.properties \
     -Dibis.server.address=$SERVERHOST:5437 \
-    -Xmx1G \
+    -Xmx1500M \
      ibis.maestro.TestProg "$@"
