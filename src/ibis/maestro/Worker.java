@@ -317,12 +317,13 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         while( true ) {
             boolean askForWork = false;
             try {
+        	boolean stopping = isStopped();
                 synchronized( queue ) {
                     if( queue.isEmpty() ) {
                 	if( queueEmptyMoment == 0 ) {
                 	    queueEmptyMoment = System.nanoTime();
                 	}
-                        if( isStopped() && runningJobs == 0 ) {
+                        if( stopping && runningJobs == 0 ) {
                             // No jobs in queue, and worker is stopped. Return null to
                             // indicate that there won't be further jobs.
                             break;

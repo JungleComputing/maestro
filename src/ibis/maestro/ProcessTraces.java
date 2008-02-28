@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.PriorityQueue;
@@ -27,6 +28,17 @@ public class ProcessTraces {
     private static final ArrayList<Slot> slots = new ArrayList<Slot>();
 
     private static final double timeScale = 0.000003;
+
+    private enum Command {
+	/** Print a time-ordered log of the events. */
+	LOG,
+	
+	/** Generate a SVG file with a time line. */
+	TIMELINE,
+	
+	/** Print statistics. */
+	STATISTICS
+    }
 
     private static class Slot {
         final long id;
@@ -239,6 +251,57 @@ public class ProcessTraces {
         }
     }
 
+    private static void countEvent( TraceEvent ev, int stats[][] )
+    {
+	if( ev instanceof TransmissionEvent ) {
+	    TransmissionEvent e = (TransmissionEvent) ev;
+	    switch( e.type ) {
+	    case JOB:
+		int sourceno = portMap.get( e.source );
+		int destno = portMap.get( e.dest );
+		stats[sourceno][destno]++;
+		break;
+
+	    case JOB_RESULT:
+	    case ADD_NEIGHBORS:
+	    case ASK_WORK:
+	    case PING:
+	    case PING_REPLY:
+	    case RESIGN:
+	    case RESULT:
+	    case TIME_SYNC:
+		break;
+	    }	    
+	}
+    }
+
+    private static void printStatistics( PrintStream s )
+    {
+	int sz = portMap.size()/2;
+	
+	int stats[][] = new int[sz][sz];
+
+	s.println( "sz=" + sz );
+	while( !events.isEmpty() ) {
+	    TraceEvent e = events.poll();
+	    countEvent( e, stats );
+        }
+
+	s.print( "    |" );
+	for( int dest=0; dest<sz; dest++ ) {
+	    s.format( " %6d",  dest );
+	}
+	s.println();
+	s.println( "   -+-" );
+	for( int src=0; src<sz; src++ ) {
+	    s.format( "%3d |", src );
+	    for( int dest=0; dest<sz; dest++ ) {
+		s.format( " %6d ", stats[src][dest] );
+	    }
+	    s.println();
+	}
+    }
+
     /** Returns the index in the list of slots of the message with
      * the given id, or -1 if there is no such slot.
      * @param id The identifier of the slot.
@@ -350,15 +413,43 @@ public class ProcessTraces {
      * @param args
      */
     public static void main(String[] args) {
-	for( String fnm: args ) {
-	    readFile( fnm );
+	Command cmd = Command.STATISTICS;
+
+	for( int i=0; i<args.length; i++ ) {
+	    String arg = args[i];
+
+	    if( arg.equalsIgnoreCase( "-timeline") ) {
+		cmd = Command.TIMELINE;
+	    }
+	    else if( arg.equalsIgnoreCase( "-log" ) ) {
+		cmd = Command.LOG;
+	    }
+	    else if( arg.equalsIgnoreCase( "-statistics" ) ) {
+		cmd = Command.STATISTICS;
+	    }
+	    else {
+		break;
+	    }
+	    args[i] = null;
 	}
-        if( true ){
-            printEvents();
-        }
-        else {
-            printSVGEvents();
-        }
+	for( String fnm: args ) {
+	    if( fnm != null ) {
+		readFile( fnm );
+	    }
+	}
+	switch( cmd ) {
+	case LOG:
+	    printEvents();
+	    break;
+	    
+	case STATISTICS:
+	    printStatistics( System.out );
+	    break;
+	    
+	case TIMELINE:
+	    printSVGEvents();
+	    break;
+	}
     }
 
 }
