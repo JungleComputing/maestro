@@ -16,6 +16,7 @@ import java.util.Random;
 @SuppressWarnings("synthetic-access")
 public final class Worker extends Thread implements WorkSource, PacketReceiveListener<MasterMessage> {
     private final Node node;
+    private final ArrayList<MasterInfo> masters = new ArrayList<MasterInfo>();
     private final ArrayList<JobType> allowedTypes;
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
@@ -34,6 +35,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     private int jobCount = 0;
     private long workTime = 0;
     private int runningJobs = 0;
+    private int jobSettleCount = 0;
     private final Random rng = new Random();
 
     /**
@@ -143,6 +145,11 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 
     private void findNewMaster()
     {
+	synchronized( queue ) {
+	    if( jobSettleCount>0 ) {
+		return;
+	    }
+	}
         IbisIdentifier m = getRandomJobSource();
         if( m == null ){
             return;
@@ -158,6 +165,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
                 Globals.tracer.traceSentMessage( msg, null );
             }
             sendPort.send( msg, m, Globals.masterReceivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+            synchronized( queue ) {
+        	jobSettleCount = 4; // FIXME: symbolize this magic number.
+            }
         }
         catch( IOException x ){
             Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
@@ -185,6 +195,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         long now = System.nanoTime();
 	msg.setQueueTime( now );
         synchronized( queue ) {
+            if( exclusiveMaster != null &&  !msg.source.equals( exclusiveMaster) ) {
+        	sendResignMessage( msg.source );
+            }
             long queueEmptyInterval = 0L;
             if( queueEmptyMoment>0 ){
         	// The queue was empty before we entered this
@@ -198,6 +211,20 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             queue.add( msg );
             queue.notifyAll();
         }
+    }
+
+    /** Tell the given master that we won't do its work any more.
+     * 
+     * @param source The master to resign from.
+     */
+    private void sendResignMessage(ReceivePortIdentifier source )
+    {
+	WorkerResignMessage msg = new WorkerResignMessage( receivePort.identifier() );
+	try {
+	    sendPort.send( msg, source, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+	} catch (IOException e) {
+	    // We can't send a resign message. Don't worry.
+	}
     }
 
     private void handleJobResultMessage( JobResultMessage result )
@@ -350,6 +377,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
                         job.setRunTime( now );
                         if( Settings.traceWorkerProgress ) {
                             System.out.println( "Worker: handed out job " + job + "; it was queued for " + Service.formatNanoseconds( now-job.getQueueTime() ) + "; there are now " + runningJobs + " running jobs" );
+                        }
+                        if( jobSettleCount>0 ) {
+                            jobSettleCount--;
                         }
                         return job;
                     }
