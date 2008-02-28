@@ -1,4 +1,4 @@
-<project name="tweaker" default="build" basedir=".">
+<project name="maestro" default="build" basedir=".">
     <description>
 	Build file for Maestro programs and library
     </description>

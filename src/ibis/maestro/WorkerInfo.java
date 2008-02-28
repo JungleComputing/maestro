@@ -236,12 +236,4 @@ class WorkerInfo {
 	    
 	}
     }
-
-    public void printStats( ReceivePortIdentifier master )
-    {
-	for (Enumeration<WorkerJobInfo> iterator = workerJobInfoTable.elements(); iterator.hasMoreElements();) {
-	    WorkerJobInfo wji =  iterator.nextElement();
-	    wji.printStats( master, port );	    
-	}
-    }
 }

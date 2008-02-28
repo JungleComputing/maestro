@@ -431,7 +431,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         System.out.printf( "Master: # handled jobs   = %5d\n", handledJobCount );
         System.out.println( "Master: run time         = " + Service.formatNanoseconds( workInterval ) );
         sendPort.printStats( "master send port" );
-        workers.printStats( receivePort.identifier() );
     }
 
     /**
