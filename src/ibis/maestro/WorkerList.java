@@ -124,7 +124,8 @@ public class WorkerList {
 	synchronized( workers ){
 	    for( WorkerInfo wi: workers ){
 		long val = wi.getRoundTripInterval( jobType );
-		if( val<bestInterval ) {
+
+                if( val<bestInterval ) {
 		    bestInterval = val;
 		    best = wi;
 		}

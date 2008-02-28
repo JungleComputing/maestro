@@ -11,7 +11,6 @@ import ibis.ipl.RegistryEventHandler;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Properties;
-import java.util.Vector;
 
 /**
  * A node in the Maestro dataflow network.
@@ -27,7 +26,7 @@ public final class Node implements RegistryEventHandler {
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
 
     /** The list of maestro nodes in this computation. */
-    private Vector<MaestroInfo> maestros = new Vector<MaestroInfo>();
+    private ArrayList<MaestroInfo> maestros = new ArrayList<MaestroInfo>();
     private boolean isMaestro;
 
     /** The list of maestros in this computation. */
@@ -52,11 +51,13 @@ public final class Node implements RegistryEventHandler {
      */
     private void registerIbisJoined( IbisIdentifier id )
     {
-	for( MaestroInfo m: maestros ) {
-	    if( m.ibis.equals( id ) ) {
-	        System.out.println( "Maestro ibis " + id + " was registered" );
-	    }
-	}
+        synchronized( maestros ){
+            for( MaestroInfo m: maestros ) {
+                if( m.ibis.equals( id ) ) {
+                    System.out.println( "Maestro ibis " + id + " was registered" );
+                }
+            }
+        }
     }
 
     /** Registers the ibis with the given identifier as one that has left the
@@ -65,20 +66,24 @@ public final class Node implements RegistryEventHandler {
      */
     private void registerIbisLeft( IbisIdentifier id )
     {
-	int ix = maestros.size();
+        boolean noMaestrosLeft;
 
-	while( ix>0 ) {
-            ix--;
-	    MaestroInfo m = maestros.get( ix );
-	    if( m.ibis.equals( id ) ) {
-		maestros.remove( ix );
-	    }
-	}
-	if( maestros.size() == 0 ) {
+        synchronized( maestros ){
+            int ix = maestros.size();
+
+            while( ix>0 ) {
+                ix--;
+                MaestroInfo m = maestros.get( ix );
+                if( m.ibis.equals( id ) ) {
+                    maestros.remove( ix );
+                }
+            }
+            noMaestrosLeft = maestros.isEmpty();
+        }
+        if( noMaestrosLeft ) {
             System.out.println( "No maestros left; stopping.." );
-	    // Everyone has left, we might as well stop.
-	    master.setStopped();
-	}
+            setStopped();
+        }
     }
 
     /**
@@ -126,7 +131,9 @@ public final class Node implements RegistryEventHandler {
     public void electionResult( String name, IbisIdentifier theIbis )
     {
         if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
-            maestros.add( new MaestroInfo( theIbis ) );
+            synchronized( maestros ){
+                maestros.add( new MaestroInfo( theIbis ) );
+            }
         }
     }
 
