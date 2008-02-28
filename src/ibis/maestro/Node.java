@@ -66,7 +66,7 @@ public final class Node implements RegistryEventHandler {
      */
     private void registerIbisLeft( IbisIdentifier id )
     {
-        boolean noMaestrosLeft;
+        boolean noMaestrosLeft = false;
 
         synchronized( maestros ){
             int ix = maestros.size();
@@ -76,9 +76,9 @@ public final class Node implements RegistryEventHandler {
                 MaestroInfo m = maestros.get( ix );
                 if( m.ibis.equals( id ) ) {
                     maestros.remove( ix );
+                    noMaestrosLeft = maestros.isEmpty();
                 }
             }
-            noMaestrosLeft = maestros.isEmpty();
         }
         if( noMaestrosLeft ) {
             System.out.println( "No maestros left; stopping.." );
