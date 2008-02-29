@@ -26,7 +26,6 @@ public class TestProg {
                 node.setStopped();
             }
 	}
-	
     }
 
     @SuppressWarnings("synthetic-access")

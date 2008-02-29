@@ -101,12 +101,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 workers.subscribeWorker( receivePort.identifier(), worker, workerID, m.masterIdentifier );
                 sendAcceptMessage = true;
             }
+            workers.registerWorkerJobTypes( worker, allowedTypes );
         }
         if( sendAcceptMessage ) {
             sendPort.registerDestination( worker, workerID );
             sendAcceptMessage( workerID, receivePort.identifier(), m.masterIdentifier );
         }
-        workers.registerWorkerJobTypes( worker, allowedTypes );
         synchronized( queue ){
             for( Job e: queue ){
                 if( allowedTypes.isEmpty() ){
