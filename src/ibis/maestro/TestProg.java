@@ -8,7 +8,7 @@ import java.util.ArrayList;
  *
  */
 public class TestProg {
-    private static final int JOBCOUNT = 300;
+    private static final int JOBCOUNT = 6000;
 
     private static class Listener implements CompletionListener
     {

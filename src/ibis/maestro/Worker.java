@@ -298,13 +298,10 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     @Override
     public void run()
     {
-        System.out.println( "Starting worker thread" );
         for( int i=0; i<numberOfProcessors; i++ ) {
             Service.waitToTerminate( workThreads[i] );
-            System.out.println( "Ended work thread " + i );
         }
         stopTime = System.nanoTime();
-        System.out.println( "End of worker thread" );
     }
 
     /**
