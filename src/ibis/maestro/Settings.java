@@ -20,30 +20,30 @@ public class Settings {
     /**
      * Trace the progress of workers?
      */
-    public static final boolean traceWorkerProgress = true;
+    public static final boolean traceWorkerProgress = false;
 
     /**
      * Trace the progress of the worker lists of masters.
      */
-    public static final boolean traceWorkerList = true;
+    public static final boolean traceWorkerList = false;
     
     /**
      * Trace the creation and destruction of Nodes.
      */
-    public static final boolean traceNodes = true;
+    public static final boolean traceNodes = false;
 
     /**
      * Trace the selection of the fastest worker.
      */
-    public static final boolean traceFastestWorker = true;
+    public static final boolean traceFastestWorker = false;
 
     /**
      * Trace the progress of masters?
      */
-    public static final boolean traceMasterProgress = true;
+    public static final boolean traceMasterProgress = false;
 
     /** Trace the adventures of the precompletion interval variable? */
-    public static final boolean traceSubmissionInterval = true;
+    public static final boolean traceSubmissionInterval = false;
 
     /** Trace all send events. */
     public static final boolean traceSends = false;
