@@ -21,10 +21,10 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
     private CompletionListener completionListener;
-    private ReceivePortIdentifier exclusiveMaster = null;
+    private int exclusiveMaster = -1;
     private long queueEmptyMoment = 0L;
     private final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
-    private final ArrayList<IbisIdentifier> jobSources = new ArrayList<IbisIdentifier>();
+    private final ArrayList<MasterInfo> jobSources = new ArrayList<MasterInfo>();
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private final WorkThread workThreads[] = new WorkThread[numberOfProcessors];
     private boolean stopped = false;
@@ -60,9 +60,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             workThreads[i] = t;
             t.start();
         }
-        if( Settings.writeTrace ){
-            Globals.tracer.traceAlias( master.identifier(), receivePort.identifier() );
-        }
         startTime = System.nanoTime();
         receivePort.enable();   // We're open for business.
     }
@@ -81,7 +78,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         return receivePort.identifier();
     }
     
-    synchronized void setExclusiveMaster( ReceivePortIdentifier port )
+    synchronized void setExclusiveMaster( int port )
     {
 	exclusiveMaster = port;
     }
@@ -91,12 +88,12 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      * 
      * @return The job source, or null if there isn't one.
      */
-    private IbisIdentifier getRandomJobSource()
+    private MasterInfo getRandomJobSource()
     {
-        IbisIdentifier res;
+        MasterInfo res;
 
         synchronized( this ) {
-            if( exclusiveMaster != null ) {
+            if( exclusiveMaster>=0 ) {
         	return null;
             }
         }
@@ -111,31 +108,19 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         return res;
     }
 
-    private void addJobSources( IbisIdentifier l[] )
-    {
-        synchronized( jobSources ){
-            for( IbisIdentifier n: l ){
-                if( !jobSources.contains(n) ){
-                    jobSources.add( n );
-                }
-            }
-        }
-        // This is a good reason to wake up the queue.
-        synchronized (queue ) {
-            queue.notifyAll();
-        }
-    }
-
     /**
      * A new ibis has joined the computation.
      * @param theIbis The ibis that has joined.
      */
     void addJobSource( IbisIdentifier theIbis )
     {
+        MasterInfo mi;
+        synchronized( masters ) {
+            mi = new MasterInfo( masters.size(), -1, theIbis );
+            masters.add( mi );
+        }
         synchronized( jobSources ){
-            if( !jobSources.contains(theIbis) ){
-                jobSources.add( theIbis );
-            }
+            jobSources.add( mi );
         }
         // This is a good reason to wake up the queue.
         synchronized (queue ) {
@@ -150,21 +135,17 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 		return;
 	    }
 	}
-        IbisIdentifier m = getRandomJobSource();
+        MasterInfo m = getRandomJobSource();
         if( m == null ){
             return;
         }
         if( Settings.traceWorkerProgress ){
-            Globals.log.reportProgress( "Asking neighbor " + m + " for work" );
+            Globals.log.reportProgress( "Asking neighbor " + m.identifier + " for work" );
         }
         try {
-            WorkRequestMessage msg = new WorkRequestMessage( receivePort.identifier(), allowedTypes );
+            WorkRequestMessage msg = new WorkRequestMessage( receivePort.identifier(), m.identifier, allowedTypes );
     
-            if( Settings.writeTrace ) {
-                // FIXME: compute a receive port identifier for this one.
-                Globals.tracer.traceSentMessage( msg, null );
-            }
-            sendPort.send( msg, m, Globals.masterReceivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+            sendPort.send( msg, m.ibis, Globals.masterReceivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
             synchronized( queue ) {
         	jobSettleCount = 4; // FIXME: symbolize this magic number.
             }
@@ -173,16 +154,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
             x.printStackTrace();
         }
-    }
-
-    /**
-     * Handle a message containing new neighbors.
-     * 
-     * @param msg The message to handle.
-     */
-    private void handleAddNeighborsMessage(AddNeighborsMessage msg)
-    {
-        addJobSources( msg.neighbors );
     }
 
     /**
@@ -195,7 +166,8 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         long now = System.nanoTime();
 	msg.setQueueTime( now );
         synchronized( queue ) {
-            if( exclusiveMaster != null &&  !msg.source.equals( exclusiveMaster) ) {
+            if( exclusiveMaster>=0 && msg.source != exclusiveMaster ) {
+                // We're closing, please go away.
         	sendResignMessage( msg.source );
             }
             long queueEmptyInterval = 0L;
@@ -213,15 +185,21 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         }
     }
 
+    private MasterInfo getMasterInfo( int master )
+    {
+        return masters.get( master );
+    }
+
     /** Tell the given master that we won't do its work any more.
      * 
      * @param source The master to resign from.
      */
-    private void sendResignMessage(ReceivePortIdentifier source )
+    private void sendResignMessage( int master )
     {
-	WorkerResignMessage msg = new WorkerResignMessage( receivePort.identifier() );
+        MasterInfo mi = getMasterInfo( master );
+	WorkerResignMessage msg = new WorkerResignMessage( mi.identifierWithMaster );
 	try {
-	    sendPort.send( msg, source, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+	    sendPort.send( msg, master, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
 	} catch (IOException e) {
 	    // We can't send a resign message. Don't worry.
 	}
@@ -237,23 +215,12 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         }
     }
 
-    /**
-     * @param msg The time sync message to handle.
-     */
-    private void handleTimeSyncMessage( MasterTimeSyncMessage msg )
+    private void handleWorkerAcceptMessage( WorkerAcceptMessage msg )
     {
-        ReceivePortIdentifier master = msg.source;
-        WorkerTimeSyncMessage m = new WorkerTimeSyncMessage( receivePort.identifier() );
-        if( Settings.writeTrace ) {
-            Globals.tracer.traceSentMessage( m, receivePort.identifier() );
+        if( Settings.traceWorkerProgress ){
+            Globals.log.reportProgress( "Received a worker accept message " + msg );
         }
-        try {
-            sendPort.send( m, master, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
-        }
-        catch( IOException x ){
-            Globals.log.reportError( "Cannot send time sync reply to master " + master );
-            x.printStackTrace( Globals.log.getPrintStream() );
-        }
+        sendPort.registerDestination( msg.port, msg.source );
     }
 
     /**
@@ -266,9 +233,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Worker: received message " + msg );
         }
-        if( Settings.writeTrace ) {
-            Globals.tracer.traceReceivedMessage( msg, p.identifier() );
-        }
         if( msg instanceof RunJobMessage ){
             RunJobMessage runJobMessage = (RunJobMessage) msg;
     
@@ -279,15 +243,10 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 
             handleJobResultMessage( result );
         }
-        else if( msg instanceof MasterTimeSyncMessage ){
-            MasterTimeSyncMessage ping = (MasterTimeSyncMessage) msg;
-    
-            handleTimeSyncMessage( ping );
-        }
-        else if( msg instanceof AddNeighborsMessage ){
-            AddNeighborsMessage addMsg = (AddNeighborsMessage) msg;
-    
-            handleAddNeighborsMessage( addMsg );
+        else if( msg instanceof WorkerAcceptMessage ) {
+            WorkerAcceptMessage am = (WorkerAcceptMessage) msg;
+
+            handleWorkerAcceptMessage( am );
         }
         else {
             Globals.log.reportInternalError( "FIXME: handle " + msg );
@@ -392,6 +351,18 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         return null;
     }
 
+    private MasterInfo searchMaster( int masterID )
+    {
+        synchronized( masters ) {
+            for( MasterInfo mi: masters ) {
+                if( mi.identifier == masterID ) {
+                    return mi;
+                }
+            }
+        }
+        return null;
+    }
+
     /** Reports the result of the execution of a job. (Overrides method in superclass.)
      * @param jobMessage The job that was run run.
      */
@@ -402,22 +373,22 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         try {
             long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
 
+            WorkerMessage msg = new WorkerStatusMessage( jobMessage.workerIdentifier, jobMessage.jobId );
+            final int master = jobMessage.source;
+            sendPort.send( msg, master, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+            MasterInfo mi = searchMaster( master );
+            synchronized( jobSources ) {
+                jobSources.add( mi );
+            }
+            if( Settings.traceWorkerProgress ) {
+        	System.out.println( "Completed job "  + jobMessage );
+            }
             synchronized( queue ){
                 queueTime += queueInterval;
                 workTime += now-jobMessage.getRunTime();
                 jobCount++;
                 runningJobs--;
                 queue.notifyAll();
-            }
-            WorkerMessage msg = new WorkerStatusMessage( receivePort.identifier(), jobMessage.jobId );
-            if( Settings.writeTrace ) {
-                Globals.tracer.traceSentMessage( msg, receivePort.identifier() );
-            }
-            final ReceivePortIdentifier master = jobMessage.getResultPort();
-            sendPort.send( msg, master, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-            addJobSource( master.ibisIdentifier() );
-            if( Settings.traceWorkerProgress ) {
-        	System.out.println( "Completed job "  + jobMessage );
             }
         }
         catch( IOException x ){

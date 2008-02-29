@@ -1,8 +1,8 @@
 package ibis.maestro;
 
-import java.io.Serializable;
+import ibis.ipl.IbisIdentifier;
 
-import ibis.ipl.ReceivePortIdentifier;
+import java.io.Serializable;
 
 /**
  * 
@@ -17,15 +17,15 @@ public class ReportReceiver implements Serializable {
      * 
      */
     private static final long serialVersionUID = 415829450459994671L;
-    private final ReceivePortIdentifier port;
+    private final IbisIdentifier ibis;
     private final long id;
 
     /**
-     * @param port
-     * @param id
+     * @param ibis The ibis to send the result to.
+     * @param id The identifier to use when reporting the result.
      */
-    public ReportReceiver(ReceivePortIdentifier port, long id) {
-	this.port = port;
+    public ReportReceiver(IbisIdentifier ibis, long id) {
+	this.ibis = ibis;
 	this.id = id;
     }
 
@@ -33,8 +33,8 @@ public class ReportReceiver implements Serializable {
      * Returns the port the report should be sent to.
      * @return The port to send the result to.
      */
-    public ReceivePortIdentifier getPort() {
-        return port;
+    public IbisIdentifier getIbis() {
+        return ibis;
     }
 
     /** Returns the identifier of the job this report is for.

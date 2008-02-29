@@ -8,7 +8,7 @@ import java.util.ArrayList;
  *
  */
 public class TestProg {
-    private static final int JOBCOUNT = 6000;
+    private static final int JOBCOUNT = 20;
 
     private static class Listener implements CompletionListener
     {
@@ -47,7 +47,6 @@ public class TestProg {
             }
         }
         node.waitToTerminate();
-        Globals.tracer.close();
     }
 
     /** The command-line interface of this program.

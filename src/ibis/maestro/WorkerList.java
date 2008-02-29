@@ -14,35 +14,44 @@ import java.util.List;
 public class WorkerList {
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
 
-    private static int searchWorker( List<WorkerInfo> workers, ReceivePortIdentifier id ) {
+    private static WorkerInfo searchWorker( List<WorkerInfo> workers, int id ) {
 	for( int i=0; i<workers.size(); i++ ) {
 	    WorkerInfo w = workers.get(i);
-	    if( w.hasId( id ) ) {
-		return i;
+	    if( w.identifier == id ) {
+		return w;
 	    }
 	}
-	return -1;
+	return null;
     }
 
-    void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier port )
+    private static WorkerInfo searchWorker( List<WorkerInfo> workers, IbisIdentifier id ) {
+        for( int i=0; i<workers.size(); i++ ) {
+            WorkerInfo w = workers.get(i);
+            if( w.port.ibisIdentifier().equals( id ) ) {
+                return w;
+            }
+        }
+        return null;
+    }
+
+    private static int searchWorker( List<WorkerInfo> workers, ReceivePortIdentifier id ) {
+        for( int i=0; i<workers.size(); i++ ) {
+            WorkerInfo w = workers.get(i);
+            if( w.port.equals( id ) ) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, int workerID, int identifierForWorker )
     {
-	WorkerInfo worker = new WorkerInfo( port );
-	if( Settings.writeTrace ) {
-	    Globals.tracer.traceWorkerRegistration( me, port );
-	}
+	WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker );
         if( Settings.traceMasterProgress ){
-            System.out.println( "Master " + me + ": subscribing worker " + port );
+            System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
         }
  	synchronized( workers ){
 	    workers.add( worker );
-	}
-    }
-
-    void removeWorker( ReceivePortIdentifier worker )
-    {
-	int i = searchWorker(workers, worker);
-	if( i>=0 ) {
-	    workers.remove(i);
 	}
     }
 
@@ -51,18 +60,26 @@ public class WorkerList {
      * Remove any workers on that ibis.
      * @param theIbis The ibis that was gone.
      */
-    public void removeWorker( IbisIdentifier theIbis )
+    void removeWorker( IbisIdentifier theIbis )
     {
-	synchronized( workers ){
-	    int ix = workers.size();
-	    while( ix>0 ){
-		ix--;
-		WorkerInfo worker = workers.get( ix );
-		if( worker.hasIbis( theIbis ) ){
-		    workers.remove( ix );
-		}
-	    }
+	WorkerInfo wi = searchWorker( workers, theIbis );
+	if( wi != null ) {
+	    wi.setDead();
 	}
+    }
+
+
+    /**
+     * We know the given ibis has disappeared from the computation.
+     * Remove any workers on that ibis.
+     * @param theIbis The worker that is gone.
+     */
+    void removeWorker( int identifier )
+    {
+        WorkerInfo wi = searchWorker( workers, identifier );
+        if( wi != null ) {
+            wi.setDead();
+        }
     }
 
     /** Returns true iff we have a worker on our list with the
@@ -70,10 +87,10 @@ public class WorkerList {
      * @param identifier The identifier to search for.
      * @return True iff we know the given worker.
      */
-    public boolean contains( ReceivePortIdentifier identifier )
+    public boolean contains( int identifier )
     {
-	int i = searchWorker( workers, identifier );
-	return i>=0;
+	WorkerInfo i = searchWorker( workers, identifier );
+	return i != null;
     }
 
     /**
@@ -83,12 +100,11 @@ public class WorkerList {
      */
     public void registerWorkerStatus( ReceivePortIdentifier me, WorkerStatusMessage result )
     {
-	int ix = searchWorker( workers, result.source );
-	if( ix<0 ) {
+	WorkerInfo w = searchWorker( workers, result.source );
+	if( w == null ) {
 	    System.err.println( "Job result from unknown worker " + result.source );
 	    return;
 	}
-	WorkerInfo w = workers.get( ix );
 	w.registerWorkerStatus( me, result );
     }
 
@@ -121,15 +137,17 @@ public class WorkerList {
         WorkerInfo best = null;
         long bestInterval = Long.MAX_VALUE;
 
-	synchronized( workers ){
-	    for( WorkerInfo wi: workers ){
-		long val = wi.getRoundTripInterval( jobType );
+        synchronized( workers ){
+            for( WorkerInfo wi: workers ){
+                if( !wi.isDead() ) {
+                    long val = wi.getRoundTripInterval( jobType );
 
-                if( val<bestInterval ) {
-		    bestInterval = val;
-		    best = wi;
-		}
-	    }
+                    if( val<bestInterval ) {
+                        bestInterval = val;
+                        best = wi;
+                    }
+                }
+            }
 	}
         if( Settings.traceFastestWorker ){
             if( best != null ) {
@@ -187,5 +205,14 @@ public class WorkerList {
 		wi.reduceAllowances();
 	    }
 	}
+    }
+
+    /** Given a worker identifier, declare it dead.
+     * @param workerID The worker to declare dead.
+     */
+    public synchronized void declareDead( int workerID )
+    {
+        WorkerInfo w = searchWorker( workers, workerID );
+        w.setDead();
     }
 }

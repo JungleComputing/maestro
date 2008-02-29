@@ -1,8 +1,8 @@
 package ibis.maestro;
 
-import java.util.ArrayList;
-
 import ibis.ipl.ReceivePortIdentifier;
+
+import java.util.ArrayList;
 
 /**
  * A message telling a master that we would like to receive jobs.
@@ -13,24 +13,28 @@ import ibis.ipl.ReceivePortIdentifier;
 public class WorkRequestMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
+
+    /** Our receive port. */
+    final ReceivePortIdentifier port;
+    
+    /** Our identifier for the master. */
+    final int masterIdentifier;
+    
+    /** The list of types we support. */
     final ArrayList<JobType> allowedTypes;
 
     /**
      * Constructs a new work request message.
-     * @param worker Who is asking for work?
+     * @param worker Who is asking for work? (-1 means, no ID yet).
+     * @param port The receive port to use to submit jobs.
+     * @param identifier The identifier to use.
      * @param allowedTypes Which types of jobs can it handle?
      */
-    WorkRequestMessage( ReceivePortIdentifier worker, ArrayList<JobType> allowedTypes ){
-	super( worker );
+    WorkRequestMessage( ReceivePortIdentifier port, int identifier, ArrayList<JobType> allowedTypes ){
+        // FIXME: move source down from superclasses.
+	super( -1 );
+	this.port = port;
+	this.masterIdentifier = identifier;
 	this.allowedTypes = allowedTypes;
-    }
-
-    /**
-     * Returns the event type of this message.
-     */
-    @Override
-    protected TransmissionEvent.Type getMessageType()
-    {
-	return TransmissionEvent.Type.ASK_WORK;
     }
 }

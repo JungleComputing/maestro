@@ -28,7 +28,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private long nextJobId = 0;
     private long incomingJobCount = 0;
     private long handledJobCount = 0;
-    private long workerCount = 0;
+    private int workerCount = 0;
     private final long startTime;
     private long stopTime = 0;
 
@@ -44,7 +44,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         receivePort.enable();		// We're open for business.
         startTime = System.nanoTime();    }
 
-    private void unsubscribeWorker( ReceivePortIdentifier worker )
+    private void unsubscribeWorker( int worker )
     {
 	synchronized( workers ){
 	    workers.removeWorker( worker );
@@ -69,6 +69,16 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             handledJobCount++;
         }
     }
+    
+    private void sendAcceptMessage( int workerID, ReceivePortIdentifier myport, int idOnWorker ) {
+        WorkerAcceptMessage msg = new WorkerAcceptMessage( idOnWorker, myport );
+        try{
+            sendPort.send( msg, workerID, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        }
+        catch( IOException e ){
+            workers.declareDead( workerID );
+        }
+    }
 
     /**
      * A (presumably unregistered) worker has sent us a message asking for work.
@@ -77,15 +87,24 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private void handleWorkRequestMessage( WorkRequestMessage m )
     {
-        ReceivePortIdentifier worker = m.source;
+        boolean sendAcceptMessage = false;
+        int workerID = -1;
+        ReceivePortIdentifier worker = m.port;
         ArrayList<JobType> allowedTypes = m.allowedTypes;
         long now = System.nanoTime();
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Received work request message " + m + " from worker " + worker + " at " + Service.formatNanoseconds(now) );
         }
-        if( !workers.isKnownWorker( worker ) ){
-            workerCount++;
-            workers.subscribeWorker( receivePort.identifier(), worker );
+        synchronized( workers ) {
+            if( !workers.isKnownWorker( worker ) ){
+                workerID = workerCount++;
+                workers.subscribeWorker( receivePort.identifier(), worker, workerID, m.masterIdentifier );
+                sendAcceptMessage = true;
+            }
+        }
+        if( sendAcceptMessage ) {
+            sendPort.registerDestination( worker, workerID );
+            sendAcceptMessage( workerID, receivePort.identifier(), m.masterIdentifier );
         }
         workers.registerWorkerJobTypes( worker, allowedTypes );
         synchronized( queue ){
@@ -107,9 +126,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                     allowedTypes.remove( ix );
                 }
             }
-        }
-        synchronized (workers ) {
-            workers.notifyAll();            
+            queue.notifyAll();
         }
     }
 
@@ -124,9 +141,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Master: received message " + msg );
         }
-        if( Settings.writeTrace ) {
-            Globals.tracer.traceReceivedMessage( msg, p.identifier() );
-        }
         if( msg instanceof WorkerStatusMessage ) {
             WorkerStatusMessage result = (WorkerStatusMessage) msg;
 
@@ -136,9 +150,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             WorkRequestMessage m = (WorkRequestMessage) msg;
 
             handleWorkRequestMessage( m );
-        }
-        else if( msg instanceof WorkerTimeSyncMessage ) {
-            // Ignore this message, the fact that it was traced is enough.
         }
         else if( msg instanceof WorkerResignMessage ) {
             WorkerResignMessage m = (WorkerResignMessage) msg;
@@ -274,15 +285,13 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    if( Settings.traceFastestWorker ) {
 	        System.out.println( "Selected worker " + worker + " as best for job " + job );
 	    }
-	    RunJobMessage msg = new RunJobMessage( job, receivePort.identifier(), jobId );
+	    // FIXME: do we really have to send worker.identifier? isn't jobId enough?
+	    RunJobMessage msg = new RunJobMessage( worker.identifier, job, worker.identifierWithWorker, jobId );
 	    synchronized( workers ) {
 	        worker.registerJobStart( job, jobInfo, jobId, now );
 	    }
 	    try {
-	        if( Settings.writeTrace ) {
-	            Globals.tracer.traceSentMessage( msg, worker.getPort() );
-	        }
-	        sendPort.send( msg, worker.getPort(), Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+	        sendPort.send( msg, worker.identifier, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	    }
 	    catch (IOException e) {
 	        // Try to put the paste back in the tube.
@@ -306,7 +315,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	}
 	else {
 	    if( Settings.traceMasterProgress ){
-		System.out.println( "Nothing in the queue; waiting" );
+		System.out.println( "Master: nothing in the queue; waiting" );
 	    }
 	    // Since the queue is empty, we can only wait for new jobs.
 	    try {
@@ -354,7 +363,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     public void removeIbis( IbisIdentifier theIbis )
     {
-        // FIXME: reschedule any outstanding jobs on this ibis.	    
         workers.removeWorker( theIbis );
     }
 
@@ -384,18 +392,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     void waitForSubscription(ReceivePortIdentifier identifier)
     {
-        while( true ) {
-            synchronized( workers ) {
-                if( workers.contains( identifier ) ) {
-                    return;
-                }
-                try {
-                    workers.wait();
-                } catch (InterruptedException e) {
-                    // Ignore.
-                }
-            }
-        }
+        // FIXME: is this still necessary?
     }
 
     /**
@@ -441,14 +438,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     @Override
     public void reportResult( ReportReceiver receiver, JobProgressValue value )
     {
-	ReceivePortIdentifier port = receiver.getPort();
+	IbisIdentifier ibis = receiver.getIbis();
 
-	JobResultMessage msg = new JobResultMessage( receivePort.identifier(), value, receiver.getId() );
+	JobResultMessage msg = new JobResultMessage( -1, value, receiver.getId() );
         try {
-            if( Settings.writeTrace ) {
-                Globals.tracer.traceSentMessage( msg, port );
-            }
-            sendPort.send( msg, port, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+            sendPort.send( msg, ibis, Globals.workerReceivePortName, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         }
         catch (IOException e) {
             e.printStackTrace( System.err );

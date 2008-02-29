@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import java.io.File;
 
 /**
  * Global variables.
@@ -17,7 +16,4 @@ public class Globals {
     
     /** The logger. */
     public final static Logger log = new Logger();
-    
-    /** The event tracer. */
-    public final static Tracer tracer = new Tracer( new File( "tracefile" ) );
 }

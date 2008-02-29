@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import ibis.ipl.ReceivePortIdentifier;
 
 /**
  * Tell the worker to execute the job contained in this message.
@@ -11,25 +10,26 @@ import ibis.ipl.ReceivePortIdentifier;
 public class RunJobMessage extends MasterMessage {
     /** */
     private static final long serialVersionUID = 1L;
+    final int workerIdentifier;
     final Job job;
     final long jobId;
     private transient long queueTime;
     private transient long runTime;
     private transient long queueEmptyInterval;
 
-    RunJobMessage( Job job, ReceivePortIdentifier resultPort, long jobId )
+    /**
+     * FIXME: make source first parameter.
+     * Given a job and its source, constructs a new RunJobMessage.
+     * @param job The job to run.
+     * @param source Who sent this job, as an identifier we know about.
+     * @param jobId The identifier of the job.
+     */
+    RunJobMessage( int workerIdentifier, Job job, int source, long jobId )
     {
-	super( resultPort );
+	super( source );
+	this.workerIdentifier = workerIdentifier;
 	this.job = job;
         this.jobId = jobId;
-    }
-
-    /**
-     * Returns the result port of the run job.
-     * @return The port that should be sent the result of this job.
-     */
-    public ReceivePortIdentifier getResultPort() {
-        return source;
     }
 
     /** Set the start time of this job to the given time in ns.
@@ -73,16 +73,6 @@ public class RunJobMessage extends MasterMessage {
     public String toString()
     {
 	return "Job message for job " + jobId;
-    }
-
-
-    /**
-     * Returns the event type of this message.
-     */
-    @Override
-    protected TransmissionEvent.Type getMessageType()
-    {
-	return TransmissionEvent.Type.JOB;
     }
 
     /**

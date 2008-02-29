@@ -1,7 +1,5 @@
 package ibis.maestro;
 
-import ibis.ipl.ReceivePortIdentifier;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -24,7 +22,9 @@ public class ProcessTraces {
     private static double slotOffset = 40;
     private static double slotSeparation = 100;
     private static double textSeparation = 20;
-    private static HashMap<ReceivePortIdentifier, Integer> portMap = new HashMap<ReceivePortIdentifier,Integer>();
+
+    // FIXME: a hashmap with an Integer key is stupid.
+    private static HashMap<Integer, Integer> portMap = new HashMap<Integer,Integer>();
     private static final ArrayList<Slot> slots = new ArrayList<Slot>();
 
     private static final double timeScale = 0.000003;
@@ -60,11 +60,11 @@ public class ProcessTraces {
         }
     }
 
-    private static void registerPort( ReceivePortIdentifier p )
+    private static void registerPort( int i )
     {
-	if( p != null && !portMap.containsKey( p ) ){
-            portMap.put( p, portNo++ );
-            System.out.println( "registerPort: P" + portMap.get(p) + ": " + p );
+	if( i>=0 && !portMap.containsKey( i ) ){
+            portMap.put( i, portNo++ );
+            System.out.println( "registerPort: P" + portMap.get(i) + ": " + i );
         }
     }
 
@@ -158,7 +158,7 @@ public class ProcessTraces {
 	return new String( buf );
     }
 
-    private static void registerAlias( ReceivePortIdentifier source, ReceivePortIdentifier dest )
+    private static void registerAlias( int source, int dest )
     {
         if( portMap.containsKey( source ) ){
             portMap.put(dest, portMap.get( source ) );
@@ -175,12 +175,12 @@ public class ProcessTraces {
         }
     }
 
-    private static String getHostName( ReceivePortIdentifier p )
+    private static String getHostName( int i )
     {
-	if( portMap.containsKey(p) ) {
-	    return "P" + portMap.get( p );
+	if( portMap.containsKey( i ) ){
+	    return "P" + portMap.get( i );
 	}
-	return p.toString();
+	return "P(" + i + ")";
     }
 
     private static void printEvent( TraceEvent ev )

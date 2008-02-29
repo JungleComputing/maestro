@@ -3,7 +3,6 @@
  */
 package ibis.maestro;
 
-import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.util.ArrayList;
@@ -11,14 +10,22 @@ import java.util.Enumeration;
 import java.util.Hashtable;
 
 class WorkerInfo {
-    /** The receive port of this worker. */
-    final ReceivePortIdentifier port;
+    /** Our identifier with this worker. */
+    final int identifierWithWorker;
 
     /** The active jobs of this worker. */
     private final ArrayList<ActiveJob> activeJobs = new ArrayList<ActiveJob>();
 
     private final Hashtable<JobType,WorkerJobInfo> workerJobInfoTable = new Hashtable<JobType, WorkerJobInfo>();
-    
+
+    /** Our local identifier of this worker. */
+    public final int identifier;
+
+    /** The receive port of the worker. */
+    public final ReceivePortIdentifier port;
+
+    private boolean dead = false;
+
     /**
      * Returns a string representation of this worker info. (Overrides method in superclass.)
      * @return The worker info.
@@ -26,32 +33,14 @@ class WorkerInfo {
     @Override
     public String toString()
     {
-        return "Worker " + port;
+        return "Worker";
     }
 
-    WorkerInfo( ReceivePortIdentifier port )
+    WorkerInfo( ReceivePortIdentifier port, int identifier, int identifierForWorker )
     {
         this.port = port;
-    }
-
-    boolean hasId( ReceivePortIdentifier id )
-    {
-        return port.equals( id );
-    }
-
-    ReceivePortIdentifier getPort()
-    {
-        return port;
-    }
-
-    /**
-     * Given an ibis, return true iff this worker lives on that ibis.
-     * @param ibis The ibis to compare to.
-     * @return True iff this worker lives on the given ibis.
-     */
-    public boolean hasIbis( IbisIdentifier ibis )
-    {
-        return port.ibisIdentifier().equals(ibis);
+        this.identifier = identifier;
+        this.identifierWithWorker = identifierForWorker;
     }
 
     /**
@@ -62,7 +51,8 @@ class WorkerInfo {
     private ActiveJob searchQueueEntry( long id )
     {
 	// Note that we blindly assume that there is only one entry with
-	// the given id. Reasonable because we hand out the ids ourselves...
+	// the given id. Reasonable because we hand out the ids ourselves,
+        // and we never make mistakes...
 	for( ActiveJob e: activeJobs ) {
 	    if( e.id == id ) {
 		return e;
@@ -112,7 +102,7 @@ class WorkerInfo {
         synchronized( activeJobs ){
             activeJobs.remove( e );
         }
-        e.workerJobInfo.registerJobCompleted( this, master, newRoundTripTime );
+        e.workerJobInfo.registerJobCompleted( newRoundTripTime );
         if( Settings.traceMasterProgress ){
             System.out.println( "Master " + master + ": retired job " + e + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripTime ) );
         }
@@ -235,5 +225,22 @@ class WorkerInfo {
 	    wji.reduceAllowance();
 	    
 	}
+    }
+
+    /**
+     * Returns true iff this worker is dead.
+     * @return Is this worker dead?
+     */
+    synchronized boolean isDead()
+    {
+        return dead;
+    }
+
+    /** Mark this worker as dead.
+     * 
+     */
+    public synchronized void setDead()
+    {
+        dead = true;
     }
 }

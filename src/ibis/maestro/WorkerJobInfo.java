@@ -3,7 +3,6 @@
  */
 package ibis.maestro;
 
-import ibis.ipl.ReceivePortIdentifier;
 
 class WorkerJobInfo {
     /** Estimated time in ns to complete a job, including communication. */
@@ -42,7 +41,7 @@ class WorkerJobInfo {
 	this.roundTripInterval = roundTripInterval;
     }
 
-    void registerJobCompleted(WorkerInfo workerInfo, ReceivePortIdentifier master, long newRoundTripInterval )
+    void registerJobCompleted( long newRoundTripInterval )
     {
         synchronized( this ) {
 	    updateRoundTripTime( newRoundTripInterval );
@@ -50,13 +49,6 @@ class WorkerJobInfo {
 	}
 	if( Settings.traceWorkerProgress ) {
 	    System.out.println( "New roundtrip time " + Service.formatNanoseconds( newRoundTripInterval )  );
-	}
-	if( Settings.writeTrace ) {
-	    synchronized( this ) {
-		Globals.tracer.traceWorkerSettings( master,
-			workerInfo.port,
-			roundTripInterval );
-	    }
 	}
     }
 

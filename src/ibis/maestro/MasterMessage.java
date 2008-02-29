@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import ibis.ipl.ReceivePortIdentifier;
 
 /**
  * Abstract superclass of messages that the master sends to the worker.
@@ -9,7 +8,7 @@ import ibis.ipl.ReceivePortIdentifier;
  */
 public abstract class MasterMessage extends Message {
 
-    MasterMessage( ReceivePortIdentifier source ){
+    MasterMessage( int source ){
 	super( source );
     }
 }
