@@ -119,11 +119,10 @@ class WorkerInfo {
     /** Register the start of a new job.
      * 
      * @param job The job that was started.
-     * @param jobInfo Information about the job.
      * @param id The id given to the job.
      * @param startTime The time this job was started.
      */
-    public void registerJobStart( Job job, JobInfo jobInfo, long id, long startTime )
+    public void registerJobStart( Job job, long id, long startTime )
     {
         WorkerJobInfo workerJobInfo = workerJobInfoTable.get( job.getType() );
         if( workerJobInfo == null ) {
@@ -131,7 +130,7 @@ class WorkerInfo {
             return;
         }
         workerJobInfo.incrementOutstandingJobs();
-        ActiveJob j = new ActiveJob( job, id, startTime, workerJobInfo, jobInfo );
+        ActiveJob j = new ActiveJob( job, id, startTime, workerJobInfo );
 
         synchronized( activeJobs ) {
             activeJobs.add( j );

@@ -30,6 +30,15 @@ public class ExternalJob implements Job {
     private static long label = 0L;
     private static final JobType jobType = new JobType( "ExternalJob" );
 
+    private static void tryToRemoveFile( File f )
+    {
+        if( f.exists() ){
+            if( !f.delete() ){
+                System.err.println( "Cannot delete existing sandbox file '" + f + '\'' );
+            }
+         }        
+    }
+
     /** Given a sandbox directory remove its contents and the
      * directory itself.
      *
@@ -40,9 +49,9 @@ public class ExternalJob implements Job {
         File files[] = f.listFiles();
 
         for( File fi: files ) {
-            fi.delete();
+            tryToRemoveFile( fi );
         }
-        f.delete();
+        tryToRemoveFile( f );
     }
 
     static class RunResult implements JobProgressValue {
@@ -103,7 +112,11 @@ public class ExternalJob implements Job {
         try {
             // FIXME: more robust sandbox creation.
             sandbox = new File( "/tmp/sandbox-" + label++ );
-            boolean res = sandbox.mkdir();
+            if( !sandbox.mkdir() ){
+                // FIXME: more robust error handling.
+                System.err.println( "Cannot create sanbox directory '" + sandbox + '\'' );
+                return;
+            }
             for( FileContents c: inputFiles ) {
                 c.create( sandbox );
             }

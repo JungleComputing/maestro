@@ -401,7 +401,15 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     public void removeIbis( IbisIdentifier theIbis )
     {
         synchronized( jobSources ) {
-            jobSources.remove( theIbis );
+            int ix = jobSources.size();
+            while( ix>0 ){
+                ix--;
+
+                MasterInfo ji = jobSources.get( ix );
+                if( ji.ibis.equals( theIbis ) ){
+                    jobSources.remove( ix );
+                }
+            }
         }
         // This is a good reason to wake up the queue.
         synchronized (queue ) {

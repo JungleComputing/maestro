@@ -7,7 +7,6 @@ import ibis.ipl.ReceivePortIdentifier;
 import java.io.IOException;
 import java.util.AbstractList;
 import java.util.ArrayList;
-import java.util.Hashtable;
 
 /**
  * A master in the Maestro flow graph framework.
@@ -22,7 +21,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
     private final AbstractList<Job> queue = new ArrayList<Job>();
-    private Hashtable<JobType,JobInfo> jobInfoTable = new Hashtable<JobType, JobInfo>();
 
     private boolean stopped = false;
     private long nextJobId = 0;
@@ -91,9 +89,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         int workerID = -1;
         ReceivePortIdentifier worker = m.port;
         ArrayList<JobType> allowedTypes = m.allowedTypes;
-        long now = System.nanoTime();
         if( Settings.traceWorkerProgress ){
-            Globals.log.reportProgress( "Received work request message " + m + " from worker " + worker + " at " + Service.formatNanoseconds(now) );
+            Globals.log.reportProgress( "Received work request message " + m + " from worker " + worker );
         }
         synchronized( workers ) {
             if( !workers.isKnownWorker( worker ) ){
@@ -275,20 +272,13 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	        job = queue.remove( jobToRun );
 	        jobId = nextJobId++;
 	    }
-	    JobType jobType = job.getType();
-	    JobInfo jobInfo = jobInfoTable.get( jobType );
-	    if( jobInfo == null ) {
-		// We don't have an entry yet for this job type. Create one.
-	        jobInfo = new JobInfo( jobType );
-	        jobInfoTable.put( jobType, jobInfo );
-	    }
 	    if( Settings.traceFastestWorker ) {
 	        System.out.println( "Selected worker " + worker + " as best for job " + job );
 	    }
 	    // FIXME: do we really have to send worker.identifier? isn't jobId enough?
 	    RunJobMessage msg = new RunJobMessage( worker.identifier, job, worker.identifierWithWorker, jobId );
 	    synchronized( workers ) {
-	        worker.registerJobStart( job, jobInfo, jobId, now );
+	        worker.registerJobStart( job, jobId, now );
 	    }
 	    try {
 	        sendPort.send( msg, worker.identifier, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
@@ -366,15 +356,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         workers.removeWorker( theIbis );
     }
 
-    /**
-     * A new ibis has joined the computation.
-     * @param theIbis The ibis that has joined.
-     */
-    public void addIbis( IbisIdentifier theIbis )
-    {
-        // FIXME: implement this.
-    }
-
     /** Returns the identifier of (the receive port of) this worker.
      * 
      * @return The identifier.
@@ -382,38 +363,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     public ReceivePortIdentifier identifier()
     {
         return receivePort.identifier();
-    }
-
-    /** Given the identifier for a worker, wait until this worker
-     * has subscribed itself. Due to possibly unreliable communication,
-     * a remote worker may never subscribe itself. Therefore, only
-     * this method is only safe for local workers.
-     * @param identifier The worker.
-     */
-    void waitForSubscription(ReceivePortIdentifier identifier)
-    {
-        // FIXME: is this still necessary?
-    }
-
-    /**
-     * Wait until the work queue is empty.
-     * 
-     * Used to make sure we drain the work queue as efficiently as possible
-     * before we shut down the master.
-     */
-    public void waitForEmptyQueue() {
-        while( true ) {
-            synchronized( queue ) {
-                if( queue.isEmpty() ) {
-                    return;
-                }
-                try {
-                    queue.wait();
-                } catch (InterruptedException e) {
-                    // Ignore.
-                }
-            }
-        }
     }
 
     /** Print some statistics about the entire master run. */

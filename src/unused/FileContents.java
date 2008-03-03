@@ -33,11 +33,23 @@ public class FileContents implements Serializable {
     public void create( File dir ) throws IOException
     {
         File f = new File( dir, name );
-        
-        f.delete();  // First make sure it doesn't exist.
-        FileWriter output = new FileWriter( f );
-        output.write( contents );
-        output.close();
+
+        if( f.exists() ){
+            if( !f.delete() ){
+                // First make sure it doesn't exist.
+                System.err.println( "Cannot delete file '" + f + "'" );
+            }
+        }
+        FileWriter output = null;
+        try {
+            output = new FileWriter( f );
+            output.write( contents );
+        }
+        finally {
+            if( output != null ){
+                output.close();
+            }
+        }
     }
 
     /** Returns true iff this file has the given name.

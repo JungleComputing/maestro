@@ -108,7 +108,6 @@ public final class Node implements RegistryEventHandler {
     public void joined( IbisIdentifier theIbis )
     {
         registerIbisJoined( theIbis );
-        master.addIbis( theIbis );
         worker.addJobSource( theIbis );
     }
 
@@ -216,7 +215,6 @@ public final class Node implements RegistryEventHandler {
         worker = new Worker( ibis, this, master, allowedTypes, listener );
         worker.start();
         registry.enableEvents();
-        master.waitForSubscription( worker.identifier() );
         if( Settings.traceNodes ) {
             Globals.log.log( "Started a Maestro node" );
         }
@@ -237,14 +235,6 @@ public final class Node implements RegistryEventHandler {
     public void setStopped()
     {
         master.setStopped();
-    }
-
-    /** Finish this node. */
-    public void finish()
-    {
-        master.waitForEmptyQueue();
-        master.setStopped();
-        waitToTerminate();
     }
 
     /**

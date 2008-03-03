@@ -122,7 +122,7 @@ public class PacketSendPort<T extends Serializable> {
      * 
      * @param portname The name of the port.
      */
-    public void printStats( String portname )
+    public synchronized void printStats( String portname )
     {
         System.out.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " messages" );
         if( sentCount>0 ) {

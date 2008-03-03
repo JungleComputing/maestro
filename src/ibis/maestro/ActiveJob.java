@@ -6,23 +6,19 @@ package ibis.maestro;
  *
  */
 class ActiveJob {
-    /** Contractual obligation. */
-    private static final long serialVersionUID = 1L;
     final Job job;
     final long id;
     final WorkerJobInfo workerJobInfo;
-    final JobInfo jobInfo;
 
     /** The time this job was sent to the worker. */
     final long startTime;
 
-    ActiveJob( Job job, long id, long startTime, WorkerJobInfo workerJobInfo, JobInfo jobInfo )
+    ActiveJob( Job job, long id, long startTime, WorkerJobInfo workerJobInfo )
     {
         this.job = job;
         this.id = id;
-        this.startTime = startTime;
         this.workerJobInfo = workerJobInfo;
-        this.jobInfo = jobInfo;
+        this.startTime = startTime;
     }
 
     /**

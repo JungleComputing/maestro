@@ -5,7 +5,6 @@ package ibis.maestro;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.text.DecimalFormat;
 
 /**
  * 
@@ -53,8 +52,6 @@ public class Service
         return new String( res );
     }
     
-    private static final DecimalFormat nsFormatter = new DecimalFormat( "#########,###" );
-
     /** Given a time in nanoseconds, return a neat format string for it.
      * 
      * @param t The time to format.
@@ -64,12 +61,6 @@ public class Service
     {
 	if( t == 0 ) {
 	    return "0 s";
-	}
-	if( false ) {
-	    if( (t % 1000) == 0 ) {
-		return nsFormatter.format( t/1000 ) + "us";
-	    }
-	    return nsFormatter.format( t ) + "ns";
 	}
 	if( t<2000L && t>-2000L ) {
 	    return String.format( "%+5d ns", t );
