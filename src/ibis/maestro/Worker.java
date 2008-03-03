@@ -32,7 +32,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
     private final CompletionListener completionListener;
-    private int exclusiveMaster = -1;
     private long queueEmptyMoment = 0L;
     private final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
@@ -114,11 +113,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         return receivePort.identifier();
     }
 
-    private synchronized void setExclusiveMaster( int port )
-    {
-	exclusiveMaster = port;
-    }
-
     /** Removes and returns a random job source from the list of
      * known job sources. Returns null if the list is empty.
      * 
@@ -128,11 +122,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     {
         MasterInfo res;
 
-        synchronized( this ) {
-            if( exclusiveMaster>=0 ) {
-        	return null;
-            }
-        }
         synchronized( jobSources ){
             final int size = jobSources.size();
             if( size == 0 ){
@@ -192,23 +181,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         }
     }
 
-    /** Tell the given master that we won't do its work any more.
-     * 
-     * @param source The master to resign from.
-     */
-    private void sendResignMessage( int master )
-    {
-	MasterInfo mi = getMasterInfo( master );
-	if( mi != null ) {
-	    WorkerResignMessage msg = new WorkerResignMessage( mi.identifierWithMaster );
-	    try {
-		sendPort.send( msg, master, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
-	    } catch (IOException e) {
-		// We can't send a resign message. Oh well.
-	    }
-        }
-    }
-
     /**
      * Handle a message containing a new job to run.
      * 
@@ -216,24 +188,15 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      */
     private void handleRunJobMessage( RunJobMessage msg )
     {
-	boolean sendResignation = false;
         long now = System.nanoTime();
 
         msg.setQueueTime( now );
-        synchronized( this ) {
-            if( exclusiveMaster>=0 && msg.source != exclusiveMaster ) {
-        	sendResignation = true;
-            }
-        }
-        if( sendResignation ) {
-            // We're closing, please go away.
-            sendResignMessage( msg.source );
-        }
         synchronized( queue ) {
             long queueEmptyInterval = 0L;
 
             if( queueEmptyMoment>0 ){
-        	// The queue was empty before we entered this
+
+                // The queue was empty before we entered this
         	// job in it. Register this with this job,
         	// so that we can give feedback to the master.
                 queueEmptyInterval = now - queueEmptyMoment;
