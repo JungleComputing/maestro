@@ -16,15 +16,25 @@ import java.util.Random;
 @SuppressWarnings("synthetic-access")
 public final class Worker extends Thread implements WorkSource, PacketReceiveListener<MasterMessage> {
     private final Node node;
+    
+    /** The list of all known masters, in the order that they were handed their
+     * id. Thus, element <code>i</code> of the list is guaranteed to have
+     * <code>i</code> as its id; otherwise the entry is empty.
+     */
     private final ArrayList<MasterInfo> masters = new ArrayList<MasterInfo>();
+    
+    /** The list of masters we should ask for (extra) work if we are bored. */
+    private final ArrayList<MasterInfo> jobSources = new ArrayList<MasterInfo>();
+
+    /** The list of job types we know how to handle. */
     private final ArrayList<JobType> allowedTypes;
+
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
-    private CompletionListener completionListener;
+    private final CompletionListener completionListener;
     private int exclusiveMaster = -1;
     private long queueEmptyMoment = 0L;
     private final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
-    private final ArrayList<MasterInfo> jobSources = new ArrayList<MasterInfo>();
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private final WorkThread workThreads[] = new WorkThread[numberOfProcessors];
     private boolean stopped = false;
@@ -64,6 +74,32 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         receivePort.enable();   // We're open for business.
     }
 
+
+    /** Given a master identifier, returns the master info
+     * for the master with that id, or null if there is no such
+     * master (any more).
+     * @param masterID The master id to search for.
+     * @return The master info, or null if there is no such master.
+     */
+    private MasterInfo getMasterInfo( int master )
+    {
+	synchronized( masters ) {
+	    return masters.get( master );
+	}
+    }
+
+    /**
+     * Stop this worker.
+     */
+    public synchronized void setStopped()
+    {
+        stopped = true;
+        synchronized( queue ) {
+            queue.notifyAll();
+        }
+        System.out.println( "Worker is set to stopped" );
+    }
+
     private synchronized boolean isStopped()
     {
         return stopped;
@@ -73,12 +109,12 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      * Returns the identifier of the job submission port of this worker.
      * @return The port identifier.
      */
-    public ReceivePortIdentifier identifier()
+    ReceivePortIdentifier identifier()
     {
         return receivePort.identifier();
     }
-    
-    synchronized void setExclusiveMaster( int port )
+
+    private synchronized void setExclusiveMaster( int port )
     {
 	exclusiveMaster = port;
     }
@@ -156,6 +192,23 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         }
     }
 
+    /** Tell the given master that we won't do its work any more.
+     * 
+     * @param source The master to resign from.
+     */
+    private void sendResignMessage( int master )
+    {
+	MasterInfo mi = getMasterInfo( master );
+	if( mi != null ) {
+	    WorkerResignMessage msg = new WorkerResignMessage( mi.identifierWithMaster );
+	    try {
+		sendPort.send( msg, master, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+	    } catch (IOException e) {
+		// We can't send a resign message. Oh well.
+	    }
+        }
+    }
+
     /**
      * Handle a message containing a new job to run.
      * 
@@ -163,14 +216,22 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      */
     private void handleRunJobMessage( RunJobMessage msg )
     {
+	boolean sendResignation = false;
         long now = System.nanoTime();
-	msg.setQueueTime( now );
-        synchronized( queue ) {
+
+        msg.setQueueTime( now );
+        synchronized( this ) {
             if( exclusiveMaster>=0 && msg.source != exclusiveMaster ) {
-                // We're closing, please go away.
-        	sendResignMessage( msg.source );
+        	sendResignation = true;
             }
+        }
+        if( sendResignation ) {
+            // We're closing, please go away.
+            sendResignMessage( msg.source );
+        }
+        synchronized( queue ) {
             long queueEmptyInterval = 0L;
+
             if( queueEmptyMoment>0 ){
         	// The queue was empty before we entered this
         	// job in it. Register this with this job,
@@ -179,30 +240,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
                 idleTime += queueEmptyInterval;
                 queueEmptyMoment = 0L;
             }
-            msg.setQueueEmptyInterval( queueEmptyInterval );
             queue.add( msg );
             queue.notifyAll();
         }
-    }
-
-    private MasterInfo getMasterInfo( int master )
-    {
-        return masters.get( master );
-    }
-
-    /** Tell the given master that we won't do its work any more.
-     * 
-     * @param source The master to resign from.
-     */
-    private void sendResignMessage( int master )
-    {
-        MasterInfo mi = getMasterInfo( master );
-	WorkerResignMessage msg = new WorkerResignMessage( mi.identifierWithMaster );
-	try {
-	    sendPort.send( msg, master, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
-	} catch (IOException e) {
-	    // We can't send a resign message. Don't worry.
-	}
     }
 
     private void handleJobResultMessage( JobResultMessage result )
@@ -211,7 +251,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             Globals.log.reportProgress( "Received a job result " + result );
         }
         if( completionListener != null ) {
-            completionListener.jobCompleted( node, result.jobId, result.result );
+            synchronized( completionListener ) {
+        	completionListener.jobCompleted( node, result.jobId, result.result );
+            }
         }
     }
 
@@ -249,45 +291,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             handleWorkerAcceptMessage( am );
         }
         else {
-            Globals.log.reportInternalError( "FIXME: handle " + msg );
-        }
-    }
-
-    /** Runs this worker. */
-    @Override
-    public void run()
-    {
-        for( int i=0; i<numberOfProcessors; i++ ) {
-            Service.waitToTerminate( workThreads[i] );
-        }
-        stopTime = System.nanoTime();
-    }
-
-    /**
-     * Stop this worker.
-     */
-    public synchronized void setStopped()
-    {
-        stopped = true;
-        synchronized( queue ) {
-            queue.notifyAll();
-        }
-        System.out.println( "Worker is set to stopped" );
-    }
-
-    /**
-     * We know the given ibis has disappeared from the computation.
-     * Make sure we don't talk to it.
-     * @param theIbis The ibis that was gone.
-     */
-    public void removeIbis( IbisIdentifier theIbis )
-    {
-        synchronized( jobSources ) {
-            jobSources.remove( theIbis );
-        }
-        // This is a good reason to wake up the queue.
-        synchronized (queue ) {
-            queue.notifyAll();
+            Globals.log.reportInternalError( "FIXME: handle messages of type " + msg.getClass() );
         }
     }
 
@@ -301,12 +305,13 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             boolean askForWork = false;
             try {
         	boolean stopping = isStopped();
-                synchronized( queue ) {
+
+        	synchronized( queue ) {
                     if( queue.isEmpty() ) {
                 	if( queueEmptyMoment == 0 ) {
                 	    queueEmptyMoment = System.nanoTime();
                 	}
-                        if( stopping && runningJobs == 0 ) {
+                	if( stopping && runningJobs == 0 ) {
                             // No jobs in queue, and worker is stopped. Return null to
                             // indicate that there won't be further jobs.
                             break;
@@ -351,18 +356,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         return null;
     }
 
-    private MasterInfo searchMaster( int masterID )
-    {
-        synchronized( masters ) {
-            for( MasterInfo mi: masters ) {
-                if( mi.identifier == masterID ) {
-                    return mi;
-                }
-            }
-        }
-        return null;
-    }
-
     /** Reports the result of the execution of a job. (Overrides method in superclass.)
      * @param jobMessage The job that was run run.
      */
@@ -372,13 +365,15 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         long now = System.nanoTime();
         try {
             long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
-
+    
             WorkerMessage msg = new WorkerStatusMessage( jobMessage.workerIdentifier, jobMessage.jobId );
             final int master = jobMessage.source;
             sendPort.send( msg, master, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-            MasterInfo mi = searchMaster( master );
-            synchronized( jobSources ) {
-                jobSources.add( mi );
+            final MasterInfo mi = getMasterInfo( master );
+            if( mi != null ) {
+        	synchronized( jobSources ) {
+        	    jobSources.add( mi );
+        	}
             }
             if( Settings.traceWorkerProgress ) {
         	System.out.println( "Completed job "  + jobMessage );
@@ -399,12 +394,29 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     }
 
     /**
-     * Registers a completion listener with this master.
-     * @param l The completion listener to register.
+     * We know the given ibis has disappeared from the computation.
+     * Make sure we don't talk to it.
+     * @param theIbis The ibis that was gone.
      */
-    public synchronized void setCompletionListener( CompletionListener l )
+    public void removeIbis( IbisIdentifier theIbis )
     {
-        completionListener = l;
+        synchronized( jobSources ) {
+            jobSources.remove( theIbis );
+        }
+        // This is a good reason to wake up the queue.
+        synchronized (queue ) {
+            queue.notifyAll();
+        }
+    }
+
+    /** Runs this worker. */
+    @Override
+    public void run()
+    {
+        for( int i=0; i<numberOfProcessors; i++ ) {
+            Service.waitToTerminate( workThreads[i] );
+        }
+        stopTime = System.nanoTime();
     }
 
     /** Print some statistics about the entire worker run. */

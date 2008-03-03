@@ -13,9 +13,8 @@ public class RunJobMessage extends MasterMessage {
     final int workerIdentifier;
     final Job job;
     final long jobId;
-    private transient long queueTime;
-    private transient long runTime;
-    private transient long queueEmptyInterval;
+    private transient long queueTime = 0;
+    private transient long runTime = 0;
 
     /**
      * FIXME: make source first parameter.
@@ -73,23 +72,5 @@ public class RunJobMessage extends MasterMessage {
     public String toString()
     {
 	return "Job message for job " + jobId;
-    }
-
-    /**
-     * Sets the queue empty interval associated with this job.
-     * @param t The time interval the worker queue was empty before this
-     *          job entered its queue.
-     */
-    public void setQueueEmptyInterval(long t) {
-	this.queueEmptyInterval = t;
-    }
-
-    /**
-     * Gets the queue empty interval associated with this job.
-     * @return The time interval the worker queue was empty before this
-     *          job entered its queue.
-     */
-    public long getQueueEmptyInterval() {
-	return queueEmptyInterval;
     }
 }
