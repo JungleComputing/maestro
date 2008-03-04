@@ -7,7 +7,7 @@ package ibis.maestro;
 class WorkerJobInfo {
     /** Estimated time in ns to complete a job, including communication. */
     private long roundTripInterval;
-    
+
     /** How many instances of this job does this worker currently have? */
     private int outstandingJobs = 0;
 
@@ -22,9 +22,9 @@ class WorkerJobInfo {
     /**
      * Returns the round-trip interval for this worker and this job type, or
      * a very large number if currently there are no job slots.
-     * @return The tround-trip interval.
+     * @return The round-trip interval.
      */
-    synchronized long getRoundTripInterval() {
+    long getRoundTripInterval() {
         if( outstandingJobs>=maximalOutstandingJobs ){
             return Long.MAX_VALUE;
         }
@@ -43,17 +43,15 @@ class WorkerJobInfo {
 
     void registerJobCompleted( long newRoundTripInterval )
     {
-        synchronized( this ) {
-	    updateRoundTripTime( newRoundTripInterval );
-	    outstandingJobs--;
-	}
+	updateRoundTripTime( newRoundTripInterval );
+	outstandingJobs--;
 	if( Settings.traceWorkerProgress ) {
 	    System.out.println( "New roundtrip time " + Service.formatNanoseconds( newRoundTripInterval )  );
 	}
     }
 
     /** Register a new outstanding job. */
-    public synchronized void incrementOutstandingJobs()
+    public void incrementOutstandingJobs()
     {
 	outstandingJobs++;
     }
@@ -61,7 +59,7 @@ class WorkerJobInfo {
     /**
      * Increment the maximal number of outstanding jobs for this worker and this type of work.
      */
-    public synchronized void incrementAllowance()
+    public void incrementAllowance()
     {
         maximalOutstandingJobs++;
     }
@@ -69,7 +67,7 @@ class WorkerJobInfo {
     /** Since there are no jobs in our work queue, reduce the maximal number of
      * outstanding jobs.
      */
-    synchronized void reduceAllowance()
+    void reduceAllowance()
     {
 	int n = maximalOutstandingJobs-outstandingJobs;
 	

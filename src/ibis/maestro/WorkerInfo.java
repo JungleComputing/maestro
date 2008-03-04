@@ -74,9 +74,7 @@ class WorkerInfo {
             Globals.log.reportInternalError( "ignoring reported result from job with unknown id " + id );
             return;
         }
-        synchronized( activeJobs ){
-            activeJobs.remove( e );
-        }
+        activeJobs.remove( e );
         if( Settings.traceMasterProgress ){
             System.out.println( "Master: retired job " + e );		
         }
@@ -99,9 +97,7 @@ class WorkerInfo {
         long now = System.nanoTime();
         long newRoundTripTime = now-e.startTime; // The time to send the job, compute, and report the result.
 
-        synchronized( activeJobs ){
-            activeJobs.remove( e );
-        }
+        activeJobs.remove( e );
         e.workerJobInfo.registerJobCompleted( newRoundTripTime );
         if( Settings.traceMasterProgress ){
             System.out.println( "Master " + master + ": retired job " + e + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripTime ) );
@@ -132,9 +128,7 @@ class WorkerInfo {
         workerJobInfo.incrementOutstandingJobs();
         ActiveJob j = new ActiveJob( job, id, startTime, workerJobInfo );
 
-        synchronized( activeJobs ) {
-            activeJobs.add( j );
-        }	
+        activeJobs.add( j );
     }
 
     /** Given a job id, retract it from the administration.
@@ -190,30 +184,33 @@ class WorkerInfo {
     }
 
     /**
-     *  Increments the maximal number of outstanding jobs for this worker.
-     *  @param jobType The job type for which we want to increase our allowance.
+     * Tries to increment the maximal number of outstanding jobs for this worker.
+     * @param jobType The job type for which we want to increase our allowance.
+     * @return True iff we could increment the allowance of this type.
      */
-    public void incrementAllowance( JobType jobType ) {
+    public boolean incrementAllowance( JobType jobType )
+    {
         WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
         if( workerJobInfo == null ) {
-            System.err.println( "Cannot increment allowance for unregistered job type " + jobType );
-            return;
+            return false;
         }
         workerJobInfo.incrementAllowance();
+        return true;
     }
 
     /** Registers that the worker can support the given types.
-     * @param allowedTypes The list of allowed types that are allowed by
+     * @param allowedType The list of allowed types that are allowed by
      *        this worker.
      */
-    public void updateAllowedTypes( ArrayList<JobType> allowedTypes )
+    public void updateAllowedTypes( JobType allowedType )
     {
-        for( JobType t: allowedTypes ){
-            WorkerJobInfo workerJobInfo = workerJobInfoTable.get( t );
-            if( workerJobInfo == null ) {
-                registerJobType( t );
-            }
-        }
+	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( allowedType );
+	if( workerJobInfo == null ) {
+	    registerJobType( allowedType );
+	}
+	else {
+	    System.err.println( "Duplicate worker registration of worker " + identifier + " for type " + allowedType );
+	}
     }
 
     /** The queue is empty; don't allow too many outstanding jobs.
@@ -230,7 +227,7 @@ class WorkerInfo {
      * Returns true iff this worker is dead.
      * @return Is this worker dead?
      */
-    synchronized boolean isDead()
+    boolean isDead()
     {
         return dead;
     }
@@ -238,7 +235,7 @@ class WorkerInfo {
     /** Mark this worker as dead.
      * 
      */
-    public synchronized void setDead()
+    public void setDead()
     {
         dead = true;
     }

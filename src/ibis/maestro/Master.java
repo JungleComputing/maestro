@@ -40,16 +40,43 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         sendPort = new PacketSendPort<MasterMessage>( ibis );
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
         receivePort.enable();		// We're open for business.
-        startTime = System.nanoTime();    }
+        startTime = System.nanoTime();
+    }
+
+    void setStopped()
+    {
+        synchronized( queue ) {
+            stopped = true;
+            queue.notifyAll();
+        }
+    }
+
+    /**
+     * Returns true iff this master is in stopped mode, has no
+     * jobs in its queue, and has not outstanding jobs on its workers.
+     * @return True iff this master has processed all jobs it ever will.
+     */
+    private boolean isFinished()
+    {
+        synchronized( queue ){
+            if( !stopped ){
+                return false;
+            }
+            if( !queue.isEmpty() ) {
+        	return false;
+            }
+            return workers.areIdle();
+        }
+    }
 
     private void unsubscribeWorker( int worker )
     {
-	synchronized( workers ){
+	if( Settings.traceWorkerList ) {
+	    System.out.println( "unsubscribe of worker " + worker );
+	}
+	synchronized( queue ){
 	    workers.removeWorker( worker );
-	    if( Settings.traceWorkerList ) {
-		System.out.println( "unsubscribe of worker " + worker );
-	    }
-	    workers.notifyAll();
+	    queue.notifyAll();
 	}
     }
 
@@ -58,72 +85,85 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Received a worker status message " + result );
         }
-        synchronized( workers ) {
-            workers.registerWorkerStatus( receivePort.identifier(), result );
-            workers.notifyAll();
-        }
         synchronized( queue ){
-            queue.notifyAll();
+            workers.registerWorkerStatus( receivePort.identifier(), result );
             handledJobCount++;
+            queue.notifyAll();
         }
     }
     
-    private void sendAcceptMessage( int workerID, ReceivePortIdentifier myport, int idOnWorker ) {
+    private void sendAcceptMessage( int workerID, ReceivePortIdentifier myport, int idOnWorker )
+    {
         WorkerAcceptMessage msg = new WorkerAcceptMessage( idOnWorker, myport );
         try{
             sendPort.send( msg, workerID, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         }
         catch( IOException e ){
-            workers.declareDead( workerID );
+            synchronized( queue ) {
+        	workers.declareDead( workerID );
+            }
         }
     }
 
     /**
-     * A (presumably unregistered) worker has sent us a message asking for work.
+     * A worker has sent us a message asking for work. This may be a new
+     * worker, or a known one who wants more work.
      * 
-     * @param m The message to handle.
+     * @param m The work request message.
      */
     private void handleWorkRequestMessage( WorkRequestMessage m )
+    {
+	int workerID = m.source;
+	if( Settings.traceWorkerProgress ){
+	    Globals.log.reportProgress( "Received work request message " + m + " from worker " + workerID );
+	}
+	synchronized( queue ) {
+	    // We already know that this worker can handle this type of
+	    // job, but if he asks again, we can give a larger allowance.
+	    // We only do this if at the moment there is a job of this
+	    // type in the queue.
+	    for( Job e: queue ){
+		JobType jobType = e.getType();
+
+		// We're in need of a worker for this type of job; try to 
+		// increase the allowance of this worker.
+		if( workers.incrementAllowance( workerID, jobType ) ) {
+		    queue.notifyAll();
+		    break;
+		}
+	    }
+	}
+    }
+
+
+    /**
+     * A worker has sent us a message to register itself with us. This is
+     * just to tell us that it's out there and can handle jobs of the given
+     * type. We give each worker an allowance of 1 job; it it wants more it
+     * will have to ask for it.
+     *
+     * @param m The worker registration message.
+     */
+    private void handleRegisterWorkerMessage( RegisterWorkerMessage m )
     {
         boolean sendAcceptMessage = false;
         int workerID = -1;
         ReceivePortIdentifier worker = m.port;
-        ArrayList<JobType> allowedTypes = m.allowedTypes;
-        if( Settings.traceWorkerProgress ){
-            Globals.log.reportProgress( "Received work request message " + m + " from worker " + worker );
+        JobType allowedType = m.allowedType;
+        if( Settings.traceMasterProgress ){
+            Globals.log.reportProgress( "Master: received registration message " + m + " from worker " + worker );
         }
-        synchronized( workers ) {
+        synchronized( queue ) {
             if( !workers.isKnownWorker( worker ) ){
-                workerID = workerCount++;
-                workers.subscribeWorker( receivePort.identifier(), worker, workerID, m.masterIdentifier );
-                sendAcceptMessage = true;
+        	workerID = workerCount++;
+        	workers.subscribeWorker( receivePort.identifier(), worker, workerID, m.masterIdentifier );
+        	sendAcceptMessage = true;
             }
-            workers.registerWorkerJobTypes( worker, allowedTypes );
+            workers.registerWorkerJobTypes( worker, allowedType );
         }
         if( sendAcceptMessage ) {
             sendPort.registerDestination( worker, workerID );
             sendAcceptMessage( workerID, receivePort.identifier(), m.masterIdentifier );
-        }
-        synchronized( queue ){
-            for( Job e: queue ){
-                if( allowedTypes.isEmpty() ){
-                    // We've handled all types of job this worker knows about.
-                    break;
-                }
-                JobType jobType = e.getType();
-
-                int ix = allowedTypes.indexOf( jobType );
-                if( ix>=0 ){
-                    // We're in need of a worker for this type of job; increase the allowance
-                    // of this worker.
-                    workers.incrementAllowance( worker, jobType );
-
-                    // Now remove it from the list to make sure other jobs of the same
-                    // type don't trigger this again.
-                    allowedTypes.remove( ix );
-                }
-            }
-            queue.notifyAll();
         }
     }
 
@@ -143,6 +183,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
             handleWorkerStatusMessage( result );
         }
+        else if( msg instanceof RegisterWorkerMessage ) {
+            RegisterWorkerMessage m = (RegisterWorkerMessage) msg;
+
+            handleRegisterWorkerMessage( m );
+        }
         else if( msg instanceof WorkRequestMessage ) {
             WorkRequestMessage m = (WorkRequestMessage) msg;
 
@@ -158,22 +203,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
     }
 
-    synchronized void setStopped()
-    {
-        stopped = true;
-        synchronized( queue ) {
-            queue.notifyAll();
-        }
-        synchronized( workers ) {
-            workers.notifyAll();
-        }
-    }
-
-    private synchronized boolean isStopped()
-    {
-        return stopped;
-    }
-
     /**
      * Adds the given job to the work queue of this master.
      * Note that the master uses a priority queue for its scheduling,
@@ -183,36 +212,14 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     public void submit( Job submitter, Job j )
     {
+        if( Settings.traceMasterProgress ) {
+            System.out.println( "Master: received job " + j );
+        }
         synchronized( queue ) {
             incomingJobCount++;
             queue.add( j );
             queue.notifyAll();
         }
-        if( Settings.traceMasterProgress ) {
-            System.out.println( "Master: received job " + j );
-        }
-    }
-
-    /**
-     * Returns true iff this master is in stopped mode, has no
-     * jobs in its queue, and has not outstanding jobs on its workers.
-     * @return True iff this master has processed all jobs it ever will.
-     */
-    private boolean isFinished()
-    {
-        boolean workersIdle;
-        boolean queueEmpty;
-
-        if( !isStopped() ){
-            return false;
-        }
-        synchronized( workers ){
-            workersIdle = workers.areIdle();
-            synchronized( queue ){
-        	queueEmpty = queue.isEmpty();
-            }
-        }
-        return workersIdle && queueEmpty;
     }
 
     /** Keep submitting jobs until the queue is empty. We occasionally may
@@ -222,6 +229,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private boolean submitAllJobs()
     {
+	RunJobMessage msg;
+
 	boolean keepRunning = true;
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Next round for master" );
@@ -244,6 +253,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    // of that same job type. What we now do is potentially
 	    // very expensive.
 	    synchronized( queue ) {
+		Job job;
+		long jobId;
+		
 	        // This is a pretty big operation to do in one atomic
 	        // 'gulp'. TODO: see if we can break it up somehow.
 	        int ix = queue.size();
@@ -251,7 +263,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	        while( ix>0 ) {
 	            ix--;
 	
-	            Job job = queue.get( ix );
+	            job = queue.get( ix );
 	            JobType jobType = job.getType();
 	            worker = workers.selectBestWorker( jobType );
 	            if( worker != null ) {
@@ -260,35 +272,28 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	                break;
 	            }
 	        }
-	    }
-	    if( worker == null ){
-	        break;
-	    }
-	    Job job;
-	    long jobId;
-	
-	    // We have a job and a worker. Submit the job.
-	    synchronized( queue ) {
+	        if( worker == null ){
+	            break;
+	        }
+	        // We have a job and a worker. Submit the job.
 	        job = queue.remove( jobToRun );
 	        jobId = nextJobId++;
+	        worker.registerJobStart( job, jobId, now );
+		    msg = new RunJobMessage( worker.identifier, job, worker.identifierWithWorker, jobId );
 	    }
 	    if( Settings.traceFastestWorker ) {
-	        System.out.println( "Selected worker " + worker + " as best for job " + job );
+	        System.out.println( "Selected worker " + worker + " as best for job " + msg.job );
 	    }
 	    // FIXME: do we really have to send worker.identifier? isn't jobId enough?
-	    RunJobMessage msg = new RunJobMessage( worker.identifier, job, worker.identifierWithWorker, jobId );
-	    synchronized( workers ) {
-	        worker.registerJobStart( job, jobId, now );
-	    }
 	    try {
 	        sendPort.send( msg, worker.identifier, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	    }
 	    catch (IOException e) {
 	        // Try to put the paste back in the tube.
 	        synchronized( queue ){
-	            queue.add( job );
+	            queue.add( msg.job );
 	        }
-	        worker.retractJob( jobId );
+	        worker.retractJob( msg.jobId );
 	        Globals.log.reportError( "Could not send job to " + worker + ": putting toothpaste back in the tube" );
 	        e.printStackTrace();
 	        // We don't try to roll back job start time, since the worker

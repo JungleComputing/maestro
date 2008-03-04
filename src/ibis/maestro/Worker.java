@@ -22,13 +22,17 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      * <code>i</code> as its id; otherwise the entry is empty.
      */
     private final ArrayList<MasterInfo> masters = new ArrayList<MasterInfo>();
-    
-    /** The list of masters we should ask for (extra) work if we are bored. */
+
+    /** The list of ibises we haven't registered with yet. */
+    private final LinkedList<IbisIdentifier> unregisteredMasters = new LinkedList<IbisIdentifier>();
+
+    /** The list of masters we should ask for extra work if we are bored. */
     private final ArrayList<MasterInfo> jobSources = new ArrayList<MasterInfo>();
 
     /** The list of job types we know how to handle. */
     private final ArrayList<JobType> allowedTypes;
 
+    private final ArrayList<WorkRequestMessage> workRequests = new ArrayList<WorkRequestMessage>();
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
     private final CompletionListener completionListener;
@@ -153,32 +157,39 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         }
     }
 
-    private void findNewMaster()
+    private void askMoreWork()
     {
+	WorkerMessage msg = null;
 	synchronized( queue ) {
-	    if( jobSettleCount>0 ) {
-		return;
+	    if( !workRequests.isEmpty() ) {
+		// We still have a registration to do; do it first.
+		msg = workRequests.remove( workRequests.size()-1 );
+
+		try {
+	            sendPort.send( msg, m.ibis, Globals.masterReceivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+	            synchronized( queue ) {
+	        	jobSettleCount = 4; // FIXME: symbolize this magic number.
+	            }
+	        }
+	        catch( IOException x ){
+	            Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
+	            x.printStackTrace();
+	        }
+	    }
+	    else {
+		if( jobSettleCount>0 ) {
+		    return;
+		}
+	        MasterInfo m = getRandomJobSource();
+	        if( m == null ){
+	            return;
+	        }
+	        if( Settings.traceWorkerProgress ){
+	            Globals.log.reportProgress( "Asking neighbor " + m.identifier + " for work" );
+	        }
+	        msg = new WorkRequestMessage( m.identifierWithMaster );	            
 	    }
 	}
-        MasterInfo m = getRandomJobSource();
-        if( m == null ){
-            return;
-        }
-        if( Settings.traceWorkerProgress ){
-            Globals.log.reportProgress( "Asking neighbor " + m.identifier + " for work" );
-        }
-        try {
-            WorkRequestMessage msg = new WorkRequestMessage( receivePort.identifier(), m.identifier, allowedTypes );
-    
-            sendPort.send( msg, m.ibis, Globals.masterReceivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
-            synchronized( queue ) {
-        	jobSettleCount = 4; // FIXME: symbolize this magic number.
-            }
-        }
-        catch( IOException x ){
-            Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
-            x.printStackTrace();
-        }
     }
 
     /**
@@ -309,7 +320,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
                     }
                 }
                 if( askForWork ){
-                    findNewMaster();
+                    askMoreWork();
                 }
             }
             catch( InterruptedException e ){

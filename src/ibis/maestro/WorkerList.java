@@ -50,9 +50,7 @@ public class WorkerList {
         if( Settings.traceMasterProgress ){
             System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
         }
- 	synchronized( workers ){
-	    workers.add( worker );
-	}
+        workers.add( worker );
     }
 
     /**
@@ -114,11 +112,9 @@ public class WorkerList {
      */
     public boolean areIdle()
     {
-	synchronized( workers ){
-	    for( WorkerInfo w: workers ) {
-		if( !w.isIdle() ) {
-		    return false;
-		}
+	for( WorkerInfo w: workers ) {
+	    if( !w.isIdle() ) {
+		return false;
 	    }
 	}
 	return true;
@@ -134,27 +130,25 @@ public class WorkerList {
      */
     public WorkerInfo selectBestWorker( JobType jobType )
     {
-        WorkerInfo best = null;
-        long bestInterval = Long.MAX_VALUE;
+	WorkerInfo best = null;
+	long bestInterval = Long.MAX_VALUE;
 
-        synchronized( workers ){
-            for( WorkerInfo wi: workers ){
-                if( !wi.isDead() ) {
-                    long val = wi.getRoundTripInterval( jobType );
+	for( WorkerInfo wi: workers ){
+	    if( !wi.isDead() ) {
+		long val = wi.getRoundTripInterval( jobType );
 
-                    if( val<bestInterval ) {
-                        bestInterval = val;
-                        best = wi;
-                    }
-                }
-            }
+		if( val<bestInterval ) {
+		    bestInterval = val;
+		    best = wi;
+		}
+	    }
 	}
-        if( Settings.traceFastestWorker ){
-            if( best != null ) {
-        	System.out.println( "Selected worker " + best + " for job of type " + jobType + "; roundTripTime=" + Service.formatNanoseconds( bestInterval ) );
-            }
-        }
-        return best;
+	if( Settings.traceFastestWorker ){
+	    if( best != null ) {
+		System.out.println( "Selected worker " + best + " for job of type " + jobType + "; roundTripTime=" + Service.formatNanoseconds( bestInterval ) );
+	    }
+	}
+	return best;
     }
 
     /**
@@ -168,31 +162,31 @@ public class WorkerList {
     }
 
     /**
-     * Increment the maximal number of outstanding jobs for the given worker
-     * for the given job type.
-     * @param worker The worker that should get a higher number of outstanding jobs.
+     * Try to increment the maximal number of outstanding jobs for the given
+     * worker for the given job type.
+     * @param workerID The worker that should get a higher number of outstanding jobs.
      * @param jobType The job type for which we want to increment.
+     * @return True iff we could actually increment the allowance
+     *         for the job type.
      */
-    public void incrementAllowance( ReceivePortIdentifier worker, JobType jobType )
+    public boolean incrementAllowance( int workerID, JobType jobType )
     {
-        int ix = searchWorker(workers, worker);
-        if( ix>=0 ){
-            WorkerInfo wi = workers.get( ix );
-            wi.incrementAllowance( jobType );
-        }
+	WorkerInfo wi = workers.get( workerID );
+	return wi.incrementAllowance( jobType );
     }
 
     /**
      * Register the job types of the given worker.
      * @param worker The worker for which we have job types.
-     * @param allowedTypes The allowed job types for the given worker.
+     * @param allowedType The allowed job types for the given worker.
      */
-    public void registerWorkerJobTypes(ReceivePortIdentifier worker, ArrayList<JobType> allowedTypes) {
-        int ix = searchWorker(workers, worker);
+    public void registerWorkerJobTypes(ReceivePortIdentifier worker, JobType allowedType)
+    {
+        int ix = searchWorker( workers, worker );
         if( ix>=0 ){
             WorkerInfo wi = workers.get( ix );
-            wi.updateAllowedTypes( allowedTypes );
-        }        
+            wi.updateAllowedTypes( allowedType );
+        }
     }
 
     /** We don't have work in the queue. Reduce all excessive allowances,
@@ -200,17 +194,15 @@ public class WorkerList {
      */
     public void reduceAllowances()
     {
-	synchronized( workers ){
-	    for( WorkerInfo wi: workers ) {
-		wi.reduceAllowances();
-	    }
+	for( WorkerInfo wi: workers ) {
+	    wi.reduceAllowances();
 	}
     }
 
     /** Given a worker identifier, declare it dead.
      * @param workerID The worker to declare dead.
      */
-    public synchronized void declareDead( int workerID )
+    public void declareDead( int workerID )
     {
         WorkerInfo w = searchWorker( workers, workerID );
         w.setDead();
