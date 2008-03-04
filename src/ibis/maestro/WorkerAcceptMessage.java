@@ -13,16 +13,19 @@ public class WorkerAcceptMessage extends MasterMessage
     /** Contractual obligation. */
     private static final long serialVersionUID = 141652L;
     final ReceivePortIdentifier port;
+    final int identifierOnMaster;
 
     /**
      * Given some essential information, constructs a new WorkerAcceptMessage.
-     * @param idOnWorker
+     * @param identifierOnWorker The identifier the worker uses for this master.
      * @param port The receive port of the master.
+     * @param identifierOnMaster The identifier the master uses for this worker.
      */
-    public WorkerAcceptMessage( int idOnWorker, ReceivePortIdentifier port )
+    public WorkerAcceptMessage( int identifierOnWorker, ReceivePortIdentifier port, int identifierOnMaster )
     {
-        super( idOnWorker );
+        super( identifierOnWorker );
         this.port = port;
+        this.identifierOnMaster = identifierOnMaster;
     }
     
     /**

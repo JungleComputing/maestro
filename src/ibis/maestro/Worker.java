@@ -26,13 +26,15 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     /** The list of ibises we haven't registered with yet. */
     private final LinkedList<IbisIdentifier> unregisteredMasters = new LinkedList<IbisIdentifier>();
 
+    /** The list of masters we should tell about new job types we can handle. */
+    private final LinkedList<MasterInfo> mastersToUpdate = new LinkedList<MasterInfo>();
+
     /** The list of masters we should ask for extra work if we are bored. */
     private final ArrayList<MasterInfo> jobSources = new ArrayList<MasterInfo>();
 
     /** The list of job types we know how to handle. */
     private final ArrayList<JobType> allowedTypes;
 
-    private final ArrayList<WorkRequestMessage> workRequests = new ArrayList<WorkRequestMessage>();
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
     private final CompletionListener completionListener;
@@ -49,6 +51,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     private long workTime = 0;
     private int runningJobs = 0;
     private int jobSettleCount = 0;
+    private boolean askForWork = true;
     private final Random rng = new Random();
 
     /**
@@ -86,7 +89,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      */
     private MasterInfo getMasterInfo( int master )
     {
-	synchronized( masters ) {
+	synchronized( queue ) {
 	    return masters.get( master );
 	}
     }
@@ -94,18 +97,20 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     /**
      * Stop this worker.
      */
-    public synchronized void setStopped()
+    public void setStopped()
     {
-        stopped = true;
         synchronized( queue ) {
+            stopped = true;
             queue.notifyAll();
         }
         System.out.println( "Worker is set to stopped" );
     }
 
-    private synchronized boolean isStopped()
+    public void stopAskingForWork()
     {
-        return stopped;
+        synchronized( queue ){
+            askForWork = false;
+        }
     }
 
     /**
@@ -126,7 +131,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     {
         MasterInfo res;
 
-        synchronized( jobSources ){
+        synchronized( queue ){
             final int size = jobSources.size();
             if( size == 0 ){
                 return null;
@@ -143,53 +148,116 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      */
     void addJobSource( IbisIdentifier theIbis )
     {
-        MasterInfo mi;
-        synchronized( masters ) {
-            mi = new MasterInfo( masters.size(), -1, theIbis );
-            masters.add( mi );
-        }
-        synchronized( jobSources ){
-            jobSources.add( mi );
-        }
-        // This is a good reason to wake up the queue.
-        synchronized (queue ) {
+        synchronized( queue ){
+            unregisteredMasters.addLast( theIbis );
+            // This is a good reason to wake up the queue.
             queue.notifyAll();
         }
     }
 
+    /**
+     * Returns the first element of the list of unregistered masters, or
+     * <code>null</code> if there is nothing in the list.
+     * @return An unregistered master.
+     */
+    private IbisIdentifier getUnregisteredMaster()
+    {
+        synchronized( queue ){
+            if( unregisteredMasters.isEmpty() ){
+                return null;
+            }
+            return unregisteredMasters.removeFirst();
+        }
+    }
+
+    private void registerWithMaster( IbisIdentifier ibis )
+    {
+        int masterID;
+
+        synchronized( queue ){
+            // Reserve a slot for this master, and get an id.
+            masterID = masters.size();
+            MasterInfo info = new MasterInfo( masterID, -1, ibis );
+            masters.add( info );
+        }
+        RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), masterID );
+        sendPort.tryToSend( ibis, Globals.masterReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+    }
+
+    /** Returns a master to update, or null if there is no such master.
+     * 
+     * @return The master to update.
+     */
+    private MasterInfo getMasterToUpdate()
+    {
+        synchronized( queue ){
+            if( mastersToUpdate.isEmpty() ){
+                return null;
+            }
+            return mastersToUpdate.removeFirst();
+        }
+    }
+
+    /** Update the given master with our new list of allowed types. */
+    private void updateMaster( MasterInfo master )
+    {
+        JobType jobTypes[];
+
+        synchronized( queue ){
+            jobTypes = new JobType[allowedTypes.size()];
+            allowedTypes.toArray( jobTypes );
+        }
+        RegisterTypeMessage msg = new RegisterTypeMessage( master.getIdentifierOnMaster(), jobTypes );
+        sendPort.tryToSend( master.localIdentifier, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+    }
+
+    private void sendJobRequest( MasterInfo master )
+    {
+        WorkRequestMessage msg = new WorkRequestMessage( master.getIdentifierOnMaster() );
+        sendPort.tryToSend( master.localIdentifier, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+    }
+    
     private void askMoreWork()
     {
-	WorkerMessage msg = null;
-	synchronized( queue ) {
-	    if( !workRequests.isEmpty() ) {
-		// We still have a registration to do; do it first.
-		msg = workRequests.remove( workRequests.size()-1 );
+        // First try to register with a new ibis.
+        IbisIdentifier newIbis = getUnregisteredMaster();
+        if( newIbis != null ){
+            if( Settings.traceWorkerProgress ){
+                Globals.log.reportProgress( "Worker: registering with master " + newIbis );
+            }
+            registerWithMaster( newIbis );
+            return;
+        }
+        
+        // Next, try to tell a master about new job types.
+        MasterInfo masterToUpdate = getMasterToUpdate();
+        if( masterToUpdate != null ){
+            if( Settings.traceWorkerProgress ){
+                Globals.log.reportProgress( "Worker: telling master " + masterToUpdate.localIdentifier + " about new job types" );
+            }
+            updateMaster( masterToUpdate );
+            return;
+        }
 
-		try {
-	            sendPort.send( msg, m.ibis, Globals.masterReceivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
-	            synchronized( queue ) {
-	        	jobSettleCount = 4; // FIXME: symbolize this magic number.
-	            }
-	        }
-	        catch( IOException x ){
-	            Globals.log.reportError( "Failed to send a work request message to neighbor " + m );
-	            x.printStackTrace();
-	        }
-	    }
-	    else {
-		if( jobSettleCount>0 ) {
-		    return;
-		}
-	        MasterInfo m = getRandomJobSource();
-	        if( m == null ){
-	            return;
-	        }
-	        if( Settings.traceWorkerProgress ){
-	            Globals.log.reportProgress( "Asking neighbor " + m.identifier + " for work" );
-	        }
-	        msg = new WorkRequestMessage( m.identifierWithMaster );	            
-	    }
-	}
+        synchronized( queue ){
+            if( !askForWork ){
+                return;
+            }
+            jobSettleCount--;
+            if( jobSettleCount>0 ) {
+                return;
+            }
+        }
+
+        // Finally, try to tell a master we want more jobs.
+        MasterInfo jobSource = getRandomJobSource();
+        if( jobSource != null ){
+            if( Settings.traceWorkerProgress ){
+                Globals.log.reportProgress( "Worker: asking master " + jobSource.localIdentifier + " for work" );
+            }
+            sendJobRequest( jobSource );
+            return;
+        }
     }
 
     /**
@@ -237,6 +305,12 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             Globals.log.reportProgress( "Received a worker accept message " + msg );
         }
         sendPort.registerDestination( msg.port, msg.source );
+        synchronized( queue ){
+            MasterInfo master = masters.get( msg.source );
+            master.setIdentifierOnMaster( msg.identifierOnMaster );
+            mastersToUpdate.addFirst( master );
+            queue.notifyAll();
+        }
     }
 
     /**
@@ -278,31 +352,25 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         while( true ) {
             boolean askForWork = false;
             try {
-        	boolean stopping = isStopped();
-
         	synchronized( queue ) {
                     if( queue.isEmpty() ) {
                 	if( queueEmptyMoment == 0 ) {
                 	    queueEmptyMoment = System.nanoTime();
                 	}
-                	if( stopping && runningJobs == 0 ) {
+                	if( stopped && runningJobs == 0 ) {
                             // No jobs in queue, and worker is stopped. Return null to
                             // indicate that there won't be further jobs.
                             break;
                         }
-                        boolean areJobSources;
-                        synchronized( jobSources ){
-                            areJobSources = !jobSources.isEmpty();
-                        }
-                        if( areJobSources ){
-                            askForWork = true;
-                        }
-                        else {
-                            // There was no new master to subscribe to.
+                        if( jobSources.isEmpty() && unregisteredMasters.isEmpty() && mastersToUpdate.isEmpty() ){
+                            // There was no master to subscribe to, update, or ask for work.
                             if( Settings.traceWorkerProgress ) {
                                 System.out.println( "Worker: waiting for new jobs in queue" );
                             }
                             queue.wait();
+                        }
+                        else {
+                            askForWork = true;
                         }
                     }
                     else {
@@ -337,33 +405,24 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     public void reportJobCompletion( RunJobMessage jobMessage )
     {
         long now = System.nanoTime();
-        try {
-            long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
-    
-            WorkerMessage msg = new WorkerStatusMessage( jobMessage.workerIdentifier, jobMessage.jobId );
-            final int master = jobMessage.source;
-            sendPort.send( msg, master, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-            final MasterInfo mi = getMasterInfo( master );
-            if( mi != null ) {
-        	synchronized( jobSources ) {
-        	    jobSources.add( mi );
-        	}
-            }
-            if( Settings.traceWorkerProgress ) {
-        	System.out.println( "Completed job "  + jobMessage );
-            }
-            synchronized( queue ){
-                queueTime += queueInterval;
-                workTime += now-jobMessage.getRunTime();
-                jobCount++;
-                runningJobs--;
-                queue.notifyAll();
-            }
+        long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
+   
+        WorkerMessage msg = new WorkerStatusMessage( jobMessage.workerIdentifier, jobMessage.jobId );
+        final int master = jobMessage.source;
+        sendPort.tryToSend( master, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        if( Settings.traceWorkerProgress ) {
+            System.out.println( "Completed job "  + jobMessage );
         }
-        catch( IOException x ){
-            // Something went wrong in sending the result back.
-            Globals.log.reportError( "Worker failed to send job result" );
-            x.printStackTrace( Globals.log.getPrintStream() );
+        final MasterInfo mi = getMasterInfo( master );
+        synchronized( queue ) {
+            if( mi != null ) {
+                jobSources.add( mi );
+            }
+            queueTime += queueInterval;
+            workTime += now-jobMessage.getRunTime();
+            jobCount++;
+            runningJobs--;
+            queue.notifyAll();
         }
     }
 
@@ -374,7 +433,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      */
     public void removeIbis( IbisIdentifier theIbis )
     {
-        synchronized( jobSources ) {
+        synchronized( queue ) {
             int ix = jobSources.size();
             while( ix>0 ){
                 ix--;
@@ -384,9 +443,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
                     jobSources.remove( ix );
                 }
             }
-        }
-        // This is a good reason to wake up the queue.
-        synchronized (queue ) {
+            // This is a good reason to wake up the queue.
             queue.notifyAll();
         }
     }

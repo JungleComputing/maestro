@@ -94,16 +94,34 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     
     private void sendAcceptMessage( int workerID, ReceivePortIdentifier myport, int idOnWorker )
     {
-        WorkerAcceptMessage msg = new WorkerAcceptMessage( idOnWorker, myport );
-        try{
-            sendPort.send( msg, workerID, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-        }
-        catch( IOException e ){
+        WorkerAcceptMessage msg = new WorkerAcceptMessage( idOnWorker, myport, workerID );
+        long sz = sendPort.tryToSend( workerID, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        if( sz == 0 ){
             synchronized( queue ) {
-        	workers.declareDead( workerID );
+                workers.declareDead( workerID );
             }
         }
     }
+
+    /**
+     * A worker has sent us a message asking for work. This may be a new
+     * worker, or a known one who wants more work.
+     * 
+     * @param m The type registration message.
+     */
+    private void handleRegisterTypeMessage( RegisterTypeMessage m )
+    {
+        int workerID = m.source;
+        if( Settings.traceWorkerProgress ){
+            Globals.log.reportProgress( "Received work request message " + m + " from worker " + workerID );
+        }
+        JobType allowedTypes[] = m.allowedType;
+        synchronized( queue ) {
+            workers.updateJobTypes( m.source, allowedTypes );
+            queue.notifyAll();
+        }
+    }
+
 
     /**
      * A worker has sent us a message asking for work. This may be a new
@@ -135,7 +153,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	}
     }
 
-
     /**
      * A worker has sent us a message to register itself with us. This is
      * just to tell us that it's out there and can handle jobs of the given
@@ -146,25 +163,18 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private void handleRegisterWorkerMessage( RegisterWorkerMessage m )
     {
-        boolean sendAcceptMessage = false;
-        int workerID = -1;
+        int workerID;
         ReceivePortIdentifier worker = m.port;
-        JobType allowedType = m.allowedType;
+
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Master: received registration message " + m + " from worker " + worker );
         }
         synchronized( queue ) {
-            if( !workers.isKnownWorker( worker ) ){
-        	workerID = workerCount++;
-        	workers.subscribeWorker( receivePort.identifier(), worker, workerID, m.masterIdentifier );
-        	sendAcceptMessage = true;
-            }
-            workers.registerWorkerJobTypes( worker, allowedType );
+            workerID = workers.subscribeWorker( receivePort.identifier(), worker, m.masterIdentifier );
+            workerCount++;
         }
-        if( sendAcceptMessage ) {
-            sendPort.registerDestination( worker, workerID );
-            sendAcceptMessage( workerID, receivePort.identifier(), m.masterIdentifier );
-        }
+        sendPort.registerDestination( worker, workerID );
+        sendAcceptMessage( workerID, receivePort.identifier(), m.masterIdentifier );
     }
 
     /**
@@ -183,15 +193,20 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
             handleWorkerStatusMessage( result );
         }
-        else if( msg instanceof RegisterWorkerMessage ) {
-            RegisterWorkerMessage m = (RegisterWorkerMessage) msg;
-
-            handleRegisterWorkerMessage( m );
-        }
         else if( msg instanceof WorkRequestMessage ) {
             WorkRequestMessage m = (WorkRequestMessage) msg;
 
             handleWorkRequestMessage( m );
+        }
+        else if( msg instanceof RegisterTypeMessage ) {
+            RegisterTypeMessage m = (RegisterTypeMessage) msg;
+
+            handleRegisterTypeMessage( m );
+        }
+        else if( msg instanceof RegisterWorkerMessage ) {
+            RegisterWorkerMessage m = (RegisterWorkerMessage) msg;
+
+            handleRegisterWorkerMessage( m );
         }
         else if( msg instanceof WorkerResignMessage ) {
             WorkerResignMessage m = (WorkerResignMessage) msg;
@@ -279,23 +294,18 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	        job = queue.remove( jobToRun );
 	        jobId = nextJobId++;
 	        worker.registerJobStart( job, jobId, now );
-		    msg = new RunJobMessage( worker.identifier, job, worker.identifierWithWorker, jobId );
+	        msg = new RunJobMessage( worker.identifier, job, worker.identifierWithWorker, jobId );
 	    }
 	    if( Settings.traceFastestWorker ) {
 	        System.out.println( "Selected worker " + worker + " as best for job " + msg.job );
 	    }
-	    // FIXME: do we really have to send worker.identifier? isn't jobId enough?
-	    try {
-	        sendPort.send( msg, worker.identifier, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-	    }
-	    catch (IOException e) {
+	    long sz = sendPort.tryToSend( worker.identifier, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+	    if( sz == 0 ){
 	        // Try to put the paste back in the tube.
 	        synchronized( queue ){
 	            queue.add( msg.job );
+	            worker.retractJob( msg.jobId );
 	        }
-	        worker.retractJob( msg.jobId );
-	        Globals.log.reportError( "Could not send job to " + worker + ": putting toothpaste back in the tube" );
-	        e.printStackTrace();
 	        // We don't try to roll back job start time, since the worker
 	        // may in fact be busy.
 	    }
@@ -396,7 +406,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
 	JobResultMessage msg = new JobResultMessage( -1, value, receiver.getId() );
         try {
-            sendPort.send( msg, ibis, Globals.workerReceivePortName, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+            sendPort.send( ibis, Globals.workerReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         }
         catch (IOException e) {
             e.printStackTrace( System.err );

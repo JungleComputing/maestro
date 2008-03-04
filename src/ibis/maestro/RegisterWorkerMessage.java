@@ -3,8 +3,9 @@ package ibis.maestro;
 import ibis.ipl.ReceivePortIdentifier;
 
 /**
- * A message telling a master that we would like to receive jobs.
- * 
+ * A message from a worker to a master, telling it that the worker exists, and which identifier the
+ * worker wants the master to use when it talks to it.
+ *
  * @author Kees van Reeuwijk
  *
  */
@@ -19,14 +20,12 @@ public class RegisterWorkerMessage extends WorkerMessage {
     final int masterIdentifier;
 
     /**
-     * Constructs a new work request message.
-     * @param worker Who is asking for work? (-1 means, no ID yet).
+     * Constructs a new worker registration message.
      * @param port The receive port to use to submit jobs.
      * @param identifier The identifier to use.
-     * @param allowedTypes Which types of jobs can it handle?
      */
-    RegisterWorkerMessage( ReceivePortIdentifier port, int identifier, JobType allowedType ){
-        // FIXME: move source down from superclasses.
+    RegisterWorkerMessage( ReceivePortIdentifier port, int identifier )
+    {
 	super( -1 );
 	this.port = port;
 	this.masterIdentifier = identifier;

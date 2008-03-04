@@ -44,13 +44,15 @@ public class WorkerList {
         return -1;
     }
 
-    void subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, int workerID, int identifierForWorker )
+    int subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, int identifierForWorker )
     {
+        int workerID = workers.size();
 	WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker );
         if( Settings.traceMasterProgress ){
             System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
         }
         workers.add( worker );
+        return workerID;
     }
 
     /**
@@ -204,7 +206,21 @@ public class WorkerList {
      */
     public void declareDead( int workerID )
     {
-        WorkerInfo w = searchWorker( workers, workerID );
+        WorkerInfo w = workers.get( workerID );
         w.setDead();
+    }
+
+    /** Given a new list of allowed types, update our adminstration
+     * of the given worker.
+     * 
+     * @param workerID The id of the worker that supports these types.
+     * @param allowedTypes The list of types supported by this worker.
+     */
+    public void updateJobTypes(int workerID, JobType[] allowedTypes)
+    {
+        WorkerInfo w = workers.get( workerID );
+        for( JobType t: allowedTypes ){
+            w.updateAllowedTypes( t );
+        }
     }
 }

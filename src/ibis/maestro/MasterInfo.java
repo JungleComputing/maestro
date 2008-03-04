@@ -11,18 +11,27 @@ import ibis.ipl.IbisIdentifier;
  */
 class MasterInfo {
     /** The identifier of this master within our own administration. */
-    final int identifier;
+    final int localIdentifier;
 
     /** The identifier the master wants to see when we talk to it. */
-    final int identifierWithMaster;
+    private int identifierOnMaster;
 
     /** The ibis this master lives on. */
     final IbisIdentifier ibis;
 
-    MasterInfo( int identifier, int identifierWithMaster, IbisIdentifier ibis )
+    MasterInfo( int localIdentifier, int identifierWithMaster, IbisIdentifier ibis )
     {
-	this.identifier = identifier;
-	this.identifierWithMaster = identifierWithMaster;
+	this.localIdentifier = localIdentifier;
+	this.identifierOnMaster = identifierWithMaster;
 	this.ibis = ibis;
+    }
+
+    public void setIdentifierOnMaster(int identifierOnMaster) {
+        this.identifierOnMaster = identifierOnMaster;
+    }
+    
+    public int getIdentifierOnMaster()
+    {
+        return identifierOnMaster;
     }
 }

@@ -10,7 +10,6 @@ import ibis.ipl.RegistryEventHandler;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Properties;
 
 /**
@@ -29,9 +28,6 @@ public final class Node implements RegistryEventHandler {
     /** The list of maestro nodes in this computation. */
     private ArrayList<MaestroInfo> maestros = new ArrayList<MaestroInfo>();
     private boolean isMaestro;
-    private int ibisNumber = 0;
-
-    private HashMap<IbisIdentifier, Integer> ibisIdentifierToNumber = new HashMap<IbisIdentifier, Integer>();
 
     /** The list of maestros in this computation. */
     private static class MaestroInfo {
@@ -40,15 +36,6 @@ public final class Node implements RegistryEventHandler {
 	MaestroInfo(IbisIdentifier id ) {
 	    this.ibis = id;
 	}
-    }
-
-    private void registerIbis( IbisIdentifier theIbis )
-    {
-        synchronized( ibisIdentifierToNumber ) {
-            if( !ibisIdentifierToNumber.containsKey( theIbis ) ) {
-                ibisIdentifierToNumber.put( theIbis, ibisNumber++ );
-            }
-        }
     }
 
     /**
@@ -64,7 +51,6 @@ public final class Node implements RegistryEventHandler {
      */
     private void registerIbisJoined( IbisIdentifier id )
     {
-        registerIbis( id );
         synchronized( maestros ){
             for( MaestroInfo m: maestros ) {
                 if( m.ibis.equals( id ) ) {
@@ -234,6 +220,7 @@ public final class Node implements RegistryEventHandler {
      */
     public void setStopped()
     {
+        worker.stopAskingForWork();
         master.setStopped();
     }
 

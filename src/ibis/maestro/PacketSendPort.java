@@ -54,13 +54,13 @@ public class PacketSendPort<T extends Serializable> {
 
     /**
      * Sends the given data to the given port.
-     * @param data The data to send.
      * @param destination The port to send it to.
+     * @param data The data to send.
      * @param timeout The timeout of the transmission.
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
-    public synchronized long send( T data, int destination, int timeout ) throws IOException
+    private synchronized long send( int destination, T data, int timeout ) throws IOException
     {
         long len;
 
@@ -87,14 +87,14 @@ public class PacketSendPort<T extends Serializable> {
 
     /**
      * Sends the given data to the port with the given name on the given ibis.
-     * @param data The data to send.
      * @param receiver The port to send it to.
      * @param portname The name of the port to send to.
+     * @param data The data to send.
      * @param timeout The timeout on the port.
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
-    public synchronized long send( T data, IbisIdentifier receiver, String portname, int timeout ) throws IOException
+    public synchronized long send( IbisIdentifier receiver, String portname, T data, int timeout ) throws IOException
     {
         long len;
 
@@ -129,6 +129,44 @@ public class PacketSendPort<T extends Serializable> {
             System.out.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
             System.out.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
         }
+    }
+
+    /** 
+     * Tries to send a message to the given ibis and port name.
+     * @param ibis2 The ibis to send the message to.
+     * @param portName The port to send  the message to.
+     * @param msg The message to send.
+     * @param timeout The timeout on the message.
+     * @return The number of transmitted bytes, or 0 if the message could not be sent.
+     */
+    public long tryToSend(IbisIdentifier ibis2, String portName, T msg, int timeout) {
+        long sz = 0;
+        try {
+            sz = send( ibis2, portName, msg, timeout );
+        } catch (IOException e) {
+            Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to ibis " + ibis2 );
+            e.printStackTrace( Globals.log.getPrintStream() );
+        }
+        return sz;
+    }
+
+
+    /**
+     * Sends the given data to the given port.
+     * @param msg The data to send.
+     * @param destination The port to send it to.
+     * @param timeout The timeout of the transmission.
+     * @return The length of the transmitted data, or 0 if nothing could be transmitted.
+     */
+    public long tryToSend( int destination, T msg, int timeout ) {
+        long sz = 0;
+        try {
+            sz = send( destination, msg, timeout );
+        } catch (IOException e) {
+            Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to master " + destination );
+            e.printStackTrace( Globals.log.getPrintStream() );
+        }
+        return sz;
     }
 
 }

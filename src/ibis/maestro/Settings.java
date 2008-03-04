@@ -9,37 +9,30 @@ package ibis.maestro;
 public class Settings {
     // Timeout values.
     
-    /** Work request timeout in ms on optional communication. */
+    /** Message transmission timeout in ms on optional communication. */
     public static final int OPTIONAL_COMMUNICATION_TIMEOUT = 40000;
     
-    /** Messate transmission timeout in ms on essential communications. */
+    /** Message transmission timeout in ms on essential communications. */
     public static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 60000;
+
+    /** The number of connections we maximally keep open. */
+    public static final int CONNECTION_CACHE_SIZE = 3;
 
     // Debugging flags.
     
-    /**
-     * Trace the progress of workers?
-     */
+    /** Trace the progress of workers? */
     public static final boolean traceWorkerProgress = false;
 
-    /**
-     * Trace the progress of the worker lists of masters.
-     */
+    /** Trace the progress of the worker lists of masters. */
     public static final boolean traceWorkerList = false;
     
-    /**
-     * Trace the creation and destruction of Nodes.
-     */
+    /** Trace the creation and destruction of Nodes. */
     public static final boolean traceNodes = false;
 
-    /**
-     * Trace the selection of the fastest worker.
-     */
+    /** Trace the selection of the fastest worker. */
     public static final boolean traceFastestWorker = false;
 
-    /**
-     * Trace the progress of masters?
-     */
+    /** Trace the progress of masters? */
     public static final boolean traceMasterProgress = false;
 
     /** Trace the adventures of the precompletion interval variable? */
