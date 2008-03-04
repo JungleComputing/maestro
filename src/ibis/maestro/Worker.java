@@ -106,8 +106,14 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         System.out.println( "Worker is set to stopped" );
     }
 
+    /**
+     * Tells this worker not to ask for work any more.
+     */
     public void stopAskingForWork()
     {
+	if( Settings.traceWorkerProgress ) {
+	    System.out.println( "Worker: don't ask for work" );
+	}
         synchronized( queue ){
             askForWork = false;
         }
@@ -398,6 +404,16 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         return null;
     }
 
+    private static boolean member( ArrayList<MasterInfo> l, MasterInfo e )
+    {
+	for( MasterInfo mi: l ) {
+	    if( mi == e ) {
+		return true;
+	    }
+	}
+	return false;
+    }
+
     /** Reports the result of the execution of a job. (Overrides method in superclass.)
      * @param jobMessage The job that was run run.
      */
@@ -416,7 +432,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         final MasterInfo mi = getMasterInfo( master );
         synchronized( queue ) {
             if( mi != null ) {
-                jobSources.add( mi );
+        	if( !member( jobSources, mi ) ) {
+        	    jobSources.add( mi );
+        	}
             }
             queueTime += queueInterval;
             workTime += now-jobMessage.getRunTime();

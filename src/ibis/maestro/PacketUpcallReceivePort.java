@@ -44,7 +44,6 @@ public class PacketUpcallReceivePort<T extends Serializable> implements MessageU
     public void upcall(ReadMessage msg) throws IOException, ClassNotFoundException
     {
         T data = (T) msg.readObject();
-        //msg.finish();
         listener.messageReceived( this, data );
     }
     
@@ -55,15 +54,6 @@ public class PacketUpcallReceivePort<T extends Serializable> implements MessageU
     public ReceivePortIdentifier identifier()
     {
         return port.identifier();
-    }
-
-    /**
-     * Close this port.
-     * @throws IOException
-     */
-    public void close() throws IOException
-    {
-	port.close();
     }
 
     /** Enable this port. */

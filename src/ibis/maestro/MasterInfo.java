@@ -26,10 +26,18 @@ class MasterInfo {
 	this.ibis = ibis;
     }
 
+    /**
+     * Sets the identifier that we have on this master to the given value.
+     * @param identifierOnMaster The identifier on this master.
+     */
     public void setIdentifierOnMaster(int identifierOnMaster) {
         this.identifierOnMaster = identifierOnMaster;
     }
     
+    /**
+     * Gets the identifier that we have on this master.
+     * @return The identifier.
+     */
     public int getIdentifierOnMaster()
     {
         return identifierOnMaster;

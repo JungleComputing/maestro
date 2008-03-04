@@ -351,12 +351,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	while( active ){
 	    active = submitAllJobs( );
 	}
-        try {
-            receivePort.close();
-        }
-        catch( IOException x ) {
-            // Nothing we can do about it.
-        }
         stopTime = System.nanoTime();
         System.out.println( "End of master thread" );
     }

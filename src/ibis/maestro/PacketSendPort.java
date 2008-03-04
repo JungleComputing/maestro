@@ -41,9 +41,17 @@ public class PacketSendPort<T extends Serializable> {
         int sentBytes = 0;
         final ReceivePortIdentifier portIdentifier;
 
+        /** Create a new destination info entry.
+         * @param portIdentifier The destination port.
+         */
         public DestinationInfo( ReceivePortIdentifier portIdentifier ){
             this.portIdentifier = portIdentifier;
         }
+
+        /** Print statistics for this destination. */
+	public void printStats() {
+	    System.out.format( " %5d messages %7d bytes; port %s\n", sentCount, sentBytes, portIdentifier.toString() );
+	}
         
         
     }
@@ -69,6 +77,9 @@ public class PacketSendPort<T extends Serializable> {
                 return clockHand;
             }
             if( e.recentlyUsed ){
+        	// Next round it will not be considered recently used,
+        	// unless it is used. For now don't consider it an
+        	// empty slot.
                 e.recentlyUsed = false;
             }
             else {
@@ -82,8 +93,8 @@ public class PacketSendPort<T extends Serializable> {
     }
 
     /**
-     * Create a cache slot for the given connection. If necessary evict the old user.
-     * @return the cache slot that was reserved.
+     * Create a cache slot for the given connection. If necessary evict the
+     * old entry.
      * @throws IOException 
      */
     private void ensureOpenDestination( DestinationInfo newDestination, int timeout ) throws IOException
@@ -206,6 +217,28 @@ public class PacketSendPort<T extends Serializable> {
             System.out.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
             System.out.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
         }
+        for( DestinationInfo i: destinations ) {
+            i.printStats();
+        }
+    }
+    
+    /**
+     * Tries to close all open connections.
+     * @param timeout The timeout on every close attempt.
+     */
+    public void close()
+    {
+	for( CacheInfo e: cache ) {
+	    if( e != null ) {
+		try {
+		    e.port.close();
+		}
+		catch( IOException x ) {
+		    Globals.log.reportError( "Cannot close cached send port" );
+		    x.printStackTrace( Globals.log.getPrintStream() );
+		}
+	    }
+	}
     }
 
     /** 
