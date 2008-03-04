@@ -25,15 +25,93 @@ public class PacketSendPort<T extends Serializable> {
     private long sendTime = 0;
     private long adminTime = 0;
     private int sentCount = 0;
+    private int evictions = 0;
+    private final CacheInfo cache[] = new CacheInfo[Settings.CONNECTION_CACHE_SIZE];
+    int clockHand = 0;
 
     /** The list of known destinations.
      * Register a destination before trying to send to it.
      */
-    private ArrayList<ReceivePortIdentifier> destinations = new ArrayList<ReceivePortIdentifier>();
+    private ArrayList<DestinationInfo> destinations = new ArrayList<DestinationInfo>();
+
+    /** One entry in the list of destinations. */
+    static class DestinationInfo {
+        CacheInfo cacheSlot;
+        int sentCount = 0;
+        int sentBytes = 0;
+        final ReceivePortIdentifier portIdentifier;
+
+        public DestinationInfo( ReceivePortIdentifier portIdentifier ){
+            this.portIdentifier = portIdentifier;
+        }
+        
+        
+    }
+
+    /** One entry in the connection cache administration. */
+    static class CacheInfo {
+        DestinationInfo destination;
+        boolean recentlyUsed;
+        SendPort port;
+    }
 
     PacketSendPort( Ibis ibis )
     {
         this.ibis = ibis;
+    }
+
+    /** Return an empty slot in the cache. */
+    private int searchEmptySlot()
+    {
+        for(;;){
+            CacheInfo e = cache[clockHand];
+            if( e == null ){
+                return clockHand;
+            }
+            if( e.recentlyUsed ){
+                e.recentlyUsed = false;
+            }
+            else {
+                return clockHand;
+            }
+            clockHand++;
+            if( clockHand>=cache.length ){
+                clockHand = 0;
+            }
+        }
+    }
+
+    /**
+     * Create a cache slot for the given connection. If necessary evict the old user.
+     * @return the cache slot that was reserved.
+     * @throws IOException 
+     */
+    private void ensureOpenDestination( DestinationInfo newDestination, int timeout ) throws IOException
+    {
+        if( newDestination.cacheSlot != null ){
+            return;
+        }
+        int ix = searchEmptySlot();
+        
+        CacheInfo e = cache[ix];
+        if( e == null ){
+            // An unused cache slot. Start to use it.
+            e = cache[ix] = new CacheInfo();
+        }
+        else {
+            // Somebody was using this cache slot. Evict him.
+            e.port.close();
+            e.destination.cacheSlot = null;
+            evictions++;
+        }
+        e.destination = newDestination;
+        newDestination.cacheSlot = e;
+        long tStart = System.nanoTime();
+        SendPort port = ibis.createSendPort( portType );
+        port.connect( newDestination.portIdentifier, timeout, true );
+        long tEnd = System.nanoTime();
+        adminTime += (tEnd-tStart);
+        e.port = port;
     }
 
     /**
@@ -49,7 +127,7 @@ public class PacketSendPort<T extends Serializable> {
         if( destinations.get( identifier ) != null ) {
             System.err.println( "Internal error: duplicate registration for sendport ID " + identifier + ": old=" + destinations.get( identifier ) + "; new=" + port );
         }
-        destinations.set( identifier, port );
+        destinations.set( identifier, new DestinationInfo( port ) );
     }
 
     /**
@@ -64,23 +142,22 @@ public class PacketSendPort<T extends Serializable> {
     {
         long len;
 
+        DestinationInfo info = destinations.get( destination );
+        ensureOpenDestination( info, timeout );
         long startTime = System.nanoTime();
-        long setupTime;
-        ReceivePortIdentifier receivePort = destinations.get( destination );
-        SendPort port = ibis.createSendPort( portType );
-        port.connect( receivePort, timeout, true );
-        setupTime = System.nanoTime();
-        WriteMessage msg = port.newMessage();
+        final CacheInfo cacheInfo = info.cacheSlot;
+        WriteMessage msg = cacheInfo.port.newMessage();
         msg.writeObject( data );
         len = msg.finish();
-        port.close();
+        cacheInfo.recentlyUsed = true;
         long stopTime = System.nanoTime();
-        adminTime += (setupTime-startTime);
-        sendTime += (stopTime-setupTime);
+        sendTime += (stopTime-startTime);
         sentBytes += len;
         sentCount++;
+        info.sentBytes += len;
+        info.sentCount++;
         if( Settings.traceSends ) {
-            System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) );
+            System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-startTime) );
         }
         return len;
     }
@@ -124,7 +201,7 @@ public class PacketSendPort<T extends Serializable> {
      */
     public synchronized void printStats( String portname )
     {
-        System.out.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " messages" );
+        System.out.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " messages; " + evictions + " evictions" );
         if( sentCount>0 ) {
             System.out.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
             System.out.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
