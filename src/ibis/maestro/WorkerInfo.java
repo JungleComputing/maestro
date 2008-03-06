@@ -4,6 +4,8 @@
 package ibis.maestro;
 
 import ibis.ipl.ReceivePortIdentifier;
+import ibis.maestro.Master.WorkerIdentifier;
+import ibis.maestro.Worker.MasterIdentifier;
 
 import java.util.ArrayList;
 import java.util.Enumeration;
@@ -11,7 +13,7 @@ import java.util.Hashtable;
 
 class WorkerInfo {
     /** Our identifier with this worker. */
-    final int identifierWithWorker;
+    final MasterIdentifier identifierWithWorker;
 
     /** The active jobs of this worker. */
     private final ArrayList<ActiveJob> activeJobs = new ArrayList<ActiveJob>();
@@ -19,7 +21,7 @@ class WorkerInfo {
     private final Hashtable<JobType,WorkerJobInfo> workerJobInfoTable = new Hashtable<JobType, WorkerJobInfo>();
 
     /** Our local identifier of this worker. */
-    public final int identifier;
+    public final Master.WorkerIdentifier identifier;
 
     /** The receive port of the worker. */
     public final ReceivePortIdentifier port;
@@ -36,7 +38,7 @@ class WorkerInfo {
         return "Worker";
     }
 
-    WorkerInfo( ReceivePortIdentifier port, int identifier, int identifierForWorker )
+    WorkerInfo( ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker )
     {
         this.port = port;
         this.identifier = identifier;
@@ -177,7 +179,6 @@ class WorkerInfo {
     {
         WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
         if( workerJobInfo == null ) {
-            System.err.println( "Cannot get round-trip interval for unregistered job type " + jobType );
             return -1;
         }
         return workerJobInfo.getRoundTripInterval();

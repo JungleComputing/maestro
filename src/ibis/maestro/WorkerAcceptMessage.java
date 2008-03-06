@@ -2,6 +2,8 @@
 package ibis.maestro;
 
 import ibis.ipl.ReceivePortIdentifier;
+import ibis.maestro.Master.WorkerIdentifier;
+import ibis.maestro.Worker.MasterIdentifier;
 
 /**
  * A message from a master to a worker, telling it that it has been accepted and what the receive port of the master is.
@@ -13,19 +15,19 @@ public class WorkerAcceptMessage extends MasterMessage
     /** Contractual obligation. */
     private static final long serialVersionUID = 141652L;
     final ReceivePortIdentifier port;
-    final int identifierOnMaster;
+    final Master.WorkerIdentifier identifierOnMaster;
 
     /**
      * Given some essential information, constructs a new WorkerAcceptMessage.
-     * @param identifierOnWorker The identifier the worker uses for this master.
+     * @param idOnWorker The identifier the worker uses for this master.
      * @param port The receive port of the master.
-     * @param identifierOnMaster The identifier the master uses for this worker.
+     * @param workerID The identifier the master uses for this worker.
      */
-    public WorkerAcceptMessage( int identifierOnWorker, ReceivePortIdentifier port, int identifierOnMaster )
+    public WorkerAcceptMessage( MasterIdentifier idOnWorker, ReceivePortIdentifier port, WorkerIdentifier workerID )
     {
-        super( identifierOnWorker );
+        super( idOnWorker );
         this.port = port;
-        this.identifierOnMaster = identifierOnMaster;
+        this.identifierOnMaster = workerID;
     }
     
     /**

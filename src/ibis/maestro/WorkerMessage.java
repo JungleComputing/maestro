@@ -10,8 +10,9 @@ public abstract class WorkerMessage extends Message {
 
     /** Contractual obligation. */
     private static final long serialVersionUID = 1547379144090317151L;
-    
-    WorkerMessage( int source ){
-	super( source );
+    final Master.WorkerIdentifier source;
+
+    WorkerMessage( Master.WorkerIdentifier source ){
+	this.source = source;
     }
 }

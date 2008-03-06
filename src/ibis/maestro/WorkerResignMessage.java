@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.maestro.Master.WorkerIdentifier;
+
 
 /**
  * A message to tell the master not to send jobs to this worker any more.
@@ -10,7 +12,7 @@ class WorkerResignMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
-    WorkerResignMessage( int worker ){
+    WorkerResignMessage( WorkerIdentifier worker ){
 	super( worker );
     }
 }

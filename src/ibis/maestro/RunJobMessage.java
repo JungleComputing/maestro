@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.maestro.Master.WorkerIdentifier;
+
 
 /**
  * Tell the worker to execute the job contained in this message.
@@ -10,7 +12,7 @@ package ibis.maestro;
 public class RunJobMessage extends MasterMessage {
     /** */
     private static final long serialVersionUID = 1L;
-    final int workerIdentifier;
+    final WorkerIdentifier workerIdentifier;
     final Job job;
     final long jobId;
     private transient long queueTime = 0;
@@ -23,7 +25,7 @@ public class RunJobMessage extends MasterMessage {
      * @param source Who sent this job, as an identifier we know about.
      * @param jobId The identifier of the job.
      */
-    RunJobMessage( int workerIdentifier, Job job, int source, long jobId )
+    RunJobMessage( WorkerIdentifier workerIdentifier, Job job, Worker.MasterIdentifier source, long jobId )
     {
 	super( source );
 	this.workerIdentifier = workerIdentifier;

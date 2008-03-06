@@ -30,6 +30,44 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final long startTime;
     private long stopTime = 0;
 
+    static final class WorkerIdentifier {
+	final int value;
+	
+	private WorkerIdentifier( int value )
+	{
+	    this.value = value;
+	}
+
+	/**
+	 * @return
+	 */
+	@Override
+	public int hashCode() {
+	    final int prime = 31;
+	    int result = 1;
+	    result = prime * result + value;
+	    return result;
+	}
+
+	/**
+	 * @param obj The object to compare to.
+	 * @return True iff the two identifiers are equal.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+	    if (this == obj)
+		return true;
+	    if (obj == null)
+		return false;
+	    if (getClass() != obj.getClass())
+		return false;
+	    final WorkerIdentifier other = (WorkerIdentifier) obj;
+	    if (value != other.value)
+		return false;
+	    return true;
+	}
+    }
+
     /** Creates a new master instance.
      * @param ibis The Ibis instance this master belongs to.
      * @throws IOException Thrown if the master cannot be created.
@@ -69,7 +107,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
     }
 
-    private void unsubscribeWorker( int worker )
+    private void unsubscribeWorker( IbisIdentifier worker )
     {
 	if( Settings.traceWorkerList ) {
 	    System.out.println( "unsubscribe of worker " + worker );
@@ -92,10 +130,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
     }
     
-    private void sendAcceptMessage( int workerID, ReceivePortIdentifier myport, int idOnWorker )
+    private void sendAcceptMessage( Master.WorkerIdentifier workerID, ReceivePortIdentifier myport, Worker.MasterIdentifier idOnWorker )
     {
         WorkerAcceptMessage msg = new WorkerAcceptMessage( idOnWorker, myport, workerID );
-        long sz = sendPort.tryToSend( workerID, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        long sz = sendPort.tryToSend( workerID.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( sz == 0 ){
             synchronized( queue ) {
                 workers.declareDead( workerID );
@@ -111,7 +149,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private void handleRegisterTypeMessage( RegisterTypeMessage m )
     {
-        int workerID = m.source;
+        WorkerIdentifier workerID = m.source;
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Received work request message " + m + " from worker " + workerID );
         }
@@ -131,7 +169,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private void handleWorkRequestMessage( WorkRequestMessage m )
     {
-	int workerID = m.source;
+	WorkerIdentifier workerID = m.source;
 	if( Settings.traceWorkerProgress ){
 	    Globals.log.reportProgress( "Received work request message " + m + " from worker " + workerID );
 	}
@@ -299,7 +337,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    if( Settings.traceFastestWorker ) {
 	        System.out.println( "Selected worker " + worker + " as best for job " + msg.job );
 	    }
-	    long sz = sendPort.tryToSend( worker.identifier, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+	    long sz = sendPort.tryToSend( worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	    if( sz == 0 ){
 	        // Try to put the paste back in the tube.
 	        synchronized( queue ){

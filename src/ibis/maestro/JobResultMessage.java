@@ -13,7 +13,7 @@ class JobResultMessage extends MasterMessage {
     final JobProgressValue result;
     final long jobId;   // The identifier of the job
 
-    JobResultMessage( int src, JobProgressValue r, long jobId )
+    JobResultMessage( Worker.MasterIdentifier src, JobProgressValue r, long jobId )
     {
 	super( src );
         this.result = r;

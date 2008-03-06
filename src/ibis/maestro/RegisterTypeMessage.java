@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.maestro.Master.WorkerIdentifier;
+
 /**
  * A message from a worker to a master, telling it that we can handle
  * the given types of job.
@@ -19,7 +21,7 @@ public class RegisterTypeMessage extends WorkerMessage {
      * @param identifier Our identifier with this master.
      * @param allowedTypes Which types of jobs can it handle?
      */
-    RegisterTypeMessage( int identifier, JobType allowedType[] ){
+    RegisterTypeMessage( WorkerIdentifier identifier, JobType allowedType[] ){
 	super( identifier );
 	this.allowedType = allowedType;
     }

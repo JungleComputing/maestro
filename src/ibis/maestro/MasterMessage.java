@@ -7,8 +7,10 @@ package ibis.maestro;
  *
  */
 public abstract class MasterMessage extends Message {
+    final Worker.MasterIdentifier source;
 
-    MasterMessage( int source ){
-	super( source );
+    MasterMessage( Worker.MasterIdentifier source )
+    {
+	this.source = source;
     }
 }

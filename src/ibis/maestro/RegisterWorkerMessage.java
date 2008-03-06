@@ -26,7 +26,7 @@ public class RegisterWorkerMessage extends WorkerMessage {
      */
     RegisterWorkerMessage( ReceivePortIdentifier port, int identifier )
     {
-	super( -1 );
+	super( null );
 	this.port = port;
 	this.masterIdentifier = identifier;
     }

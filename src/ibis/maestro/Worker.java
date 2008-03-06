@@ -3,6 +3,7 @@
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
+import ibis.maestro.Master.WorkerIdentifier;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -54,6 +55,44 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     private boolean askForWork = true;
     private final Random rng = new Random();
 
+    static final class MasterIdentifier {
+	final int value;
+	
+	private MasterIdentifier( int value )
+	{
+	    this.value = value;
+	}
+
+	/**
+	 * @return
+	 */
+	@Override
+	public int hashCode() {
+	    final int prime = 31;
+	    int result = 1;
+	    result = prime * result + value;
+	    return result;
+	}
+
+	/**
+	 * @param obj The object to compare to.
+	 * @return True iff the two identifiers are equal.
+	 */
+	@Override
+	public boolean equals(Object obj) {
+	    if (this == obj)
+		return true;
+	    if (obj == null)
+		return false;
+	    if (getClass() != obj.getClass())
+		return false;
+	    final MasterIdentifier other = (MasterIdentifier) obj;
+	    if (value != other.value)
+		return false;
+	    return true;
+	}
+    }
+
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to.
@@ -81,16 +120,27 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     }
 
 
+    private static boolean member( ArrayList<MasterInfo> l, MasterInfo e )
+    {
+        for( MasterInfo mi: l ) {
+            if( mi == e ) {
+        	return true;
+            }
+        }
+        return false;
+    }
+
+
     /** Given a master identifier, returns the master info
      * for the master with that id, or null if there is no such
      * master (any more).
-     * @param masterID The master id to search for.
+     * @param master The master id to search for.
      * @return The master info, or null if there is no such master.
      */
-    private MasterInfo getMasterInfo( int master )
+    private MasterInfo getMasterInfo( MasterIdentifier master )
     {
 	synchronized( queue ) {
-	    return masters.get( master );
+	    return masters.get( master.value );
 	}
     }
 
@@ -310,9 +360,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Received a worker accept message " + msg );
         }
-        sendPort.registerDestination( msg.port, msg.source );
+        sendPort.registerDestination( msg.port, msg.source.value );
         synchronized( queue ){
-            MasterInfo master = masters.get( msg.source );
+            MasterInfo master = masters.get( msg.source.value );
             master.setIdentifierOnMaster( msg.identifierOnMaster );
             mastersToUpdate.addFirst( master );
             queue.notifyAll();
@@ -404,16 +454,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         return null;
     }
 
-    private static boolean member( ArrayList<MasterInfo> l, MasterInfo e )
-    {
-	for( MasterInfo mi: l ) {
-	    if( mi == e ) {
-		return true;
-	    }
-	}
-	return false;
-    }
-
     /** Reports the result of the execution of a job. (Overrides method in superclass.)
      * @param jobMessage The job that was run run.
      */
@@ -424,8 +464,8 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
    
         WorkerMessage msg = new WorkerStatusMessage( jobMessage.workerIdentifier, jobMessage.jobId );
-        final int master = jobMessage.source;
-        sendPort.tryToSend( master, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        final MasterIdentifier master = jobMessage.source;
+        sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( Settings.traceWorkerProgress ) {
             System.out.println( "Completed job "  + jobMessage );
         }

@@ -2,6 +2,8 @@ package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
+import ibis.maestro.Master.WorkerIdentifier;
+import ibis.maestro.Worker.MasterIdentifier;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,10 +16,10 @@ import java.util.List;
 public class WorkerList {
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
 
-    private static WorkerInfo searchWorker( List<WorkerInfo> workers, int id ) {
+    private static WorkerInfo searchWorker( List<WorkerInfo> workers, WorkerIdentifier workerIdentifier ) {
 	for( int i=0; i<workers.size(); i++ ) {
 	    WorkerInfo w = workers.get(i);
-	    if( w.identifier == id ) {
+	    if( w.identifier == workerIdentifier ) {
 		return w;
 	    }
 	}
@@ -44,11 +46,12 @@ public class WorkerList {
         return -1;
     }
 
-    int subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, int identifierForWorker )
+    int subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, MasterIdentifier identifierForWorker )
     {
         int workerID = workers.size();
-	WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker );
-        if( Settings.traceMasterProgress ){
+	WorkerInfo worker = new WorkerInfo( workerPort, new Master.WorkerIdentifier( workerID ), identifierForWorker );
+
+	if( Settings.traceMasterProgress ){
             System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
         }
         workers.add( worker );
@@ -74,7 +77,7 @@ public class WorkerList {
      * Remove any workers on that ibis.
      * @param theIbis The worker that is gone.
      */
-    void removeWorker( int identifier )
+    void removeWorker( WorkerIdentifier identifier )
     {
         WorkerInfo wi = searchWorker( workers, identifier );
         if( wi != null ) {
@@ -87,7 +90,7 @@ public class WorkerList {
      * @param identifier The identifier to search for.
      * @return True iff we know the given worker.
      */
-    public boolean contains( int identifier )
+    public boolean contains( WorkerIdentifier identifier )
     {
 	WorkerInfo i = searchWorker( workers, identifier );
 	return i != null;
@@ -171,9 +174,9 @@ public class WorkerList {
      * @return True iff we could actually increment the allowance
      *         for the job type.
      */
-    public boolean incrementAllowance( int workerID, JobType jobType )
+    public boolean incrementAllowance( WorkerIdentifier workerID, JobType jobType )
     {
-	WorkerInfo wi = workers.get( workerID );
+	WorkerInfo wi = workers.get( workerID.value );
 	return wi.incrementAllowance( jobType );
     }
 
@@ -204,7 +207,7 @@ public class WorkerList {
     /** Given a worker identifier, declare it dead.
      * @param workerID The worker to declare dead.
      */
-    public void declareDead( int workerID )
+    public void declareDead( WorkerIdentifier workerID )
     {
         WorkerInfo w = workers.get( workerID );
         w.setDead();
@@ -216,9 +219,9 @@ public class WorkerList {
      * @param workerID The id of the worker that supports these types.
      * @param allowedTypes The list of types supported by this worker.
      */
-    public void updateJobTypes(int workerID, JobType[] allowedTypes)
+    public void updateJobTypes(WorkerIdentifier workerID, JobType[] allowedTypes)
     {
-        WorkerInfo w = workers.get( workerID );
+        WorkerInfo w = workers.get( workerID.value );
         for( JobType t: allowedTypes ){
             w.updateAllowedTypes( t );
         }

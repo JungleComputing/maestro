@@ -4,6 +4,7 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
+import ibis.maestro.Master.WorkerIdentifier;
 
 /**
  * @author Kees van Reeuwijk
@@ -14,12 +15,12 @@ class MasterInfo {
     final int localIdentifier;
 
     /** The identifier the master wants to see when we talk to it. */
-    private int identifierOnMaster;
+    private WorkerIdentifier identifierOnMaster;
 
     /** The ibis this master lives on. */
     final IbisIdentifier ibis;
 
-    MasterInfo( int localIdentifier, int identifierWithMaster, IbisIdentifier ibis )
+    MasterInfo( int localIdentifier, WorkerIdentifier identifierWithMaster, IbisIdentifier ibis )
     {
 	this.localIdentifier = localIdentifier;
 	this.identifierOnMaster = identifierWithMaster;
@@ -28,17 +29,17 @@ class MasterInfo {
 
     /**
      * Sets the identifier that we have on this master to the given value.
-     * @param identifierOnMaster The identifier on this master.
+     * @param workerIdentifier The identifier on this master.
      */
-    public void setIdentifierOnMaster(int identifierOnMaster) {
-        this.identifierOnMaster = identifierOnMaster;
+    public void setIdentifierOnMaster(WorkerIdentifier workerIdentifier) {
+        this.identifierOnMaster = workerIdentifier;
     }
     
     /**
      * Gets the identifier that we have on this master.
      * @return The identifier.
      */
-    public int getIdentifierOnMaster()
+    public WorkerIdentifier getIdentifierOnMaster()
     {
         return identifierOnMaster;
     }

@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.maestro.Master.WorkerIdentifier;
+
 /**
  * A message from a worker to a master, telling it that the worker would like
  * to receive more work.
@@ -15,7 +17,7 @@ public class WorkRequestMessage extends WorkerMessage {
      * Constructs a new work request message.
      * @param identifier The identifier to use.
      */
-    WorkRequestMessage( int identifier ){
+    WorkRequestMessage( WorkerIdentifier identifier ){
 	super( identifier );
     }
 }

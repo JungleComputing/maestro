@@ -17,7 +17,7 @@ class WorkerStatusMessage extends WorkerMessage {
      * @param src The worker that handled the job (i.e. this worker)
      * @param jobId The identifier of the job, as handed out by the master.
      */
-    WorkerStatusMessage( int src, long jobId )
+    WorkerStatusMessage( Master.WorkerIdentifier src, long jobId )
     {
 	super( src );
         this.jobId = jobId;
