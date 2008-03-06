@@ -357,7 +357,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    }
 	}
 	if( noWork ) {
-	    workers.reduceAllowances();
+	    synchronized( queue ){
+		workers.reduceAllowances();
+	    }
 	}
 	// There are no jobs in the queue, or there are no workers ready.
 	if( noWork && isFinished() ){

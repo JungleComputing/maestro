@@ -13,10 +13,10 @@ public class Settings {
     public static final int OPTIONAL_COMMUNICATION_TIMEOUT = 40000;
     
     /** Message transmission timeout in ms on essential communications. */
-    public static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 60000;
+    public static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 5*OPTIONAL_COMMUNICATION_TIMEOUT;
 
     /** The number of connections we maximally keep open. */
-    public static final int CONNECTION_CACHE_SIZE = 3;
+    public static final int CONNECTION_CACHE_SIZE = 8;
 
     // Debugging flags.
     
