@@ -18,7 +18,9 @@ public class WorkerList {
 
     private static WorkerInfo searchWorker( List<WorkerInfo> workers, WorkerIdentifier workerIdentifier ) {
 	for( int i=0; i<workers.size(); i++ ) {
-	    WorkerInfo w = workers.get(i);
+	    WorkerInfo w = workers.get( i );
+
+            System.out.println( "Comparing identifier " + workerIdentifier + " with " + w.identifier + " result: " + w.identifier.equals( workerIdentifier ) );
 	    if( w.identifier.equals( workerIdentifier ) ) {
 		return w;
 	    }
