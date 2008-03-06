@@ -5,6 +5,7 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.AbstractList;
 import java.util.ArrayList;
 
@@ -30,10 +31,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final long startTime;
     private long stopTime = 0;
 
-    static final class WorkerIdentifier {
-	final int value;
+    static final class WorkerIdentifier implements Serializable {
+        private static final long serialVersionUID = 3271311796768467853L;
+        final int value;
 	
-	private WorkerIdentifier( int value )
+	WorkerIdentifier( int value )
 	{
 	    this.value = value;
 	}
@@ -107,7 +109,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
     }
 
-    private void unsubscribeWorker( IbisIdentifier worker )
+    private void unsubscribeWorker( WorkerIdentifier worker )
     {
 	if( Settings.traceWorkerList ) {
 	    System.out.println( "unsubscribe of worker " + worker );
@@ -201,7 +203,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private void handleRegisterWorkerMessage( RegisterWorkerMessage m )
     {
-        int workerID;
+        WorkerIdentifier workerID;
         ReceivePortIdentifier worker = m.port;
 
         if( Settings.traceMasterProgress ){
@@ -211,7 +213,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             workerID = workers.subscribeWorker( receivePort.identifier(), worker, m.masterIdentifier );
             workerCount++;
         }
-        sendPort.registerDestination( worker, workerID );
+        sendPort.registerDestination( worker, workerID.value );
         sendAcceptMessage( workerID, receivePort.identifier(), m.masterIdentifier );
     }
 
@@ -436,7 +438,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     {
 	IbisIdentifier ibis = receiver.getIbis();
 
-	JobResultMessage msg = new JobResultMessage( -1, value, receiver.getId() );
+	JobResultMessage msg = new JobResultMessage( value, receiver.getId() );
         try {
             sendPort.send( ibis, Globals.workerReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         }

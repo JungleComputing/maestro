@@ -3,9 +3,9 @@
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
-import ibis.maestro.Master.WorkerIdentifier;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Random;
@@ -55,8 +55,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     private boolean askForWork = true;
     private final Random rng = new Random();
 
-    static final class MasterIdentifier {
-	final int value;
+    static final class MasterIdentifier implements Serializable {
+        private static final long serialVersionUID = 7727840589973468928L;
+        final int value;
 	
 	private MasterIdentifier( int value )
 	{
@@ -228,12 +229,12 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 
     private void registerWithMaster( IbisIdentifier ibis )
     {
-        int masterID;
+        MasterIdentifier masterID;
 
         synchronized( queue ){
             // Reserve a slot for this master, and get an id.
-            masterID = masters.size();
-            MasterInfo info = new MasterInfo( masterID, -1, ibis );
+            masterID = new MasterIdentifier( masters.size() );
+            MasterInfo info = new MasterInfo( masterID, null, ibis );
             masters.add( info );
         }
         RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), masterID );
@@ -264,13 +265,13 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             allowedTypes.toArray( jobTypes );
         }
         RegisterTypeMessage msg = new RegisterTypeMessage( master.getIdentifierOnMaster(), jobTypes );
-        sendPort.tryToSend( master.localIdentifier, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+        sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
     }
 
     private void sendJobRequest( MasterInfo master )
     {
         WorkRequestMessage msg = new WorkRequestMessage( master.getIdentifierOnMaster() );
-        sendPort.tryToSend( master.localIdentifier, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+        sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
     }
     
     private void askMoreWork()

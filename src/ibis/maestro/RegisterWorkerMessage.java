@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import ibis.ipl.ReceivePortIdentifier;
+import ibis.maestro.Worker.MasterIdentifier;
 
 /**
  * A message from a worker to a master, telling it that the worker exists, and which identifier the
@@ -17,17 +18,17 @@ public class RegisterWorkerMessage extends WorkerMessage {
     final ReceivePortIdentifier port;
 
     /** Our identifier for the master. */
-    final int masterIdentifier;
+    final MasterIdentifier masterIdentifier;
 
     /**
      * Constructs a new worker registration message.
      * @param port The receive port to use to submit jobs.
-     * @param identifier The identifier to use.
+     * @param masterID The identifier to use.
      */
-    RegisterWorkerMessage( ReceivePortIdentifier port, int identifier )
+    RegisterWorkerMessage( ReceivePortIdentifier port, MasterIdentifier masterID )
     {
 	super( null );
 	this.port = port;
-	this.masterIdentifier = identifier;
+	this.masterIdentifier = masterID;
     }
 }

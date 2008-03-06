@@ -13,9 +13,9 @@ class JobResultMessage extends MasterMessage {
     final JobProgressValue result;
     final long jobId;   // The identifier of the job
 
-    JobResultMessage( Worker.MasterIdentifier src, JobProgressValue r, long jobId )
+    JobResultMessage( JobProgressValue r, long jobId )
     {
-	super( src );
+	super( null );    // Source is meaningless for this operation
         this.result = r;
         this.jobId = jobId;
     }

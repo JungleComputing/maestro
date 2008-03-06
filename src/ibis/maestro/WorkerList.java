@@ -46,10 +46,10 @@ public class WorkerList {
         return -1;
     }
 
-    int subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, MasterIdentifier identifierForWorker )
+    WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, MasterIdentifier identifierForWorker )
     {
-        int workerID = workers.size();
-	WorkerInfo worker = new WorkerInfo( workerPort, new Master.WorkerIdentifier( workerID ), identifierForWorker );
+        Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
+	WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker );
 
 	if( Settings.traceMasterProgress ){
             System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
@@ -209,7 +209,7 @@ public class WorkerList {
      */
     public void declareDead( WorkerIdentifier workerID )
     {
-        WorkerInfo w = workers.get( workerID );
+        WorkerInfo w = workers.get( workerID.value );
         w.setDead();
     }
 
