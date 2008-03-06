@@ -19,7 +19,7 @@ public class WorkerList {
     private static WorkerInfo searchWorker( List<WorkerInfo> workers, WorkerIdentifier workerIdentifier ) {
 	for( int i=0; i<workers.size(); i++ ) {
 	    WorkerInfo w = workers.get(i);
-	    if( w.identifier == workerIdentifier ) {
+	    if( w.identifier.equals( workerIdentifier ) ) {
 		return w;
 	    }
 	}
