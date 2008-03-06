@@ -68,6 +68,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 		return false;
 	    return true;
 	}
+
+        @Override
+        public String toString()
+        {
+            return "W" + value;
+        }
     }
 
     /** Creates a new master instance.

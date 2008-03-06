@@ -179,7 +179,7 @@ class WorkerInfo {
     {
         WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
         if( workerJobInfo == null ) {
-            return -1;
+            return Long.MAX_VALUE;
         }
         return workerJobInfo.getRoundTripInterval();
     }

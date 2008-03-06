@@ -92,6 +92,12 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 		return false;
 	    return true;
 	}
+
+        @Override
+        public String toString()
+        {
+            return "M" + value;
+        }
     }
 
     /**
