@@ -25,8 +25,10 @@ public class PacketSendPort<T extends Serializable> {
     private long sendTime = 0;
     private long adminTime = 0;
     private int sentCount = 0;
+    private int localSentCount = 0;
     private int evictions = 0;
     private final CacheInfo cache[] = new CacheInfo[Settings.CONNECTION_CACHE_SIZE];
+    private PacketReceiveListener<T> localListener;
     int clockHand = 0;
 
     /** The list of known destinations.
@@ -40,20 +42,21 @@ public class PacketSendPort<T extends Serializable> {
         int sentCount = 0;
         int sentBytes = 0;
         final ReceivePortIdentifier portIdentifier;
+        boolean local;
 
         /** Create a new destination info entry.
          * @param portIdentifier The destination port.
+         * @param local True iff this destination represents the local master or worker.
          */
-        public DestinationInfo( ReceivePortIdentifier portIdentifier ){
+        public DestinationInfo( ReceivePortIdentifier portIdentifier, boolean local ){
             this.portIdentifier = portIdentifier;
+            this.local = local;
         }
 
         /** Print statistics for this destination. */
 	public void printStats() {
 	    System.out.format( " %5d messages %7d bytes; port %s\n", sentCount, sentBytes, portIdentifier.toString() );
 	}
-        
-        
     }
 
     /** One entry in the connection cache administration. */
@@ -66,6 +69,15 @@ public class PacketSendPort<T extends Serializable> {
     PacketSendPort( Ibis ibis )
     {
         this.ibis = ibis;
+    }
+    
+    void setLocalListener( PacketReceiveListener<T> localListener )
+    {
+	if( this.localListener != null ) {
+	    System.err.println( "Cannot change the local listener" );
+	    return;
+	}
+	this.localListener = localListener;
     }
 
     /** Return an empty slot in the cache. */
@@ -99,7 +111,7 @@ public class PacketSendPort<T extends Serializable> {
      */
     private void ensureOpenDestination( DestinationInfo newDestination, int timeout ) throws IOException
     {
-        if( newDestination.cacheSlot != null ){
+        if( newDestination.local || newDestination.cacheSlot != null ){
             return;
         }
         int ix = searchEmptySlot();
@@ -138,7 +150,8 @@ public class PacketSendPort<T extends Serializable> {
         if( destinations.get( identifier ) != null ) {
             System.err.println( "Internal error: duplicate registration for sendport ID " + identifier + ": old=" + destinations.get( identifier ) + "; new=" + port );
         }
-        destinations.set( identifier, new DestinationInfo( port ) );
+        boolean local = localListener.hasReceivePort(port);
+        destinations.set( identifier, new DestinationInfo( port, local ) );
     }
 
     /**
@@ -154,6 +167,11 @@ public class PacketSendPort<T extends Serializable> {
         long len;
 
         DestinationInfo info = destinations.get( destination );
+        if( info.local ) {
+            localListener.messageReceived( data );
+            localSentCount++;
+            return 0L;
+        }
         ensureOpenDestination( info, timeout );
         long startTime = System.nanoTime();
         final CacheInfo cacheInfo = info.cacheSlot;
@@ -212,7 +230,7 @@ public class PacketSendPort<T extends Serializable> {
      */
     public synchronized void printStats( String portname )
     {
-        System.out.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " messages; " + evictions + " evictions" );
+        System.out.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " messages; " + localSentCount + " local sends; "+ evictions + " evictions" );
         if( sentCount>0 ) {
             System.out.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
             System.out.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
@@ -269,7 +287,7 @@ public class PacketSendPort<T extends Serializable> {
      * @return The length of the transmitted data, or 0 if nothing could be transmitted.
      */
     public long tryToSend( int destination, T msg, int timeout ) {
-        long sz = 0;
+        long sz = -1;
         try {
             sz = send( destination, msg, timeout );
         } catch (IOException e) {

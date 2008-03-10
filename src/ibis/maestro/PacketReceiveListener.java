@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.ipl.ReceivePortIdentifier;
+
 import java.io.Serializable;
 
 /**
@@ -11,8 +13,14 @@ import java.io.Serializable;
 public interface PacketReceiveListener<T extends Serializable> {
     /**
      * Handle the reception of packet <code>packet</code>.
-     * @param p The port the packet was received on.
      * @param packet The packet that was received.
      */
-    void messageReceived( PacketUpcallReceivePort<T> p, T packet );
+    void messageReceived( T packet );
+
+    /**
+     * Returns true iff this listener is associated with the given port.
+     * @param port The port it should be associated with.
+     * @return True iff this listener is associated with the port.
+     */
+    boolean hasReceivePort( ReceivePortIdentifier port );
 }

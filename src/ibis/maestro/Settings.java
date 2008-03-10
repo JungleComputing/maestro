@@ -10,7 +10,7 @@ public class Settings {
     // Timeout values.
     
     /** Message transmission timeout in ms on optional communication. */
-    public static final int OPTIONAL_COMMUNICATION_TIMEOUT = 40000;
+    public static final int OPTIONAL_COMMUNICATION_TIMEOUT = 60000;
     
     /** Message transmission timeout in ms on essential communications. */
     public static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 5*OPTIONAL_COMMUNICATION_TIMEOUT;

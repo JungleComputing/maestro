@@ -69,6 +69,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    return true;
 	}
 
+	/** Returns a string representation of this worker.
+	 * 
+	 * @return The string representation.
+	 */
         @Override
         public String toString()
         {
@@ -87,6 +91,15 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
         receivePort.enable();		// We're open for business.
         startTime = System.nanoTime();
+    }
+
+    /**
+     * Set the local listener to the given class instance.
+     * @param localListener The local listener to use.
+     */
+    public void setLocalListener( PacketReceiveListener<MasterMessage> localListener )
+    {
+	sendPort.setLocalListener(localListener);
     }
 
     void setStopped()
@@ -142,7 +155,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     {
         WorkerAcceptMessage msg = new WorkerAcceptMessage( idOnWorker, myport, workerID );
         long sz = sendPort.tryToSend( workerID.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-        if( sz == 0 ){
+        if( sz<0 ){
             synchronized( queue ) {
                 workers.declareDead( workerID );
             }
@@ -224,12 +237,22 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /**
+     * Returns true iff this listener is associated with the given port.
+     * @param port The port it should be associated with.
+     * @return True iff this listener is associated with the port.
+     */
+    public boolean hasReceivePort( ReceivePortIdentifier port )
+    {
+	return port.equals( receivePort.identifier() );
+    }
+
+    /**
      * Handles message <code>msg</code> from worker.
      * @param p The port this was received on.
      * @param msg The message we received.
      */
     @Override
-    public void messageReceived( PacketUpcallReceivePort<WorkerMessage> p, WorkerMessage msg )
+    public void messageReceived( WorkerMessage msg )
     {
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Master: received message " + msg );
@@ -290,20 +313,19 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private boolean submitAllJobs()
     {
-	RunJobMessage msg;
+	boolean nowork;
 
 	boolean keepRunning = true;
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Next round for master" );
 	}
-	long now = System.nanoTime();
-	boolean noWork;
 
 	while( true ) {
 	    // Try to find a job for each worker, best worker first.
 	    int jobToRun = -1;
 	    WorkerInfo worker = null;
-	
+	    Job job = null;
+
 	    // Try to get some work handed out. We can't just get the first job
 	    // from the queue and hand it out, since there may not be
 	    // a ready worker for that type of job, while there are for the
@@ -314,13 +336,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    // of that same job type. What we now do is potentially
 	    // very expensive.
 	    synchronized( queue ) {
-		Job job;
-		long jobId;
-		
 	        // This is a pretty big operation to do in one atomic
 	        // 'gulp'. TODO: see if we can break it up somehow.
 	        int ix = queue.size();
-	        noWork = (ix == 0);
+	        nowork = (ix == 0);
 	        while( ix>0 ) {
 	            ix--;
 	
@@ -338,31 +357,19 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	        }
 	        // We have a job and a worker. Submit the job.
 	        job = queue.remove( jobToRun );
-	        jobId = nextJobId++;
-	        worker.registerJobStart( job, jobId, now );
-	        msg = new RunJobMessage( worker.identifier, job, worker.identifierWithWorker, jobId );
 	    }
 	    if( Settings.traceFastestWorker ) {
-	        System.out.println( "Selected worker " + worker + " as best for job " + msg.job );
+	        System.out.println( "Selected worker " + worker + " as best for job " + job );
 	    }
-	    long sz = sendPort.tryToSend( worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-	    if( sz == 0 ){
-	        // Try to put the paste back in the tube.
-	        synchronized( queue ){
-	            queue.add( msg.job );
-	            worker.retractJob( msg.jobId );
-	        }
-	        // We don't try to roll back job start time, since the worker
-	        // may in fact be busy.
-	    }
+	    submitJobToWorker( worker, job );
 	}
-	if( noWork ) {
+	if( nowork ) {
 	    synchronized( queue ){
 		workers.reduceAllowances();
 	    }
 	}
 	// There are no jobs in the queue, or there are no workers ready.
-	if( noWork && isFinished() ){
+	if( nowork && isFinished() ){
 	    // No jobs, and we are stopped; don't try to send new jobs.
 	    keepRunning = false;   // We're no longer busy.
 	}
@@ -385,6 +392,31 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    keepRunning = true;
 	}
 	return keepRunning; // We're still busy.
+    }
+
+    /**
+     * @param worker The worker to send the job to.
+     * @param job The job to send.
+     */
+    private void submitJobToWorker(WorkerInfo worker, Job job)
+    {
+	long jobId;
+
+	synchronized( queue ){
+	    jobId = nextJobId++;
+	    worker.registerJobStart( job, jobId );
+	}
+	RunJobMessage msg = new RunJobMessage( worker.identifier, job, worker.identifierWithWorker, jobId );
+	long sz = sendPort.tryToSend( worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+	if( sz<0 ){
+	    // Try to put the paste back in the tube.
+	    synchronized( queue ){
+		queue.add( msg.job );
+		worker.retractJob( msg.jobId );
+	    }
+	    // We don't try to roll back job start time, since the worker
+	    // may in fact be busy.
+	}
     }
 
     /** Runs this master. */

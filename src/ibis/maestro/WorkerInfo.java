@@ -118,17 +118,16 @@ class WorkerInfo {
      * 
      * @param job The job that was started.
      * @param id The id given to the job.
-     * @param startTime The time this job was started.
      */
-    public void registerJobStart( Job job, long id, long startTime )
+    public void registerJobStart( Job job, long id )
     {
-        WorkerJobInfo workerJobInfo = workerJobInfoTable.get( job.getType() );
+	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( job.getType() );
         if( workerJobInfo == null ) {
             System.err.println( "No worker job info for job type " + job.getType() );
             return;
         }
         workerJobInfo.incrementOutstandingJobs();
-        ActiveJob j = new ActiveJob( job, id, startTime, workerJobInfo );
+        ActiveJob j = new ActiveJob( job, id, System.nanoTime(), workerJobInfo );
 
         activeJobs.add( j );
     }

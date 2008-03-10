@@ -13,9 +13,6 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk.
  */
 public class ReportReceiver implements Serializable {
-    /**
-     * 
-     */
     private static final long serialVersionUID = 415829450459994671L;
     private final IbisIdentifier ibis;
     private final long id;

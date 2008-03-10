@@ -17,6 +17,8 @@ class MasterInfo {
     /** The identifier the master wants to see when we talk to it. */
     private WorkerIdentifier identifierOnMaster;
 
+    private boolean dead = false;
+
     /** The ibis this master lives on. */
     final IbisIdentifier ibis;
 
@@ -43,5 +45,22 @@ class MasterInfo {
     public WorkerIdentifier getIdentifierOnMaster()
     {
         return identifierOnMaster;
+    }
+
+    /**
+     * Declares this master dead.
+     */
+    public void declareDead()
+    {
+	dead = true;
+    }
+
+    /**
+     * Returns true iff this master is dead.
+     * @return Is this master dead?
+     */
+    public boolean isDead()
+    {
+	return dead;
     }
 }

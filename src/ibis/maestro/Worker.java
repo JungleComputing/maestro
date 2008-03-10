@@ -93,6 +93,11 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 	    return true;
 	}
 
+
+	/** Returns a string representation of this master.
+	 * 
+	 * @return The string representation.
+	 */
         @Override
         public String toString()
         {
@@ -126,6 +131,15 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         receivePort.enable();   // We're open for business.
     }
 
+
+    /**
+     * Set the local listener to the given class instance.
+     * @param localListener The local listener to use.
+     */
+    public void setLocalListener( PacketReceiveListener<WorkerMessage> localListener )
+    {
+	sendPort.setLocalListener( localListener );
+    }
 
     private static boolean member( ArrayList<MasterInfo> l, MasterInfo e )
     {
@@ -271,13 +285,19 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             allowedTypes.toArray( jobTypes );
         }
         RegisterTypeMessage msg = new RegisterTypeMessage( master.getIdentifierOnMaster(), jobTypes );
-        sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+        long sz = sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+        if( sz<0 ) {
+            master.declareDead();
+        }
     }
 
     private void sendJobRequest( MasterInfo master )
     {
         WorkRequestMessage msg = new WorkRequestMessage( master.getIdentifierOnMaster() );
-        sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+        long sz = sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+        if( sz<0 ) {
+            master.declareDead();
+        }
     }
     
     private void askMoreWork()
@@ -377,11 +397,20 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     }
 
     /**
+     * Returns true iff this listener is associated with the given port.
+     * @param port The port it should be associated with.
+     * @return True iff this listener is associated with the port.
+     */
+    public boolean hasReceivePort( ReceivePortIdentifier port )
+    {
+	return port.equals( receivePort.identifier() );
+    }
+
+    /**
      * Handles job request message <code>msg</code>.
-     * @param p The port on which the packet was received.
      * @param msg The job we received and will put in the queue.
      */
-    public void messageReceived( PacketUpcallReceivePort<MasterMessage> p, MasterMessage msg )
+    public void messageReceived( MasterMessage msg )
     {
         if( Settings.traceWorkerProgress ){
             Globals.log.reportProgress( "Worker: received message " + msg );
@@ -472,7 +501,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
    
         WorkerMessage msg = new WorkerStatusMessage( jobMessage.workerIdentifier, jobMessage.jobId );
         final MasterIdentifier master = jobMessage.source;
-        sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( Settings.traceWorkerProgress ) {
             System.out.println( "Completed job "  + jobMessage );
         }
