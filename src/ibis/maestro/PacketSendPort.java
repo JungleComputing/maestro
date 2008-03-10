@@ -28,7 +28,7 @@ public class PacketSendPort<T extends Serializable> {
     private int localSentCount = 0;
     private int evictions = 0;
     private final CacheInfo cache[] = new CacheInfo[Settings.CONNECTION_CACHE_SIZE];
-    private PacketReceiveListener<T> localListener;
+    private PacketReceiveListener<T> localListener = null;
     int clockHand = 0;
 
     /** The list of known destinations.

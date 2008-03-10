@@ -4,7 +4,7 @@ package ibis.maestro;
 public class AdditionJob implements Job {
     private static final int BLOCK_SIZE = 3000;
     private static final int ITERATIONS = 10000;  // The number of times we should do the addition.
-    private static final int LEVELS = 3;
+    private static final int LEVELS = 4;
     private int level = 0;
     private static double sum = 0.0;
     private final double values[];
@@ -37,7 +37,6 @@ public class AdditionJob implements Job {
 	}
 	if( level<LEVELS ) {
 	    level++;
-	    master.submit( this, this );
 	    master.submit( this, this );
 	}
 	else {
