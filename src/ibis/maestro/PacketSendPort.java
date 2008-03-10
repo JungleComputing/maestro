@@ -55,7 +55,8 @@ public class PacketSendPort<T extends Serializable> {
 
         /** Print statistics for this destination. */
 	public void printStats() {
-	    System.out.format( " %5d messages %7d bytes; port %s\n", sentCount, sentBytes, portIdentifier.toString() );
+	    char dest = local?'L':'R'; 
+	    System.out.format( " %c %5d messages %7d bytes; port %s\n", dest, sentCount, sentBytes, portIdentifier.toString() );
 	}
     }
 
@@ -170,24 +171,29 @@ public class PacketSendPort<T extends Serializable> {
         if( info.local ) {
             localListener.messageReceived( data );
             localSentCount++;
-            return 0L;
+            len = 0;
+	    if( Settings.traceSends ) {
+		System.out.println( "Sent local message" );
+	    }
         }
-        ensureOpenDestination( info, timeout );
-        long startTime = System.nanoTime();
-        final CacheInfo cacheInfo = info.cacheSlot;
-        WriteMessage msg = cacheInfo.port.newMessage();
-        msg.writeObject( data );
-        len = msg.finish();
-        cacheInfo.recentlyUsed = true;
-        long stopTime = System.nanoTime();
-        sendTime += (stopTime-startTime);
-        sentBytes += len;
-        sentCount++;
-        info.sentBytes += len;
-        info.sentCount++;
-        if( Settings.traceSends ) {
-            System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-startTime) );
-        }
+	else {
+	    ensureOpenDestination( info, timeout );
+	    long startTime = System.nanoTime();
+	    final CacheInfo cacheInfo = info.cacheSlot;
+	    WriteMessage msg = cacheInfo.port.newMessage();
+	    msg.writeObject( data );
+	    len = msg.finish();
+	    cacheInfo.recentlyUsed = true;
+	    long stopTime = System.nanoTime();
+	    sendTime += (stopTime-startTime);
+	    sentBytes += len;
+	    sentCount++;
+	    info.sentBytes += len;
+	    if( Settings.traceSends ) {
+		System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-startTime) );
+	    }
+	}
+	info.sentCount++;
         return len;
     }
 
@@ -230,7 +236,7 @@ public class PacketSendPort<T extends Serializable> {
      */
     public synchronized void printStats( String portname )
     {
-        System.out.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " messages; " + localSentCount + " local sends; "+ evictions + " evictions" );
+        System.out.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " remote messages; " + localSentCount + " local sends; "+ evictions + " evictions" );
         if( sentCount>0 ) {
             System.out.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
             System.out.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
@@ -242,7 +248,6 @@ public class PacketSendPort<T extends Serializable> {
     
     /**
      * Tries to close all open connections.
-     * @param timeout The timeout on every close attempt.
      */
     public void close()
     {
