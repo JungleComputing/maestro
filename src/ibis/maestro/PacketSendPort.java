@@ -242,7 +242,9 @@ public class PacketSendPort<T extends Serializable> {
             System.out.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
         }
         for( DestinationInfo i: destinations ) {
-            i.printStats();
+	    if( i != null ){
+		i.printStats();
+	    }
         }
     }
     

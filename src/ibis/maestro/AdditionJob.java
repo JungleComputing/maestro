@@ -38,6 +38,7 @@ public class AdditionJob implements Job {
 	if( level<LEVELS ) {
 	    level++;
 	    master.submit( this, this );
+	    master.submit( this, this );
 	}
 	else {
 	    master.reportResult( watcher, new DoubleResultValue( sum ) );

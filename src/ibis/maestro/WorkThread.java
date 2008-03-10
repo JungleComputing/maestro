@@ -39,6 +39,5 @@ class WorkThread extends Thread
             job.job.run( localMaster );
             source.reportJobCompletion( job );
         }
-        System.out.println( "Work thread terminated" );
     }
 }
