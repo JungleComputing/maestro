@@ -22,7 +22,7 @@ public class TestProg {
 	 */
 	@Override
 	public void jobCompleted( Node node, long id, JobProgressValue result ) {
-	    System.out.println( "result is " + result );
+	    //System.out.println( "result is " + result );
             jobsCompleted++;
             System.out.println( "I now have " + jobsCompleted + "/" + jobCount + " jobs" );
             if( jobsCompleted>=jobCount ){

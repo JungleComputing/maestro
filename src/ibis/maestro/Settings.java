@@ -21,10 +21,10 @@ public class Settings {
     // Debugging flags.
     
     /** Trace the progress of workers? */
-    public static final boolean traceWorkerProgress = false;
+    public static final boolean traceWorkerProgress = true;
     
     /** Trace the handling or result jobs? */
-    public static final boolean traceResultJobs = true;
+    public static final boolean traceResultJobs = false;
 
     /** Trace the progress of the worker lists of masters. */
     public static final boolean traceWorkerList = false;

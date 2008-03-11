@@ -257,7 +257,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
     /**
      * Handles message <code>msg</code> from worker.
-     * @param p The port this was received on.
      * @param msg The message we received.
      */
     @Override
