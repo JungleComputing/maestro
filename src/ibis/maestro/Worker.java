@@ -138,7 +138,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     {
 	synchronized( queue ) {
 	    if( !Service.member( jobTypes, jobType ) ) {
-                if( Settings.traceWorkerProgress ){
+                if( Settings.traceTypeHandling ){
                     Globals.log.reportProgress( "Worker: I can now handle job type " + jobType );
                 }
 		jobTypes.add( jobType );

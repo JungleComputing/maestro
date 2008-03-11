@@ -20,9 +20,12 @@ public class Settings {
 
     // Debugging flags.
     
+    /** Trace type handling? */
+    public static final boolean traceTypeHandling = true;
+
     /** Trace the progress of workers? */
-    public static final boolean traceWorkerProgress = true;
-    
+    public static final boolean traceWorkerProgress = false;
+
     /** Trace the handling or result jobs? */
     public static final boolean traceResultJobs = false;
 
