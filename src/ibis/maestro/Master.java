@@ -22,6 +22,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final WorkerList workers = new WorkerList();
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
+    private final CompletionListener completionListener;
     private final AbstractList<Job> queue = new ArrayList<Job>();
 
     private boolean stopped = false;
@@ -84,12 +85,14 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     /** Creates a new master instance.
      * @param ibis The Ibis instance this master belongs to.
      * @param node The node this master belongs to.
+     * @param completionListener The listener for job completion reports.
      * @throws IOException Thrown if the master cannot be created.
      */
-    public Master( Ibis ibis, Node node ) throws IOException
+    public Master( Ibis ibis, Node node, CompletionListener completionListener ) throws IOException
     {
         super( "Master" );
         this.node = node;
+        this.completionListener = completionListener;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
         receivePort.enable();		// We're open for business.
@@ -472,5 +475,15 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         System.out.printf( "Master: # handled jobs   = %5d\n", handledJobCount );
         System.out.println( "Master: run time         = " + Service.formatNanoseconds( workInterval ) );
         sendPort.printStats( "master send port" );
+    }
+
+    public void reportCompletion( long id, JobProgressValue result )
+    {
+        if( completionListener != null ){
+            if( Settings.traceResultJobs ){
+                Globals.log.reportProgress( "Reporting result " + result );
+            }
+            completionListener.jobCompleted( node, id, result );
+        }            
     }
 }

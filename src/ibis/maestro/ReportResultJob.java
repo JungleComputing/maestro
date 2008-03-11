@@ -45,7 +45,6 @@ public class ReportResultJob implements Job {
      */
     @Override
     public void run(JobContext context) {
-	System.err.println( "Internal error: who wants to run a ReportResultJob?" );
-	// FIXME: print a stack trace here.
+        context.reportCompletion( id, result );
     }
 }

@@ -179,18 +179,14 @@ class WorkerInfo {
         return true;
     }
 
-    /** Registers that the worker can support the given types.
-     * @param allowedType The list of allowed types that are allowed by
-     *        this worker.
+    /** Registers that the worker can support the given type.
+     * @param allowedType An allowed type of this worker.
      */
     public void updateAllowedTypes( JobType allowedType )
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( allowedType );
 	if( workerJobInfo == null ) {
 	    registerJobType( allowedType );
-	}
-	else {
-	    System.err.println( "Duplicate worker registration of worker " + identifier + " for type " + allowedType );
 	}
     }
 

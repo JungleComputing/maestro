@@ -22,6 +22,9 @@ public class Settings {
     
     /** Trace the progress of workers? */
     public static final boolean traceWorkerProgress = false;
+    
+    /** Trace the handling or result jobs? */
+    public static final boolean traceResultJobs = true;
 
     /** Trace the progress of the worker lists of masters. */
     public static final boolean traceWorkerList = false;

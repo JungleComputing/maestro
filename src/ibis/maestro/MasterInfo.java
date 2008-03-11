@@ -22,11 +22,16 @@ class MasterInfo {
     /** The ibis this master lives on. */
     final IbisIdentifier ibis;
 
-    MasterInfo( MasterIdentifier localIdentifier, WorkerIdentifier identifierWithMaster, IbisIdentifier ibis )
+    MasterInfo( MasterIdentifier localIdentifier, IbisIdentifier ibis )
     {
         this.localIdentifier = localIdentifier;
-	this.identifierOnMaster = identifierWithMaster;
+	this.identifierOnMaster = null;
 	this.ibis = ibis;
+    }
+
+    boolean isRegisteredMaster()
+    {
+        return identifierOnMaster != null;
     }
 
     /**

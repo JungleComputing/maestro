@@ -196,8 +196,8 @@ public final class Node implements RegistryEventHandler {
         if( Settings.traceNodes ) {
 	    System.out.println( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
 	}
-        master = new Master( ibis, this );
-        worker = new Worker( ibis, this, master, typeAdder, listener );
+        master = new Master( ibis, this, listener );
+        worker = new Worker( ibis, master, typeAdder );
         master.setLocalListener( worker );
         worker.setLocalListener( master );
         master.start();

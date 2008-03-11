@@ -16,7 +16,6 @@ import java.util.Random;
  */
 @SuppressWarnings("synthetic-access")
 public final class Worker extends Thread implements WorkSource, PacketReceiveListener<MasterMessage> {
-    private final Node node;
     
     /** The list of all known masters, in the order that they were handed their
      * id. Thus, element <code>i</code> of the list is guaranteed to have
@@ -41,7 +40,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
-    private final CompletionListener completionListener;
     private long queueEmptyMoment = 0L;
     private final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
@@ -111,18 +109,14 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to.
-     * @param node The node this worker belongs to.
      * @param master The master that jobs may submit new jobs to.
      * @param typeAdder The types of job this worker can handle.
-     * @param completionListener The listener for job completion reports.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis, Node node, Master master, TypeAdder typeAdder, CompletionListener completionListener ) throws IOException
+    public Worker( Ibis ibis, Master master, TypeAdder typeAdder ) throws IOException
     {
         super( "Worker" );   // Create a thread with a name.
-        this.node = node;
         this.typeAdder = typeAdder;
-        this.completionListener = completionListener;
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         for( int i=0; i<numberOfProcessors; i++ ) {
@@ -144,9 +138,13 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     {
 	synchronized( queue ) {
 	    if( !Service.member( jobTypes, jobType ) ) {
+                if( Settings.traceWorkerProgress ){
+                    Globals.log.reportProgress( "Worker: I can now handle job type " + jobType );
+                }
 		jobTypes.add( jobType );
+                // Now make sure all masters we know get informed about this new job type we support.
 		for( MasterInfo m: masters ) {
-		    if( !Service.member( mastersToUpdate, m ) ) {
+		    if( !Service.member( mastersToUpdate, m ) && m.isRegisteredMaster() ) {
 			mastersToUpdate.add( m );
 		    }
 		}
@@ -156,11 +154,11 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 
     /** The neighbors can now support the given job types.
      * Register any new types this worker can support.
-     * @param jobTypes A list of supported job types.
+     * @param l A list of supported job types.
      */
-    void updateNeighborJobTypes( JobType jobTypes[] )
+    void updateNeighborJobTypes( JobType l[] )
     {
-	for( JobType t: jobTypes ) {
+	for( JobType t: l ) {
 	    synchronized( queue ) {
 		typeAdder.registerNeighborType( this, t );
 	    }
@@ -278,7 +276,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         synchronized( queue ){
             // Reserve a slot for this master, and get an id.
             masterID = new MasterIdentifier( masters.size() );
-            MasterInfo info = new MasterInfo( masterID, null, ibis );
+            MasterInfo info = new MasterInfo( masterID, ibis );
             masters.add( info );
         }
         RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), masterID );
@@ -367,13 +365,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         }
     }
     
-    private void reportResult( ReportResultJob job )
-    {
-	if( completionListener != null ) {
-	    completionListener.jobCompleted( node, job.id, job.result );
-	}
-    }
-
     /**
      * Handle a message containing a new job to run.
      * 
@@ -381,9 +372,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      */
     private void handleRunJobMessage( RunJobMessage msg )
     {
-	if( msg.job instanceof ReportResultJob ) {
-	    reportResult( (ReportResultJob) msg.job );
-	}
         long now = System.nanoTime();
 
         msg.setQueueTime( now );

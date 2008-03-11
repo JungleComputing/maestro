@@ -13,4 +13,11 @@ public interface JobContext {
      * @param job The job to submit.
      */
     void submit( Job submitter, Job job );
+
+    /** Report the completion of a job with the given id and result value.
+     * 
+     * @param id The identifier of the job.
+     * @param result The result of the job.
+     */
+    void reportCompletion( long id, JobProgressValue result );
 }
