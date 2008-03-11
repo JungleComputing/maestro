@@ -40,7 +40,8 @@ public class TestProg {
 	 * @param t The type a neighbor supports.
 	 */
 	@Override
-	public void registerNeighborType(Worker w, JobType t) {
+	public void registerNeighborType(Worker w, JobType t )
+        {
 	    if( t.equals( ReportResultJob.jobType ) ) {
 		w.allowJobType( AdditionJob.jobType );
 	    }

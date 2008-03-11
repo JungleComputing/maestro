@@ -159,9 +159,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     void updateNeighborJobTypes( JobType l[] )
     {
 	for( JobType t: l ) {
-	    synchronized( queue ) {
-		typeAdder.registerNeighborType( this, t );
-	    }
+	    typeAdder.registerNeighborType( this, t );
 	}
     }
 
@@ -401,7 +399,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         synchronized( queue ){
             MasterInfo master = masters.get( msg.source.value );
             master.setIdentifierOnMaster( msg.identifierOnMaster );
-            mastersToUpdate.addFirst( master );
+            if( !Service.member(mastersToUpdate, master) ){
+                mastersToUpdate.add( master );
+            }
             queue.notifyAll();
         }
     }
