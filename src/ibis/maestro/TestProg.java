@@ -1,7 +1,5 @@
 package ibis.maestro;
 
-import java.util.ArrayList;
-
 /**
  * Small test program.
  * @author Kees van Reeuwijk
@@ -24,28 +22,42 @@ public class TestProg {
 	 */
 	@Override
 	public void jobCompleted( Node node, long id, JobProgressValue result ) {
-	    //System.out.println( "result is " + result );
+	    System.out.println( "result is " + result );
             jobsCompleted++;
             if( jobsCompleted>=jobCount ){
+        	System.out.println( "I got all job results back; stopping test program" );
                 node.setStopped();
             }
 	}
     }
 
+    private static class TestTypeAdder implements TypeAdder {
+
+	/**
+	 * Registers that a neighbor supports the given type of jbo.
+	 * @param w The worker to register the info with.
+	 * @param t The type a neighbor supports.
+	 */
+	@Override
+	public void registerNeighborType(Worker w, JobType t) {
+	    if( t.equals( ReportResultJob.jobType ) ) {
+		w.allowJobType( AdditionJob.jobType );
+	    }
+	}
+	
+    }
+    
     @SuppressWarnings("synthetic-access")
     private void run( int jobCount, boolean goForMaestro ) throws Exception
     {
-	ArrayList<JobType> allowedTypes = new ArrayList<JobType>();
-	
-	allowedTypes.add( AdditionJob.jobType );
-        Node node = new Node( new Listener( jobCount ), allowedTypes, goForMaestro );
+        Node node = new Node( new Listener( jobCount ), new TestTypeAdder(), goForMaestro );
 
 	System.out.println( "Node created" );
         if( node.isMaestro() ) {
             System.out.println( "I am maestro; submitting " + jobCount + " jobs" );
+            node.allowJobType( ReportResultJob.jobType );
             for( int i=0; i<jobCount; i++ ){
-        	ReportReceiver watcher = node.createReportReceiver( i );
-		AdditionJob j = new AdditionJob( 12*i, watcher  );
+		AdditionJob j = new AdditionJob( 12*i );
         	node.submit( j );
             }
         }

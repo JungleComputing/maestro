@@ -8,16 +8,13 @@ public class AdditionJob implements Job {
     private int level = 0;
     private static double sum = 0.0;
     private final double values[];
-    private final ReportReceiver watcher;
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     static final JobType jobType = new JobType( "AdditionJob" );
 
-    AdditionJob( int n, ReportReceiver watcher )
+    AdditionJob( int n )
     {
 	double a[] = new double [BLOCK_SIZE];
-	
-	this.watcher = watcher;
 	for( int i=0; i<BLOCK_SIZE; i++ ) {
 	    a[i] = i+n;
 	}
@@ -40,7 +37,10 @@ public class AdditionJob implements Job {
 	    master.submit( this, this );
 	}
 	else {
-	    master.reportResult( watcher, new DoubleResultValue( sum ) );
+	    long id = 0l;
+	    JobProgressValue result = new DoubleResultValue( sum );
+	    Job j = new ReportResultJob( id, result );
+	    master.submit( this, j );
 	}
     }
 

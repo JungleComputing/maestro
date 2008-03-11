@@ -18,6 +18,7 @@ import java.util.ArrayList;
 @SuppressWarnings("synthetic-access")
 public class Master extends Thread implements PacketReceiveListener<WorkerMessage>, JobContext
 {
+    private final Node node;
     private final WorkerList workers = new WorkerList();
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
@@ -82,11 +83,13 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
     /** Creates a new master instance.
      * @param ibis The Ibis instance this master belongs to.
+     * @param node The node this master belongs to.
      * @throws IOException Thrown if the master cannot be created.
      */
-    public Master( Ibis ibis ) throws IOException
+    public Master( Ibis ibis, Node node ) throws IOException
     {
         super( "Master" );
+        this.node = node;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
         receivePort.enable();		// We're open for business.
@@ -163,8 +166,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /**
-     * A worker has sent us a message asking for work. This may be a new
-     * worker, or a known one who wants more work.
+     * A worker has sent us a message telling us it can handle the given
+     * job types. Presumably some of the types are new.
+     * Tell our own worker about these types; it may allow it to support
+     * new types.
      * 
      * @param m The type registration message.
      */
@@ -179,6 +184,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             workers.updateJobTypes( workerID, allowedTypes );
             queue.notifyAll();
         }
+        node.updateNeighborJobTypes( allowedTypes );
     }
 
 
@@ -467,24 +473,4 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         System.out.println( "Master: run time         = " + Service.formatNanoseconds( workInterval ) );
         sendPort.printStats( "master send port" );
     }
-
-    /**
-     * Report the 
-     * @param receiver
-     * @param value
-     */
-    @Override
-    public void reportResult( ReportReceiver receiver, JobProgressValue value )
-    {
-	IbisIdentifier ibis = receiver.getIbis();
-
-	JobResultMessage msg = new JobResultMessage( value, receiver.getId() );
-        try {
-            sendPort.send( ibis, Globals.workerReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-        }
-        catch (IOException e) {
-            e.printStackTrace( System.err );
-        }
-    }
-
 }

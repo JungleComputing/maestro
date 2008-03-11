@@ -13,12 +13,4 @@ public interface JobContext {
      * @param job The job to submit.
      */
     void submit( Job submitter, Job job );
-
-    /**
-     * Report the given result.
-     * @param receiver A receiver for job results.
-     * @param value The result value to report.
-     */
-    void reportResult( ReportReceiver receiver, JobProgressValue value );
-
 }

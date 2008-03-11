@@ -5,6 +5,8 @@ package ibis.maestro;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.util.AbstractList;
+import java.util.ArrayList;
 
 /**
  * 
@@ -87,6 +89,26 @@ public class Service
                 // We don't care
             }
         } while( thread.isAlive() );
+    }
+
+    static boolean member( AbstractList<MasterInfo> l, MasterInfo e )
+    {
+        for( MasterInfo mi: l ) {
+            if( mi == e ) {
+        	return true;
+            }
+        }
+        return false;
+    }
+
+    static boolean member( ArrayList<JobType> jobTypes, JobType jobType )
+    {
+        for( JobType t: jobTypes ) {
+            if( t.equals( jobType ) ) {
+        	return true;
+            }
+        }
+        return false;
     }
 
 }

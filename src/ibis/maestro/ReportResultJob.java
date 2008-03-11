@@ -1,23 +1,31 @@
 package ibis.maestro;
 
 /**
- * 
+ * A special subclass of Job that reports job results to the local maestro.
  * @author Kees van Reeuwijk
- *
- * @param <T> The type of result to report.
  */
-public abstract class ReportResultJob<T> implements Job {
-    
+public class ReportResultJob implements Job {
+    private static final long serialVersionUID = 1900686553738202952L;
+
     /** FIXME: different types for different result types. */
-    private static final JobType jobType = new JobType( "ReportResultJob" );
-    final T result;
+    static final JobType jobType = new JobType( "ReportResultJob" );
+    
+    /** The result value we want to report. */
+    final JobProgressValue result;
+
+    /**
+     * The identifier of the entire run.
+     */
+    public final long id;
 
     /** Constructs a new instance of a report result job.
      * 
+     * @param id The identifier of the result.
      * @param result The result to report.
      */
-    ReportResultJob( T result )
+    public ReportResultJob( long id, JobProgressValue result )
     {
+	this.id = id;
 	this.result = result;
     }
 
@@ -27,5 +35,17 @@ public abstract class ReportResultJob<T> implements Job {
     @Override
     public JobType getType() {
 	return jobType;
+    }
+
+    /** Runs this job.
+     * Since a ReportResultJob is handled in a special way by the worker,
+     * this method should never be invoked for a ReportResultJob.
+     * 
+     * @param context The execution context.
+     */
+    @Override
+    public void run(JobContext context) {
+	System.err.println( "Internal error: who wants to run a ReportResultJob?" );
+	// FIXME: print a stack trace here.
     }
 }

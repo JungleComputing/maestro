@@ -65,25 +65,6 @@ class WorkerInfo {
 
     /**
      * Register a job result for an outstanding job.
-     * @param result The job result message that tells about this job.
-     */
-    public void registerJobResult( JobResultMessage result )
-    {
-        final long id = result.jobId;    // The identifier of the job, as handed out by us.
-
-        ActiveJob e = searchQueueEntry( id );
-        if( e == null ) {
-            Globals.log.reportInternalError( "ignoring reported result from job with unknown id " + id );
-            return;
-        }
-        activeJobs.remove( e );
-        if( Settings.traceMasterProgress ){
-            System.out.println( "Master: retired job " + e );		
-        }
-    }
-
-    /**
-     * Register a job result for an outstanding job.
      * @param master The master this info belongs to.
      * @param result The job result message that tells about this job.
      */

@@ -149,24 +149,24 @@ public final class Node implements RegistryEventHandler {
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
      * @param listener A completion listener for computations completed by this node.
-     * @param allowedTypes The list of job types this node allows.
+     * @param typeAdder The type deduction class.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public Node( CompletionListener listener, ArrayList<JobType> allowedTypes ) throws IbisCreationFailedException, IOException
+    public Node( CompletionListener listener, TypeAdder typeAdder ) throws IbisCreationFailedException, IOException
     {
-        this( listener, allowedTypes, true );
+        this( listener, typeAdder, true );
     }
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
      * @param listener A completion listener for computations completed by this node.
-     * @param allowedTypes The list of types this job allows.
+     * @param typeAdder The list of types this job allows.
      * @param runForMaestro If true, try to get elected as maestro.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public Node(CompletionListener listener, ArrayList<JobType> allowedTypes, boolean runForMaestro) throws IbisCreationFailedException, IOException
+    public Node(CompletionListener listener, TypeAdder typeAdder, boolean runForMaestro) throws IbisCreationFailedException, IOException
     {
         Properties ibisProperties = new Properties();
         IbisIdentifier maestro;
@@ -196,8 +196,8 @@ public final class Node implements RegistryEventHandler {
         if( Settings.traceNodes ) {
 	    System.out.println( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
 	}
-        master = new Master( ibis );
-        worker = new Worker( ibis, this, master, allowedTypes, listener );
+        master = new Master( ibis, this );
+        worker = new Worker( ibis, this, master, typeAdder, listener );
         master.setLocalListener( worker );
         worker.setLocalListener( master );
         master.start();
@@ -206,6 +206,11 @@ public final class Node implements RegistryEventHandler {
         if( Settings.traceNodes ) {
             Globals.log.log( "Started a Maestro node" );
         }
+    }
+
+    void updateNeighborJobTypes( JobType jobTypes[] )
+    {
+	worker.updateNeighborJobTypes( jobTypes );
     }
 
     /** Submits the given job to this node.
@@ -256,13 +261,12 @@ public final class Node implements RegistryEventHandler {
     }
 
     /**
-     * Given a job identifier, create a ReportReceiver object.
-     * This object can be added to a job to allow results to be reported back.
-     * @param id The identifier that should be put in the report.
-     * @return The ReportReceiver object.
+     * Given a job type, records the fact that it can be executed by
+     * the worker of this node.
+     * @param jobType The allowed job type.
      */
-    public ReportReceiver createReportReceiver( long id )
+    public void allowJobType( JobType jobType )
     {
-	return new ReportReceiver( ibis.identifier(), id );
+	worker.allowJobType( jobType );
     }
 }

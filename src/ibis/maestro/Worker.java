@@ -34,7 +34,10 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     private final ArrayList<MasterInfo> jobSources = new ArrayList<MasterInfo>();
 
     /** The list of job types we know how to handle. */
-    private final ArrayList<JobType> allowedTypes;
+    private ArrayList<JobType> jobTypes = new ArrayList<JobType>();
+
+    /** The reasoning engine for type support. */
+    private final TypeAdder typeAdder;
 
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
@@ -110,15 +113,15 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      * @param ibis The Ibis instance this worker belongs to.
      * @param node The node this worker belongs to.
      * @param master The master that jobs may submit new jobs to.
-     * @param allowedTypes The types of job this worker can handle.
+     * @param typeAdder The types of job this worker can handle.
      * @param completionListener The listener for job completion reports.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis, Node node, Master master, ArrayList<JobType> allowedTypes, CompletionListener completionListener ) throws IOException
+    public Worker( Ibis ibis, Node node, Master master, TypeAdder typeAdder, CompletionListener completionListener ) throws IOException
     {
         super( "Worker" );   // Create a thread with a name.
         this.node = node;
-        this.allowedTypes = allowedTypes;
+        this.typeAdder = typeAdder;
         this.completionListener = completionListener;
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
@@ -132,6 +135,37 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         receivePort.enable();   // We're open for business.
     }
 
+    /**
+     * Given a job type, records the fact that it can be executed by
+     * this worker.
+     * @param jobType The allowed job type.
+     */
+    public void allowJobType( JobType jobType )
+    {
+	synchronized( queue ) {
+	    if( !Service.member( jobTypes, jobType ) ) {
+		jobTypes.add( jobType );
+		for( MasterInfo m: masters ) {
+		    if( !Service.member( mastersToUpdate, m ) ) {
+			mastersToUpdate.add( m );
+		    }
+		}
+	    }
+	}
+    }
+
+    /** The neighbors can now support the given job types.
+     * Register any new types this worker can support.
+     * @param jobTypes A list of supported job types.
+     */
+    void updateNeighborJobTypes( JobType jobTypes[] )
+    {
+	for( JobType t: jobTypes ) {
+	    synchronized( queue ) {
+		typeAdder.registerNeighborType( this, t );
+	    }
+	}
+    }
 
     /**
      * Set the local listener to the given class instance.
@@ -141,17 +175,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     {
 	sendPort.setLocalListener( localListener );
     }
-
-    private static boolean member( ArrayList<MasterInfo> l, MasterInfo e )
-    {
-        for( MasterInfo mi: l ) {
-            if( mi == e ) {
-        	return true;
-            }
-        }
-        return false;
-    }
-
 
     /** Given a master identifier, returns the master info
      * for the master with that id, or null if there is no such
@@ -279,13 +302,13 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     /** Update the given master with our new list of allowed types. */
     private void updateMaster( MasterInfo master )
     {
-        JobType jobTypes[];
+        JobType jobTypesCopy[];
 
         synchronized( queue ){
-            jobTypes = new JobType[allowedTypes.size()];
-            allowedTypes.toArray( jobTypes );
+            jobTypesCopy = new JobType[jobTypes.size()];
+            jobTypes.toArray( jobTypesCopy );
         }
-        RegisterTypeMessage msg = new RegisterTypeMessage( master.getIdentifierOnMaster(), jobTypes );
+        RegisterTypeMessage msg = new RegisterTypeMessage( master.getIdentifierOnMaster(), jobTypesCopy );
         long sz = sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
         if( sz<0 ) {
             master.declareDead();
@@ -303,23 +326,23 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     
     private void askMoreWork()
     {
-        // First try to register with a new ibis.
-        IbisIdentifier newIbis = getUnregisteredMaster();
-        if( newIbis != null ){
-            if( Settings.traceWorkerProgress ){
-                Globals.log.reportProgress( "Worker: registering with master " + newIbis );
-            }
-            registerWithMaster( newIbis );
-            return;
-        }
-        
-        // Next, try to tell a master about new job types.
+        // First, try to tell a master about new job types.
         MasterInfo masterToUpdate = getMasterToUpdate();
         if( masterToUpdate != null ){
             if( Settings.traceWorkerProgress ){
                 Globals.log.reportProgress( "Worker: telling master " + masterToUpdate.localIdentifier + " about new job types" );
             }
             updateMaster( masterToUpdate );
+            return;
+        }
+
+        // Then, try to register with a new ibis.
+        IbisIdentifier newIbis = getUnregisteredMaster();
+        if( newIbis != null ){
+            if( Settings.traceWorkerProgress ){
+                Globals.log.reportProgress( "Worker: registering with master " + newIbis );
+            }
+            registerWithMaster( newIbis );
             return;
         }
 
@@ -343,6 +366,13 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             return;
         }
     }
+    
+    private void reportResult( ReportResultJob job )
+    {
+	if( completionListener != null ) {
+	    completionListener.jobCompleted( node, job.id, job.result );
+	}
+    }
 
     /**
      * Handle a message containing a new job to run.
@@ -351,6 +381,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      */
     private void handleRunJobMessage( RunJobMessage msg )
     {
+	if( msg.job instanceof ReportResultJob ) {
+	    reportResult( (ReportResultJob) msg.job );
+	}
         long now = System.nanoTime();
 
         msg.setQueueTime( now );
@@ -368,18 +401,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             }
             queue.add( msg );
             queue.notifyAll();
-        }
-    }
-
-    private void handleJobResultMessage( JobResultMessage result )
-    {
-        if( Settings.traceWorkerProgress ){
-            Globals.log.reportProgress( "Received a job result " + result );
-        }
-        if( completionListener != null ) {
-            synchronized( completionListener ) {
-        	completionListener.jobCompleted( node, result.jobId, result.result );
-            }
         }
     }
 
@@ -420,11 +441,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             RunJobMessage runJobMessage = (RunJobMessage) msg;
     
             handleRunJobMessage( runJobMessage );
-        }
-        else if( msg instanceof JobResultMessage ) {
-            JobResultMessage result = (JobResultMessage) msg;
-
-            handleJobResultMessage( result );
         }
         else if( msg instanceof WorkerAcceptMessage ) {
             WorkerAcceptMessage am = (WorkerAcceptMessage) msg;
@@ -509,7 +525,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         final MasterInfo mi = getMasterInfo( master );
         synchronized( queue ) {
             if( mi != null ) {
-        	if( !member( jobSources, mi ) ) {
+        	if( !Service.member( jobSources, mi ) ) {
         	    jobSources.add( mi );
         	}
             }

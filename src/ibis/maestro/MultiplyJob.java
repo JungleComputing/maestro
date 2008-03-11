@@ -4,7 +4,6 @@ package ibis.maestro;
 public class MultiplyJob implements Job {
     private static final int BLOCK_SIZE = 1000;
     private final double values[];
-    private ReportReceiver watcher;
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     private static final JobType jobType = new JobType( "MultiplyJob" );
@@ -64,7 +63,9 @@ public class MultiplyJob implements Job {
         for( double v: values ) {
             res *= v;
         }
-	context.reportResult( watcher, new DoubleResultValue( res ) );
+        long id = 0l;
+	DoubleResultValue doubleResultValue = new DoubleResultValue( res );
+	context.submit( this, new ReportResultJob( id, doubleResultValue ) );
     }
     
     /**
