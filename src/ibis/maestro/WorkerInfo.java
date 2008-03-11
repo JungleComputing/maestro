@@ -182,10 +182,11 @@ class WorkerInfo {
     /** Registers that the worker can support the given type.
      * @param allowedType An allowed type of this worker.
      */
-    public void updateAllowedTypes( JobType allowedType )
+    public void registerAllowedType( JobType allowedType )
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( allowedType );
 	if( workerJobInfo == null ) {
+	    // This is new information.
 	    registerJobType( allowedType );
 	}
     }

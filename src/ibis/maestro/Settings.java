@@ -41,7 +41,7 @@ public class Settings {
     /** Trace the progress of masters? */
     public static final boolean traceMasterProgress = false;
 
-    /** Trace the adventures of the precompletion interval variable? */
+    /** Trace the adventures of the submission interval variable? */
     public static final boolean traceSubmissionInterval = false;
 
     /** Trace all send events. */

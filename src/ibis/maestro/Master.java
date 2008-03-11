@@ -239,9 +239,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
         synchronized( queue ) {
             workerID = workers.subscribeWorker( receivePort.identifier(), worker, m.masterIdentifier );
+            sendPort.registerDestination( worker, workerID.value );
             workerCount++;
         }
-        sendPort.registerDestination( worker, workerID.value );
         sendAcceptMessage( workerID, receivePort.identifier(), m.masterIdentifier );
     }
 

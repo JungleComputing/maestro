@@ -191,7 +191,7 @@ public class WorkerList {
         int ix = searchWorker( workers, worker );
         if( ix>=0 ){
             WorkerInfo wi = workers.get( ix );
-            wi.updateAllowedTypes( allowedType );
+            wi.registerAllowedType( allowedType );
         }
     }
 
@@ -224,7 +224,7 @@ public class WorkerList {
     {
         WorkerInfo w = workers.get( workerID.value );
         for( JobType t: allowedTypes ){
-            w.updateAllowedTypes( t );
+            w.registerAllowedType( t );
         }
     }
 }

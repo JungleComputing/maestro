@@ -143,11 +143,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
                 }
 		jobTypes.add( jobType );
                 // Now make sure all masters we know get informed about this new job type we support.
-		for( MasterInfo m: masters ) {
-		    if( !Service.member( mastersToUpdate, m ) && m.isRegisteredMaster() ) {
-			mastersToUpdate.add( m );
-		    }
-		}
+		mastersToUpdate.clear();
+		mastersToUpdate.addAll( masters );
+		queue.notify();
 	    }
 	}
     }
@@ -278,7 +276,11 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             masters.add( info );
         }
         RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), masterID );
-        sendPort.tryToSend( ibis, Globals.masterReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        long sz = sendPort.tryToSend( ibis, Globals.masterReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        if( sz<0 ) {
+            System.err.println( "Cannot register with master " + ibis );
+            // FIXME: declare this ibis dead.
+        }
     }
 
     /** Returns a master to update, or null if there is no such master.
@@ -287,12 +289,18 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      */
     private MasterInfo getMasterToUpdate()
     {
-        synchronized( queue ){
-            if( mastersToUpdate.isEmpty() ){
-                return null;
-            }
-            return mastersToUpdate.removeFirst();
-        }
+	synchronized( queue ){
+	    while( true ) {
+		if( mastersToUpdate.isEmpty() ){
+		    return null;
+		}
+		MasterInfo master = mastersToUpdate.removeFirst();
+		if( master.isRegisteredMaster() ) {
+		    return master;
+		}
+		// Don't return this one, it hasn't accepted yet.
+	    }
+	}
     }
 
     /** Update the given master with our new list of allowed types. */
@@ -363,6 +371,25 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         }
     }
     
+    private void handleWorkerAcceptMessage( WorkerAcceptMessage msg )
+    {
+        if( Settings.traceWorkerProgress ){
+            Globals.log.reportProgress( "Received a worker accept message " + msg );
+        }
+        synchronized( queue ){
+            sendPort.registerDestination( msg.port, msg.source.value );
+            MasterInfo master = masters.get( msg.source.value );
+            master.setIdentifierOnMaster( msg.identifierOnMaster );
+            if( Service.member( mastersToUpdate, master ) ){
+        	Globals.log.reportInternalError( "Master " + master + " is in update list before it accepted this worker??" );
+            }
+            else {
+                mastersToUpdate.add( master );
+            }
+            queue.notifyAll();
+        }
+    }
+
     /**
      * Handle a message containing a new job to run.
      * 
@@ -386,22 +413,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
                 queueEmptyMoment = 0L;
             }
             queue.add( msg );
-            queue.notifyAll();
-        }
-    }
-
-    private void handleWorkerAcceptMessage( WorkerAcceptMessage msg )
-    {
-        if( Settings.traceWorkerProgress ){
-            Globals.log.reportProgress( "Received a worker accept message " + msg );
-        }
-        sendPort.registerDestination( msg.port, msg.source.value );
-        synchronized( queue ){
-            MasterInfo master = masters.get( msg.source.value );
-            master.setIdentifierOnMaster( msg.identifierOnMaster );
-            if( !Service.member(mastersToUpdate, master) ){
-                mastersToUpdate.add( master );
-            }
             queue.notifyAll();
         }
     }
@@ -496,7 +507,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     }
 
     /** Reports the result of the execution of a job. (Overrides method in superclass.)
-     * @param jobMessage The job that was run run.
+     * @param jobMessage The job that was run.
      */
     @Override
     public void reportJobCompletion( RunJobMessage jobMessage )
