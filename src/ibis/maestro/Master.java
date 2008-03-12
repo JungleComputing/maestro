@@ -43,7 +43,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	}
 
 	/**
-	 * @return
+	 * @return A hash code for this identifier.
 	 */
 	@Override
 	public int hashCode() {
@@ -105,7 +105,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     public void setLocalListener( PacketReceiveListener<MasterMessage> localListener )
     {
-	sendPort.setLocalListener(localListener);
+	sendPort.setLocalListener( localListener );
     }
 
     void setStopped()
@@ -164,6 +164,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( sz<0 ){
             synchronized( queue ) {
                 workers.declareDead( workerID );
+                queue.notifyAll();
             }
         }
     }
@@ -205,9 +206,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	}
 	synchronized( queue ) {
 	    // We already know that this worker can handle this type of
-	    // job, but if he asks again, we can give a larger allowance.
-	    // We only do this if at the moment there is a job of this
+	    // job, but he asks for a larger allowance.
+	    // We only increase it if at the moment there is a job of this
 	    // type in the queue.
+	    //
+	    // FIXME: Walking the queue and testing the type of each job is highly inefficient.
 	    for( Job e: queue ){
 		JobType jobType = e.getType();
 
@@ -223,9 +226,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
     /**
      * A worker has sent us a message to register itself with us. This is
-     * just to tell us that it's out there and can handle jobs of the given
-     * type. We give each worker an allowance of 1 job; it it wants more it
-     * will have to ask for it.
+     * just to tell us that it's out there. We tell it what our receive port
+     * and the handle we assigned to it are, so that it can then inform us
+     * of the types of jobs it supports.
      *
      * @param m The worker registration message.
      */
@@ -422,8 +425,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 		queue.add( msg.job );
 		worker.retractJob( msg.jobId );
 	    }
-	    // We don't try to roll back job start time, since the worker
-	    // may in fact be busy.
 	}
     }
 

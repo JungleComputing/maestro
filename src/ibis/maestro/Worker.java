@@ -66,7 +66,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 	}
 
 	/**
-	 * @return
+	 * @return A hash code for this identifier.
 	 */
 	@Override
 	public int hashCode() {
@@ -274,6 +274,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             masterID = new MasterIdentifier( masters.size() );
             MasterInfo info = new MasterInfo( masterID, ibis );
             masters.add( info );
+            queue.notifyAll();
         }
         RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), masterID );
         long sz = sendPort.tryToSend( ibis, Globals.masterReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
