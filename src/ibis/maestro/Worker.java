@@ -144,7 +144,11 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 		jobTypes.add( jobType );
                 // Now make sure all masters we know get informed about this new job type we support.
 		mastersToUpdate.clear();
-		mastersToUpdate.addAll( masters );
+		for( MasterInfo master: masters ) {
+		    if( master.isRegisteredMaster() && !master.isDead() ) {
+		        mastersToUpdate.add( master );
+		    }
+		}
 		queue.notify();
 	    }
 	}
@@ -384,9 +388,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             if( Service.member( mastersToUpdate, master ) ){
         	Globals.log.reportInternalError( "Master " + master + " is in update list before it accepted this worker??" );
             }
-            else {
-                mastersToUpdate.add( master );
-            }
+            mastersToUpdate.add( master );
             queue.notifyAll();
         }
     }
