@@ -231,14 +231,19 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         MasterInfo res;
 
         synchronized( queue ){
-            final int size = jobSources.size();
-            if( size == 0 ){
-                return null;
+            while( true ){
+                final int size = jobSources.size();
+                if( size == 0 ){
+                    return null;
+                }
+                int ix = rng.nextInt( size );
+                res = jobSources.remove( ix );
+                if( !res.isDead() ){
+                    return res;
+                }
+                // The master we drew from the lottery is dead. Try again.
             }
-            int ix = rng.nextInt( size );
-            res = jobSources.remove( ix );
         }
-        return res;
     }
 
     /**
@@ -300,10 +305,10 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 		    return null;
 		}
 		MasterInfo master = mastersToUpdate.removeFirst();
-		if( master.isRegisteredMaster() ) {
+		if( master.isRegisteredMaster() && !master.isDead() ) {
 		    return master;
 		}
-		// Don't return this one, it hasn't accepted yet.
+		// Don't return this one, it hasn't accepted yet, or was declared dead.
 	    }
 	}
     }
@@ -547,13 +552,11 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     public void removeIbis( IbisIdentifier theIbis )
     {
         synchronized( queue ) {
-            int ix = jobSources.size();
-            while( ix>0 ){
-                ix--;
-
-                MasterInfo ji = jobSources.get( ix );
-                if( ji.ibis.equals( theIbis ) ){
-                    jobSources.remove( ix );
+            for( MasterInfo master: masters ){
+                if( master.ibis.equals( theIbis ) ){
+                    // This ibis is now dead. Make it official.
+                    master.declareDead();
+                    break;   // There's supposed to be only one entry, so don't bother searching for more.
                 }
             }
             // This is a good reason to wake up the queue.
