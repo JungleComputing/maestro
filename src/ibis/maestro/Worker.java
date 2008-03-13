@@ -46,11 +46,12 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     private final WorkThread workThreads[] = new WorkThread[numberOfProcessors];
     private boolean stopped = false;
     private final long startTime;
-    private long stopTime;
-    private long idleTime = 0;      // Cumulative idle time during the run.
-    private long queueTime = 0;     // Cumulative queue time of all jobs.
+    private long activeTime = 0;
+    private long stopTime = 0;
+    private long idleDuration = 0;      // Cumulative idle time during the run.
+    private long queueDuration = 0;     // Cumulative queue time of all jobs.
     private int jobCount = 0;
-    private long workTime = 0;
+    private long workDuration = 0;
     private int runningJobs = 0;
     private int jobSettleCount = 0;
     private boolean askForWork = true;
@@ -408,6 +409,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         long now = System.nanoTime();
 
         msg.setQueueTime( now );
+        if( activeTime == 0 ) {
+            activeTime = now;
+        }
         synchronized( queue ) {
             long queueEmptyInterval = 0L;
 
@@ -417,7 +421,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         	// job in it. Register this with this job,
         	// so that we can give feedback to the master.
                 queueEmptyInterval = now - queueEmptyMoment;
-                idleTime += queueEmptyInterval;
+                idleDuration += queueEmptyInterval;
                 queueEmptyMoment = 0L;
             }
             queue.add( msg );
@@ -536,8 +540,8 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         	    jobSources.add( mi );
         	}
             }
-            queueTime += queueInterval;
-            workTime += now-jobMessage.getRunTime();
+            queueDuration += queueInterval;
+            workDuration += now-jobMessage.getRunTime();
             jobCount++;
             runningJobs--;
             queue.notifyAll();
@@ -579,19 +583,25 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     {
 	if( stopTime<startTime ) {
 	    System.err.println( "Worker didn't stop yet" );
+	    stopTime = System.nanoTime();
 	}
-	long workInterval = stopTime-startTime;
-	double idlePercentage = 100.0*((double) idleTime/(double) workInterval);
-	double workPercentage = 100.0*((double) workTime/(double) workInterval);
+	if( activeTime<startTime ) {
+	    System.err.println( "Worker was not used" );
+	    activeTime = startTime;
+	}
+	long workInterval = stopTime-activeTime;
+	double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
+	double workPercentage = 100.0*((double) workDuration/(double) workInterval);
 	System.out.printf( "Worker: # threads        = %5d\n", workThreads.length );
         System.out.printf( "Worker: # jobs           = %5d\n", jobCount );
         System.out.println( "Worker: run time         = " + Service.formatNanoseconds( workInterval ) );
-        System.out.println( "Worker: total work time  = " + Service.formatNanoseconds( workTime ) + String.format( " (%.1f%%)", workPercentage )  );
-        System.out.println( "Worker: total idle time  = " + Service.formatNanoseconds( idleTime ) + String.format( " (%.1f%%)", idlePercentage ) );
+        System.out.println( "Worker: activated after  = " + Service.formatNanoseconds( activeTime-startTime ) );
+        System.out.println( "Worker: total work time  = " + Service.formatNanoseconds( workDuration ) + String.format( " (%.1f%%)", workPercentage )  );
+        System.out.println( "Worker: total idle time  = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
         sendPort.printStats( "worker send port" );
         if( jobCount>0 ) {
-            System.out.println( "Worker: queue time/job   = " + Service.formatNanoseconds( queueTime/jobCount ) );
-            System.out.println( "Worker: compute time/job = " + Service.formatNanoseconds( workTime/jobCount ) );
+            System.out.println( "Worker: queue time/job   = " + Service.formatNanoseconds( queueDuration/jobCount ) );
+            System.out.println( "Worker: compute time/job = " + Service.formatNanoseconds( workDuration/jobCount ) );
         }
     }
 }

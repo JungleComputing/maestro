@@ -145,7 +145,7 @@ public class ExternalJob implements Job {
         removeSandbox( sandbox );
         long id = 0l;
         JobProgressValue result = new RunResult( exitcode, o, e );
-        context.submit( this, new ReportResultJob( id, result ) );
+        context.submit( new ReportResultJob( id, result ) );
     }
 
     /** Constructs a new job.

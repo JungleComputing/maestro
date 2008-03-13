@@ -227,4 +227,9 @@ public class WorkerList {
             w.registerAllowedType( t );
         }
     }
+
+    public int getWorkerCount()
+    {
+	return workers.size();
+    }
 }

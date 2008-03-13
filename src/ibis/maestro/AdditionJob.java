@@ -34,13 +34,13 @@ public class AdditionJob implements Job {
 	}
 	if( level<LEVELS ) {
 	    level++;
-	    master.submit( this, this );
+	    master.submit( this );
 	}
 	else {
 	    long id = 0l;
 	    JobProgressValue result = new DoubleResultValue( sum );
 	    Job j = new ReportResultJob( id, result );
-	    master.submit( this, j );
+	    master.submit( j );
 	}
     }
 

@@ -65,7 +65,7 @@ public class MultiplyJob implements Job {
         }
         long id = 0l;
 	DoubleResultValue doubleResultValue = new DoubleResultValue( res );
-	context.submit( this, new ReportResultJob( id, doubleResultValue ) );
+	context.submit( new ReportResultJob( id, doubleResultValue ) );
     }
     
     /**

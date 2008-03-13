@@ -218,7 +218,7 @@ public final class Node implements RegistryEventHandler {
      */
     public void submit( Job j )
     {
-	master.submit( null, j );
+	master.submitExternalJob( j );
     }
     
     /** Set this node to the stopped state.
