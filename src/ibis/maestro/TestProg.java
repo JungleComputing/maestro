@@ -24,7 +24,7 @@ public class TestProg {
 	public void jobCompleted( Node node, long id, JobProgressValue result ) {
 	    //System.out.println( "result is " + result );
             jobsCompleted++;
-            System.out.println( "I now have " + jobsCompleted + "/" + jobCount + " jobs" );
+            //System.out.println( "I now have " + jobsCompleted + "/" + jobCount + " jobs" );
             if( jobsCompleted>=jobCount ){
         	System.out.println( "I got all job results back; stopping test program" );
                 node.setStopped();
