@@ -7,6 +7,6 @@ package ibis.maestro;
  *
  */
 class Submission {
-    Job job;
-    WorkerInfo worker;
+    Job job = null;
+    WorkerInfo worker = null;
 }

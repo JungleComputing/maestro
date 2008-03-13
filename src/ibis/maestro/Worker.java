@@ -149,7 +149,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 		        mastersToUpdate.add( master );
 		    }
 		}
-		queue.notify();
+		queue.notifyAll();
 	    }
 	}
     }

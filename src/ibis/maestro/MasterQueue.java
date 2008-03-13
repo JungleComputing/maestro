@@ -19,45 +19,45 @@ final class MasterQueue {
     private int incomingJobCount = 0;
 
     void add(Job j) {
-	queue.add( j );
+        queue.add( j );
     }
-    
+
     boolean isEmpty() {
-	return queue.isEmpty();
+        return queue.isEmpty();
     }
-    
+
     int size()
     {
-	return queue.size();
+        return queue.size();
     }
-    
+
     Job get( int ix )
     {
-	return queue.get( ix );
+        return queue.get( ix );
     }
-    
+
     Job remove( int ix ) {
-	return queue.remove( ix );
+        return queue.remove( ix );
     }
 
     synchronized void incrementAllowance( WorkerIdentifier workerID, WorkerList workers )
     {
-	// We already know that this worker can handle this type of
-	// job, but he asks for a larger allowance.
-	// We only increase it if at the moment there is a job of this
-	// type in the queue.
-	//
-	// FIXME: Walking the queue and testing the type of each job is highly inefficient.
-	for( Job e: queue ){
-	    JobType jobType = e.getType();
+        // We already know that this worker can handle this type of
+        // job, but he asks for a larger allowance.
+        // We only increase it if at the moment there is a job of this
+        // type in the queue.
+        //
+        // FIXME: Walking the queue and testing the type of each job is highly inefficient.
+        for( Job e: queue ){
+            JobType jobType = e.getType();
 
-	    // We're in need of a worker for this type of job; try to 
-	    // increase the allowance of this worker.
-	    if( workers.incrementAllowance( workerID, jobType ) ) {
-		notifyAll();
-		break;
-	    }
-	}
+            // We're in need of a worker for this type of job; try to 
+            // increase the allowance of this worker.
+            if( workers.incrementAllowance( workerID, jobType ) ) {
+                notifyAll();
+                break;
+            }
+        }
     }
 
     synchronized void submit( Job j )
@@ -82,7 +82,7 @@ final class MasterQueue {
      */
     synchronized boolean selectJob( Submission sub, WorkerList workers )
     {
-	// This is a pretty big operation to do in one atomic
+        // This is a pretty big operation to do in one atomic
         // 'gulp'. TODO: see if we can break it up somehow.
         int ix = queue.size();
         int jobToRun = 0;
@@ -105,7 +105,7 @@ final class MasterQueue {
             sub.job = null;
         }
         else {
-        // We have a job and a worker. Submit the job.
+            // We have a job and a worker. Submit the job.
             sub.job = queue.remove( jobToRun );
             sub.worker = worker;
         }

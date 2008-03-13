@@ -303,6 +303,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private boolean submitAllJobs()
     {
 	boolean nowork;
+        Submission sub = new Submission();
 
 	boolean keepRunning = true;
 	if( Settings.traceMasterProgress ){
@@ -310,47 +311,14 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	}
 
 	while( true ) {
-	    // Try to find a job for each worker, best worker first.
-	    int jobToRun = -1;
-	    WorkerInfo worker = null;
-	    Job job = null;
-
-	    // Try to get some work handed out. We can't just get the first job
-	    // from the queue and hand it out, since there may not be
-	    // a ready worker for that type of job, while there are for the
-	    // type of job of a subsequent job.
-	    //
-	    // FIXME: however, once we've tried to place one instance of
-	    // a job type, it is no use trying to place other instances
-	    // of that same job type. What we now do is potentially
-	    // very expensive.
-	    synchronized( queue ) {
-	        // This is a pretty big operation to do in one atomic
-	        // 'gulp'. TODO: see if we can break it up somehow.
-	        int ix = queue.size();
-	        nowork = (ix == 0);
-	        while( ix>0 ) {
-	            ix--;
-	
-	            job = queue.get( ix );
-	            JobType jobType = job.getType();
-	            worker = workers.selectBestWorker( jobType );
-	            if( worker != null ) {
-	                // We have a job that we can run.
-	                jobToRun = ix;
-	                break;
-	            }
-	        }
-	        if( worker == null ){
-	            break;
-	        }
-	        // We have a job and a worker. Submit the job.
-	        job = queue.remove( jobToRun );
-	    }
+            nowork = queue.selectJob( sub, workers );
+            if( nowork || sub.worker == null ){
+                break;
+            }
 	    if( Settings.traceFastestWorker ) {
-	        System.out.println( "Selected worker " + worker + " as best for job " + job );
+	        System.out.println( "Selected worker " + sub.worker + " as best for job " + sub.job );
 	    }
-	    submitJobToWorker( worker, job );
+	    submitJobToWorker( sub );
 	}
 	if( nowork ) {
 	    synchronized( queue ){
@@ -387,21 +355,21 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * @param worker The worker to send the job to.
      * @param job The job to send.
      */
-    private void submitJobToWorker(WorkerInfo worker, Job job)
+    private void submitJobToWorker( Submission sub )
     {
 	long jobId;
 
 	synchronized( queue ){
 	    jobId = nextJobId++;
-	    worker.registerJobStart( job, jobId );
+	    sub.worker.registerJobStart( sub.job, jobId );
 	}
-	RunJobMessage msg = new RunJobMessage( worker.identifierWithWorker, worker.identifier, job, jobId );
-	long sz = sendPort.tryToSend( worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+	RunJobMessage msg = new RunJobMessage( sub.worker.identifierWithWorker, sub.worker.identifier, sub.job, jobId );
+	long sz = sendPort.tryToSend( sub.worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ){
 	    // Try to put the paste back in the tube.
 	    synchronized( queue ){
 		queue.add( msg.job );
-		worker.retractJob( msg.jobId );
+		sub.worker.retractJob( msg.jobId );
 	    }
 	}
     }
