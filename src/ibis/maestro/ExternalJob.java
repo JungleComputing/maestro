@@ -1,4 +1,4 @@
-package unused;
+package ibis.maestro;
 
 import ibis.maestro.Job;
 import ibis.maestro.JobContext;

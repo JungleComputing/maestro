@@ -6,8 +6,6 @@ import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
 import java.io.Serializable;
-import java.util.AbstractList;
-import java.util.ArrayList;
 
 /**
  * A master in the Maestro flow graph framework.
@@ -23,7 +21,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
     private final CompletionListener completionListener;
-    private final AbstractList<Job> queue = new ArrayList<Job>();
+    private final MasterQueue queue = new MasterQueue();
 
     private boolean stopped = false;
     private long nextJobId = 0;
@@ -204,24 +202,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	if( Settings.traceWorkerProgress ){
 	    Globals.log.reportProgress( "Received work request message " + m + " from worker " + workerID );
 	}
-	synchronized( queue ) {
-	    // We already know that this worker can handle this type of
-	    // job, but he asks for a larger allowance.
-	    // We only increase it if at the moment there is a job of this
-	    // type in the queue.
-	    //
-	    // FIXME: Walking the queue and testing the type of each job is highly inefficient.
-	    for( Job e: queue ){
-		JobType jobType = e.getType();
-
-		// We're in need of a worker for this type of job; try to 
-		// increase the allowance of this worker.
-		if( workers.incrementAllowance( workerID, jobType ) ) {
-		    queue.notifyAll();
-		    break;
-		}
-	    }
-	}
+	// Method is synchroneous.
+	queue.incrementAllowance( workerID, workers );
     }
 
     /**
@@ -310,11 +292,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( Settings.traceMasterProgress ) {
             System.out.println( "Master: received job " + j );
         }
-        synchronized( queue ) {
-            incomingJobCount++;
-            queue.add( j );
-            queue.notifyAll();
-        }
+        queue.submit( j );
     }
 
     /** Keep submitting jobs until the queue is empty. We occasionally may
@@ -417,7 +395,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    jobId = nextJobId++;
 	    worker.registerJobStart( job, jobId );
 	}
-	RunJobMessage msg = new RunJobMessage( worker.identifier, job, worker.identifierWithWorker, jobId );
+	RunJobMessage msg = new RunJobMessage( worker.identifierWithWorker, worker.identifier, job, jobId );
 	long sz = sendPort.tryToSend( worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ){
 	    // Try to put the paste back in the tube.

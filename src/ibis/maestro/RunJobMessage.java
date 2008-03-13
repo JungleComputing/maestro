@@ -19,13 +19,12 @@ public class RunJobMessage extends MasterMessage {
     private transient long runTime = 0;
 
     /**
-     * FIXME: make source first parameter.
      * Given a job and its source, constructs a new RunJobMessage.
-     * @param job The job to run.
      * @param source Who sent this job, as an identifier we know about.
+     * @param job The job to run.
      * @param jobId The identifier of the job.
      */
-    RunJobMessage( WorkerIdentifier workerIdentifier, Job job, Worker.MasterIdentifier source, long jobId )
+    RunJobMessage( Worker.MasterIdentifier source, WorkerIdentifier workerIdentifier, Job job, long jobId )
     {
 	super( source );
 	this.workerIdentifier = workerIdentifier;
