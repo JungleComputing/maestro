@@ -202,8 +202,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	if( Settings.traceWorkerProgress ){
 	    Globals.log.reportProgress( "Received work request message " + m + " from worker " + workerID );
 	}
-	// Method is synchroneous.
-	queue.incrementAllowance( workerID, workers );
+        synchronized( queue ){
+            queue.incrementAllowance( workerID, workers );
+            queue.notifyAll();
+        }
     }
 
     /**
@@ -292,7 +294,34 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( Settings.traceMasterProgress ) {
             System.out.println( "Master: received job " + j );
         }
-        queue.submit( j );
+        synchronized ( queue ) {
+            incomingJobCount++;
+            queue.submit( j );
+            queue.notifyAll();
+        }
+    }
+
+    /**
+     * @param worker The worker to send the job to.
+     * @param job The job to send.
+     */
+    private void submitJobToWorker( Submission sub )
+    {
+        long jobId;
+    
+        synchronized( queue ){
+            jobId = nextJobId++;
+            sub.worker.registerJobStart( sub.job, jobId );
+        }
+        RunJobMessage msg = new RunJobMessage( sub.worker.identifierWithWorker, sub.worker.identifier, sub.job, jobId );
+        long sz = sendPort.tryToSend( sub.worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        if( sz<0 ){
+            // Try to put the paste back in the tube.
+            synchronized( queue ){
+        	queue.add( msg.job );
+        	sub.worker.retractJob( msg.jobId );
+            }
+        }
     }
 
     /** Keep submitting jobs until the queue is empty. We occasionally may
@@ -311,7 +340,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	}
 
 	while( true ) {
-            nowork = queue.selectJob( sub, workers );
+            synchronized( queue ){
+                nowork = queue.selectJob( sub, workers );
+            }
             if( nowork || sub.worker == null ){
                 break;
             }
@@ -349,29 +380,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    keepRunning = true;
 	}
 	return keepRunning; // We're still busy.
-    }
-
-    /**
-     * @param worker The worker to send the job to.
-     * @param job The job to send.
-     */
-    private void submitJobToWorker( Submission sub )
-    {
-	long jobId;
-
-	synchronized( queue ){
-	    jobId = nextJobId++;
-	    sub.worker.registerJobStart( sub.job, jobId );
-	}
-	RunJobMessage msg = new RunJobMessage( sub.worker.identifierWithWorker, sub.worker.identifier, sub.job, jobId );
-	long sz = sendPort.tryToSend( sub.worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-	if( sz<0 ){
-	    // Try to put the paste back in the tube.
-	    synchronized( queue ){
-		queue.add( msg.job );
-		sub.worker.retractJob( msg.jobId );
-	    }
-	}
     }
 
     /** Runs this master. */

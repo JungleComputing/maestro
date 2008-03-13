@@ -40,7 +40,7 @@ final class MasterQueue {
         return queue.remove( ix );
     }
 
-    synchronized void incrementAllowance( WorkerIdentifier workerID, WorkerList workers )
+    void incrementAllowance( WorkerIdentifier workerID, WorkerList workers )
     {
         // We already know that this worker can handle this type of
         // job, but he asks for a larger allowance.
@@ -54,17 +54,14 @@ final class MasterQueue {
             // We're in need of a worker for this type of job; try to 
             // increase the allowance of this worker.
             if( workers.incrementAllowance( workerID, jobType ) ) {
-                notifyAll();
                 break;
             }
         }
     }
 
-    synchronized void submit( Job j )
+    void submit( Job j )
     {
-        incomingJobCount++;
         queue.add( j );
-        queue.notifyAll();
     }
 
     /**
@@ -80,7 +77,7 @@ final class MasterQueue {
      * @param workers The list of workers to choose from.
      * @return True iff there currently is no work.
      */
-    synchronized boolean selectJob( Submission sub, WorkerList workers )
+    boolean selectJob( Submission sub, WorkerList workers )
     {
         // This is a pretty big operation to do in one atomic
         // 'gulp'. TODO: see if we can break it up somehow.

@@ -498,9 +498,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
                         return job;
                     }
                 }
-                if( askForWork ){
-                    askMoreWork();
-                }
+        	if( askForWork ){
+        	    askMoreWork();
+        	}
             }
             catch( InterruptedException e ){
                 // Not interesting.
