@@ -44,22 +44,22 @@ public class PacketSendPort<T extends Serializable> {
 
             public int compare(DestinationInfo a, DestinationInfo b) {
                 if( a.sentCount<b.sentCount ){
-                    return -1;
+                    return 1;
                 }
                 if( a.sentCount>b.sentCount ){
-                    return 1;
+                    return -1;
                 }
                 if( a.sentBytes<b.sentBytes ){
-                    return -1;
+                    return 1;
                 }
                 if( a.sentBytes>b.sentBytes ){
-                    return 1;
-                }
-                if( !a.local && b.local ){
                     return -1;
                 }
-                if( a.local && !b.local ){
+                if( !a.local && b.local ){
                     return 1;
+                }
+                if( a.local && !b.local ){
+                    return -1;
                 }
                 return 0;
             }
