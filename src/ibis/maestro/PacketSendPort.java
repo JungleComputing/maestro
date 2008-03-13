@@ -10,6 +10,8 @@ import ibis.ipl.WriteMessage;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
 
 /**
  * @author Kees van Reeuwijk
@@ -37,7 +39,33 @@ public class PacketSendPort<T extends Serializable> {
     private ArrayList<DestinationInfo> destinations = new ArrayList<DestinationInfo>();
 
     /** One entry in the list of destinations. */
-    static class DestinationInfo {
+    static final class DestinationInfo {
+        static final class InfoComparator implements Comparator<DestinationInfo> {
+
+            public int compare(DestinationInfo a, DestinationInfo b) {
+                if( a.sentCount<b.sentCount ){
+                    return -1;
+                }
+                if( a.sentCount>b.sentCount ){
+                    return 1;
+                }
+                if( a.sentBytes<b.sentBytes ){
+                    return -1;
+                }
+                if( a.sentBytes>b.sentBytes ){
+                    return 1;
+                }
+                if( !a.local && b.local ){
+                    return -1;
+                }
+                if( a.local && !b.local ){
+                    return 1;
+                }
+                return 0;
+            }
+
+        }
+
         CacheInfo cacheSlot;
         int sentCount = 0;
         int sentBytes = 0;
@@ -241,7 +269,11 @@ public class PacketSendPort<T extends Serializable> {
             System.out.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
             System.out.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
         }
-        for( DestinationInfo i: destinations ) {
+        DestinationInfo l[] = new DestinationInfo[destinations.size()];
+        destinations.toArray( l );
+        Comparator<? super DestinationInfo> comparator = new DestinationInfo.InfoComparator();
+        Arrays.sort( l, comparator );
+        for( DestinationInfo i: l ) {
 	    if( i != null ){
 		i.printStats();
 	    }
