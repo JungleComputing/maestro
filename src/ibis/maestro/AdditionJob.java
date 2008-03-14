@@ -11,6 +11,15 @@ public class AdditionJob implements Job {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     static final JobType jobType = new JobType( "AdditionJob" );
+    private final Identifier id;
+
+    private static class Identifier implements TaskIdentifier {
+        final int n;
+        
+        Identifier( int n ){
+            this.n = n;
+        }
+    }
 
     AdditionJob( int n )
     {
@@ -19,6 +28,7 @@ public class AdditionJob implements Job {
 	    a[i] = i+n;
 	}
 	this.values = a;
+	this.id = new Identifier( n );
     }
 
     /**
@@ -37,8 +47,7 @@ public class AdditionJob implements Job {
 	    master.submit( this );
 	}
 	else {
-	    long id = 0l;
-	    JobProgressValue result = new DoubleResultValue( sum );
+	    JobResultValue result = new DoubleResultValue( sum );
 	    Job j = new ReportResultJob( id, result );
 	    master.submit( j );
 	}

@@ -10,8 +10,8 @@ public interface CompletionListener {
     /**
      * Registers that a job is completed.
      * @param node The node we're running on.
-     * @param id The id of the job that was completed.
-     * @param result The result of the job.
+     * @param id The id of the task that was completed.
+     * @param result The result of the task.
      */
-    void jobCompleted( Node node, long id, JobProgressValue result );
+    void jobCompleted( Node node, TaskIdentifier id, JobResultValue result );
 }

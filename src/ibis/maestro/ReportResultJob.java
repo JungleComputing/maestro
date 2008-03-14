@@ -11,19 +11,19 @@ public class ReportResultJob implements Job {
     static final JobType jobType = new JobType( "ReportResultJob" );
     
     /** The result value we want to report. */
-    final JobProgressValue result;
+    final JobResultValue result;
 
     /**
      * The identifier of the entire run.
      */
-    public final long id;
+    public final TaskIdentifier id;
 
     /** Constructs a new instance of a report result job.
      * 
      * @param id The identifier of the result.
      * @param result The result to report.
      */
-    public ReportResultJob( long id, JobProgressValue result )
+    public ReportResultJob( TaskIdentifier id, JobResultValue result )
     {
 	this.id = id;
 	this.result = result;

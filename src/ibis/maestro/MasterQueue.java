@@ -16,7 +16,6 @@ import java.util.ArrayList;
  */
 final class MasterQueue {
     private final AbstractList<Job> queue = new ArrayList<Job>();
-    private int incomingJobCount = 0;
 
     void add(Job j) {
         queue.add( j );

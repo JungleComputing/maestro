@@ -463,7 +463,13 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         sendPort.printStats( "master send port" );
     }
 
-    public void reportCompletion( long id, JobProgressValue result )
+    /** Given a job result and a job identifier, report
+     * the result to the listener registered with this master.
+     * @param id The identifier of the job.
+     * @param result The job result.
+     */
+    @Override
+    public void reportCompletion( TaskIdentifier id, JobResultValue result )
     {
         if( completionListener != null ){
             if( Settings.traceResultJobs ){

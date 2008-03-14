@@ -1,10 +1,5 @@
 package ibis.maestro;
 
-import ibis.maestro.Job;
-import ibis.maestro.JobContext;
-import ibis.maestro.JobProgressValue;
-import ibis.maestro.JobType;
-import ibis.maestro.ReportResultJob;
 import ibis.util.RunProcess;
 
 import java.io.File;
@@ -28,6 +23,7 @@ public class ExternalJob implements Job {
     private static final boolean traceCommands = true;
     private static long label = 0L;
     private static final JobType jobType = new JobType( "ExternalJob" );
+    private final TaskIdentifier id;
 
     private static void tryToRemoveFile( File f )
     {
@@ -53,7 +49,7 @@ public class ExternalJob implements Job {
         tryToRemoveFile( f );
     }
 
-    static class RunResult implements JobProgressValue {
+    static class RunResult implements JobResultValue {
         /** Contractual obligation. */
         private static final long serialVersionUID = 881469549150557400L;
         private final int exitcode;
@@ -143,19 +139,20 @@ public class ExternalJob implements Job {
             }
         }
         removeSandbox( sandbox );
-        long id = 0l;
-        JobProgressValue result = new RunResult( exitcode, o, e );
+        JobResultValue result = new RunResult( exitcode, o, e );
         context.submit( new ReportResultJob( id, result ) );
     }
 
     /** Constructs a new job.
      * 
+     * @param id The identifier of the overall task.
      * @param inputFiles The files that should be present before the job is run.
      * @param outputFiles The files to get after the job has finished.
      * @param command The command to execute.
      */
-    public ExternalJob(FileContents[] inputFiles, String[] outputFiles, Vector<String> command) {
+    public ExternalJob(TaskIdentifier id, FileContents[] inputFiles, String[] outputFiles, Vector<String> command) {
         super();
+        this.id = id;
         this.inputFiles = inputFiles;
         this.outputFiles = outputFiles;
         this.command = command;

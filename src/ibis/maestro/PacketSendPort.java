@@ -39,9 +39,19 @@ public class PacketSendPort<T extends Serializable> {
     private ArrayList<DestinationInfo> destinations = new ArrayList<DestinationInfo>();
 
     /** One entry in the list of destinations. */
-    static final class DestinationInfo {
+    private static final class DestinationInfo {
         static final class InfoComparator implements Comparator<DestinationInfo> {
 
+            /**
+             * Compares the two given destination info class instances. This comparator ensures
+             * that the class instances are sorted by decreasing sentCount. To provide a
+             * stable sort when the sentCount is the same (can happen for corner cases),
+             * it also compares for other fields.
+             * @param a The first class instance to compare.
+             * @param b The second class instance to compare.
+             * @return The comparison result.
+             */
+            @Override
             public int compare(DestinationInfo a, DestinationInfo b) {
                 if( a.sentCount<b.sentCount ){
                     return 1;

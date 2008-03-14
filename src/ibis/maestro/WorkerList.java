@@ -228,6 +228,10 @@ public class WorkerList {
         }
     }
 
+    /**
+     * Return the number of known workers.
+     * @return The number of known workers.
+     */
     public int getWorkerCount()
     {
 	return workers.size();

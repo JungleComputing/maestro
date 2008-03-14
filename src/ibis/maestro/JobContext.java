@@ -18,5 +18,5 @@ public interface JobContext {
      * @param id The identifier of the job.
      * @param result The result of the job.
      */
-    void reportCompletion( long id, JobProgressValue result );
+    void reportCompletion( TaskIdentifier id, JobResultValue result );
 }
