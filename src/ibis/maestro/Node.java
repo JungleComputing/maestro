@@ -197,7 +197,7 @@ public final class Node implements RegistryEventHandler {
 	    System.out.println( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
 	}
         master = new Master( ibis, this, listener );
-        worker = new Worker( ibis, master, typeAdder );
+        worker = new Worker( ibis, this, typeAdder );
         master.setLocalListener( worker );
         worker.setLocalListener( master );
         master.start();
@@ -268,5 +268,14 @@ public final class Node implements RegistryEventHandler {
     public void allowJobType( JobType jobType )
     {
 	worker.allowJobType( jobType );
+    }
+
+    /** FIXME.
+     * @param id
+     * @param result
+     */
+    public void reportCompletion( TaskIdentifier id, JobResultValue result )
+    {
+        master.reportCompletion( id, result );        
     }
 }

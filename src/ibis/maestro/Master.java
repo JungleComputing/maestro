@@ -14,7 +14,7 @@ import java.io.Serializable;
  * 
  */
 @SuppressWarnings("synthetic-access")
-public class Master extends Thread implements PacketReceiveListener<WorkerMessage>, JobContext
+public class Master extends Thread implements PacketReceiveListener<WorkerMessage>
 {
     private final Node node;
     private final WorkerList workers = new WorkerList();
@@ -468,7 +468,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * @param id The identifier of the job.
      * @param result The job result.
      */
-    @Override
     public void reportCompletion( TaskIdentifier id, JobResultValue result )
     {
         if( completionListener != null ){

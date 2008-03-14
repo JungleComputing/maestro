@@ -35,7 +35,7 @@ public class AdditionJob implements Job {
      * Runs this job.
      */
     @Override
-    public void run( JobContext master )
+    public void run( Node master )
     {
 	for( int i=0; i<ITERATIONS; i++ ) {
 	    for( double v: values ) {

@@ -8,19 +8,19 @@ package ibis.maestro;
 class WorkThread extends Thread
 {
     private final WorkSource source;
-    private final Master localMaster;
+    private final Node localNode;
 
     /**
      * Given a work source, constructs a new WorkThread.
      * @param source The work source.
      * @param localMaster The local master.
      */
-    WorkThread( WorkSource source, Master localMaster )
+    WorkThread( WorkSource source, Node localMaster )
     {
         super( "Work thread" );
         setPriority( NORM_PRIORITY+1 );
         this.source = source;
-        this.localMaster = localMaster;
+        this.localNode = localMaster;
     }
 
     /**
@@ -36,7 +36,7 @@ class WorkThread extends Thread
             if( job == null ) {
                 break;
             }
-            job.job.run( localMaster );
+            job.job.run( localNode );
             source.reportJobCompletion( job );
         }
     }

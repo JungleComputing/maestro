@@ -110,18 +110,18 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     /**
      * Create a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to.
-     * @param master The master that jobs may submit new jobs to.
+     * @param node The master that jobs may submit new jobs to.
      * @param typeAdder The types of job this worker can handle.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis, Master master, TypeAdder typeAdder ) throws IOException
+    public Worker( Ibis ibis, Node node, TypeAdder typeAdder ) throws IOException
     {
         super( "Worker" );   // Create a thread with a name.
         this.typeAdder = typeAdder;
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
         for( int i=0; i<numberOfProcessors; i++ ) {
-            WorkThread t = new WorkThread( this, master );
+            WorkThread t = new WorkThread( this, node );
             workThreads[i] = t;
             t.start();
         }

@@ -38,13 +38,11 @@ public class ReportResultJob implements Job {
     }
 
     /** Runs this job.
-     * Since a ReportResultJob is handled in a special way by the worker,
-     * this method should never be invoked for a ReportResultJob.
      * 
-     * @param context The execution context.
+     * @param node The execution context.
      */
     @Override
-    public void run(JobContext context) {
-        context.reportCompletion( id, result );
+    public void run( Node node ) {
+        node.reportCompletion( id, result );
     }
 }

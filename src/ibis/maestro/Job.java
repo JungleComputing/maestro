@@ -12,7 +12,7 @@ public interface Job extends Serializable {
      * Runs the job.
      * @param context The context of this job submission.
      */
-    void run( JobContext context );
+    void run( Node node );
 
     /**
      * Returns the type of this job.

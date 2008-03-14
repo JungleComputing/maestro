@@ -96,7 +96,7 @@ public class ExternalJob implements Job {
      * @param context The context of this run.
      */
     @Override
-    public void run( JobContext context )
+    public void run( Node context )
     {
         File sandbox;
         ProcessBuilder builder;

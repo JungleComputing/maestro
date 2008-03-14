@@ -33,7 +33,7 @@ public class MultiplyJob implements Job {
      * @param context The context of this job.
      */
     @Override
-    public void run( JobContext context )
+    public void run( Node context )
     {
 	double res = 1;
 	
