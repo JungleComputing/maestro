@@ -49,18 +49,30 @@ public class TestProg {
 	
     }
     
+    private static class TestTaskIdentifier implements TaskIdentifier {
+        private static final long serialVersionUID = -1559402347729684409L;
+        final int id;
+
+        public TestTaskIdentifier(final int id) {
+            super();
+            this.id = id;
+        }
+    }
+
     @SuppressWarnings("synthetic-access")
     private void run( int jobCount, boolean goForMaestro ) throws Exception
     {
-        Node node = new Node( new Listener( jobCount ), new TestTypeAdder(), goForMaestro );
+        final Listener listener = new Listener( jobCount );
+        Node node = new Node( new TestTypeAdder(), goForMaestro );
 
 	System.out.println( "Node created" );
         if( node.isMaestro() ) {
             System.out.println( "I am maestro; submitting " + jobCount + " jobs" );
             node.allowJobType( ReportResultJob.jobType );
             for( int i=0; i<jobCount; i++ ){
+                TaskIdentifier id = new TestTaskIdentifier( i );
 		AdditionJob j = new AdditionJob( 12*i );
-        	node.submit( j );
+        	node.submitTask( j, listener, id );
             }
         }
         node.waitToTerminate();

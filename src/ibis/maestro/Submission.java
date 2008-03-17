@@ -9,4 +9,5 @@ package ibis.maestro;
 class Submission {
     Job job = null;
     WorkerInfo worker = null;
+    TaskIdentifier taskId = null;
 }

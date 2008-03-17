@@ -20,7 +20,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final WorkerList workers = new WorkerList();
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
-    private final CompletionListener completionListener;
     private final MasterQueue queue = new MasterQueue();
 
     private boolean stopped = false;
@@ -83,14 +82,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     /** Creates a new master instance.
      * @param ibis The Ibis instance this master belongs to.
      * @param node The node this master belongs to.
-     * @param completionListener The listener for job completion reports.
      * @throws IOException Thrown if the master cannot be created.
      */
-    public Master( Ibis ibis, Node node, CompletionListener completionListener ) throws IOException
+    public Master( Ibis ibis, Node node ) throws IOException
     {
         super( "Master" );
         this.node = node;
-        this.completionListener = completionListener;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
         receivePort.enable();		// We're open for business.
@@ -288,14 +285,14 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * so jobs may not be executed in chronological order.
      * @param j The job to add to the queue.
      */
-    public void submit( Job j )
+    public void submit( Job j, TaskIdentifier id )
     {
         if( Settings.traceMasterProgress ) {
             System.out.println( "Master: received job " + j );
         }
         synchronized ( queue ) {
             incomingJobCount++;
-            queue.submit( j );
+            queue.submit( j, id );
             queue.notifyAll();
         }
     }
@@ -310,8 +307,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * in the queue, but that's actually what we want: once work is
      * in the system, try to get it out as soon as possible.
      * @param j The job to add to the queue.
+     * @param id The identifier of the task this job belongs to.
+     * @param  The identifier of the entire task that this job belongs to.
      */
-    public void submitExternalJob( Job j )
+    public void submitExternalJob( Job j, TaskIdentifier id )
     {
         if( Settings.traceMasterProgress ) {
             System.out.println( "Master: received job " + j );
@@ -329,7 +328,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 		}
             }
             incomingJobCount++;
-            queue.submit( j );
+            queue.submit( j, id );
             queue.notifyAll();
         }
     }
@@ -345,12 +344,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             jobId = nextJobId++;
             sub.worker.registerJobStart( sub.job, jobId );
         }
-        RunJobMessage msg = new RunJobMessage( sub.worker.identifierWithWorker, sub.worker.identifier, sub.job, jobId );
+        RunJobMessage msg = new RunJobMessage( sub.worker.identifierWithWorker, sub.worker.identifier, sub.job, jobId, sub.taskId );
         long sz = sendPort.tryToSend( sub.worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( sz<0 ){
             // Try to put the paste back in the tube.
             synchronized( queue ){
-        	queue.add( msg.job );
+        	queue.submit( msg.job, sub.taskId );
         	sub.worker.retractJob( msg.jobId );
             }
         }
@@ -374,9 +373,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	while( true ) {
             synchronized( queue ){
                 nowork = queue.selectJob( sub, workers );
-            }
-            if( nowork || sub.worker == null ){
-                break;
+                if( nowork || sub.worker == null ){
+                    break;
+                }
             }
 	    if( Settings.traceFastestWorker ) {
 	        System.out.println( "Selected worker " + sub.worker + " as best for job " + sub.job );
@@ -461,20 +460,5 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         System.out.printf( "Master: # handled jobs   = %5d\n", handledJobCount );
         System.out.println( "Master: run time         = " + Service.formatNanoseconds( workInterval ) );
         sendPort.printStats( "master send port" );
-    }
-
-    /** Given a job result and a job identifier, report
-     * the result to the listener registered with this master.
-     * @param id The identifier of the job.
-     * @param result The job result.
-     */
-    public void reportCompletion( TaskIdentifier id, JobResultValue result )
-    {
-        if( completionListener != null ){
-            if( Settings.traceResultJobs ){
-                Globals.log.reportProgress( "Reporting result " + result );
-            }
-            completionListener.jobCompleted( node, id, result );
-        }            
     }
 }

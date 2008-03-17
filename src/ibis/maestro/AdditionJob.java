@@ -14,6 +14,10 @@ public class AdditionJob implements Job {
     private final Identifier id;
 
     private static class Identifier implements TaskIdentifier {
+        /**
+         * 
+         */
+        private static final long serialVersionUID = -7527605951400836347L;
         final int n;
         
         Identifier( int n ){
@@ -35,7 +39,7 @@ public class AdditionJob implements Job {
      * Runs this job.
      */
     @Override
-    public void run( Node master )
+    public void run( Node master, TaskIdentifier taskid )
     {
 	for( int i=0; i<ITERATIONS; i++ ) {
 	    for( double v: values ) {
@@ -44,12 +48,12 @@ public class AdditionJob implements Job {
 	}
 	if( level<LEVELS ) {
 	    level++;
-	    master.submit( this );
+	    master.submit( this, taskid );
 	}
 	else {
 	    JobResultValue result = new DoubleResultValue( sum );
 	    Job j = new ReportResultJob( id, result );
-	    master.submit( j );
+	    master.submit( j, taskid );
 	}
     }
 

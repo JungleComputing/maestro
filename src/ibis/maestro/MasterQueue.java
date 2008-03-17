@@ -15,10 +15,22 @@ import java.util.ArrayList;
  *
  */
 final class MasterQueue {
-    private final AbstractList<Job> queue = new ArrayList<Job>();
+    private final AbstractList<QueueEntry> queue = new ArrayList<QueueEntry>();
 
-    void add(Job j) {
-        queue.add( j );
+    private static final class QueueEntry {
+        final Job job;
+        final TaskIdentifier id;
+
+        public QueueEntry(Job job, TaskIdentifier id) {
+            this.job = job;
+            this.id = id;
+        }
+    }
+
+    void submit( Job j, TaskIdentifier taskId )
+    {
+        QueueEntry e = new QueueEntry( j, taskId );
+        queue.add( e );
     }
 
     boolean isEmpty() {
@@ -30,15 +42,6 @@ final class MasterQueue {
         return queue.size();
     }
 
-    Job get( int ix )
-    {
-        return queue.get( ix );
-    }
-
-    Job remove( int ix ) {
-        return queue.remove( ix );
-    }
-
     void incrementAllowance( WorkerIdentifier workerID, WorkerList workers )
     {
         // We already know that this worker can handle this type of
@@ -47,8 +50,8 @@ final class MasterQueue {
         // type in the queue.
         //
         // FIXME: Walking the queue and testing the type of each job is highly inefficient.
-        for( Job e: queue ){
-            JobType jobType = e.getType();
+        for( QueueEntry e: queue ){
+            JobType jobType = e.job.getType();
 
             // We're in need of a worker for this type of job; try to 
             // increase the allowance of this worker.
@@ -56,11 +59,6 @@ final class MasterQueue {
                 break;
             }
         }
-    }
-
-    void submit( Job j )
-    {
-        queue.add( j );
     }
 
     /**
@@ -87,8 +85,8 @@ final class MasterQueue {
         while( ix>0 ) {
             ix--;
 
-            Job job = queue.get( ix );
-            JobType jobType = job.getType();
+            QueueEntry job = queue.get( ix );
+            JobType jobType = job.job.getType();
             worker = workers.selectBestWorker( jobType );
             if( worker != null ) {
                 // We have a job that we can run.
@@ -101,9 +99,11 @@ final class MasterQueue {
             sub.job = null;
         }
         else {
+            final QueueEntry e = queue.remove( jobToRun );
             // We have a job and a worker. Submit the job.
-            sub.job = queue.remove( jobToRun );
+            sub.job = e.job;
             sub.worker = worker;
+            sub.taskId = e.id;
         }
         return nowork;
     }

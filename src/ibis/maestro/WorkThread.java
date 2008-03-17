@@ -36,7 +36,7 @@ class WorkThread extends Thread
             if( job == null ) {
                 break;
             }
-            job.job.run( localNode );
+            job.job.run( localNode, job.taskIdentifier );
             source.reportJobCompletion( job );
         }
     }

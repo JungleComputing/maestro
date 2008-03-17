@@ -27,80 +27,99 @@ public final class Node {
     RegistryEventHandler registryEventHandler;
 
     /** The list of maestro nodes in this computation. */
-    private ArrayList<MaestroInfo> maestros = new ArrayList<MaestroInfo>();
+    private final ArrayList<MaestroInfo> maestros = new ArrayList<MaestroInfo>();
+
+    /** The list of running tasks with their completion listeners. */
+    private final ArrayList<TaskInfo> runningTasks = new ArrayList<TaskInfo>();
+
     private boolean isMaestro;
 
     private class NodeRegistryEventHandler implements RegistryEventHandler {
 
-	/**
-	 * A new Ibis joined the computation.
-	 * @param theIbis The ibis that joined the computation.
-	 */
-	@Override
-	public void joined( IbisIdentifier theIbis )
-	{
-	    registerIbisJoined( theIbis );
-	    worker.addJobSource( theIbis );
-	}
+        /**
+         * A new Ibis joined the computation.
+         * @param theIbis The ibis that joined the computation.
+         */
+        @SuppressWarnings("synthetic-access")
+        @Override
+        public void joined( IbisIdentifier theIbis )
+        {
+            registerIbisJoined( theIbis );
+            worker.addJobSource( theIbis );
+        }
 
-	/**
-	 * An ibis has died.
-	 * @param theIbis The ibis that died.
-	 */
-	@Override
-	public void died( IbisIdentifier theIbis )
-	{
-	    registerIbisLeft( theIbis );
-	    worker.removeIbis( theIbis );
-	    master.removeIbis( theIbis );
-	}
+        /**
+         * An ibis has died.
+         * @param theIbis The ibis that died.
+         */
+        @SuppressWarnings("synthetic-access")
+        @Override
+        public void died( IbisIdentifier theIbis )
+        {
+            registerIbisLeft( theIbis );
+            worker.removeIbis( theIbis );
+            master.removeIbis( theIbis );
+        }
 
-	/**
-	 * An ibis has explicitly left the computation.
-	 * @param theIbis The ibis that left.
-	 */
-	@Override
-	public void left( IbisIdentifier theIbis )
-	{
-	    registerIbisLeft( theIbis );
-	    worker.removeIbis( theIbis );
-	    master.removeIbis( theIbis );
-	}
+        /**
+         * An ibis has explicitly left the computation.
+         * @param theIbis The ibis that left.
+         */
+        @SuppressWarnings("synthetic-access")
+        @Override
+        public void left( IbisIdentifier theIbis )
+        {
+            registerIbisLeft( theIbis );
+            worker.removeIbis( theIbis );
+            master.removeIbis( theIbis );
+        }
 
-	/**
-	 * The results of an election are known.
-	 * @param name The name of the election.
-	 * @param theIbis The ibis that was elected.
-	 */
-	@Override
-	public void electionResult( String name, IbisIdentifier theIbis )
-	{
-	    if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
-	        synchronized( maestros ){
-	            maestros.add( new MaestroInfo( theIbis ) );
-	        }
-	    }
-	}
+        /**
+         * The results of an election are known.
+         * @param name The name of the election.
+         * @param theIbis The ibis that was elected.
+         */
+        @SuppressWarnings("synthetic-access")
+        @Override
+        public void electionResult( String name, IbisIdentifier theIbis )
+        {
+            if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
+                synchronized( maestros ){
+                    maestros.add( new MaestroInfo( theIbis ) );
+                }
+            }
+        }
 
-	/**
-	 * Our ibis got a signal.
-	 * @param signal The signal.
-	 */
-	@Override
-	public void gotSignal( String signal )
-	{
-	    // Not interested.
-	}
-	
+        /**
+         * Our ibis got a signal.
+         * @param signal The signal.
+         */
+        @Override
+        public void gotSignal( String signal )
+        {
+            // Not interested.
+        }
+
+    }
+
+    private static class TaskInfo {
+        final TaskIdentifier identifier;
+        final CompletionListener listener;
+
+        public TaskInfo(final TaskIdentifier identifier, final CompletionListener listener) {
+            super();
+            this.identifier = identifier;
+            this.listener = listener;
+        }
     }
 
     /** The list of maestros in this computation. */
     private static class MaestroInfo {
-	IbisIdentifier ibis;   // The identifier of the maestro.
+        IbisIdentifier ibis;   // The identifier of the maestro.
 
-	MaestroInfo( IbisIdentifier id ) {
-	    this.ibis = id;
-	}
+        MaestroInfo( IbisIdentifier id ) {
+            this.ibis = id;
+        }
     }
 
     /**
@@ -153,25 +172,24 @@ public final class Node {
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
-     * @param listener A completion listener for computations completed by this node.
      * @param typeAdder The type deduction class.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public Node( CompletionListener listener, TypeAdder typeAdder ) throws IbisCreationFailedException, IOException
+    public Node( TypeAdder typeAdder ) throws IbisCreationFailedException, IOException
     {
-        this( listener, typeAdder, true );
+        this( typeAdder, true );
     }
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
-     * @param listener A completion listener for computations completed by this node.
      * @param typeAdder The list of types this job allows.
      * @param runForMaestro If true, try to get elected as maestro.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public Node(CompletionListener listener, TypeAdder typeAdder, boolean runForMaestro) throws IbisCreationFailedException, IOException
+    @SuppressWarnings("synthetic-access")
+    public Node( TypeAdder typeAdder, boolean runForMaestro) throws IbisCreationFailedException, IOException
     {
         Properties ibisProperties = new Properties();
         IbisIdentifier maestro;
@@ -188,8 +206,8 @@ public final class Node {
                 PacketBlockingReceivePort.portType
         );
         if( Settings.traceNodes ) {
-	    System.out.println( "Created ibis " + ibis );
-	}
+            System.out.println( "Created ibis " + ibis );
+        }
         Registry registry = ibis.registry();
         if( runForMaestro ){
             maestro = registry.elect( MAESTRO_ELECTION_NAME );
@@ -197,12 +215,12 @@ public final class Node {
         }
         else {
             isMaestro = false;
-            
+
         }
         if( Settings.traceNodes ) {
-	    System.out.println( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
-	}
-        master = new Master( ibis, this, listener );
+            System.out.println( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
+        }
+        master = new Master( ibis, this );
         worker = new Worker( ibis, this, typeAdder );
         master.setLocalListener( worker );
         worker.setLocalListener( master );
@@ -216,17 +234,9 @@ public final class Node {
 
     void updateNeighborJobTypes( JobType jobTypes[] )
     {
-	worker.updateNeighborJobTypes( jobTypes );
+        worker.updateNeighborJobTypes( jobTypes );
     }
 
-    /** Submits the given job to this node.
-     * @param j The job to submit.
-     */
-    public void submit( Job j )
-    {
-	master.submitExternalJob( j );
-    }
-    
     /** Set this node to the stopped state.
      * This does not mean that the node stops immediately,
      * but it does mean the master and worker try to wind down the work.
@@ -262,8 +272,8 @@ public final class Node {
             // Nothing we can do about it.
         }
         if( Settings.traceNodes ) {
-        System.out.println( "Node has terminated" );
-	}
+            System.out.println( "Node has terminated" );
+        }
     }
 
     /**
@@ -273,20 +283,46 @@ public final class Node {
      */
     public void allowJobType( JobType jobType )
     {
-	worker.allowJobType( jobType );
+        worker.allowJobType( jobType );
     }
 
-    /** FIXME.
-     * @param id
-     * @param result
+    /** Report the completion of the task with the given identifier.
+     * @param id The task that has been completed.
+     * @param result The task result.
      */
     public void reportCompletion( TaskIdentifier id, JobResultValue result )
     {
-        master.reportCompletion( id, result );        
+        TaskInfo task = null;
+
+        synchronized( runningTasks ){
+            for( int i=0; i<runningTasks.size(); i++ ){
+                task = runningTasks.get( i );
+                if( task.identifier.equals( id ) ){
+                    runningTasks.remove( i );
+                    break;
+                }
+            }
+        }
+        if( task != null ){
+            task.listener.jobCompleted( this, id, result );
+        }
     }
 
-    public void submitTask(Job j, CompletionListener waiter, TaskIdentifier id) {
-	// TODO: Auto-generated method stub
-	
+    private void addRunningTask( TaskIdentifier id, CompletionListener listener )
+    {
+        synchronized( runningTasks ){
+            runningTasks.add( new TaskInfo( id, listener ) );
+        }
+    }
+    
+    public void submit( Job j, TaskIdentifier id )
+    {
+        master.submit( j, id );
+    }
+
+    public void submitTask( Job j, CompletionListener listener, TaskIdentifier id )
+    {
+        addRunningTask( id, listener );
+        master.submitExternalJob( j, id );
     }
 }

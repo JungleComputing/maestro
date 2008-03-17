@@ -40,7 +40,8 @@ public class PacketSendPort<T extends Serializable> {
 
     /** One entry in the list of destinations. */
     private static final class DestinationInfo {
-        static final class InfoComparator implements Comparator<DestinationInfo> {
+        static final class InfoComparator implements Comparator<DestinationInfo>, Serializable {
+            private static final long serialVersionUID = 9141273343902181193L;
 
             /**
              * Compares the two given destination info class instances. This comparator ensures

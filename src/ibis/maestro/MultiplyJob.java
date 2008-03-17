@@ -10,6 +10,10 @@ public class MultiplyJob implements Job {
     private final Identifier id;
 
     private static class Identifier implements TaskIdentifier {
+        /**
+         * 
+         */
+        private static final long serialVersionUID = 41041690677985848L;
         final int n;
         
         Identifier( int n ){
@@ -33,7 +37,7 @@ public class MultiplyJob implements Job {
      * @param context The context of this job.
      */
     @Override
-    public void run( Node context )
+    public void run( Node context, TaskIdentifier taskId )
     {
 	double res = 1;
 	
@@ -74,7 +78,7 @@ public class MultiplyJob implements Job {
             res *= v;
         }
 	DoubleResultValue doubleResultValue = new DoubleResultValue( res );
-	context.submit( new ReportResultJob( id, doubleResultValue ) );
+	context.submit( new ReportResultJob( id, doubleResultValue ), taskId );
     }
     
     /**

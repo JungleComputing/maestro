@@ -94,9 +94,10 @@ public class ExternalJob implements Job {
     /**
      * Runs this job.
      * @param context The context of this run.
+     * @param taskId The identifier of the task that this job belong to.
      */
     @Override
-    public void run( Node context )
+    public void run( Node context, TaskIdentifier taskId )
     {
         File sandbox;
         ProcessBuilder builder;
@@ -140,7 +141,7 @@ public class ExternalJob implements Job {
         }
         removeSandbox( sandbox );
         JobResultValue result = new RunResult( exitcode, o, e );
-        context.submit( new ReportResultJob( id, result ) );
+        context.submit( new ReportResultJob( id, result ), taskId );
     }
 
     /** Constructs a new job.

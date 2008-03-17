@@ -42,7 +42,7 @@ public class ReportResultJob implements Job {
      * @param node The execution context.
      */
     @Override
-    public void run( Node node ) {
-        node.reportCompletion( id, result );
+    public void run( Node node, TaskIdentifier taskId ) {
+        node.reportCompletion( taskId, result );
     }
 }
