@@ -10,13 +10,14 @@ import java.io.Serializable;
 public interface Job extends Serializable {
     /**
      * Runs the job.
-     * @param context The context of this job submission.
+     *
+     * @param node The node this job runs on.
      */
     void run( Node node );
 
     /**
      * Returns the type of this job.
-     * Different job types get different scheduling statistics.
+     * Different job types are treated differently during scheduling.
      * @return The type of this job.
      */
     JobType getType();

@@ -1,5 +1,3 @@
-// File: $Id: $
-
 package ibis.maestro;
 
 /**
@@ -9,5 +7,4 @@ package ibis.maestro;
  */
 public interface TaskIdentifier
 {
-
 }

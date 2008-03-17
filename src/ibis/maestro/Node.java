@@ -18,22 +18,87 @@ import java.util.Properties;
  * @author Kees van Reeuwijk
  *
  */
-public final class Node implements RegistryEventHandler {
+public final class Node {
     final IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE, IbisCapabilities.ELECTIONS_STRICT );
     private final Ibis ibis;
     private final Master master;
     private final Worker worker;
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
+    RegistryEventHandler registryEventHandler;
 
     /** The list of maestro nodes in this computation. */
     private ArrayList<MaestroInfo> maestros = new ArrayList<MaestroInfo>();
     private boolean isMaestro;
 
+    private class NodeRegistryEventHandler implements RegistryEventHandler {
+
+	/**
+	 * A new Ibis joined the computation.
+	 * @param theIbis The ibis that joined the computation.
+	 */
+	@Override
+	public void joined( IbisIdentifier theIbis )
+	{
+	    registerIbisJoined( theIbis );
+	    worker.addJobSource( theIbis );
+	}
+
+	/**
+	 * An ibis has died.
+	 * @param theIbis The ibis that died.
+	 */
+	@Override
+	public void died( IbisIdentifier theIbis )
+	{
+	    registerIbisLeft( theIbis );
+	    worker.removeIbis( theIbis );
+	    master.removeIbis( theIbis );
+	}
+
+	/**
+	 * An ibis has explicitly left the computation.
+	 * @param theIbis The ibis that left.
+	 */
+	@Override
+	public void left( IbisIdentifier theIbis )
+	{
+	    registerIbisLeft( theIbis );
+	    worker.removeIbis( theIbis );
+	    master.removeIbis( theIbis );
+	}
+
+	/**
+	 * The results of an election are known.
+	 * @param name The name of the election.
+	 * @param theIbis The ibis that was elected.
+	 */
+	@Override
+	public void electionResult( String name, IbisIdentifier theIbis )
+	{
+	    if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
+	        synchronized( maestros ){
+	            maestros.add( new MaestroInfo( theIbis ) );
+	        }
+	    }
+	}
+
+	/**
+	 * Our ibis got a signal.
+	 * @param signal The signal.
+	 */
+	@Override
+	public void gotSignal( String signal )
+	{
+	    // Not interested.
+	}
+	
+    }
+
     /** The list of maestros in this computation. */
     private static class MaestroInfo {
 	IbisIdentifier ibis;   // The identifier of the maestro.
 
-	MaestroInfo(IbisIdentifier id ) {
+	MaestroInfo( IbisIdentifier id ) {
 	    this.ibis = id;
 	}
     }
@@ -87,66 +152,6 @@ public final class Node implements RegistryEventHandler {
     }
 
     /**
-     * A new Ibis joined the computation.
-     * @param theIbis The ibis that joined the computation.
-     */
-    @Override
-    public void joined( IbisIdentifier theIbis )
-    {
-        registerIbisJoined( theIbis );
-        worker.addJobSource( theIbis );
-    }
-
-    /**
-     * An ibis has died.
-     * @param theIbis The ibis that died.
-     */
-    @Override
-    public void died( IbisIdentifier theIbis )
-    {
-	registerIbisLeft( theIbis );
-        worker.removeIbis( theIbis );
-        master.removeIbis( theIbis );
-    }
-
-    /**
-     * An ibis has explicitly left the computation.
-     * @param theIbis The ibis that left.
-     */
-    @Override
-    public void left( IbisIdentifier theIbis )
-    {
-        registerIbisLeft( theIbis );
-        worker.removeIbis( theIbis );
-        master.removeIbis( theIbis );
-    }
-
-    /**
-     * The results of an election are known.
-     * @param name The name of the election.
-     * @param theIbis The ibis that was elected.
-     */
-    @Override
-    public void electionResult( String name, IbisIdentifier theIbis )
-    {
-        if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
-            synchronized( maestros ){
-                maestros.add( new MaestroInfo( theIbis ) );
-            }
-        }
-    }
-
-    /**
-     * Our ibis got a signal.
-     * @param signal The signal.
-     */
-    @Override
-    public void gotSignal( String signal )
-    {
-        // Not interested.
-    }
-
-    /**
      * Constructs a new Maestro node using the given name server and completion listener.
      * @param listener A completion listener for computations completed by this node.
      * @param typeAdder The type deduction class.
@@ -172,11 +177,12 @@ public final class Node implements RegistryEventHandler {
         IbisIdentifier maestro;
 
         ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
+        registryEventHandler = new NodeRegistryEventHandler();
         ibis = IbisFactory.createIbis(
                 ibisCapabilities,
                 ibisProperties,
                 true,
-                this,
+                registryEventHandler,
                 PacketSendPort.portType,
                 PacketUpcallReceivePort.portType,
                 PacketBlockingReceivePort.portType
@@ -277,5 +283,10 @@ public final class Node implements RegistryEventHandler {
     public void reportCompletion( TaskIdentifier id, JobResultValue result )
     {
         master.reportCompletion( id, result );        
+    }
+
+    public void submitTask(Job j, CompletionListener waiter, TaskIdentifier id) {
+	// TODO: Auto-generated method stub
+	
     }
 }
