@@ -60,9 +60,9 @@ public class JobWaiter implements CompletionListener {
 
     /**
      * 
-     * @param node
-     * @param id
-     * @param result
+     * @param node The node we're running on.
+     * @param id The identifier of the task that was completed.
+     * @param result The result of the task.
      */
     @Override
     public synchronized void jobCompleted( Node node, TaskIdentifier id, JobResultValue result )
@@ -70,7 +70,7 @@ public class JobWaiter implements CompletionListener {
         int ix = ((WaiterTaskIdentifier) id).id;
         results.set( ix, result );
         outstandingJobs--;
-        notify();
+        notifyAll();
     }
 
     /**

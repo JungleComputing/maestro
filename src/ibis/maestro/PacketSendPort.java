@@ -356,7 +356,7 @@ public class PacketSendPort<T extends Serializable> {
         return sz;
     }
 
-    public long tryToSend( ReceivePortIdentifier port, T data, int timeout )
+    public synchronized long tryToSend( ReceivePortIdentifier port, T data, int timeout )
     {
         long len = -1;
         try {
