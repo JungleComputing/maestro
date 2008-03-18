@@ -280,11 +280,11 @@ public class PacketSendPort<T extends Serializable> {
     public synchronized void printStats( String portname )
     {
         System.out.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " remote messages; " + localSentCount + " local sends; "+ evictions + " evictions" );
-        System.out.println( portname + ": sent " + uncachedSentBytes + " bytes in " + uncachedSentCount + " uncached remote messages" );
         if( sentCount>0 ) {
             System.out.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
             System.out.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
         }
+        System.out.println( portname + ": sent " + uncachedSentBytes + " bytes in " + uncachedSentCount + " uncached remote messages" );
         if( uncachedSentCount>0 ) {
             System.out.println( portname + ": total uncached send time  " + Service.formatNanoseconds( uncachedSendTime ) + "; " + Service.formatNanoseconds( uncachedSendTime/uncachedSentCount ) + " per message" );
             System.out.println( portname + ": total uncached setup time " + Service.formatNanoseconds( uncachedAdminTime ) + "; " + Service.formatNanoseconds( uncachedAdminTime/uncachedSentCount ) + " per message" );
