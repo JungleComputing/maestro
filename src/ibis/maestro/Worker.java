@@ -608,9 +608,17 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         }
     }
 
-    public void sendResultMessage(ReceivePortIdentifier port, TaskIdentifier id,
+    /**
+     * Send a result message to the given port, using the given task identifier
+     * and the given result value.
+     * @param port The port to send the result to.
+     * @param id The task identifier.
+     * @param result The result to send.
+     * @return The size of the sent message, or -1 if the transmission failed.
+     */
+    public long sendResultMessage(ReceivePortIdentifier port, TaskIdentifier id,
 	    JobResultValue result) {
 	WorkerMessage msg = new ResultMessage( id, result );
-	sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+	return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
     }
 }

@@ -356,6 +356,13 @@ public class PacketSendPort<T extends Serializable> {
         return sz;
     }
 
+    /**
+     * Tries to send a message to the given receive port.
+     * @param port The port to send the message to.
+     * @param data The message to send.
+     * @param timeout The timeout value to use.
+     * @return The size of the transmitted message, or -1 if the transmission failed.
+     */
     public synchronized long tryToSend( ReceivePortIdentifier port, T data, int timeout )
     {
         long len = -1;

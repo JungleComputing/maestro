@@ -34,25 +34,31 @@ public class TaskIdentifier implements Serializable
      * 
      * @param node The node we're running on.
      * @param result The result to report.
+     * @return The size of the transmitted message, or -1 if the transmission failed.
      */
-    public void reportResult( Node node, JobResultValue result )
+    public long reportResult( Node node, JobResultValue result )
     {
-        node.sendResultMessage( receivePort, this, result );
+        return node.sendResultMessage( receivePort, this, result );
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
+    /**
+     * Returns a hash code for this task identifier.
+     * 
+     * @return The hash code of the identifier.
      */
     @Override
-    public int hashCode() {
+    public int hashCode()
+    {
         final int PRIME = 31;
         int result = 1;
         result = PRIME * result + (int) (id ^ (id >>> 32));
         return result;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
+    /** Compares this task identifier with the given
+     * other object.
+     * @param obj The other object to compare to.
+     * @return True iff the two task identifiers are equal.
      */
     @Override
     public boolean equals(Object obj) {

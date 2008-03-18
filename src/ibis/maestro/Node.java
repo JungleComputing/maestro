@@ -370,9 +370,10 @@ public final class Node {
      * @param receivePort The port to send it to.
      * @param id The identifier of the task.
      * @param result The result.
+     * @return The size of the transmitted message, or -1 if the transmission failed.
      */
-    public void sendResultMessage( ReceivePortIdentifier receivePort, TaskIdentifier id,
+    public long sendResultMessage( ReceivePortIdentifier receivePort, TaskIdentifier id,
 	    JobResultValue result ) {
-	worker.sendResultMessage( receivePort, id, result );
+	return worker.sendResultMessage( receivePort, id, result );
     }
 }
