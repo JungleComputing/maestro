@@ -35,42 +35,39 @@ public class TestProg {
     private static class TestTypeAdder implements TypeAdder {
 
 	/**
-	 * Registers that a neighbor supports the given type of jbo.
+	 * Registers that a neighbor supports the given type of job.
 	 * @param w The worker to register the info with.
 	 * @param t The type a neighbor supports.
 	 */
 	@Override
-	public void registerNeighborType(Worker w, JobType t )
+	public void registerNeighborType( Worker w, JobType t )
         {
-	    if( t.equals( ReportResultJob.jobType ) ) {
-		w.allowJobType( AdditionJob.jobType );
-	    }
+	    // Nothing to do.
+	}
+
+	/** Registers the initial types of this worker.
+	 * 
+	 * @param w The worker to initialize.
+	 */
+	@Override
+	public void initialize(Worker w)
+	{
+	    w.allowJobType( AdditionJob.jobType );
 	}
 	
     }
     
-    private static class TestTaskIdentifier implements TaskIdentifier {
-        private static final long serialVersionUID = -1559402347729684409L;
-        final int id;
-
-        public TestTaskIdentifier(final int id) {
-            super();
-            this.id = id;
-        }
-    }
-
     @SuppressWarnings("synthetic-access")
     private void run( int jobCount, boolean goForMaestro ) throws Exception
     {
-        final Listener listener = new Listener( jobCount );
         Node node = new Node( new TestTypeAdder(), goForMaestro );
+        Listener listener = new Listener( jobCount );
 
 	System.out.println( "Node created" );
         if( node.isMaestro() ) {
             System.out.println( "I am maestro; submitting " + jobCount + " jobs" );
-            node.allowJobType( ReportResultJob.jobType );
             for( int i=0; i<jobCount; i++ ){
-                TaskIdentifier id = new TestTaskIdentifier( i );
+        	TaskIdentifier id = node.buildTaskIdentifier( i );
 		AdditionJob j = new AdditionJob( 12*i );
         	node.submitTask( j, listener, id );
             }

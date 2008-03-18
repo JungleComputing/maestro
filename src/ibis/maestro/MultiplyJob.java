@@ -7,19 +7,6 @@ public class MultiplyJob implements Job {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     private static final JobType jobType = new JobType( "MultiplyJob" );
-    private final Identifier id;
-
-    private static class Identifier implements TaskIdentifier {
-        /**
-         * 
-         */
-        private static final long serialVersionUID = 41041690677985848L;
-        final int n;
-        
-        Identifier( int n ){
-            this.n = n;
-        }
-    }
 
     MultiplyJob( int n )
     {
@@ -29,7 +16,6 @@ public class MultiplyJob implements Job {
 	    a[i] = i+n;
 	}
 	this.values = a;
-	this.id = new Identifier( n );
     }
 
     /**
@@ -78,7 +64,7 @@ public class MultiplyJob implements Job {
             res *= v;
         }
 	DoubleResultValue doubleResultValue = new DoubleResultValue( res );
-	context.submit( new ReportResultJob( id, doubleResultValue ), taskId );
+	taskId.reportResult( context, doubleResultValue );
     }
     
     /**

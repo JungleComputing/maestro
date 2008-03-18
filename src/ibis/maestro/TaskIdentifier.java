@@ -9,5 +9,10 @@ import java.io.Serializable;
  */
 public interface TaskIdentifier extends Serializable
 {
-    // Nothing yet.
+    /** Reports the result of the task back to the original submitter.
+     * 
+     * @param node The node we're running on.
+     * @param result The result to report.
+     */
+    void reportResult( Node node, JobResultValue result );
 }

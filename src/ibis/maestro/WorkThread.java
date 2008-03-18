@@ -9,6 +9,7 @@ class WorkThread extends Thread
 {
     private final WorkSource source;
     private final Node localNode;
+    private boolean stopped = false;
 
     /**
      * Given a work source, constructs a new WorkThread.
@@ -22,6 +23,11 @@ class WorkThread extends Thread
         this.source = source;
         this.localNode = localMaster;
     }
+    
+    private synchronized boolean isStopped()
+    {
+	return stopped;
+    }
 
     /**
      * Run this thread: keep getting and executing jobs until a null
@@ -30,7 +36,7 @@ class WorkThread extends Thread
     @Override
     public void run()
     {
-        while( true ) {
+        while( !isStopped() ) {
             RunJobMessage job = source.getJob();
             
             if( job == null ) {
@@ -39,5 +45,14 @@ class WorkThread extends Thread
             job.job.run( localNode, job.taskIdentifier );
             source.reportJobCompletion( job );
         }
+    }
+
+    /** Tell this work thread to shut down, and wait for it to do so. */
+    public void shutdown()
+    {
+	synchronized( this ) {
+	    stopped = true;
+	}
+	Service.waitToTerminate( this );
     }
 }

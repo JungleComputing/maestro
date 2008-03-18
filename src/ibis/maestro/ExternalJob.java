@@ -23,7 +23,6 @@ public class ExternalJob implements Job {
     private static final boolean traceCommands = true;
     private static long label = 0L;
     private static final JobType jobType = new JobType( "ExternalJob" );
-    private final TaskIdentifier id;
 
     private static void tryToRemoveFile( File f )
     {
@@ -97,7 +96,7 @@ public class ExternalJob implements Job {
      * @param taskId The identifier of the task that this job belong to.
      */
     @Override
-    public void run( Node context, TaskIdentifier taskId )
+    public void run( Node node, TaskIdentifier taskId )
     {
         File sandbox;
         ProcessBuilder builder;
@@ -141,19 +140,17 @@ public class ExternalJob implements Job {
         }
         removeSandbox( sandbox );
         JobResultValue result = new RunResult( exitcode, o, e );
-        context.submit( new ReportResultJob( id, result ), taskId );
+        taskId.reportResult( node, result );
     }
 
     /** Constructs a new job.
      * 
-     * @param id The identifier of the overall task.
      * @param inputFiles The files that should be present before the job is run.
      * @param outputFiles The files to get after the job has finished.
      * @param command The command to execute.
      */
-    public ExternalJob(TaskIdentifier id, FileContents[] inputFiles, String[] outputFiles, Vector<String> command) {
+    public ExternalJob( FileContents[] inputFiles, String[] outputFiles, Vector<String> command) {
         super();
-        this.id = id;
         this.inputFiles = inputFiles;
         this.outputFiles = outputFiles;
         this.command = command;

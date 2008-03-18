@@ -21,7 +21,7 @@ final class MasterQueue {
         final Job job;
         final TaskIdentifier id;
 
-        public QueueEntry(Job job, TaskIdentifier id) {
+        QueueEntry(Job job, TaskIdentifier id) {
             this.job = job;
             this.id = id;
         }

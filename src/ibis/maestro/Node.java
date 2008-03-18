@@ -5,6 +5,7 @@ import ibis.ipl.IbisCapabilities;
 import ibis.ipl.IbisCreationFailedException;
 import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.Registry;
 import ibis.ipl.RegistryEventHandler;
 
@@ -106,8 +107,14 @@ public final class Node {
         final TaskIdentifier identifier;
         final CompletionListener listener;
 
-        public TaskInfo(final TaskIdentifier identifier, final CompletionListener listener) {
-            super();
+        /**
+         * Constructs an information class for the given task identifier.
+         * 
+         * @param identifier The task identifier.
+         * @param listener The completion listener associated with the task.
+         */
+        public TaskInfo(final TaskIdentifier identifier, final CompletionListener listener )
+        {
             this.identifier = identifier;
             this.listener = listener;
         }
@@ -227,6 +234,7 @@ public final class Node {
         master.start();
         worker.start();
         registry.enableEvents();
+        typeAdder.initialize( worker );
         if( Settings.traceNodes ) {
             Globals.log.log( "Started a Maestro node" );
         }
@@ -314,15 +322,75 @@ public final class Node {
             runningTasks.add( new TaskInfo( id, listener ) );
         }
     }
-    
+
+    /**
+     * Submits the given job, which is part of the given task.
+     * @param j The job to submit.
+     * @param id The task it is part of.
+     */
     public void submit( Job j, TaskIdentifier id )
     {
         master.submit( j, id );
     }
 
+    /**
+     * Submits the given job, which is the first job of the given task.
+     * @param j The job to submit.
+     * @param listener The listener who is interested in the result of the task.
+     * @param id The identifier of the task this job belongs to.
+     */
     public void submitTask( Job j, CompletionListener listener, TaskIdentifier id )
     {
         addRunningTask( id, listener );
         master.submitExternalJob( j, id );
+    }
+
+    /** Start an extra work thread to replace the one that is blocked.
+     * @return The newly started work thread.
+     */
+    public WorkThread startExtraWorker()
+    {
+	WorkThread t = new WorkThread( worker, this );
+        t.start();
+	return t;
+    }
+    
+    static class OurTaskIdentifier implements TaskIdentifier {
+	private static final long serialVersionUID = 2623433288175382999L;
+	final int id;
+	private final ReceivePortIdentifier receivePort;
+
+	/**
+	 * Constructs a new identifier.
+	 * @param id The user identifier to include.
+	 * @param receivePortIdentifier The receive port to send the result to.
+	 */
+	public OurTaskIdentifier( int id, ReceivePortIdentifier receivePortIdentifier )
+	{
+	    this.id = id;
+	    this.receivePort = receivePortIdentifier;
+	}
+
+	@Override
+	public void reportResult( Node node, JobResultValue result )
+	{
+	    node.sendResultMessage( receivePort, this, result );
+	}
+    }
+
+    public TaskIdentifier buildTaskIdentifier(int i)
+    {
+	return new OurTaskIdentifier( i, master.identifier() );
+    }
+
+    /**
+     * 
+     * @param receivePort The port to send it to.
+     * @param id The identifier of the task.
+     * @param result The result.
+     */
+    public void sendResultMessage( ReceivePortIdentifier receivePort, TaskIdentifier id,
+	    JobResultValue result ) {
+	worker.sendResultMessage( receivePort, id, result );
     }
 }

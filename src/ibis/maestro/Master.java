@@ -152,6 +152,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
     }
     
+    private void handleResultMessage( ResultMessage m )
+    {
+	node.reportCompletion( m.id, m.result );
+    }
+    
     private void sendAcceptMessage( Master.WorkerIdentifier workerID, ReceivePortIdentifier myport, Worker.MasterIdentifier idOnWorker )
     {
         WorkerAcceptMessage msg = new WorkerAcceptMessage( idOnWorker, myport, workerID );
@@ -254,6 +259,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
             handleWorkerStatusMessage( result );
         }
+        else if( msg instanceof ResultMessage ) {
+            ResultMessage m = (ResultMessage) msg;
+            
+            handleResultMessage( m );
+        }
         else if( msg instanceof WorkRequestMessage ) {
             WorkRequestMessage m = (WorkRequestMessage) msg;
 
@@ -284,6 +294,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * Note that the master uses a priority queue for its scheduling,
      * so jobs may not be executed in chronological order.
      * @param j The job to add to the queue.
+     * @param id The identifier of the task this job belongs to.
      */
     public void submit( Job j, TaskIdentifier id )
     {

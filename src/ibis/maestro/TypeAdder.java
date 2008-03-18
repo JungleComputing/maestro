@@ -10,6 +10,12 @@ package ibis.maestro;
  */
 public interface TypeAdder {
     /**
+     * Register with this worker the initial types it should support.
+     * @param w The worker to initialize.
+     */
+    void initialize( Worker w );
+
+    /**
      * Register with this worker that a neighbor supports the given type.
      * That may allow it to support a new type, since it knows what to
      * do with resulting jobs.

@@ -27,6 +27,10 @@ public class PacketSendPort<T extends Serializable> {
     private long sendTime = 0;
     private long adminTime = 0;
     private int sentCount = 0;
+    private long uncachedSentBytes = 0;
+    private long uncachedSendTime = 0;
+    private long uncachedAdminTime = 0;
+    private long uncachedSentCount = 0;
     private int localSentCount = 0;
     private int evictions = 0;
     private final CacheInfo cache[] = new CacheInfo[Settings.CONNECTION_CACHE_SIZE];
@@ -262,10 +266,10 @@ public class PacketSendPort<T extends Serializable> {
         if( Settings.traceSends ) {
             System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) );
         }
-        adminTime += (setupTime-startTime);
-        sendTime += (stopTime-setupTime);
-        sentBytes += len;
-        sentCount++;
+        uncachedAdminTime += (setupTime-startTime);
+        uncachedSendTime += (stopTime-setupTime);
+        uncachedSentBytes += len;
+        uncachedSentCount++;
         return len;
     }
 
@@ -276,9 +280,14 @@ public class PacketSendPort<T extends Serializable> {
     public synchronized void printStats( String portname )
     {
         System.out.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " remote messages; " + localSentCount + " local sends; "+ evictions + " evictions" );
+        System.out.println( portname + ": sent " + uncachedSentBytes + " uncached bytes in " + uncachedSentCount + " uncached remote messages" );
         if( sentCount>0 ) {
             System.out.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
             System.out.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
+        }
+        if( uncachedSentCount>0 ) {
+            System.out.println( portname + ": total uncached send time  " + Service.formatNanoseconds( uncachedSendTime ) + "; " + Service.formatNanoseconds( uncachedSendTime/uncachedSentCount ) + " per message" );
+            System.out.println( portname + ": total uncached setup time " + Service.formatNanoseconds( uncachedAdminTime ) + "; " + Service.formatNanoseconds( uncachedAdminTime/uncachedSentCount ) + " per message" );
         }
         DestinationInfo l[] = new DestinationInfo[destinations.size()];
         destinations.toArray( l );
@@ -311,18 +320,18 @@ public class PacketSendPort<T extends Serializable> {
 
     /** 
      * Tries to send a message to the given ibis and port name.
-     * @param ibis2 The ibis to send the message to.
+     * @param theIbis The ibis to send the message to.
      * @param portName The port to send  the message to.
      * @param msg The message to send.
      * @param timeout The timeout on the message.
      * @return The number of transmitted bytes, or 0 if the message could not be sent.
      */
-    public long tryToSend(IbisIdentifier ibis2, String portName, T msg, int timeout) {
+    public long tryToSend(IbisIdentifier theIbis, String portName, T msg, int timeout) {
         long sz = 0;
         try {
-            sz = send( ibis2, portName, msg, timeout );
+            sz = send( theIbis, portName, msg, timeout );
         } catch (IOException e) {
-            Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to ibis " + ibis2 );
+            Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to ibis " + theIbis );
             e.printStackTrace( Globals.log.getPrintStream() );
         }
         return sz;
@@ -347,4 +356,32 @@ public class PacketSendPort<T extends Serializable> {
         return sz;
     }
 
+    public long tryToSend( ReceivePortIdentifier port, T data, int timeout )
+    {
+        long len = -1;
+        try {
+            long tStart = System.nanoTime();
+            SendPort sendPort = ibis.createSendPort( portType );
+            sendPort.connect( port, timeout, true );
+            long tEnd = System.nanoTime();
+            adminTime += (tEnd-tStart);
+            WriteMessage msg = sendPort.newMessage();
+            long setupTime = System.nanoTime();
+            msg.writeObject( data );
+            len = msg.finish();
+            sendPort.close();
+            long stopTime = System.nanoTime();
+            if( Settings.traceSends ) {
+                System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-tStart) );
+            }
+            uncachedAdminTime += (setupTime-tStart);
+            uncachedSendTime += (stopTime-setupTime);
+            uncachedSentBytes += len;
+            uncachedSentCount++;
+        } catch (IOException e) {
+            Globals.log.reportError( "Cannot send a " + data.getClass() + " message to master " + port );
+            e.printStackTrace( Globals.log.getPrintStream() );
+        }
+        return len;
+    }
 }

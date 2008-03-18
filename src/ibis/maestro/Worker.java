@@ -604,4 +604,10 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             System.out.println( "Worker: compute time/job = " + Service.formatNanoseconds( workDuration/jobCount ) );
         }
     }
+
+    public void sendResultMessage(ReceivePortIdentifier port, TaskIdentifier id,
+	    JobResultValue result) {
+	WorkerMessage msg = new ResultMessage( id, result );
+	sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+    }
 }
