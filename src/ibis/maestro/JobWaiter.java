@@ -1,13 +1,7 @@
 package ibis.maestro;
 
+import java.io.Serializable;
 import java.util.ArrayList;
-
-import ibis.ipl.ReceivePortIdentifier;
-import ibis.maestro.CompletionListener;
-import ibis.maestro.Job;
-import ibis.maestro.JobResultValue;
-import ibis.maestro.Node;
-import ibis.maestro.TaskIdentifier;
 
 /**
  * Waits for the given set of jobs.
@@ -20,28 +14,14 @@ public class JobWaiter implements CompletionListener {
     private int outstandingJobs = 0;
     private ArrayList<JobResultValue> results = new ArrayList<JobResultValue>();
 
-    private static class WaiterTaskIdentifier implements TaskIdentifier {
+    private static class WaiterTaskIdentifier implements Serializable {
         private static final long serialVersionUID = -3256737277889247302L;
-        final ReceivePortIdentifier resultPort;
         final int id;
 
-        WaiterTaskIdentifier( int id, ReceivePortIdentifier resultPort )
+        WaiterTaskIdentifier( int id )
         {
             this.id = id;
-            this.resultPort = resultPort;
         }
-
-        /**
-         * Reports the result back to the original submitter of the task
-         * by sending a result message to the port we're carrying along.
-         * @param node The node we're running on.
-         * @param result The result to report.
-         */
-	@Override
-	public void reportResult( Node node, JobResultValue result )
-	{
-	    node.sendResultMessage( resultPort, this, result );
-	}
     }
 
     /** Submits the given job to the given node.
@@ -53,7 +33,7 @@ public class JobWaiter implements CompletionListener {
      */
     public synchronized void submit( Node node, Job j )
     {
-	TaskIdentifier id = node.buildTaskIdentifier( jobNo++ );
+	TaskIdentifier id = node.buildTaskIdentifier( new WaiterTaskIdentifier( jobNo++ ) );
         outstandingJobs++;
         node.submitTask( j, this, id );
     }
@@ -67,9 +47,18 @@ public class JobWaiter implements CompletionListener {
     @Override
     public synchronized void jobCompleted( Node node, TaskIdentifier id, JobResultValue result )
     {
-        int ix = ((WaiterTaskIdentifier) id).id;
-        results.set( ix, result );
-        outstandingJobs--;
+        Object userId = id.userId;
+        if( userId instanceof WaiterTaskIdentifier ){
+            int ix = ((WaiterTaskIdentifier) userId).id;
+            while( results.size()<=ix ){
+                results.add( null );
+            }
+            results.set( ix, result );
+            outstandingJobs--;
+        }
+        else {
+            System.err.println( "JobWaiter: don't know what to do with user identifier " + userId );
+        }
         notifyAll();
     }
 

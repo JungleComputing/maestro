@@ -113,7 +113,7 @@ public final class Node {
          * @param identifier The task identifier.
          * @param listener The completion listener associated with the task.
          */
-        public TaskInfo(final TaskIdentifier identifier, final CompletionListener listener )
+        public TaskInfo( final TaskIdentifier identifier, final CompletionListener listener )
         {
             this.identifier = identifier;
             this.listener = listener;
@@ -234,7 +234,7 @@ public final class Node {
         master.start();
         worker.start();
         registry.enableEvents();
-        typeAdder.initialize( worker );
+        typeAdder.initialize( this );
         if( Settings.traceNodes ) {
             Globals.log.log( "Started a Maestro node" );
         }
@@ -342,7 +342,7 @@ public final class Node {
     public void submitTask( Job j, CompletionListener listener, TaskIdentifier id )
     {
         addRunningTask( id, listener );
-        master.submitExternalJob( j, id );
+        master.submit( j, id );
     }
 
     /** Start an extra work thread to replace the one that is blocked.
@@ -354,33 +354,15 @@ public final class Node {
         t.start();
 	return t;
     }
-    
-    static class OurTaskIdentifier implements TaskIdentifier {
-	private static final long serialVersionUID = 2623433288175382999L;
-	final int id;
-	private final ReceivePortIdentifier receivePort;
 
-	/**
-	 * Constructs a new identifier.
-	 * @param id The user identifier to include.
-	 * @param receivePortIdentifier The receive port to send the result to.
-	 */
-	public OurTaskIdentifier( int id, ReceivePortIdentifier receivePortIdentifier )
-	{
-	    this.id = id;
-	    this.receivePort = receivePortIdentifier;
-	}
-
-	@Override
-	public void reportResult( Node node, JobResultValue result )
-	{
-	    node.sendResultMessage( receivePort, this, result );
-	}
-    }
-
-    public TaskIdentifier buildTaskIdentifier(int i)
+    /**
+     * Builds a new identifier containing the given user identifier.
+     * @param userIdentifier The user identifier to include in this identifier.
+     * @return The newly constructed identifier.
+     */
+    public TaskIdentifier buildTaskIdentifier( Object userIdentifier )
     {
-	return new OurTaskIdentifier( i, master.identifier() );
+	return new TaskIdentifier( userIdentifier, master.identifier() );
     }
 
     /**

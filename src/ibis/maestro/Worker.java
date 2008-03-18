@@ -35,6 +35,8 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     /** The list of job types we know how to handle. */
     private ArrayList<JobType> jobTypes = new ArrayList<JobType>();
 
+    private final Node node;
+
     /** The reasoning engine for type support. */
     private final TypeAdder typeAdder;
 
@@ -117,6 +119,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     public Worker( Ibis ibis, Node node, TypeAdder typeAdder ) throws IOException
     {
         super( "Worker" );   // Create a thread with a name.
+        this.node = node;
         this.typeAdder = typeAdder;
         receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
         sendPort = new PacketSendPort<WorkerMessage>( ibis );
@@ -162,7 +165,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     void updateNeighborJobTypes( JobType l[] )
     {
 	for( JobType t: l ) {
-	    typeAdder.registerNeighborType( this, t );
+	    typeAdder.registerNeighborType( node, t );
 	}
     }
 

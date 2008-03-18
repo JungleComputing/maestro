@@ -40,7 +40,7 @@ public class TestProg {
 	 * @param t The type a neighbor supports.
 	 */
 	@Override
-	public void registerNeighborType( Worker w, JobType t )
+	public void registerNeighborType( Node w, JobType t )
         {
 	    // Nothing to do.
 	}
@@ -50,7 +50,7 @@ public class TestProg {
 	 * @param w The worker to initialize.
 	 */
 	@Override
-	public void initialize(Worker w)
+	public void initialize( Node w)
 	{
 	    w.allowJobType( AdditionJob.jobType );
 	}

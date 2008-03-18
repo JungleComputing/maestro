@@ -13,7 +13,7 @@ public interface TypeAdder {
      * Register with this worker the initial types it should support.
      * @param w The worker to initialize.
      */
-    void initialize( Worker w );
+    void initialize( Node w );
 
     /**
      * Register with this worker that a neighbor supports the given type.
@@ -23,5 +23,5 @@ public interface TypeAdder {
      * @param w The worker to update the types for.
      * @param t The type that a neighbor supports.
      */
-    void registerNeighborType( Worker w, JobType t );
+    void registerNeighborType( Node w, JobType t );
 }
