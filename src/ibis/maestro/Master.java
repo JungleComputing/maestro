@@ -319,7 +319,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * in the system, try to get it out as soon as possible.
      * @param j The job to add to the queue.
      * @param id The identifier of the task this job belongs to.
-     * @param  The identifier of the entire task that this job belongs to.
      */
     public void submitExternalJob( Job j, TaskIdentifier id )
     {

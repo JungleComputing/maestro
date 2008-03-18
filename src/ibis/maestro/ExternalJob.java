@@ -92,7 +92,7 @@ public class ExternalJob implements Job {
     
     /**
      * Runs this job.
-     * @param context The context of this run.
+     * @param node The node this job is running on.
      * @param taskId The identifier of the task that this job belong to.
      */
     @Override
