@@ -44,6 +44,8 @@ public class PacketUpcallReceivePort<T extends Serializable> implements MessageU
     public void upcall(ReadMessage msg) throws IOException, ClassNotFoundException
     {
         T data = (T) msg.readObject();
+        // FIXME: is this a good idea???
+        // msg.finish();
         listener.messageReceived( data );
     }
     
