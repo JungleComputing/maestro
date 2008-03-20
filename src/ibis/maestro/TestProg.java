@@ -17,59 +17,77 @@ public class TestProg {
         }
 
         /** Handle the completion of job 'j': the result is 'result'.
-	 * @param id The job that was completed.
-	 * @param result The result of the job.
-	 */
-	@Override
-	public void jobCompleted( Node node, TaskIdentifier id, JobResultValue result ) {
-	    //System.out.println( "result is " + result );
+         * @param id The job that was completed.
+         * @param result The result of the job.
+         */
+        @Override
+        public void jobCompleted( Node node, TaskIdentifier id, JobResultValue result ) {
+            //System.out.println( "result is " + result );
             jobsCompleted++;
             //System.out.println( "I now have " + jobsCompleted + "/" + jobCount + " jobs" );
             if( jobsCompleted>=jobCount ){
-        	System.out.println( "I got all job results back; stopping test program" );
+                System.out.println( "I got all job results back; stopping test program" );
                 node.setStopped();
             }
-	}
+        }
     }
 
-    private static class TestTypeInformation implements TypeInformation {
+    private static final class TestTypeInformation implements TypeInformation {
 
-	/**
-	 * Registers that a neighbor supports the given type of job.
-	 * @param w The worker to register the info with.
-	 * @param t The type a neighbor supports.
-	 */
-	@Override
-	public void registerNeighborType( Node w, JobType t )
+        /**
+         * Registers that a neighbor supports the given type of job.
+         * @param w The worker to register the info with.
+         * @param t The type a neighbor supports.
+         */
+        @Override
+        public void registerNeighborType( Node w, JobType t )
         {
-	    // Nothing to do.
-	}
+            // Nothing to do.
+        }
 
-	/** Registers the initial types of this worker.
-	 * 
-	 * @param w The worker to initialize.
-	 */
-	@Override
-	public void initialize( Node w)
-	{
-	    w.allowJobType( AdditionJob.jobType );
-	}
-	
+        /** Registers the initial types of this worker.
+         * 
+         * @param w The worker to initialize.
+         */
+        @Override
+        public void initialize( Node w)
+        {
+            w.allowJobType( AdditionJob.jobType );
+        }
+
+        /**
+         * Compares two job types based on priority. Returns
+         * 1 if type a has more priority as b, etc.
+         */
+        public int compare( JobType a, JobType b )
+        {
+            if( a.equals( b ) ){
+                return 0;
+            }
+            if( a.equals( AdditionJob.jobType ) ){
+                return 1;
+            }
+            if( b.equals( AdditionJob.jobType ) ){
+                return -1;
+            }
+            return 0;
+        }
+
     }
-    
+
     @SuppressWarnings("synthetic-access")
     private void run( int jobCount, boolean goForMaestro ) throws Exception
     {
         Node node = new Node( new TestTypeInformation(), goForMaestro );
         Listener listener = new Listener( jobCount );
 
-	System.out.println( "Node created" );
+        System.out.println( "Node created" );
         if( node.isMaestro() ) {
             System.out.println( "I am maestro; submitting " + jobCount + " jobs" );
             for( int i=0; i<jobCount; i++ ){
-        	TaskIdentifier id = node.buildTaskIdentifier( i );
-		AdditionJob j = new AdditionJob( 12*i );
-        	node.submitTask( j, listener, id );
+                TaskIdentifier id = node.buildTaskIdentifier( i );
+                AdditionJob j = new AdditionJob( 12*i );
+                node.submitTask( j, listener, id );
             }
         }
         node.waitToTerminate();
@@ -95,8 +113,8 @@ public class TestProg {
         else {
             jobCount = Integer.parseInt( arg );
         }
-	System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro + "; jobCount=" + jobCount );
-	try {
+        System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro + "; jobCount=" + jobCount );
+        try {
             new TestProg().run( jobCount, goForMaestro );
         }
         catch( Exception e ) {

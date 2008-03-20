@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.util.Comparator;
+
 /**
  * The interface of a type information class.
  * 
@@ -10,7 +12,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-public interface TypeInformation {
+public interface TypeInformation extends Comparator<JobType> {
     /**
      * Register with this worker the initial types it should support.
      * @param w The worker to initialize.
