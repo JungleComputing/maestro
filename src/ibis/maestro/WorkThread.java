@@ -47,12 +47,13 @@ class WorkThread extends Thread
         }
     }
 
-    /** Tell this work thread to shut down, and wait for it to do so. */
+    /** Tell this work thread to shut down. We don't wait for
+     * it to stop, since it won't run a new job in any case.
+     */
     public void shutdown()
     {
 	synchronized( this ) {
 	    stopped = true;
 	}
-	Service.waitToTerminate( this );
     }
 }

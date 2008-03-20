@@ -124,6 +124,9 @@ final class MasterQueue {
     boolean selectJob( Submission sub, WorkerList workers )
     {
 	boolean noWork = true;
+        sub.worker = null;
+        sub.taskId = null;
+        sub.job = null;
 	for( QueueType t: queueTypes ) {
 	    if( !t.isEmpty() ) {
 		noWork = false; // There is at least one queue with work.
@@ -131,9 +134,9 @@ final class MasterQueue {
 		if( worker != null ) {
 		    QueueEntry e = t.queue.removeFirst();
 		    sub.job = e.job;
-		    sub.worker = worker;
 		    sub.taskId = e.taskId;
-		    return false;
+                    sub.worker = worker;
+                    break;
 		}
 	    }
 	}
