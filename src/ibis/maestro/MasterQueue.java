@@ -18,7 +18,7 @@ import java.util.LinkedList;
  */
 final class MasterQueue {
     private final TypeInformation typeInformation;
-    private final AbstractList<QueueType> queueTypes = new ArrayList<QueueType>();
+    private final ArrayList<QueueType> queueTypes = new ArrayList<QueueType>();
 
     MasterQueue( TypeInformation typeInformation )
     {
@@ -65,9 +65,8 @@ final class MasterQueue {
     {
         QueueEntry e = new QueueEntry( j, taskId );
         JobType t = j.getType();
-        
-        // TODO: order the types by priority.
-        // TODO: in an ordered list, use binary search.
+
+        // TODO: since we have an ordered list, use binary search.
         int ix = queueTypes.size();
         while( ix>0 ) {
             ix--;
@@ -77,10 +76,20 @@ final class MasterQueue {
         	return;
             }
         }
-        // This is a new type.
+        // This is a new type. Insert it in the right place
+        // to keep the queues ordered from highest to lowest
+        // priority.
+        ix = 0;
+        while( ix<queueTypes.size() ){
+            QueueType q = queueTypes.get( ix );
+            int cmp = typeInformation.compare(t, q.type );
+            if( cmp>0 ){
+                break;
+            }
+        }
         QueueType qt = new QueueType( t );
         qt.queue.add( e );
-        queueTypes.add( qt );
+        queueTypes.add( ix, qt );
     }
 
     /**
@@ -102,9 +111,6 @@ final class MasterQueue {
         // job, but he asks for a larger allowance.
         // We only increase it if at the moment there is a job of this
         // type in the queue.
-	//
-	// FIXME: once we have priorities, walk the list in order of
-	// decreasing priority.
 	for( QueueType t: queueTypes ) {
 	    if( !t.isEmpty() ) {
 		if( workers.incrementAllowance(workerID, t.type ) ) {
