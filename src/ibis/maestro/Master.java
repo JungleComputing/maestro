@@ -20,7 +20,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final WorkerList workers = new WorkerList();
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
-    private final MasterQueue queue = new MasterQueue();
+    private final MasterQueue queue;
 
     private boolean stopped = false;
     private long nextJobId = 0;
@@ -84,9 +84,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * @param node The node this master belongs to.
      * @throws IOException Thrown if the master cannot be created.
      */
-    public Master( Ibis ibis, Node node ) throws IOException
+    public Master( Ibis ibis, Node node, TypeInformation typeInformation ) throws IOException
     {
         super( "Master" );
+        this.queue = new MasterQueue( typeInformation );
         this.node = node;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );

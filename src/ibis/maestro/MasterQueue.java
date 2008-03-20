@@ -17,7 +17,13 @@ import java.util.LinkedList;
  *
  */
 final class MasterQueue {
+    private final TypeInformation typeInformation;
     private final AbstractList<QueueType> queueTypes = new ArrayList<QueueType>();
+
+    MasterQueue( TypeInformation typeInformation )
+    {
+        this.typeInformation = typeInformation;
+    }
 
     /**
      * The information for one type of job in the queue.

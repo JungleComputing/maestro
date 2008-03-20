@@ -190,13 +190,13 @@ public final class Node {
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
-     * @param typeAdder The list of types this job allows.
+     * @param typeInformation The list of types this job allows.
      * @param runForMaestro If true, try to get elected as maestro.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
     @SuppressWarnings("synthetic-access")
-    public Node( TypeInformation typeAdder, boolean runForMaestro) throws IbisCreationFailedException, IOException
+    public Node( TypeInformation typeInformation, boolean runForMaestro) throws IbisCreationFailedException, IOException
     {
         Properties ibisProperties = new Properties();
         IbisIdentifier maestro;
@@ -227,14 +227,14 @@ public final class Node {
         if( Settings.traceNodes ) {
             System.out.println( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
         }
-        master = new Master( ibis, this );
-        worker = new Worker( ibis, this, typeAdder );
+        master = new Master( ibis, this, typeInformation );
+        worker = new Worker( ibis, this, typeInformation );
         master.setLocalListener( worker );
         worker.setLocalListener( master );
         master.start();
         worker.start();
         registry.enableEvents();
-        typeAdder.initialize( this );
+        typeInformation.initialize( this );
         if( Settings.traceNodes ) {
             Globals.log.log( "Started a Maestro node" );
         }
