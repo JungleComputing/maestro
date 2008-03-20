@@ -2,7 +2,6 @@ package ibis.maestro;
 
 import ibis.maestro.Master.WorkerIdentifier;
 
-import java.util.AbstractList;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -86,6 +85,7 @@ final class MasterQueue {
             if( cmp>0 ){
                 break;
             }
+            ix++;
         }
         QueueType qt = new QueueType( t );
         qt.queue.add( e );
