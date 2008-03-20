@@ -345,6 +345,18 @@ public final class Node {
         master.submit( j, id );
     }
 
+    /**
+     * Submits the given job, which is the first job of the given task.
+     * @param j The job to submit.
+     * @param listener The listener who is interested in the result of the task.
+     * @param id The identifier of the task this job belongs to.
+     */
+    public void submitTaskWhenRoom( Job j, CompletionListener listener, TaskIdentifier id )
+    {
+	addRunningTask( id, listener );
+        master.submitWhenRoom( j, id );
+    }
+
     /** Start an extra work thread to replace the one that is blocked.
      * @return The newly started work thread.
      */

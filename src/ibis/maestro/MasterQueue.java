@@ -18,6 +18,7 @@ import java.util.LinkedList;
 final class MasterQueue {
     private final TypeInformation typeInformation;
     private final ArrayList<QueueType> queueTypes = new ArrayList<QueueType>();
+    int size = 0;
 
     MasterQueue( TypeInformation typeInformation )
     {
@@ -65,6 +66,7 @@ final class MasterQueue {
         QueueEntry e = new QueueEntry( j, taskId );
         JobType t = j.getType();
 
+        size++;
         // TODO: since we have an ordered list, use binary search.
         int ix = queueTypes.size();
         while( ix>0 ) {
@@ -148,10 +150,20 @@ final class MasterQueue {
 		    sub.job = e.job;
 		    sub.taskId = e.taskId;
                     sub.worker = worker;
+                    size--;
                     break;
 		}
 	    }
 	}
 	return noWork;
+    }
+
+    /**
+     * Returns the number of elements in this work queue.
+     * @return The number of elements in this queue.
+     */
+    public int size()
+    {
+	return size;
     }
 }

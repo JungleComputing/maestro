@@ -58,6 +58,9 @@ public class TestProg {
         /**
          * Compares two job types based on priority. Returns
          * 1 if type a has more priority as b, etc.
+         * @param a One of the job types to compare.
+         * @param b The other job type to compare.
+         * @return The comparison result.
          */
         public int compare( JobType a, JobType b )
         {
@@ -87,7 +90,7 @@ public class TestProg {
             for( int i=0; i<jobCount; i++ ){
                 TaskIdentifier id = node.buildTaskIdentifier( i );
                 AdditionJob j = new AdditionJob( 12*i );
-                node.submitTask( j, listener, id );
+                node.submitTaskWhenRoom( j, listener, id );
             }
         }
         node.waitToTerminate();

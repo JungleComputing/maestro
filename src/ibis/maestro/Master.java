@@ -33,8 +33,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     static final class WorkerIdentifier implements Serializable {
         private static final long serialVersionUID = 3271311796768467853L;
         final int value;
-	
-	WorkerIdentifier( int value )
+
+        WorkerIdentifier( int value )
 	{
 	    this.value = value;
 	}
@@ -82,6 +82,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     /** Creates a new master instance.
      * @param ibis The Ibis instance this master belongs to.
      * @param node The node this master belongs to.
+     * @param typeInformation The type information class to use.
      * @throws IOException Thrown if the master cannot be created.
      */
     public Master( Ibis ibis, Node node, TypeInformation typeInformation ) throws IOException
@@ -308,6 +309,35 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             queue.notifyAll();
         }
     }
+
+    /**
+     * Adds the given job to the work queue of this master.
+     * Note that the master uses a priority queue for its scheduling,
+     * so jobs may not be executed in chronological order.
+     * @param j The job to add to the queue.
+     * @param id The identifier of the task this job belongs to.
+     */
+    public void submitWhenRoom( Job j, TaskIdentifier id )
+    {
+        if( Settings.traceMasterProgress ) {
+            System.out.println( "Master: received job " + j );
+        }
+        int maxQueueLength = workers.getWorkerCount()*Settings.JOBS_PER_WORKER;
+        synchronized ( queue ) {
+            // First wait for the queue to drain to a reasonable size.
+            while( queue.size()>maxQueueLength ) {
+        	try {
+		    queue.wait();
+		} catch (InterruptedException e) {
+		    // Not interesting.
+		}
+            }
+            incomingJobCount++;
+            queue.submit( j, id );
+            queue.notifyAll();
+        }
+    }
+    
 
     /**
      * @param worker The worker to send the job to.
