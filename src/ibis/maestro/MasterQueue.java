@@ -4,42 +4,90 @@ import ibis.maestro.Master.WorkerIdentifier;
 
 import java.util.AbstractList;
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 /**
  * A class representing the master work queue.
+ *
  * This requires a special implementation because we want to enforce
  * priorities for the different job types, and we want to know
  * which job types are currently present in the queue.
- * 
+ *
  * @author Kees van Reeuwijk
  *
  */
 final class MasterQueue {
-    private final AbstractList<QueueEntry> queue = new ArrayList<QueueEntry>();
+    private final AbstractList<QueueType> queueTypes = new ArrayList<QueueType>();
+
+    /**
+     * The information for one type of job in the queue.
+     * 
+     * @author Kees van Reeuwijk
+     *
+     */
+    private static final class QueueType {
+	/** The type of jobs in this queue. */
+	final JobType type;
+	
+	/** The work queue for these jobs. */
+	final LinkedList<QueueEntry> queue = new LinkedList<QueueEntry>();
+	
+	QueueType( JobType type ){
+	    this.type = type;
+	}
+
+	/**
+	 * Returns true iff the queue associated with this type is empty.
+	 * @return True iff the queue is empty.
+	 */
+	boolean isEmpty() {
+	    return queue.isEmpty();
+	}
+    }
 
     private static final class QueueEntry {
         final Job job;
-        final TaskIdentifier id;
+        final TaskIdentifier taskId;
 
         QueueEntry(Job job, TaskIdentifier id) {
             this.job = job;
-            this.id = id;
+            this.taskId = id;
         }
     }
 
     void submit( Job j, TaskIdentifier taskId )
     {
         QueueEntry e = new QueueEntry( j, taskId );
-        queue.add( e );
+        JobType t = j.getType();
+        
+        // TODO: order the types by priority.
+        // TODO: in an ordered list, use binary search.
+        int ix = queueTypes.size();
+        while( ix>0 ) {
+            ix--;
+            QueueType x = queueTypes.get( ix );
+            if( x.type.equals( t ) ) {
+        	x.queue.add( e );
+        	return;
+            }
+        }
+        // This is a new type.
+        QueueType qt = new QueueType( t );
+        qt.queue.add( e );
+        queueTypes.add( qt );
     }
 
+    /**
+     * Returns true iff the entire queue is empty.
+     * @return
+     */
     boolean isEmpty() {
-        return queue.isEmpty();
-    }
-
-    int size()
-    {
-        return queue.size();
+	for( QueueType t: queueTypes ) {
+	    if( !t.isEmpty() ) {
+		return false;
+	    }
+	}
+	return true;
     }
 
     void incrementAllowance( WorkerIdentifier workerID, WorkerList workers )
@@ -48,17 +96,16 @@ final class MasterQueue {
         // job, but he asks for a larger allowance.
         // We only increase it if at the moment there is a job of this
         // type in the queue.
-        //
-        // FIXME: Walking the queue and testing the type of each job is highly inefficient.
-        for( QueueEntry e: queue ){
-            JobType jobType = e.job.getType();
-
-            // We're in need of a worker for this type of job; try to 
-            // increase the allowance of this worker.
-            if( workers.incrementAllowance( workerID, jobType ) ) {
-                break;
-            }
-        }
+	//
+	// FIXME: once we have priorities, walk the list in order of
+	// decreasing priority.
+	for( QueueType t: queueTypes ) {
+	    if( !t.isEmpty() ) {
+		if( workers.incrementAllowance(workerID, t.type ) ) {
+		    break;
+		}
+	    }
+	}
     }
 
     /**
@@ -76,35 +123,20 @@ final class MasterQueue {
      */
     boolean selectJob( Submission sub, WorkerList workers )
     {
-        // This is a pretty big operation to do in one atomic
-        // 'gulp'. TODO: see if we can break it up somehow.
-        int ix = queue.size();
-        int jobToRun = 0;
-        WorkerInfo worker = null;
-        boolean nowork = (ix == 0);
-        while( ix>0 ) {
-            ix--;
-
-            QueueEntry job = queue.get( ix );
-            JobType jobType = job.job.getType();
-            worker = workers.selectBestWorker( jobType );
-            if( worker != null ) {
-                // We have a job that we can run.
-                jobToRun = ix;
-                break;
-            }
-        }
-        if( worker == null ){
-            sub.worker = null;
-            sub.job = null;
-        }
-        else {
-            final QueueEntry e = queue.remove( jobToRun );
-            // We have a job and a worker. Submit the job.
-            sub.job = e.job;
-            sub.worker = worker;
-            sub.taskId = e.id;
-        }
-        return nowork;
+	boolean noWork = true;
+	for( QueueType t: queueTypes ) {
+	    if( !t.isEmpty() ) {
+		noWork = false; // There is at least one queue with work.
+		WorkerInfo worker = workers.selectBestWorker( t.type );
+		if( worker != null ) {
+		    QueueEntry e = t.queue.removeFirst();
+		    sub.job = e.job;
+		    sub.worker = worker;
+		    sub.taskId = e.taskId;
+		    return false;
+		}
+	    }
+	}
+	return noWork;
     }
 }

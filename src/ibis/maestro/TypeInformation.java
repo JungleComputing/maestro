@@ -1,14 +1,16 @@
 package ibis.maestro;
 
 /**
- * The interface of a type adder class.
- * This class adds supported types to a worker based on the
- * supported types of its known neighbors.
+ * The interface of a type information class.
  * 
+ * Classes that implement this interface keep track of the
+ * priority and appropriateness of executing a type of task
+ * on the given node.
+ *
  * @author Kees van Reeuwijk
  *
  */
-public interface TypeAdder {
+public interface TypeInformation {
     /**
      * Register with this worker the initial types it should support.
      * @param w The worker to initialize.

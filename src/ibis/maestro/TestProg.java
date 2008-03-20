@@ -32,7 +32,7 @@ public class TestProg {
 	}
     }
 
-    private static class TestTypeAdder implements TypeAdder {
+    private static class TestTypeInformation implements TypeInformation {
 
 	/**
 	 * Registers that a neighbor supports the given type of job.
@@ -60,7 +60,7 @@ public class TestProg {
     @SuppressWarnings("synthetic-access")
     private void run( int jobCount, boolean goForMaestro ) throws Exception
     {
-        Node node = new Node( new TestTypeAdder(), goForMaestro );
+        Node node = new Node( new TestTypeInformation(), goForMaestro );
         Listener listener = new Listener( jobCount );
 
 	System.out.println( "Node created" );

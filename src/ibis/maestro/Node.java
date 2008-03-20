@@ -183,7 +183,7 @@ public final class Node {
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public Node( TypeAdder typeAdder ) throws IbisCreationFailedException, IOException
+    public Node( TypeInformation typeAdder ) throws IbisCreationFailedException, IOException
     {
         this( typeAdder, true );
     }
@@ -196,7 +196,7 @@ public final class Node {
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
     @SuppressWarnings("synthetic-access")
-    public Node( TypeAdder typeAdder, boolean runForMaestro) throws IbisCreationFailedException, IOException
+    public Node( TypeInformation typeAdder, boolean runForMaestro) throws IbisCreationFailedException, IOException
     {
         Properties ibisProperties = new Properties();
         IbisIdentifier maestro;

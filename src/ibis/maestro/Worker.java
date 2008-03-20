@@ -38,7 +38,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     private final Node node;
 
     /** The reasoning engine for type support. */
-    private final TypeAdder typeAdder;
+    private final TypeInformation typeAdder;
 
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
@@ -116,7 +116,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      * @param typeAdder The types of job this worker can handle.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis, Node node, TypeAdder typeAdder ) throws IOException
+    public Worker( Ibis ibis, Node node, TypeInformation typeAdder ) throws IOException
     {
         super( "Worker" );   // Create a thread with a name.
         this.node = node;
