@@ -530,7 +530,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         long now = System.nanoTime();
         long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
    
-        WorkerMessage msg = new WorkerStatusMessage( jobMessage.workerIdentifier, jobMessage.jobId );
+        WorkerMessage msg = new WorkerStatusMessage( jobMessage.workerIdentifier, jobMessage.jobId, queueInterval );
         final MasterIdentifier master = jobMessage.source;
         long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( Settings.traceWorkerProgress ) {
