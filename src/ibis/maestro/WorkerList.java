@@ -102,7 +102,7 @@ public class WorkerList {
      * @param me Which master am I?
      * @param result The job result.
      */
-    public void registerWorkerStatus( ReceivePortIdentifier me, WorkerStatusMessage result )
+    void registerWorkerStatus( ReceivePortIdentifier me, WorkerStatusMessage result )
     {
 	WorkerInfo w = searchWorker( workers, result.source );
 	if( w == null ) {
@@ -116,7 +116,7 @@ public class WorkerList {
      * Returns true iff all workers in our list are idle.
      * @return True iff all workers in our list are idle.
      */
-    public boolean areIdle()
+    boolean areIdle()
     {
 	for( WorkerInfo w: workers ) {
 	    if( !w.isIdle() ) {

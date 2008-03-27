@@ -68,7 +68,7 @@ class WorkerInfo {
      * @param master The master this info belongs to.
      * @param result The job result message that tells about this job.
      */
-    public void registerWorkerStatus( ReceivePortIdentifier master, WorkerStatusMessage result )
+    void registerWorkerStatus( ReceivePortIdentifier master, WorkerStatusMessage result )
     {
         final long id = result.jobId;    // The identifier of the job, as handed out by us.
 

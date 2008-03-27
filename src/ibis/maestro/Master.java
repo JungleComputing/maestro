@@ -142,6 +142,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	}
     }
 
+    /**
+     * A worker has sent use a status message for a job. Process it.
+     * @param result The status message.
+     */
     private void handleWorkerStatusMessage( WorkerStatusMessage result )
     {
         if( Settings.traceWorkerProgress ){
