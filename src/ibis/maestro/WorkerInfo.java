@@ -21,13 +21,17 @@ class WorkerInfo {
     private final Hashtable<JobType,WorkerJobInfo> workerJobInfoTable = new Hashtable<JobType, WorkerJobInfo>();
 
     /** Our local identifier of this worker. */
-    public final Master.WorkerIdentifier identifier;
+    final Master.WorkerIdentifier identifier;
 
     /** The receive port of the worker. */
-    public final ReceivePortIdentifier port;
+    final ReceivePortIdentifier port;
 
     private boolean dead = false;
 
+    /** We know that this many jobs have excessive queue times. We have already
+     * tried to reduce it, don't try again for the moment.
+     */
+    private int knownDelayedJobs = 0;
     /**
      * Returns a string representation of this worker info. (Overrides method in superclass.)
      * @return The worker info.
@@ -62,6 +66,29 @@ class WorkerInfo {
 	}
 	return null;
     }
+    
+    /** The most recently returned job spent most of its time in the queue.
+     * If we haven't done so recently, reduce the queue time of this worker
+     * by reducing the number of allowed outstanding jobs.
+     * @param workerJobInfo Information about the job that was delayed so long.
+     */
+    private void reduceLongQueueTime( WorkerJobInfo workerJobInfo )
+    {
+	if( knownDelayedJobs>0 ) {
+	    // We've recently done a reduction, and there are still
+	    // outstanding jobs from before that. It's not
+	    // safe to do another reduction.
+	    return;
+	}
+	if( !workerJobInfo.decrementAllowance() ) {
+	    // We cannot reduce the allowance.
+	    return;
+	}
+	if( Settings.traceMasterProgress ) {
+	    System.out.println( "Reduced allowance of job type " + workerJobInfo + " to reduce queue time" );
+	}
+	knownDelayedJobs = activeJobs.size();
+    }
 
     /**
      * Register a job result for an outstanding job.
@@ -72,18 +99,25 @@ class WorkerInfo {
     {
         final long id = result.jobId;    // The identifier of the job, as handed out by us.
 
+        long now = System.nanoTime();
         ActiveJob e = searchQueueEntry( id );
         if( e == null ) {
             Globals.log.reportInternalError( "Master " + master + ": ignoring reported result from job with unknown id " + id );
             return;
         }
-        long now = System.nanoTime();
-        long newRoundTripTime = now-e.startTime; // The time to send the job, compute, and report the result.
-
         activeJobs.remove( e );
-        e.workerJobInfo.registerJobCompleted( newRoundTripTime );
+        long newRoundTripInterval = now-e.startTime; // The time to send the job, compute, and report the result.
+        long queueInterval = result.queueInterval;
+
+        if( knownDelayedJobs>0 ) {
+            knownDelayedJobs--;
+        }
+        e.workerJobInfo.registerJobCompleted( newRoundTripInterval );
+        if( queueInterval>(2*newRoundTripInterval)/3 ) {
+            reduceLongQueueTime( e.workerJobInfo );
+        }
         if( Settings.traceMasterProgress ){
-            System.out.println( "Master " + master + ": retired job " + e + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripTime ) );
+            System.out.println( "Master " + master + ": retired job " + e + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );
         }
     }
 

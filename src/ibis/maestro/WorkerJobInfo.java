@@ -71,6 +71,23 @@ class WorkerJobInfo {
     {
 	int n = maximalOutstandingJobs-outstandingJobs;
 	
-	maximalOutstandingJobs -= n/2;
+	if( n<0 ) {
+	    return;
+	}
+	maximalOutstandingJobs = Math.max( 1, maximalOutstandingJobs-n/2);
+    }
+
+    /**
+     * Try to reduce the allowance of this worker and job.
+     * This may not succeed if the new allowance would
+     * be too low.
+     * @return True iff we reduced the allowance.
+     */
+    public boolean decrementAllowance() {
+	if( maximalOutstandingJobs<=1 ) {
+	    return false;
+	}
+	maximalOutstandingJobs--;
+	return true;
     }
 }
