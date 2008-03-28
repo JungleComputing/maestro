@@ -33,6 +33,7 @@ public class TestProg {
     }
 
     private static final class TestTypeInformation implements TypeInformation {
+        private static final long serialVersionUID = -4358159127247563219L;
 
         /**
          * Registers that a neighbor supports the given type of job.

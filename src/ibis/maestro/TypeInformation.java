@@ -1,5 +1,6 @@
 package ibis.maestro;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**
@@ -12,7 +13,7 @@ import java.util.Comparator;
  * @author Kees van Reeuwijk
  *
  */
-public interface TypeInformation extends Comparator<JobType> {
+public interface TypeInformation extends Comparator<JobType>, Serializable {
     /**
      * Register with this worker the initial types it should support.
      * @param w The worker to initialize.
