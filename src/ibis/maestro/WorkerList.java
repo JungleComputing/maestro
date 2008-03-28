@@ -236,4 +236,20 @@ public class WorkerList {
     {
 	return workers.size();
     }
+
+    /**
+     * Given a job type, return true iff any of the workers supports
+     * this type.
+     * @param type The job type we're searching for.
+     * @return True iff the job type is supported by a worker.
+     */
+    public boolean anyoneSupports( JobType type )
+    {
+	for( WorkerInfo wi: workers ) {
+	    if( wi.supportsType( type ) ) {
+		return true;
+	    }
+	}
+	return false;
+    }
 }

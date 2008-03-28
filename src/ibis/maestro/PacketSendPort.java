@@ -160,6 +160,7 @@ public class PacketSendPort<T extends Serializable> {
 	if( newDestination.local || newDestination.cacheSlot != null ){
 	    return;
 	}
+	long tStart = System.nanoTime();
 	int ix = searchEmptySlot();
 
 	CacheInfo e = cache[ix];
@@ -175,7 +176,6 @@ public class PacketSendPort<T extends Serializable> {
 	}
 	e.destination = newDestination;
 	newDestination.cacheSlot = e;
-	long tStart = System.nanoTime();
 	SendPort port = ibis.createSendPort( portType );
 	port.connect( newDestination.portIdentifier, timeout, true );
 	long tEnd = System.nanoTime();
@@ -231,10 +231,10 @@ public class PacketSendPort<T extends Serializable> {
 	    len = msg.finish();
 	    cacheInfo.recentlyUsed = true;
 	    long stopTime = System.nanoTime();
-	    sendTime += (stopTime-startTime);
 	    sentBytes += len;
 	    sentCount++;
 	    info.sentBytes += len;
+	    sendTime += (stopTime-startTime);
 	    if( Settings.traceSends ) {
 		System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-startTime) );
 	    }
@@ -375,8 +375,8 @@ public class PacketSendPort<T extends Serializable> {
 		// We have this one registered, use that port.
 		return send( destination, data, timeout);
 	    }
-	    long tStart = System.nanoTime();
 	    synchronized( this ) {
+		long tStart = System.nanoTime();
 		SendPort sendPort = ibis.createSendPort( portType );
 		sendPort.connect( port, timeout, true );
 		long tEnd = System.nanoTime();

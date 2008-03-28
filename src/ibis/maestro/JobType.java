@@ -12,12 +12,15 @@ public class JobType implements Serializable
     /** Contractual obligation. */
     private static final long serialVersionUID = 13451L;
     final String name;
+    final int priority;
 
     /** Constructs a new job type.
      * 
+     * @param priority The priority of this job.
      * @param name The name of the type.
      */
-    public JobType(String name) {
+    public JobType( int priority, String name) {
+	this.priority = priority;
 	this.name = name;
     }
     
@@ -28,7 +31,7 @@ public class JobType implements Serializable
     @Override
     public String toString()
     {
-	return "job type " + name;
+	return "job type " + name + "(priority=" + priority + ")";
     }
 
     /**
@@ -46,11 +49,33 @@ public class JobType implements Serializable
      * Returns true iff the given jobtype is equal to this one.
      */
     @Override
-    public boolean equals( Object other )
+    public boolean equals( Object o )
     {
-        if( other instanceof JobType ){
-            return this.name.equals( ((JobType) other).name );
+        if( o instanceof JobType ){
+            JobType other = (JobType) o;
+            if( other.priority != this.priority ){
+        	return false;
+            }
+	    return this.name.equals( other.name );
         }
         return false;
+    }
+
+	/**
+	 * Compares two job types based on priority. Returns
+	 * 1 if type a has more priority as b, etc.
+	 * @param a One of the job types to compare.
+	 * @param b The other job type to compare.
+	 * @return The comparison result.
+	 */
+    public static int comparePriorities( JobType a, JobType b )
+    {
+	if( a.priority>b.priority ) {
+	    return 1;
+	}
+	if( a.priority<b.priority ) {
+	    return -1;
+	}
+	return 0;
     }
 }

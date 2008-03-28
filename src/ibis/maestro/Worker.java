@@ -128,8 +128,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
             workThreads[i] = t;
             t.start();
         }
-        startTime = System.nanoTime();
-	queueEmptyMoment = System.nanoTime();
+        long now = System.nanoTime();
+	startTime = now;
+	queueEmptyMoment = now;
         receivePort.enable();   // We're open for business.
     }
 

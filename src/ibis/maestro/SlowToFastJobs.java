@@ -11,16 +11,16 @@ public class SlowToFastJobs {
     private static final int LEVELS = 4;
 
     /** A Maestro job that multiplies the array of values it is given. */
-    public class ReversalJob implements Job {
+    public static class ReversalJob implements Job {
 	/** Contractual obligation. */
 	private static final long serialVersionUID = 132L;
 	private final double values[];
-	private final int stage;
+	private int level;
 
 	ReversalJob( double values[], int stage )
 	{
 	    this.values = values;
-	    this.stage = stage;
+	    this.level = stage;
 	}
 
 	/**
@@ -29,20 +29,32 @@ public class SlowToFastJobs {
 	@Override
 	public void run( Node node, TaskIdentifier taskid )
 	{
-	    int startIx = 0;
-	    int endIx = values.length-1;
-	    while( startIx<endIx ) {
-		double tmp = values[endIx];
-		values[endIx] = values[startIx];
-		values[startIx] = tmp;
-		startIx++;
-		endIx--;
+	    for( int i=0; i<ITERATIONS; i++ ) {
+		int startIx = 0;
+		int endIx = values.length-1;
+		while( startIx<endIx ) {
+		    double tmp = values[endIx];
+		    values[endIx] = values[startIx];
+		    values[startIx] = tmp;
+		    startIx++;
+		    endIx--;
+		}
 	    }
-	    if( stage<LEVELS ) {
-		node.submit( this, taskid );
+	    if( level<LEVELS ) {
+		double values1[] = new double[(1+values.length)/2];
+		for( int ix=0; ix<values1.length; ix++ ) {
+		    values1[ix] = values[ix*2] + values[ix*2+1];
+		}
+		Job job = new ReversalJob( values1, level+1 );
+		node.submit( job, taskid );
 	    }
 	    else {
-		JobResultValue result = new DoubleResultValue( 0.0 );
+		double sum = 0.0;
+		
+		for( double v: values ) {
+		    sum += v;
+		}
+		JobResultValue result = new DoubleResultValue( sum );
 		taskid.reportResult( node, result );
 	    }
 	}
@@ -54,16 +66,21 @@ public class SlowToFastJobs {
 	@Override
 	public String toString()
 	{
-	    return "ReversalJob stage " + stage;
+	    return "ReversalJob stage " + level;
 	}
 
+	static JobType buildJobType( int level )
+	{
+	    return new JobType( level, "ReversalJob" );
+	}
 	/**
 	 * Returns the type of this job.
 	 * @return The type of this job.
 	 */
+
 	@Override
 	public JobType getType() {
-	    return new JobType( "ReversalJob-stage" + stage );
+	    return buildJobType( level );
 	}
     }
 
@@ -113,7 +130,9 @@ public class SlowToFastJobs {
 	@Override
 	public void initialize( Node w)
 	{
-	    w.allowJobType( AdditionJob.jobType );
+	    for( int stage=0; stage<LEVELS; stage++ ) {
+		w.allowJobType( ReversalJob.buildJobType( stage ) );
+	    }
 	}
 
 	/**
@@ -125,16 +144,7 @@ public class SlowToFastJobs {
 	 */
 	public int compare( JobType a, JobType b )
 	{
-	    if( a.equals( b ) ){
-		return 0;
-	    }
-	    if( a.equals( AdditionJob.jobType ) ){
-		return 1;
-	    }
-	    if( b.equals( AdditionJob.jobType ) ){
-		return -1;
-	    }
-	    return 0;
+	    return JobType.comparePriorities( a, b);
 	}
 
     }

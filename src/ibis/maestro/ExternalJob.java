@@ -22,7 +22,7 @@ public class ExternalJob implements Job {
     private Vector<String> command;
     private static final boolean traceCommands = true;
     private static long label = 0L;
-    private static final JobType jobType = new JobType( "ExternalJob" );
+    private int priority;
 
     private static void tryToRemoveFile( File f )
     {
@@ -157,11 +157,19 @@ public class ExternalJob implements Job {
     }
 
     /**
+     * 
+     * @return
+     */
+    public static JobType buildJobType()
+    {
+	return new JobType( 0, "ExternalJob" );
+    }
+    /**
      * @return The type of this job.
      */
     @Override
     public JobType getType() {
-	return jobType;
+	return buildJobType();
     }
 
 }

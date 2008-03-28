@@ -185,9 +185,9 @@ class WorkerInfo {
     }
 
     /** Given a job type, return the round-trip interval for this job type, or
-     * -1 if the job type is not allowed on this worker.
+     * Long.MAX_VALUE if the job type is not allowed on this worker.
      * @param jobType The job type for which we want to know the round-trip interval.
-     * @return The interval, or -1 if this type of job is not allowed.
+     * @return The interval, or Long.MAX_VALUE if this type of job is not allowed.
      */
     public long getRoundTripInterval( JobType jobType )
     {
@@ -225,13 +225,13 @@ class WorkerInfo {
 	}
     }
 
-    /** The queue is empty; don't allow too many outstanding jobs.
-     */
-    public void reduceAllowances() {
-	for (Enumeration<WorkerJobInfo> iterator = workerJobInfoTable.elements(); iterator.hasMoreElements();) {
+    /** The queue is empty; don't allow too many outstanding jobs. */
+    public void reduceAllowances()
+    {
+	for( Enumeration<WorkerJobInfo> iterator = workerJobInfoTable.elements(); iterator.hasMoreElements(); ){
 	    WorkerJobInfo wji =  iterator.nextElement();
+
 	    wji.reduceAllowance();
-	    
 	}
     }
 
@@ -250,5 +250,17 @@ class WorkerInfo {
     public void setDead()
     {
         dead = true;
+    }
+
+    /**
+     * Given a job type, return true iff this worker
+     * supports the job type.
+     * @param type The job type we're looking for.
+     * @return True iff this worker supports the type.
+     */
+    public boolean supportsType( JobType type )
+    {
+	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( type );
+	return workerJobInfo != null;
     }
 }

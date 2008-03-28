@@ -61,7 +61,14 @@ final class MasterQueue {
         }
     }
 
-    void submit( Job j, TaskIdentifier taskId )
+    /**
+     * Submit a new job, belonging to the task with the given identifier,
+     * to the queue.
+     * @param j The job to submit.
+     * @param taskId The task it belongs to.
+     * @return True iff this is the first job of its type.
+     */
+    boolean submit( Job j, TaskIdentifier taskId )
     {
         QueueEntry e = new QueueEntry( j, taskId );
         JobType t = j.getType();
@@ -74,7 +81,7 @@ final class MasterQueue {
             QueueType x = queueTypes.get( ix );
             if( x.type.equals( t ) ) {
         	x.queue.add( e );
-        	return;
+        	return false;
             }
         }
         // This is a new type. Insert it in the right place
@@ -92,13 +99,15 @@ final class MasterQueue {
         QueueType qt = new QueueType( t );
         qt.queue.add( e );
         queueTypes.add( ix, qt );
+        return true;
     }
 
     /**
      * Returns true iff the entire queue is empty.
      * @return
      */
-    boolean isEmpty() {
+    boolean isEmpty()
+    {
 	for( QueueType t: queueTypes ) {
 	    if( !t.isEmpty() ) {
 		return false;
@@ -107,15 +116,20 @@ final class MasterQueue {
 	return true;
     }
 
+    /**
+     * Given a worker, try to increment the allowance of one of its
+     * supported types. We only increment the allowance of a job
+     * type that is currently present in the queue.
+     * @param workerID The id of the worker to increase the allowance for.
+     * @param workers The list of workers of the master.
+     */
     void incrementAllowance( WorkerIdentifier workerID, WorkerList workers )
     {
-        // We already know that this worker can handle this type of
-        // job, but he asks for a larger allowance.
-        // We only increase it if at the moment there is a job of this
-        // type in the queue.
 	for( QueueType t: queueTypes ) {
 	    if( !t.isEmpty() ) {
-		if( workers.incrementAllowance(workerID, t.type ) ) {
+		// There are jobs of this type in the queue.
+		if( workers.incrementAllowance( workerID, t.type ) ) {
+		    // We could increment the allowance. Mission accomplished.
 		    break;
 		}
 	    }
@@ -143,8 +157,9 @@ final class MasterQueue {
         sub.job = null;
 	for( QueueType t: queueTypes ) {
 	    if( !t.isEmpty() ) {
-		noWork = false; // There is at least one queue with work.
 		WorkerInfo worker = workers.selectBestWorker( t.type );
+
+		noWork = false; // There is at least one queue with work.
 		if( worker != null ) {
 		    QueueEntry e = t.queue.removeFirst();
 		    sub.job = e.job;

@@ -19,11 +19,13 @@ class WorkThread extends Thread
     WorkThread( WorkSource source, Node localMaster )
     {
         super( "Work thread" );
-        setPriority( NORM_PRIORITY+1 );
+        // Unfortunately, bureaucracy has to go before work,
+        // because we have to make sure other nodes get work too.
+        setPriority( NORM_PRIORITY-1 );
         this.source = source;
         this.localNode = localMaster;
     }
-    
+
     private synchronized boolean isStopped()
     {
 	return stopped;
@@ -38,7 +40,7 @@ class WorkThread extends Thread
     {
         while( !isStopped() ) {
             RunJobMessage job = source.getJob();
-            
+
             if( job == null ) {
                 break;
             }

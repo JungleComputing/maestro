@@ -4,13 +4,12 @@ package ibis.maestro;
 public class AdditionJob implements Job {
     private static final int BLOCK_SIZE = 4000;
     private static final int ITERATIONS = 5000;  // The number of times we should do the addition.
-    private static final int LEVELS = 4;
+    static final int LEVELS = 4;
     private int level = 0;
     private static double sum = 0.0;
     private final double values[];
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
-    static final JobType jobType = new JobType( "AdditionJob" );
 
     AdditionJob( int n )
     {
@@ -52,12 +51,17 @@ public class AdditionJob implements Job {
 	return "(AdditionJob level=" + level + " [" + values[0] + ",...," + values[values.length-1] + "])";
     }
 
+    static JobType buildJobType( int level )
+    {
+	return new JobType( level, "AdditionJob" );
+    }
+
     /**
      * Returns the type of this job.
      * @return The type of this job.
      */
     @Override
     public JobType getType() {
-	return jobType;
+	return buildJobType(level);
     }
 }

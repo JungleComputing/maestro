@@ -157,12 +157,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             queue.notifyAll();
         }
     }
-    
+
     private void handleResultMessage( ResultMessage m )
     {
 	node.reportCompletion( m.id, m.result );
     }
-    
+
     private void sendAcceptMessage( Master.WorkerIdentifier workerID, ReceivePortIdentifier myport, Worker.MasterIdentifier idOnWorker )
     {
         WorkerAcceptMessage msg = new WorkerAcceptMessage( idOnWorker, myport, workerID );
@@ -196,7 +196,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
         node.updateNeighborJobTypes( allowedTypes );
     }
-
 
     /**
      * A worker has sent us a message asking for work. This may be a new
@@ -309,7 +308,14 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
         synchronized ( queue ) {
             incomingJobCount++;
-            queue.submit( j, id );
+            boolean first = queue.submit( j, id );
+            if( first ) {
+        	JobType t = j.getType();
+
+        	if( !workers.anyoneSupports( t ) ) {
+        	    Globals.log.reportInternalError( "There are no workers to support " + t );
+        	}
+            }
             queue.notifyAll();
         }
     }
@@ -337,11 +343,17 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 		}
             }
             incomingJobCount++;
-            queue.submit( j, id );
+            boolean first = queue.submit( j, id );
+            if( first ) {
+        	JobType t = j.getType();
+
+        	if( !workers.anyoneSupports( t ) ) {
+        	    Globals.log.reportInternalError( "There are no workers to support " + t );
+        	}
+            }
             queue.notifyAll();
         }
     }
-    
 
     /**
      * @param worker The worker to send the job to.
@@ -350,7 +362,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private void submitJobToWorker( Submission sub )
     {
         long jobId;
-    
+
         synchronized( queue ){
             jobId = nextJobId++;
             sub.worker.registerJobStart( sub.job, jobId );
@@ -360,7 +372,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( sz<0 ){
             // Try to put the paste back in the tube.
             synchronized( queue ){
-        	queue.submit( msg.job, sub.taskId );
+        	boolean first = queue.submit( msg.job, sub.taskId );
         	sub.worker.retractJob( msg.jobId );
             }
         }

@@ -50,9 +50,11 @@ public class TestProg {
          * @param w The worker to initialize.
          */
         @Override
-        public void initialize( Node w)
+        public void initialize( Node w )
         {
-            w.allowJobType( AdditionJob.jobType );
+            for( int level=0; level<=AdditionJob.LEVELS; level++ ) {
+        	w.allowJobType( AdditionJob.buildJobType( level ) );
+            }
         }
 
         /**
@@ -64,16 +66,7 @@ public class TestProg {
          */
         public int compare( JobType a, JobType b )
         {
-            if( a.equals( b ) ){
-                return 0;
-            }
-            if( a.equals( AdditionJob.jobType ) ){
-                return 1;
-            }
-            if( b.equals( AdditionJob.jobType ) ){
-                return -1;
-            }
-            return 0;
+            return JobType.comparePriorities( a, b);
         }
 
     }
