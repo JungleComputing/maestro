@@ -308,14 +308,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
         synchronized ( queue ) {
             incomingJobCount++;
-            boolean first = queue.submit( j, id );
-            if( first ) {
-        	JobType t = j.getType();
-
-        	if( !workers.anyoneSupports( t ) ) {
-        	    Globals.log.reportInternalError( "There are no workers to support " + t );
-        	}
-            }
+            queue.submit( j, id );
             queue.notifyAll();
         }
     }
@@ -343,14 +336,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 		}
             }
             incomingJobCount++;
-            boolean first = queue.submit( j, id );
-            if( first ) {
-        	JobType t = j.getType();
-
-        	if( !workers.anyoneSupports( t ) ) {
-        	    Globals.log.reportInternalError( "There are no workers to support " + t );
-        	}
-            }
+            queue.submit( j, id );
             queue.notifyAll();
         }
     }
@@ -372,7 +358,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( sz<0 ){
             // Try to put the paste back in the tube.
             synchronized( queue ){
-        	boolean first = queue.submit( msg.job, sub.taskId );
+        	queue.submit( msg.job, sub.taskId );
         	sub.worker.retractJob( msg.jobId );
             }
         }

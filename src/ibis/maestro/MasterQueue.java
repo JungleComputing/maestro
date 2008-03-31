@@ -66,9 +66,8 @@ final class MasterQueue {
      * to the queue.
      * @param j The job to submit.
      * @param taskId The task it belongs to.
-     * @return True iff this is the first job of its type.
      */
-    boolean submit( Job j, TaskIdentifier taskId )
+    void submit( Job j, TaskIdentifier taskId )
     {
         QueueEntry e = new QueueEntry( j, taskId );
         JobType t = j.getType();
@@ -81,7 +80,7 @@ final class MasterQueue {
             QueueType x = queueTypes.get( ix );
             if( x.type.equals( t ) ) {
         	x.queue.add( e );
-        	return false;
+        	return;
             }
         }
         // This is a new type. Insert it in the right place
@@ -99,7 +98,6 @@ final class MasterQueue {
         QueueType qt = new QueueType( t );
         qt.queue.add( e );
         queueTypes.add( ix, qt );
-        return true;
     }
 
     /**
