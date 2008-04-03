@@ -294,7 +294,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         long sz = sendPort.tryToSend( ibis, Globals.masterReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( sz<0 ) {
             System.err.println( "Cannot register with master " + ibis );
-            // FIXME: declare this ibis dead.
+            node.declareIbisDead( ibis );
         }
     }
 

@@ -388,4 +388,19 @@ public final class Node {
 	    JobResultValue result ) {
 	return worker.sendResultMessage( receivePort, id, result );
     }
+
+    /** Try to tell the cooperating ibises that this one is
+     * dead.
+     * @param theIbis The Ibis we think is dead.
+     */
+    public void declareIbisDead(IbisIdentifier theIbis)
+    {
+	try {
+	    ibis.registry().assumeDead( theIbis );
+	}
+	catch( IOException e )
+	{
+	    // Nothing we can do about it.
+	}
+    }
 }

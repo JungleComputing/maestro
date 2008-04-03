@@ -112,6 +112,9 @@ public class SlowToFastJobs {
 
     private static final class TestTypeInformation implements TypeInformation {
 
+	/** */
+	private static final long serialVersionUID = -288970007879883047L;
+
 	/**
 	 * Registers that a neighbor supports the given type of job.
 	 * @param w The worker to register the info with.
