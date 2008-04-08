@@ -5,6 +5,7 @@ import ibis.ipl.ReceivePortIdentifier;
 import ibis.maestro.Master.WorkerIdentifier;
 import ibis.maestro.Worker.MasterIdentifier;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -91,7 +92,7 @@ public class WorkerList {
      * @param identifier The identifier to search for.
      * @return True iff we know the given worker.
      */
-    public boolean contains( WorkerIdentifier identifier )
+    boolean contains( WorkerIdentifier identifier )
     {
 	WorkerInfo i = searchWorker( workers, identifier );
 	return i != null;
@@ -134,7 +135,7 @@ public class WorkerList {
      * @return The info of the best worker for this job, or <code>null</code>
      *         if there currently aren't any workers for this job type.
      */
-    public WorkerInfo selectBestWorker( JobType jobType )
+    WorkerInfo selectBestWorker( JobType jobType )
     {
 	WorkerInfo best = null;
 	long bestInterval = Long.MAX_VALUE;
@@ -162,7 +163,8 @@ public class WorkerList {
      * @param worker The worker we want to know about.
      * @return True iff this is a known worker.
      */
-    public boolean isKnownWorker(ReceivePortIdentifier worker) {
+    boolean isKnownWorker( ReceivePortIdentifier worker )
+    {
         int ix = searchWorker( workers, worker );
         return ix>=0;
     }
@@ -175,7 +177,7 @@ public class WorkerList {
      * @return True iff we could actually increment the allowance
      *         for the job type.
      */
-    public boolean incrementAllowance( WorkerIdentifier workerID, JobType jobType )
+    boolean incrementAllowance( WorkerIdentifier workerID, JobType jobType )
     {
 	WorkerInfo wi = workers.get( workerID.value );
 	return wi.incrementAllowance( jobType );
@@ -186,7 +188,7 @@ public class WorkerList {
      * @param worker The worker for which we have job types.
      * @param allowedType The allowed job types for the given worker.
      */
-    public void registerWorkerJobTypes(ReceivePortIdentifier worker, JobType allowedType)
+    void registerWorkerJobTypes( ReceivePortIdentifier worker, JobType allowedType )
     {
         int ix = searchWorker( workers, worker );
         if( ix>=0 ){
@@ -198,7 +200,7 @@ public class WorkerList {
     /** We don't have work in the queue. Reduce all excessive allowances,
      * so that they don't come to haunt us once we get more work.
      */
-    public void reduceAllowances()
+    void reduceAllowances()
     {
 	for( WorkerInfo wi: workers ) {
 	    wi.reduceAllowances();
@@ -208,7 +210,7 @@ public class WorkerList {
     /** Given a worker identifier, declare it dead.
      * @param workerID The worker to declare dead.
      */
-    public void declareDead( WorkerIdentifier workerID )
+    void declareDead( WorkerIdentifier workerID )
     {
         WorkerInfo w = workers.get( workerID.value );
         w.setDead();
@@ -220,7 +222,7 @@ public class WorkerList {
      * @param workerID The id of the worker that supports these types.
      * @param allowedTypes The list of types supported by this worker.
      */
-    public void updateJobTypes(WorkerIdentifier workerID, JobType[] allowedTypes)
+    void updateJobTypes( WorkerIdentifier workerID, JobType[] allowedTypes )
     {
         WorkerInfo w = workers.get( workerID.value );
         for( JobType t: allowedTypes ){
@@ -232,7 +234,7 @@ public class WorkerList {
      * Return the number of known workers.
      * @return The number of known workers.
      */
-    public int getWorkerCount()
+    int getWorkerCount()
     {
 	return workers.size();
     }
@@ -243,7 +245,7 @@ public class WorkerList {
      * @param type The job type we're searching for.
      * @return True iff the job type is supported by a worker.
      */
-    public boolean anyoneSupports( JobType type )
+    boolean anyoneSupports( JobType type )
     {
 	for( WorkerInfo wi: workers ) {
 	    if( wi.supportsType( type ) ) {
@@ -251,5 +253,17 @@ public class WorkerList {
 	    }
 	}
 	return false;
+    }
+
+    /**
+     * Given a print stream, print some statistics about the workers
+     * to this stream.
+     * @param out The stream to print to.
+     */
+    void printStatistics( PrintStream out )
+    {
+	for( WorkerInfo wi: workers ) {
+	    wi.printStatistics( out );
+	}
     }
 }

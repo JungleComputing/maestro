@@ -85,7 +85,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * @param typeInformation The type information class to use.
      * @throws IOException Thrown if the master cannot be created.
      */
-    public Master( Ibis ibis, Node node, TypeInformation typeInformation ) throws IOException
+    Master( Ibis ibis, Node node, TypeInformation typeInformation ) throws IOException
     {
         super( "Master" );
         this.queue = new MasterQueue( typeInformation );
@@ -100,7 +100,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * Set the local listener to the given class instance.
      * @param localListener The local listener to use.
      */
-    public void setLocalListener( PacketReceiveListener<MasterMessage> localListener )
+    void setLocalListener( PacketReceiveListener<MasterMessage> localListener )
     {
 	sendPort.setLocalListener( localListener );
     }
@@ -244,6 +244,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * @param port The port it should be associated with.
      * @return True iff this listener is associated with the port.
      */
+    @Override
     public boolean hasReceivePort( ReceivePortIdentifier port )
     {
 	return port.equals( receivePort.identifier() );
@@ -301,7 +302,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * @param j The job to add to the queue.
      * @param id The identifier of the task this job belongs to.
      */
-    public void submit( Job j, TaskIdentifier id )
+    void submit( Job j, TaskIdentifier id )
     {
         if( Settings.traceMasterProgress ) {
             System.out.println( "Master: received job " + j );
@@ -320,7 +321,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * @param j The job to add to the queue.
      * @param id The identifier of the task this job belongs to.
      */
-    public void submitWhenRoom( Job j, TaskIdentifier id )
+    void submitWhenRoom( Job j, TaskIdentifier id )
     {
         if( Settings.traceMasterProgress ) {
             System.out.println( "Master: received job " + j );
@@ -443,7 +444,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * Make sure we don't talk to it.
      * @param theIbis The ibis that was gone.
      */
-    public void removeIbis( IbisIdentifier theIbis )
+    void removeIbis( IbisIdentifier theIbis )
     {
         workers.removeWorker( theIbis );
     }
@@ -452,13 +453,13 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * 
      * @return The identifier.
      */
-    public ReceivePortIdentifier identifier()
+    ReceivePortIdentifier identifier()
     {
         return receivePort.identifier();
     }
 
     /** Print some statistics about the entire master run. */
-    public void printStatistics()
+    void printStatistics()
     {
         if( stopTime<startTime ) {
             System.err.println( "Worker didn't stop yet" );
@@ -469,5 +470,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         System.out.printf( "Master: # handled jobs   = %5d\n", handledJobCount );
         System.out.println( "Master: run time         = " + Service.formatNanoseconds( workInterval ) );
         sendPort.printStats( "master send port" );
+        workers.printStatistics( System.out );
     }
 }

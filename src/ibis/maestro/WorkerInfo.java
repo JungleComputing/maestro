@@ -7,6 +7,7 @@ import ibis.ipl.ReceivePortIdentifier;
 import ibis.maestro.Master.WorkerIdentifier;
 import ibis.maestro.Worker.MasterIdentifier;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
@@ -39,14 +40,14 @@ class WorkerInfo {
     @Override
     public String toString()
     {
-        return "Worker";
+	return "Worker";
     }
 
     WorkerInfo( ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker )
     {
-        this.port = port;
-        this.identifier = identifier;
-        this.identifierWithWorker = identifierForWorker;
+	this.port = port;
+	this.identifier = identifier;
+	this.identifierWithWorker = identifierForWorker;
     }
 
     /**
@@ -58,7 +59,7 @@ class WorkerInfo {
     {
 	// Note that we blindly assume that there is only one entry with
 	// the given id. Reasonable because we hand out the ids ourselves,
-        // and we never make mistakes...
+	// and we never make mistakes...
 	for( ActiveJob e: activeJobs ) {
 	    if( e.id == id ) {
 		return e;
@@ -66,7 +67,7 @@ class WorkerInfo {
 	}
 	return null;
     }
-    
+
     /** The most recently returned job spent most of its time in the queue.
      * If we haven't done so recently, reduce the queue time of this worker
      * by reducing the number of allowed outstanding jobs.
@@ -97,28 +98,28 @@ class WorkerInfo {
      */
     void registerWorkerStatus( ReceivePortIdentifier master, WorkerStatusMessage result )
     {
-        final long id = result.jobId;    // The identifier of the job, as handed out by us.
+	final long id = result.jobId;    // The identifier of the job, as handed out by us.
 
-        long now = System.nanoTime();
-        ActiveJob e = searchQueueEntry( id );
-        if( e == null ) {
-            Globals.log.reportInternalError( "Master " + master + ": ignoring reported result from job with unknown id " + id );
-            return;
-        }
-        activeJobs.remove( e );
-        long newRoundTripInterval = now-e.startTime; // The time to send the job, compute, and report the result.
-        long queueInterval = result.queueInterval;
+	long now = System.nanoTime();
+	ActiveJob e = searchQueueEntry( id );
+	if( e == null ) {
+	    Globals.log.reportInternalError( "Master " + master + ": ignoring reported result from job with unknown id " + id );
+	    return;
+	}
+	activeJobs.remove( e );
+	long newRoundTripInterval = now-e.startTime; // The time to send the job, compute, and report the result.
+	long queueInterval = result.queueInterval;
 
-        if( knownDelayedJobs>0 ) {
-            knownDelayedJobs--;
-        }
-        e.workerJobInfo.registerJobCompleted( newRoundTripInterval );
-        if( queueInterval>(2*newRoundTripInterval)/3 ) {
-            reduceLongQueueTime( e.workerJobInfo );
-        }
-        if( Settings.traceMasterProgress ){
-            System.out.println( "Master " + master + ": retired job " + e + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );
-        }
+	if( knownDelayedJobs>0 ) {
+	    knownDelayedJobs--;
+	}
+	e.workerJobInfo.registerJobCompleted( newRoundTripInterval );
+	if( queueInterval>(2*newRoundTripInterval)/3 ) {
+	    reduceLongQueueTime( e.workerJobInfo );
+	}
+	if( Settings.traceMasterProgress ){
+	    System.out.println( "Master " + master + ": retired job " + e + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );
+	}
     }
 
     /**
@@ -137,14 +138,14 @@ class WorkerInfo {
     public void registerJobStart( Job job, long id )
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( job.getType() );
-        if( workerJobInfo == null ) {
-            System.err.println( "No worker job info for job type " + job.getType() );
-            return;
-        }
-        workerJobInfo.incrementOutstandingJobs();
-        ActiveJob j = new ActiveJob( job, id, System.nanoTime(), workerJobInfo );
+	if( workerJobInfo == null ) {
+	    System.err.println( "No worker job info for job type " + job.getType() );
+	    return;
+	}
+	workerJobInfo.incrementOutstandingJobs();
+	ActiveJob j = new ActiveJob( job, id, System.nanoTime(), workerJobInfo );
 
-        activeJobs.add( j );
+	activeJobs.add( j );
     }
 
     /** Given a job id, retract it from the administration.
@@ -153,14 +154,14 @@ class WorkerInfo {
      */
     public void retractJob( long id )
     {
-        ActiveJob e = searchQueueEntry( id );
-        if( e == null ) {
-            Globals.log.reportInternalError( "ignoring job retraction for unknown id " + id );
-            return;
-        }
-        activeJobs.remove( e );
-        System.out.println( "Master: retired job " + e );		
-	
+	ActiveJob e = searchQueueEntry( id );
+	if( e == null ) {
+	    Globals.log.reportInternalError( "ignoring job retraction for unknown id " + id );
+	    return;
+	}
+	activeJobs.remove( e );
+	System.out.println( "Master: retired job " + e );		
+
     }
 
     /**
@@ -191,11 +192,11 @@ class WorkerInfo {
      */
     public long getRoundTripInterval( JobType jobType )
     {
-        WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
-        if( workerJobInfo == null ) {
-            return Long.MAX_VALUE;
-        }
-        return workerJobInfo.getRoundTripInterval();
+	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
+	if( workerJobInfo == null ) {
+	    return Long.MAX_VALUE;
+	}
+	return workerJobInfo.getRoundTripInterval();
     }
 
     /**
@@ -205,12 +206,12 @@ class WorkerInfo {
      */
     public boolean incrementAllowance( JobType jobType )
     {
-        WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
-        if( workerJobInfo == null ) {
-            return false;
-        }
-        workerJobInfo.incrementAllowance();
-        return true;
+	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
+	if( workerJobInfo == null ) {
+	    return false;
+	}
+	workerJobInfo.incrementAllowance();
+	return true;
     }
 
     /** Registers that the worker can support the given type.
@@ -241,7 +242,7 @@ class WorkerInfo {
      */
     boolean isDead()
     {
-        return dead;
+	return dead;
     }
 
     /** Mark this worker as dead.
@@ -249,7 +250,7 @@ class WorkerInfo {
      */
     public void setDead()
     {
-        dead = true;
+	dead = true;
     }
 
     /**
@@ -258,9 +259,25 @@ class WorkerInfo {
      * @param type The job type we're looking for.
      * @return True iff this worker supports the type.
      */
-    public boolean supportsType( JobType type )
+    boolean supportsType( JobType type )
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( type );
 	return workerJobInfo != null;
+    }
+
+    /**
+     * Given a print stream, print some statistics about this worker.
+     * @param s The stream to print to.
+     */
+    void printStatistics( PrintStream s )
+    {
+	s.println( "Worker " + identifier );
+	Enumeration<JobType> keys = workerJobInfoTable.keys();
+	while( keys.hasMoreElements() ){
+	    JobType jobType = keys.nextElement();
+	    WorkerJobInfo info = workerJobInfoTable.get( jobType );
+	    String stats = info.buildStatisticsString();
+	    s.println( "  " + jobType.toString() + ": " + stats );
+	}
     }
 }

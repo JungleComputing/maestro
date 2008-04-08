@@ -11,6 +11,10 @@ class WorkerJobInfo {
     /** How many instances of this job does this worker currently have? */
     private int outstandingJobs = 0;
 
+    private int executedJobs = 0;
+    
+    private int maximalEverAllowance = 1;
+
     /** How many instance of this job should this worker maximally have? */
     private int maximalOutstandingJobs = 1;
 
@@ -24,7 +28,8 @@ class WorkerJobInfo {
      * a very large number if currently there are no job slots.
      * @return The round-trip interval.
      */
-    long getRoundTripInterval() {
+    long getRoundTripInterval()
+    {
         if( outstandingJobs>=maximalOutstandingJobs ){
             return Long.MAX_VALUE;
         }
@@ -34,19 +39,25 @@ class WorkerJobInfo {
     /**
      * Constructs a new information class for a particular job type
      * for a particular worker.
-     * @param roundTripInterval The estimated send-to-receive time for this job for this particular worker.
+     * @param roundTripInterval The initial estimate for the send-to-receive
+     *    time for this  job for this particular worker.
      */
-    public WorkerJobInfo( long roundTripInterval )
+    WorkerJobInfo( long roundTripInterval )
     {
 	this.roundTripInterval = roundTripInterval;
     }
 
-    void registerJobCompleted( long newRoundTripInterval )
+    /**
+     * Registers the completion of a job.
+     * @param theRoundTripInterval The round-trip interval of this job.
+     */
+    void registerJobCompleted( long theRoundTripInterval )
     {
-	updateRoundTripTime( newRoundTripInterval );
+	executedJobs++;
+	updateRoundTripTime( theRoundTripInterval );
 	outstandingJobs--;
 	if( Settings.traceWorkerProgress ) {
-	    System.out.println( "New roundtrip time " + Service.formatNanoseconds( newRoundTripInterval )  );
+	    System.out.println( "New roundtrip time " + Service.formatNanoseconds( roundTripInterval )  );
 	}
     }
 
@@ -57,11 +68,15 @@ class WorkerJobInfo {
     }
 
     /**
-     * Increment the maximal number of outstanding jobs for this worker and this type of work.
+     * Increment the maximal number of outstanding jobs for this worker and
+     *  this type of work.
      */
     public void incrementAllowance()
     {
         maximalOutstandingJobs++;
+        if( maximalEverAllowance<maximalOutstandingJobs ) {
+            maximalEverAllowance = maximalOutstandingJobs;
+        }
     }
 
     /** Since there are no jobs in our work queue, reduce the maximal number of
@@ -83,11 +98,17 @@ class WorkerJobInfo {
      * be too low.
      * @return True iff we reduced the allowance.
      */
-    public boolean decrementAllowance() {
+    boolean decrementAllowance()
+    {
 	if( maximalOutstandingJobs<=1 ) {
 	    return false;
 	}
 	maximalOutstandingJobs--;
 	return true;
+    }
+    
+    String buildStatisticsString()
+    {
+	return "executed " + executedJobs + " jobs; maximal ever allowance: " + maximalEverAllowance;
     }
 }
