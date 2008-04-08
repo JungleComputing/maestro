@@ -48,5 +48,5 @@ public class Settings {
     public static final boolean traceSends = false;
 
     /** We limit the master queue to this many jobs per known worker. */
-    public static final int JOBS_PER_WORKER = 4;
+    public static final int JOBS_PER_WORKER = 10;
 }
