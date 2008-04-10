@@ -12,11 +12,16 @@ class WorkerJobInfo {
     private int outstandingJobs = 0;
 
     private int executedJobs = 0;
-    
+
     private int maximalEverAllowance = 1;
 
     /** How many instance of this job should this worker maximally have? */
-    private int maximalOutstandingJobs = 1;
+    private int maximalAllowance = 1;
+
+    /** We have reached the maximal allowance of this worker, so we are
+     * willing to consider an increased allowance.
+     */
+    private boolean mayIncreaseAllowance = false;
 
     private void updateRoundTripTime( long newRoundTripTime )
     {
@@ -30,7 +35,7 @@ class WorkerJobInfo {
      */
     long getRoundTripInterval()
     {
-        if( outstandingJobs>=maximalOutstandingJobs ){
+        if( outstandingJobs>=maximalAllowance ){
             return Long.MAX_VALUE;
         }
 	return roundTripInterval;
@@ -65,31 +70,29 @@ class WorkerJobInfo {
     public void incrementOutstandingJobs()
     {
 	outstandingJobs++;
+	if( outstandingJobs == maximalAllowance ) {
+	    // Since we're now using the maximal allowance on this
+	    // worker, we are willing to consider an increment.
+	    mayIncreaseAllowance = true;
+	}
     }
 
     /**
      * Increment the maximal number of outstanding jobs for this worker and
      *  this type of work.
+     *  @return True iff we really incremented the allowance.
      */
-    public void incrementAllowance()
+    public boolean incrementAllowance()
     {
-        maximalOutstandingJobs++;
-        if( maximalEverAllowance<maximalOutstandingJobs ) {
-            maximalEverAllowance = maximalOutstandingJobs;
-        }
-    }
-
-    /** Since there are no jobs in our work queue, reduce the maximal number of
-     * outstanding jobs.
-     */
-    void reduceAllowance()
-    {
-	int n = maximalOutstandingJobs-outstandingJobs;
-	
-	if( n<0 ) {
-	    return;
+	if( !mayIncreaseAllowance ) {
+	    return false;
 	}
-	maximalOutstandingJobs = Math.max( 1, maximalOutstandingJobs-n/2);
+        maximalAllowance++;
+        if( maximalEverAllowance<maximalAllowance ) {
+            maximalEverAllowance = maximalAllowance;
+        }
+        mayIncreaseAllowance = false;
+        return true;
     }
 
     /**
@@ -100,10 +103,11 @@ class WorkerJobInfo {
      */
     boolean decrementAllowance()
     {
-	if( maximalOutstandingJobs<=1 ) {
+	if( maximalAllowance<=1 ) {
 	    return false;
 	}
-	maximalOutstandingJobs--;
+	maximalAllowance--;
+	mayIncreaseAllowance = false;
 	return true;
     }
     

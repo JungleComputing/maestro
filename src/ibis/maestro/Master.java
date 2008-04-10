@@ -392,11 +392,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    }
 	    submitJobToWorker( sub );
 	}
-	if( nowork ) {
-	    synchronized( queue ){
-		workers.reduceAllowances();
-	    }
-	}
 	// There are no jobs in the queue, or there are no workers ready.
 	if( nowork && isFinished() ){
 	    // No jobs, and we are stopped; don't try to send new jobs.

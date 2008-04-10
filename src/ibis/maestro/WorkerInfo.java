@@ -30,9 +30,10 @@ class WorkerInfo {
     private boolean dead = false;
 
     /** We know that this many jobs have excessive queue times. We have already
-     * tried to reduce it, don't try again for the moment.
+     * reduced the allowance for this worker, don't try again for the moment.
      */
     private int knownDelayedJobs = 0;
+
     /**
      * Returns a string representation of this worker info. (Overrides method in superclass.)
      * @return The worker info.
@@ -210,8 +211,7 @@ class WorkerInfo {
 	if( workerJobInfo == null ) {
 	    return false;
 	}
-	workerJobInfo.incrementAllowance();
-	return true;
+	return workerJobInfo.incrementAllowance();
     }
 
     /** Registers that the worker can support the given type.
@@ -223,16 +223,6 @@ class WorkerInfo {
 	if( workerJobInfo == null ) {
 	    // This is new information.
 	    registerJobType( allowedType );
-	}
-    }
-
-    /** The queue is empty; don't allow too many outstanding jobs. */
-    public void reduceAllowances()
-    {
-	for( Enumeration<WorkerJobInfo> iterator = workerJobInfoTable.elements(); iterator.hasMoreElements(); ){
-	    WorkerJobInfo wji =  iterator.nextElement();
-
-	    wji.reduceAllowance();
 	}
     }
 

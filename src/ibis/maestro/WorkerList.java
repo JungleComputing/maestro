@@ -197,16 +197,6 @@ public class WorkerList {
         }
     }
 
-    /** We don't have work in the queue. Reduce all excessive allowances,
-     * so that they don't come to haunt us once we get more work.
-     */
-    void reduceAllowances()
-    {
-	for( WorkerInfo wi: workers ) {
-	    wi.reduceAllowances();
-	}
-    }
-
     /** Given a worker identifier, declare it dead.
      * @param workerID The worker to declare dead.
      */
