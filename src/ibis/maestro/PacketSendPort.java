@@ -131,7 +131,8 @@ public class PacketSendPort<T extends Serializable> {
     {
 	for(;;){
 	    CacheInfo e = cache[clockHand];
-	    if( e == null ){
+	    if( e == null || e.port == null ){
+		// Prefer empty cache slots, or slots with null ports.
 		return clockHand;
 	    }
 	    if( e.recentlyUsed ){
@@ -170,7 +171,9 @@ public class PacketSendPort<T extends Serializable> {
 	}
 	else {
 	    // Somebody was using this cache slot. Evict him.
-	    e.port.close();
+	    if( e.port != null ){
+		e.port.close();
+	    }
 	    e.destination.cacheSlot = null;
 	    evictions++;
 	}
