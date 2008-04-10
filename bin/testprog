@@ -28,6 +28,7 @@ add_to_libclasspath "${MAESTRO_HOME}"/lib
 # And finally, run ...
 #    -Dsmartsockets.file="$MAESTRO_HOME"/smartsockets.properties \
 exec java \
+    -server \
     -classpath "$CLASSPATH:$LIBCLASSPATH" \
     -Dlog4j.configuration=file:"$MAESTRO_HOME"/log4j.properties \
     -Dibis.server.address=$SERVERHOST:5437 \

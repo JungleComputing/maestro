@@ -417,14 +417,11 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 	    activeTime = now;
 	}
 	synchronized( queue ) {
-	    long queueEmptyInterval = 0L;
-
 	    if( queueEmptyMoment>0 ){
-
 		// The queue was empty before we entered this
 		// job in it. Register this with this job,
 		// so that we can give feedback to the master.
-		queueEmptyInterval = now - queueEmptyMoment;
+                long queueEmptyInterval = now - queueEmptyMoment;
 		idleDuration += queueEmptyInterval;
 		queueEmptyMoment = 0L;
 	    }
