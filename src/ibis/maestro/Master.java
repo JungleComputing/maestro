@@ -148,7 +148,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private void handleWorkerStatusMessage( WorkerStatusMessage result )
     {
-        if( Settings.traceWorkerProgress ){
+        if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Received a worker status message " + result );
         }
         synchronized( queue ){
@@ -186,7 +186,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private void handleRegisterTypeMessage( RegisterTypeMessage m )
     {
         WorkerIdentifier workerID = m.source;
-        if( Settings.traceWorkerProgress ){
+        if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Received work request message " + m + " from worker " + workerID );
         }
         JobType allowedTypes[] = m.allowedType;
@@ -206,7 +206,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private void handleWorkRequestMessage( WorkRequestMessage m )
     {
 	WorkerIdentifier workerID = m.source;
-	if( Settings.traceWorkerProgress ){
+	if( Settings.traceMasterProgress ){
 	    Globals.log.reportProgress( "Received work request message " + m + " from worker " + workerID );
 	}
         synchronized( queue ){
@@ -257,7 +257,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     @Override
     public void messageReceived( WorkerMessage msg )
     {
-        if( Settings.traceWorkerProgress ){
+        if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Master: received message " + msg );
         }
         if( msg instanceof WorkerStatusMessage ) {

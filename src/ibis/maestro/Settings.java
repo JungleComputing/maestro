@@ -24,7 +24,7 @@ public class Settings {
     public static final boolean traceTypeHandling = true;
 
     /** Trace the progress of workers? */
-    public static final boolean traceWorkerProgress = false;
+    public static final boolean traceWorkerProgress = true;
 
     /** Trace the handling or result jobs? */
     public static final boolean traceResultJobs = false;
