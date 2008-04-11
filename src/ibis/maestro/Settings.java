@@ -39,7 +39,7 @@ public class Settings {
     public static final boolean traceMasterQueue = false;
 
     /** Trace the progress of masters? */
-    public static final boolean traceMasterProgress = false;
+    public static final boolean traceMasterProgress = true;
 
     /** Trace the adventures of the submission interval variable? */
     public static final boolean traceSubmissionInterval = false;

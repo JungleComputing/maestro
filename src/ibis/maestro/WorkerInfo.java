@@ -127,7 +127,8 @@ class WorkerInfo {
      * Returns true iff this worker is idle.
      * @return True iff this worker is idle.
      */
-    public boolean isIdle() {
+    public boolean isIdle()
+    {
 	return activeJobs.isEmpty();
     }
 

@@ -631,7 +631,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         Set<JobType> tl = jobStats.keySet();
         for( JobType t: tl ){
             JobStats stats = jobStats.get( t );
-            stats.reportStats( System.out, t, (double) workInterval );
+            stats.reportStats( System.out, t, workInterval );
         }
 	System.out.printf( "Worker: # threads        = %5d\n", workThreads.length );
 	System.out.println( "Worker: run time         = " + Service.formatNanoseconds( workInterval ) );
