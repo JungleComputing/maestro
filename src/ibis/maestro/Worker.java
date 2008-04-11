@@ -80,7 +80,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         public void reportStats( PrintStream out, JobType t, double workInterval )
         {
             double workPercentage = 100.0*(workDuration/workInterval);
-            out.println( "Worker: type " + t + ":" );
+            out.println( "Worker: " + t + ":" );
             out.printf( "    # jobs           = %5d\n", jobCount );
             out.println( "    total work time  = " + Service.formatNanoseconds( workDuration ) + String.format( " (%.1f%%)", workPercentage )  );
             if( jobCount>0 ) {

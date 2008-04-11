@@ -42,7 +42,7 @@ public class JobType implements Serializable
     @Override
     public int hashCode()
     {
-        return name.hashCode();
+        return priority ^ name.hashCode();
     }
 
     /**
