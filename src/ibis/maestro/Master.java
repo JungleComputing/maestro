@@ -387,7 +387,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                     break;
                 }
             }
-	    if( Settings.traceFastestWorker ) {
+	    if( Settings.traceMasterQueue ) {
 	        System.out.println( "Selected worker " + sub.worker + " as best for job " + sub.job );
 	    }
 	    submitJobToWorker( sub );

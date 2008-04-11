@@ -35,11 +35,11 @@ public class Settings {
     /** Trace the creation and destruction of Nodes. */
     public static final boolean traceNodes = false;
 
-    /** Trace the selection of the fastest worker. */
-    public static final boolean traceFastestWorker = false;
+    /** Trace the events in the master queue? */
+    public static final boolean traceMasterQueue = true;
 
     /** Trace the progress of masters? */
-    public static final boolean traceMasterProgress = false;
+    public static final boolean traceMasterProgress = true;
 
     /** Trace the adventures of the submission interval variable? */
     public static final boolean traceSubmissionInterval = false;

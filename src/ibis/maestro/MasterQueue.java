@@ -32,23 +32,23 @@ final class MasterQueue {
      *
      */
     private static final class QueueType {
-	/** The type of jobs in this queue. */
-	final JobType type;
-	
-	/** The work queue for these jobs. */
-	final LinkedList<QueueEntry> queue = new LinkedList<QueueEntry>();
-	
-	QueueType( JobType type ){
-	    this.type = type;
-	}
+        /** The type of jobs in this queue. */
+        final JobType type;
 
-	/**
-	 * Returns true iff the queue associated with this type is empty.
-	 * @return True iff the queue is empty.
-	 */
-	boolean isEmpty() {
-	    return queue.isEmpty();
-	}
+        /** The work queue for these jobs. */
+        final LinkedList<QueueEntry> queue = new LinkedList<QueueEntry>();
+
+        QueueType( JobType type ){
+            this.type = type;
+        }
+
+        /**
+         * Returns true iff the queue associated with this type is empty.
+         * @return True iff the queue is empty.
+         */
+        boolean isEmpty() {
+            return queue.isEmpty();
+        }
     }
 
     private static final class QueueEntry {
@@ -79,9 +79,12 @@ final class MasterQueue {
             ix--;
             QueueType x = queueTypes.get( ix );
             if( x.type.equals( t ) ) {
-        	x.queue.add( e );
-        	return;
+                x.queue.add( e );
+                return;
             }
+        }
+        if( Settings.traceMasterQueue ){
+            System.out.println( "Master queue: registering new type " + t );
         }
         // This is a new type. Insert it in the right place
         // to keep the queues ordered from highest to lowest
@@ -89,7 +92,7 @@ final class MasterQueue {
         ix = 0;
         while( ix<queueTypes.size() ){
             QueueType q = queueTypes.get( ix );
-            int cmp = typeInformation.compare(t, q.type );
+            int cmp = typeInformation.compare( t, q.type );
             if( cmp>0 ){
                 break;
             }
@@ -106,12 +109,12 @@ final class MasterQueue {
      */
     boolean isEmpty()
     {
-	for( QueueType t: queueTypes ) {
-	    if( !t.isEmpty() ) {
-		return false;
-	    }
-	}
-	return true;
+        for( QueueType t: queueTypes ) {
+            if( !t.isEmpty() ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -123,15 +126,15 @@ final class MasterQueue {
      */
     void incrementAllowance( WorkerIdentifier workerID, WorkerList workers )
     {
-	for( QueueType t: queueTypes ) {
-	    if( !t.isEmpty() ) {
-		// There are jobs of this type in the queue.
-		if( workers.incrementAllowance( workerID, t.type ) ) {
-		    // We could increment the allowance. Mission accomplished.
-		    break;
-		}
-	    }
-	}
+        for( QueueType t: queueTypes ) {
+            if( !t.isEmpty() ) {
+                // There are jobs of this type in the queue.
+                if( workers.incrementAllowance( workerID, t.type ) ) {
+                    // We could increment the allowance. Mission accomplished.
+                    break;
+                }
+            }
+        }
     }
 
     /**
@@ -149,26 +152,42 @@ final class MasterQueue {
      */
     boolean selectJob( Submission sub, WorkerList workers )
     {
-	boolean noWork = true;
+        boolean noWork = true;
         sub.worker = null;
         sub.taskId = null;
         sub.job = null;
-	for( QueueType t: queueTypes ) {
-	    if( !t.isEmpty() ) {
-		WorkerInfo worker = workers.selectBestWorker( t.type );
+        for( QueueType t: queueTypes ) {
+            if( Settings.traceMasterQueue ){
+                System.out.println( "Trying to select job from " + t.type + " queue" );
+            }
+            if( t.isEmpty() ) {
+                if( Settings.traceMasterQueue ){
+                    System.out.println( t.type + " queue is empty" );
+                }
+            }
+            else {
+                WorkerInfo worker = workers.selectBestWorker( t.type );
 
-		noWork = false; // There is at least one queue with work.
-		if( worker != null ) {
-		    QueueEntry e = t.queue.removeFirst();
-		    sub.job = e.job;
-		    sub.taskId = e.taskId;
+                noWork = false; // There is at least one queue with work.
+                if( worker == null ) {
+                    if( Settings.traceMasterQueue ){
+                        System.out.println( "No ready worker for job type " + t.type );
+                    }
+                }
+                else {
+                    QueueEntry e = t.queue.removeFirst();
+                    sub.job = e.job;
+                    sub.taskId = e.taskId;
                     sub.worker = worker;
                     size--;
+                    if( Settings.traceMasterQueue ){
+                        System.out.println( "Found a worker for job type " + t.type );
+                    }
                     break;
-		}
-	    }
-	}
-	return noWork;
+                }
+            }
+        }
+        return noWork;
     }
 
     /**
@@ -177,6 +196,6 @@ final class MasterQueue {
      */
     public int size()
     {
-	return size;
+        return size;
     }
 }

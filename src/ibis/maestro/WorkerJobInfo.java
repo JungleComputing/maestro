@@ -35,6 +35,9 @@ class WorkerJobInfo {
      */
     long getRoundTripInterval()
     {
+        if( maximalAllowance == 0 ){
+            System.err.println( "Zero allowance" );
+        }
         if( outstandingJobs>=maximalAllowance ){
             return Long.MAX_VALUE;
         }

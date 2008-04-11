@@ -150,8 +150,21 @@ public class WorkerList {
 		}
 	    }
 	}
-	if( Settings.traceFastestWorker ){
-	    if( best != null ) {
+	if( Settings.traceMasterQueue ){
+	    if( best == null ) {
+                int busy = 0;
+                int notSupported = 0;
+                for( WorkerInfo wi: workers ){
+                    if( wi.supportsType( jobType ) ){
+                        busy++;
+                    }
+                    else {
+                        notSupported++;
+                    }
+                }
+                System.out.println( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for job of type " + jobType );
+            }
+            else {
 		System.out.println( "Selected worker " + best + " for job of type " + jobType + "; roundTripTime=" + Service.formatNanoseconds( bestInterval ) );
 	    }
 	}
