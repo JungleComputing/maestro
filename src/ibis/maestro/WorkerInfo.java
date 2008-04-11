@@ -182,6 +182,9 @@ class WorkerInfo {
     {
 	// We start with a very optimistic roundtrip time.
 	// Since we only commit one job to the new worker, that's fairly safe.
+        if( Settings.traceTypeHandling ){
+            System.out.println( "worker " + identifier + " (" + port + ") can handle " + type );
+        }
 	WorkerJobInfo info = new WorkerJobInfo( 0 );
 	workerJobInfoTable.put( type, info );
     }
@@ -195,6 +198,9 @@ class WorkerInfo {
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
 	if( workerJobInfo == null ) {
+	    if( Settings.traceTypeHandling ){
+	        System.out.println( "Worker " + identifier + " does not support type " + jobType );
+	    }
 	    return Long.MAX_VALUE;
 	}
 	return workerJobInfo.getRoundTripInterval();
@@ -252,7 +258,11 @@ class WorkerInfo {
     boolean supportsType( JobType type )
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( type );
-	return workerJobInfo != null;
+	final boolean res = workerJobInfo != null;
+        if( Settings.traceTypeHandling ){
+            System.out.println( "Worker " + identifier + " supports type " + type + "? Answer: " + res );
+        }
+	return res;
     }
 
     /**

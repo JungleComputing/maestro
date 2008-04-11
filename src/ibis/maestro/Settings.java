@@ -21,10 +21,10 @@ public class Settings {
     // Debugging flags.
     
     /** Trace type handling? */
-    public static final boolean traceTypeHandling = true;
+    public static final boolean traceTypeHandling = false;
 
     /** Trace the progress of workers? */
-    public static final boolean traceWorkerProgress = true;
+    public static final boolean traceWorkerProgress = false;
 
     /** Trace the handling or result jobs? */
     public static final boolean traceResultJobs = false;
@@ -36,10 +36,10 @@ public class Settings {
     public static final boolean traceNodes = false;
 
     /** Trace the events in the master queue? */
-    public static final boolean traceMasterQueue = true;
+    public static final boolean traceMasterQueue = false;
 
     /** Trace the progress of masters? */
-    public static final boolean traceMasterProgress = true;
+    public static final boolean traceMasterProgress = false;
 
     /** Trace the adventures of the submission interval variable? */
     public static final boolean traceSubmissionInterval = false;
