@@ -36,7 +36,7 @@ public class Settings {
     public static final boolean traceNodes = false;
 
     /** Trace the events in the master queue? */
-    public static final boolean traceMasterQueue = true;
+    public static final boolean traceMasterQueue = false;
 
     /** Trace the progress of masters? */
     public static final boolean traceMasterProgress = false;
