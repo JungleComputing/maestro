@@ -186,7 +186,7 @@ class WorkerInfo {
         if( Settings.traceTypeHandling ){
             System.out.println( "worker " + identifier + " (" + port + ") can handle " + type );
         }
-	WorkerJobInfo info = new WorkerJobInfo( 0L, Long.MAX_VALUE );
+	WorkerJobInfo info = new WorkerJobInfo();
 	workerJobInfoTable.put( type, info );
     }
 

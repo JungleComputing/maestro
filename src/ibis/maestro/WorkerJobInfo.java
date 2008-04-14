@@ -6,10 +6,11 @@ package ibis.maestro;
 
 class WorkerJobInfo {
     /** Estimated minimal time in ns to complete a job, including communication. */
-    private long minimalRoundTripInterval;
+    private long minimalRoundTripInterval = 0;
 
-    /** Estimated maximal time in ns to complete a job, including communication. */
-    private long maximalRoundTripInterval;
+    /** Estimated maximal time in ns to complete a job, including communication. 
+     * 50 days is close enough to infinity for our purposes. */
+    private long maximalRoundTripInterval = 1000000000L*60*60*24*50;
 
     /** How many instances of this job does this worker currently have? */
     private int outstandingJobs = 0;
@@ -62,15 +63,11 @@ class WorkerJobInfo {
             // This worker is fully booked for the moment, but estimate anyway how long
             // it would take by using a pessimistic round-trip time.
 
-            // We have to be paranoid in this calculation, since maximalRoundTripInterval can be
-            // Long.MAX_VALUE, so if we're not careful we can overflow a long.
-            long roundTripPerJob = maximalRoundTripInterval/maximalAllowance;
-            
-            if( minimalRoundTripInterval/(1+reservations)+roundTripPerJob >= Long.MAX_VALUE/(2+2*reservations) ){
-                // We're dangerously close to an overflow, so just give a rough approximation.
-                return Long.MAX_VALUE;
+            final long val = minimalRoundTripInterval+((1+reservations)*maximalRoundTripInterval)/maximalAllowance;
+            if( val<0 ){
+                System.err.println( "Internal error: estimateRoundTripInterval returns negative value val=" + val + " minimalRoundTripInterval=" + minimalRoundTripInterval + " maximalRoundTripInterval=" + maximalRoundTripInterval + " reservations=" + reservations + " maximalAllowance=" + maximalAllowance );
             }
-            return minimalRoundTripInterval+((1+reservations)*maximalRoundTripInterval)/maximalAllowance;
+            return val;
         }
 	return minimalRoundTripInterval;
     }
@@ -78,13 +75,10 @@ class WorkerJobInfo {
     /**
      * Constructs a new information class for a particular job type
      * for a particular worker.
-     * @param minimalRoundTripInterval The initial estimate for the send-to-receive
-     *    time for this  job for this particular worker.
      */
-    WorkerJobInfo( long minimalRoundTripInterval, long maximalRoundTripInterval )
+    WorkerJobInfo()
     {
-	this.minimalRoundTripInterval = minimalRoundTripInterval;
-	this.maximalRoundTripInterval = maximalRoundTripInterval;
+        // Nothing to do.
     }
 
     /**

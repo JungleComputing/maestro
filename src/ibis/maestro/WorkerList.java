@@ -159,12 +159,13 @@ public class WorkerList {
 		    }
 		}
 	    }
-	    if( best.canNowExecute(jobType)) {
-		// We have found a candidate.
+	    if( best == null || best.canNowExecute( jobType ) ){
+                break;
 	    }
 	    else {
 		// Add a reservation for this worker.
 		reservations[bestix]++;
+                best = null;
 	    }
 	}
 	if( Settings.traceMasterQueue ){
