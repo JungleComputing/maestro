@@ -382,7 +382,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
 	while( true ) {
             synchronized( queue ){
-                nowork = queue.selectJob( sub, workers );
+                nowork = queue.selectSubmisson( sub, workers );
                 if( nowork || sub.worker == null ){
                     break;
                 }

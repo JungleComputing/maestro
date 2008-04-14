@@ -135,19 +135,43 @@ public class WorkerList {
      * @return The info of the best worker for this job, or <code>null</code>
      *         if there currently aren't any workers for this job type.
      */
-    WorkerInfo selectBestWorker( JobType jobType )
+    WorkerInfo selectBestWorker( JobType jobType, int queuedJobs )
     {
 	WorkerInfo best = null;
+	int bestix = 0;
 	long bestInterval = Long.MAX_VALUE;
+	int reservations[] = new int[workers.size()];
 
-	for( WorkerInfo wi: workers ){
-	    if( !wi.isDead() ) {
-		long val = wi.getRoundTripInterval( jobType );
+	while( queuedJobs>0 ) {
+	    // Keep looking for a job that can be executed now until
+	    // all jobs are exhausted, or we have found one.
+	    queuedJobs--;
+	    for( int i=0; i<workers.size(); i++ ) {
+		WorkerInfo wi = workers.get(i);
 
-		if( val<bestInterval ) {
-		    bestInterval = val;
-		    best = wi;
+		if( !wi.isDead() ) {
+		    long val;
+		    if( wi.canNowExecute( jobType ) ) {
+			val = wi.getMinimalRoundTripInterval( jobType );
+		    }
+		    else {
+			// FIXME: do this right!!
+			val = wi.getMaximalRoundTripInterval( jobType );
+		    }
+
+		    if( val<bestInterval ) {
+			bestInterval = val;
+			best = wi;
+			bestix = i;
+		    }
 		}
+	    }
+	    if( best.canNowExecute(jobType)) {
+		// We have found a candidate.
+	    }
+	    else {
+		// Add a reservation for this worker.
+		reservations[bestix]++;
 	    }
 	}
 	if( Settings.traceMasterQueue ){

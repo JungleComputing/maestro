@@ -49,6 +49,14 @@ final class MasterQueue {
         boolean isEmpty() {
             return queue.isEmpty();
         }
+        
+        /** Returns the size of the queue.
+         * 
+         * @return The queue size.
+         */
+        int size() {
+            return queue.size();
+        }
     }
 
     private static final class QueueEntry {
@@ -150,7 +158,7 @@ final class MasterQueue {
      * @param workers The list of workers to choose from.
      * @return True iff there currently is no work.
      */
-    boolean selectJob( Submission sub, WorkerList workers )
+    boolean selectSubmisson( Submission sub, WorkerList workers )
     {
         boolean noWork = true;
         sub.worker = null;
@@ -166,7 +174,7 @@ final class MasterQueue {
                 }
             }
             else {
-                WorkerInfo worker = workers.selectBestWorker( t.type );
+                WorkerInfo worker = workers.selectBestWorker( t.type, t.size() );
 
                 noWork = false; // There is at least one queue with work.
                 if( worker == null ) {

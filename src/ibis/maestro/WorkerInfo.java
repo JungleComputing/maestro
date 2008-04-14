@@ -186,16 +186,17 @@ class WorkerInfo {
         if( Settings.traceTypeHandling ){
             System.out.println( "worker " + identifier + " (" + port + ") can handle " + type );
         }
-	WorkerJobInfo info = new WorkerJobInfo( 0 );
+	WorkerJobInfo info = new WorkerJobInfo( 0L, Long.MAX_VALUE );
 	workerJobInfoTable.put( type, info );
     }
 
-    /** Given a job type, return the round-trip interval for this job type, or
+    /** Given a job type, return the minimal bond of the round-trip interval
+     *  for this job type, or
      * Long.MAX_VALUE if the job type is not allowed on this worker.
      * @param jobType The job type for which we want to know the round-trip interval.
      * @return The interval, or Long.MAX_VALUE if this type of job is not allowed.
      */
-    public long getRoundTripInterval( JobType jobType )
+    long getMinimalRoundTripInterval( JobType jobType )
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
 	if( workerJobInfo == null ) {
@@ -204,9 +205,40 @@ class WorkerInfo {
 	    }
 	    return Long.MAX_VALUE;
 	}
-	return workerJobInfo.getRoundTripInterval();
+	return workerJobInfo.getMinimalRoundTripInterval();
+    }
+    
+    /** Returns true iff this worker can execute a job of the given type now.
+     * @return Whether this worker can execute a job of this type now.
+     */
+    boolean canNowExecute( JobType jobType )
+    {
+	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
+	
+	if( workerJobInfo == null ) {
+	    // We don't support this job type, so the answer is obviously `no'.
+	    return false;
+	}
+	return workerJobInfo.canNowExecute();
     }
 
+    /** Given a job type, return the maximal bond of the round-trip interval
+     *  for this job type, or
+     * Long.MAX_VALUE if the job type is not allowed on this worker.
+     * @param jobType The job type for which we want to know the round-trip interval.
+     * @return The interval, or Long.MAX_VALUE if this type of job is not allowed.
+     */
+    long getMaximalRoundTripInterval( JobType jobType )
+    {
+	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
+	if( workerJobInfo == null ) {
+	    if( Settings.traceTypeHandling ){
+	        System.out.println( "Worker " + identifier + " does not support type " + jobType );
+	    }
+	    return Long.MAX_VALUE;
+	}
+	return workerJobInfo.getMaximalRoundTripInterval();
+    }
     /**
      * Tries to increment the maximal number of outstanding jobs for this worker.
      * @param jobType The job type for which we want to increase our allowance.

@@ -5,8 +5,11 @@ package ibis.maestro;
 
 
 class WorkerJobInfo {
-    /** Estimated time in ns to complete a job, including communication. */
-    private long roundTripInterval;
+    /** Estimated minimal time in ns to complete a job, including communication. */
+    private long minimalRoundTripInterval;
+
+    /** Estimated maximal time in ns to complete a job, including communication. */
+    private long maximalRoundTripInterval;
 
     /** How many instances of this job does this worker currently have? */
     private int outstandingJobs = 0;
@@ -23,17 +26,12 @@ class WorkerJobInfo {
      */
     private boolean mayIncreaseAllowance = false;
 
-    private void updateRoundTripTime( long newRoundTripTime )
-    {
-	roundTripInterval = (roundTripInterval+newRoundTripTime)/2;
-    }
-
     /**
      * Returns the round-trip interval for this worker and this job type, or
      * a very large number if currently there are no job slots.
      * @return The round-trip interval.
      */
-    long getRoundTripInterval()
+    long getMinimalRoundTripInterval()
     {
         if( maximalAllowance == 0 ){
             System.err.println( "Zero allowance" );
@@ -41,18 +39,40 @@ class WorkerJobInfo {
         if( outstandingJobs>=maximalAllowance ){
             return Long.MAX_VALUE;
         }
-	return roundTripInterval;
+	return minimalRoundTripInterval;
+    }
+    
+    boolean canNowExecute()
+    {
+	return outstandingJobs<maximalAllowance;
+    }
+
+    /**
+     * Returns the maximal round-trip interval for this worker and this job type, or
+     * a very large number if currently there are no job slots.
+     * @return The round-trip interval.
+     */
+    long getMaximalRoundTripInterval()
+    {
+        if( maximalAllowance == 0 ){
+            System.err.println( "Zero allowance" );
+        }
+        if( outstandingJobs>=maximalAllowance ){
+            return Long.MAX_VALUE;
+        }
+	return maximalRoundTripInterval;
     }
 
     /**
      * Constructs a new information class for a particular job type
      * for a particular worker.
-     * @param roundTripInterval The initial estimate for the send-to-receive
+     * @param minimalRoundTripInterval The initial estimate for the send-to-receive
      *    time for this  job for this particular worker.
      */
-    WorkerJobInfo( long roundTripInterval )
+    WorkerJobInfo( long minimalRoundTripInterval, long maximalRoundTripInterval )
     {
-	this.roundTripInterval = roundTripInterval;
+	this.minimalRoundTripInterval = minimalRoundTripInterval;
+	this.maximalRoundTripInterval = maximalRoundTripInterval;
     }
 
     /**
@@ -62,10 +82,11 @@ class WorkerJobInfo {
     void registerJobCompleted( long theRoundTripInterval )
     {
 	executedJobs++;
-	updateRoundTripTime( theRoundTripInterval );
+	minimalRoundTripInterval = (minimalRoundTripInterval+theRoundTripInterval)/2;
+	maximalRoundTripInterval = (maximalRoundTripInterval+theRoundTripInterval)/2;
 	outstandingJobs--;
 	if( Settings.traceWorkerProgress ) {
-	    System.out.println( "New roundtrip time " + Service.formatNanoseconds( roundTripInterval )  );
+	    System.out.println( "New roundtrip time " + Service.formatNanoseconds( minimalRoundTripInterval ) + "..." + Service.formatNanoseconds( maximalRoundTripInterval ) );
 	}
     }
 
