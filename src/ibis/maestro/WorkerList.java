@@ -150,14 +150,7 @@ public class WorkerList {
 		WorkerInfo wi = workers.get(i);
 
 		if( !wi.isDead() ) {
-		    long val;
-		    if( wi.canNowExecute( jobType ) ) {
-			val = wi.getMinimalRoundTripInterval( jobType );
-		    }
-		    else {
-			// FIXME: do this right!!
-			val = wi.getMaximalRoundTripInterval( jobType );
-		    }
+		    long val = wi.estimateRoundTripInterval( jobType, reservations[i] );
 
 		    if( val<bestInterval ) {
 			bestInterval = val;

@@ -49,18 +49,30 @@ class WorkerJobInfo {
 
     /**
      * Returns the maximal round-trip interval for this worker and this job type, or
-     * a very large number if currently there are no job slots.
+     * a very pessimistic estimate if currently there are no job slots.
+     * @param The number of reservations we already have.
      * @return The round-trip interval.
      */
-    long getMaximalRoundTripInterval()
+    long estimateRoundTripInterval( int reservations )
     {
         if( maximalAllowance == 0 ){
             System.err.println( "Zero allowance" );
         }
         if( outstandingJobs>=maximalAllowance ){
-            return Long.MAX_VALUE;
+            // This worker is fully booked for the moment, but estimate anyway how long
+            // it would take by using a pessimistic round-trip time.
+
+            // We have to be paranoid in this calculation, since maximalRoundTripInterval can be
+            // Long.MAX_VALUE, so if we're not careful we can overflow a long.
+            long roundTripPerJob = maximalRoundTripInterval/maximalAllowance;
+            
+            if( minimalRoundTripInterval/(1+reservations)+roundTripPerJob >= Long.MAX_VALUE/(2+2*reservations) ){
+                // We're dangerously close to an overflow, so just give a rough approximation.
+                return Long.MAX_VALUE;
+            }
+            return minimalRoundTripInterval+((1+reservations)*maximalRoundTripInterval)/maximalAllowance;
         }
-	return maximalRoundTripInterval;
+	return minimalRoundTripInterval;
     }
 
     /**

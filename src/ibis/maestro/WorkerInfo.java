@@ -226,9 +226,10 @@ class WorkerInfo {
      *  for this job type, or
      * Long.MAX_VALUE if the job type is not allowed on this worker.
      * @param jobType The job type for which we want to know the round-trip interval.
+     * @param reservations The reservations we already have for this job type.
      * @return The interval, or Long.MAX_VALUE if this type of job is not allowed.
      */
-    long getMaximalRoundTripInterval( JobType jobType )
+    long estimateRoundTripInterval( JobType jobType, int reservations )
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
 	if( workerJobInfo == null ) {
@@ -237,7 +238,7 @@ class WorkerInfo {
 	    }
 	    return Long.MAX_VALUE;
 	}
-	return workerJobInfo.getMaximalRoundTripInterval();
+	return workerJobInfo.estimateRoundTripInterval( reservations );
     }
     /**
      * Tries to increment the maximal number of outstanding jobs for this worker.
