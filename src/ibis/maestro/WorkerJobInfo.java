@@ -10,7 +10,7 @@ class WorkerJobInfo {
 
     /** Estimated maximal time in ns to complete a job, including communication. 
      * 50 days is close enough to infinity for our purposes. */
-    private long maximalRoundTripInterval = 1000000000L*60*60*24*50;
+    private long maximalRoundTripInterval = 1000000000L*60*60*24*5;
 
     /** How many instances of this job does this worker currently have? */
     private int outstandingJobs = 0;
@@ -63,7 +63,7 @@ class WorkerJobInfo {
             // This worker is fully booked for the moment, but estimate anyway how long
             // it would take by using a pessimistic round-trip time.
 
-            final long val = minimalRoundTripInterval+((1+reservations)*maximalRoundTripInterval)/maximalAllowance;
+            final long val = minimalRoundTripInterval+((1+reservations)*maximalRoundTripInterval);
             if( val<0 ){
                 System.err.println( "Internal error: estimateRoundTripInterval returns negative value val=" + val + " minimalRoundTripInterval=" + minimalRoundTripInterval + " maximalRoundTripInterval=" + maximalRoundTripInterval + " reservations=" + reservations + " maximalAllowance=" + maximalAllowance );
             }
@@ -143,6 +143,6 @@ class WorkerJobInfo {
     
     String buildStatisticsString()
     {
-	return "executed " + executedJobs + " jobs; maximal ever allowance: " + maximalEverAllowance;
+	return "executed " + executedJobs + " jobs; maximal ever allowance: " + maximalEverAllowance + " estimated round-trip interval: " + Service.formatNanoseconds( minimalRoundTripInterval ) + "..." + Service.formatNanoseconds( maximalRoundTripInterval );
     }
 }
