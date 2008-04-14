@@ -6,11 +6,11 @@ package ibis.maestro;
 
 class WorkerJobInfo {
     /** Estimated minimal time in ns to complete a job, including communication. */
-    private long minimalRoundTripInterval = 0;
+    private long minimalRoundTripInterval = 10000000;
 
     /** Estimated maximal time in ns to complete a job, including communication. 
      * 50 days is close enough to infinity for our purposes. */
-    private long maximalRoundTripInterval = 1000000000L*60*60*24*5;
+    private long maximalRoundTripInterval = 1000000000L*60*60*24*50;
 
     /** How many instances of this job does this worker currently have? */
     private int outstandingJobs = 0;
@@ -88,8 +88,8 @@ class WorkerJobInfo {
     void registerJobCompleted( long theRoundTripInterval )
     {
 	executedJobs++;
-	minimalRoundTripInterval = (minimalRoundTripInterval+theRoundTripInterval)/2;
-	maximalRoundTripInterval = (maximalRoundTripInterval+theRoundTripInterval)/2;
+	minimalRoundTripInterval = (3*minimalRoundTripInterval+theRoundTripInterval)/4;
+	//maximalRoundTripInterval = (3*maximalRoundTripInterval+theRoundTripInterval)/4;
 	outstandingJobs--;
 	if( Settings.traceWorkerProgress ) {
 	    System.out.println( "New roundtrip time " + Service.formatNanoseconds( minimalRoundTripInterval ) + "..." + Service.formatNanoseconds( maximalRoundTripInterval ) );
