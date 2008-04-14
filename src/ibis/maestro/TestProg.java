@@ -79,6 +79,7 @@ public class TestProg {
         Listener listener = new Listener( jobCount );
 
         System.out.println( "Node created" );
+        long startTime = System.nanoTime();
         if( node.isMaestro() ) {
             System.out.println( "I am maestro; submitting " + jobCount + " jobs" );
             for( int i=0; i<jobCount; i++ ){
@@ -88,6 +89,8 @@ public class TestProg {
             }
         }
         node.waitToTerminate();
+        long stopTime = System.nanoTime();
+        System.out.println( "Duration of this run: " + Service.formatNanoseconds( stopTime-startTime ) );
     }
 
     /** The command-line interface of this program.
