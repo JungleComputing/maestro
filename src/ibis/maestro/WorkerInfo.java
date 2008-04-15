@@ -190,24 +190,6 @@ class WorkerInfo {
 	workerJobInfoTable.put( type, info );
     }
 
-    /** Given a job type, return the minimal bond of the round-trip interval
-     *  for this job type, or
-     * Long.MAX_VALUE if the job type is not allowed on this worker.
-     * @param jobType The job type for which we want to know the round-trip interval.
-     * @return The interval, or Long.MAX_VALUE if this type of job is not allowed.
-     */
-    long getMinimalRoundTripInterval( JobType jobType )
-    {
-	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
-	if( workerJobInfo == null ) {
-	    if( Settings.traceTypeHandling ){
-	        System.out.println( "Worker " + identifier + " does not support type " + jobType );
-	    }
-	    return Long.MAX_VALUE;
-	}
-	return workerJobInfo.getMinimalRoundTripInterval();
-    }
-    
     /** Returns true iff this worker can execute a job of the given type now.
      * @return Whether this worker can execute a job of this type now.
      */

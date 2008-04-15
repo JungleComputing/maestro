@@ -19,7 +19,22 @@ public class TimeEstimate
 
     TimeEstimate()
     {
-	// Nothing.
+        // Nothing.
+    }
+
+    /**
+     * Returns a string representation of this estimate.
+     */
+    @Override
+    public String toString()
+    {
+        if( sampleCount == 0 ){
+            return "no information";
+        }
+        if( sampleCount == 1 ){
+            return "one sample: " + Service.formatNanoseconds( sampleValues[minIndex] );
+        }
+        return Service.formatNanoseconds( sampleValues[minIndex] ) + "..." + Service.formatNanoseconds( sampleValues[maxIndex] );
     }
 
     /**
@@ -30,20 +45,48 @@ public class TimeEstimate
      */
     long getEstimate()
     {
-	long min;
-	long max;
-	if( sampleCount == 0 ) {
-	    min = 0;
-	    max = 1000000000; // Completely arbitary: 1 second
-	}
-	else {
-	    // We only have one sample; add a bit of spread.
-	    min = 0;
-	    max = sampleValues[minIndex]*3;
-	}
-	min = sampleValues[minIndex];
-	max = sampleValues[maxIndex];
-	return (long) (min + (max-min)*rng.nextFloat());
+        long min;
+        long max;
+        if( sampleCount == 0 ) {
+            min = 0;
+            max = 1000000000; // Completely arbitary: 1 second
+        }
+        else if( sampleCount == 1 ){
+            // We only have one sample; add a bit of spread.
+            min = 0;
+            max = sampleValues[minIndex]*3;
+        }
+        else {
+        min = sampleValues[minIndex];
+        max = sampleValues[maxIndex];
+        }
+        return (long) (min + (max-min)*rng.nextFloat());
+    }
+
+    /**
+     * Returns a time estimate based on the current samples.
+     * This method returns random number with uniform distribution between
+     * the current minimum and maximum value in this list of samples.
+     * @return The time estimate.
+     */
+    long getEstimate( int n )
+    {
+        long min;
+        long max;
+        if( sampleCount == 0 ) {
+            min = 0;
+            max = n*1000000000; // Completely arbitary: 1 second
+        }
+        else if( sampleCount == 1 ){
+            // We only have one sample; add a bit of spread.
+            min = 0;
+            max = n*sampleValues[minIndex]*3;
+        }
+        else {
+            min = n*sampleValues[minIndex];
+            max = n*sampleValues[maxIndex];
+        }
+        return (long) (min + (max-min)*rng.nextFloat());
     }
 
     /**
@@ -60,7 +103,7 @@ public class TimeEstimate
             // Fill the entire array with this sample to avoid
             // special-casing the max and min calculations below.
             for( int i=1; i<SAMPLE_WINDOW; i++ ) {
-        	sampleValues[i] = val;
+                sampleValues[i] = val;
             }
         }
         if( minIndex == updateIndex ) {
@@ -68,14 +111,14 @@ public class TimeEstimate
             // samples for the new one.
             minIndex = 0;
             for( int i=1; i<SAMPLE_WINDOW; i++ ) {
-        	if( sampleValues[i]<sampleValues[minIndex] ) {
-        	    minIndex = i;
-        	}
+                if( sampleValues[i]<sampleValues[minIndex] ) {
+                    minIndex = i;
+                }
             }
         }
         else {
             if( sampleValues[updateIndex]<sampleValues[minIndex] ) {
-        	minIndex = updateIndex;
+                minIndex = updateIndex;
             }
         }
         if( maxIndex == updateIndex ) {
@@ -83,17 +126,17 @@ public class TimeEstimate
             // samples for the new one.
             maxIndex = 0;
             for( int i=1; i<SAMPLE_WINDOW; i++ ) {
-        	if( sampleValues[i]>sampleValues[maxIndex] ) {
-        	    maxIndex = i;
-        	}
+                if( sampleValues[i]>sampleValues[maxIndex] ) {
+                    maxIndex = i;
+                }
             }
         }
         else {
             if( sampleValues[updateIndex]>sampleValues[maxIndex] ) {
-        	maxIndex = updateIndex;
+                maxIndex = updateIndex;
             }
         }
-	sampleCount++;
+        sampleCount++;
         updateIndex++;
         if( updateIndex>=SAMPLE_WINDOW ) {
             updateIndex = 0;

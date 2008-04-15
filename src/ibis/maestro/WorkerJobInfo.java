@@ -67,7 +67,7 @@ class WorkerJobInfo {
 	roundTripEstimate.addSample(theRoundTripInterval);
 	outstandingJobs--;
 	if( Settings.traceWorkerProgress ) {
-	    System.out.println( "New roundtrip time " + Service.formatNanoseconds( minimalRoundTripInterval ) + "..." + Service.formatNanoseconds( maximalRoundTripInterval ) );
+	    System.out.println( "New roundtrip time estimate: " + roundTripEstimate );
 	}
     }
 
@@ -118,6 +118,6 @@ class WorkerJobInfo {
     
     String buildStatisticsString()
     {
-	return "executed " + executedJobs + " jobs; maximal ever allowance: " + maximalEverAllowance + " estimated round-trip interval: " + Service.formatNanoseconds( minimalRoundTripInterval ) + "..." + Service.formatNanoseconds( maximalRoundTripInterval );
+	return "executed " + executedJobs + " jobs; maximal ever allowance: " + maximalEverAllowance + " estimated round-trip interval: " + roundTripEstimate;
     }
 }
