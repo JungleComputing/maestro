@@ -18,14 +18,14 @@ public class WorkerList {
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
 
     private static WorkerInfo searchWorker( List<WorkerInfo> workers, WorkerIdentifier workerIdentifier ) {
-	for( int i=0; i<workers.size(); i++ ) {
-	    WorkerInfo w = workers.get( i );
+        for( int i=0; i<workers.size(); i++ ) {
+            WorkerInfo w = workers.get( i );
 
-	    if( w.identifier.equals( workerIdentifier ) ) {
-		return w;
-	    }
-	}
-	return null;
+            if( w.identifier.equals( workerIdentifier ) ) {
+                return w;
+            }
+        }
+        return null;
     }
 
     private static WorkerInfo searchWorker( List<WorkerInfo> workers, IbisIdentifier id ) {
@@ -51,9 +51,9 @@ public class WorkerList {
     WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, MasterIdentifier identifierForWorker )
     {
         Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
-	WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker );
+        WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker );
 
-	if( Settings.traceMasterProgress ){
+        if( Settings.traceMasterProgress ){
             System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
         }
         workers.add( worker );
@@ -67,10 +67,10 @@ public class WorkerList {
      */
     void removeWorker( IbisIdentifier theIbis )
     {
-	WorkerInfo wi = searchWorker( workers, theIbis );
-	if( wi != null ) {
-	    wi.setDead();
-	}
+        WorkerInfo wi = searchWorker( workers, theIbis );
+        if( wi != null ) {
+            wi.setDead();
+        }
     }
 
 
@@ -94,8 +94,8 @@ public class WorkerList {
      */
     boolean contains( WorkerIdentifier identifier )
     {
-	WorkerInfo i = searchWorker( workers, identifier );
-	return i != null;
+        WorkerInfo i = searchWorker( workers, identifier );
+        return i != null;
     }
 
     /**
@@ -105,12 +105,12 @@ public class WorkerList {
      */
     void registerWorkerStatus( ReceivePortIdentifier me, WorkerStatusMessage result )
     {
-	WorkerInfo w = searchWorker( workers, result.source );
-	if( w == null ) {
-	    System.err.println( "Job result from unknown worker " + result.source );
-	    return;
-	}
-	w.registerWorkerStatus( me, result );
+        WorkerInfo w = searchWorker( workers, result.source );
+        if( w == null ) {
+            System.err.println( "Job result from unknown worker " + result.source );
+            return;
+        }
+        w.registerWorkerStatus( me, result );
     }
 
     /**
@@ -119,12 +119,12 @@ public class WorkerList {
      */
     boolean areIdle()
     {
-	for( WorkerInfo w: workers ) {
-	    if( !w.isIdle() ) {
-		return false;
-	    }
-	}
-	return true;
+        for( WorkerInfo w: workers ) {
+            if( !w.isIdle() ) {
+                return false;
+            }
+        }
+        return true;
     }
 
     /**
@@ -137,39 +137,37 @@ public class WorkerList {
      */
     WorkerInfo selectBestWorker( JobType jobType, int queuedJobs )
     {
-	WorkerInfo best = null;
-	int bestix = 0;
-	long bestInterval = Long.MAX_VALUE;
-	int reservations[] = new int[workers.size()];
+        WorkerInfo best = null;
+        int bestix = 0;
+        long bestInterval = Long.MAX_VALUE;
+        int reservations[] = new int[workers.size()];
 
-	while( queuedJobs>0 ) {
-	    // Keep looking for a job that can be executed now until
-	    // all jobs are exhausted, or we have found one.
-	    queuedJobs--;
-	    for( int i=0; i<workers.size(); i++ ) {
-		WorkerInfo wi = workers.get(i);
+        while( queuedJobs>0 ) {
+            // Keep looking for a job that can be executed now until
+            // all jobs are exhausted, or we have found one.
+            queuedJobs--;
+            for( int i=0; i<workers.size(); i++ ) {
+                WorkerInfo wi = workers.get(i);
 
-		if( !wi.isDead() ) {
-		    long val = wi.estimateRoundTripInterval( jobType, reservations[i] );
+                if( !wi.isDead() ) {
+                    long val = wi.estimateRoundTripInterval( jobType, reservations[i] );
 
-		    if( val<bestInterval ) {
-			bestInterval = val;
-			best = wi;
-			bestix = i;
-		    }
-		}
-	    }
-	    if( best == null || best.canNowExecute( jobType ) ){
+                    if( val<bestInterval ) {
+                        bestInterval = val;
+                        best = wi;
+                        bestix = i;
+                    }
+                }
+            }
+            if( best == null || best.canNowExecute( jobType ) ){
                 break;
-	    }
-	    else {
-		// Add a reservation for this worker.
-		reservations[bestix]++;
-                best = null;
-	    }
-	}
-	if( Settings.traceMasterQueue ){
-	    if( best == null ) {
+            }
+            // Add a reservation for this worker.
+            reservations[bestix]++;
+            best = null;
+        }
+        if( Settings.traceMasterQueue ){
+            if( best == null ) {
                 int busy = 0;
                 int notSupported = 0;
                 for( WorkerInfo wi: workers ){
@@ -183,10 +181,10 @@ public class WorkerList {
                 System.out.println( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for job of type " + jobType );
             }
             else {
-		System.out.println( "Selected worker " + best + " for job of type " + jobType + "; roundTripTime=" + Service.formatNanoseconds( bestInterval ) );
-	    }
-	}
-	return best;
+                System.out.println( "Selected worker " + best + " for job of type " + jobType + "; roundTripTime=" + Service.formatNanoseconds( bestInterval ) );
+            }
+        }
+        return best;
     }
 
     /**
@@ -210,8 +208,8 @@ public class WorkerList {
      */
     boolean incrementAllowance( WorkerIdentifier workerID, JobType jobType )
     {
-	WorkerInfo wi = workers.get( workerID.value );
-	return wi.incrementAllowance( jobType );
+        WorkerInfo wi = workers.get( workerID.value );
+        return wi.incrementAllowance( jobType );
     }
 
     /**
@@ -257,7 +255,7 @@ public class WorkerList {
      */
     int getWorkerCount()
     {
-	return workers.size();
+        return workers.size();
     }
 
     /**
@@ -268,12 +266,12 @@ public class WorkerList {
      */
     boolean anyoneSupports( JobType type )
     {
-	for( WorkerInfo wi: workers ) {
-	    if( wi.supportsType( type ) ) {
-		return true;
-	    }
-	}
-	return false;
+        for( WorkerInfo wi: workers ) {
+            if( wi.supportsType( type ) ) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -283,8 +281,8 @@ public class WorkerList {
      */
     void printStatistics( PrintStream out )
     {
-	for( WorkerInfo wi: workers ) {
-	    wi.printStatistics( out );
-	}
+        for( WorkerInfo wi: workers ) {
+            wi.printStatistics( out );
+        }
     }
 }
