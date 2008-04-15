@@ -29,35 +29,35 @@ public class WorkerList {
     }
 
     private static WorkerInfo searchWorker( List<WorkerInfo> workers, IbisIdentifier id ) {
-        for( int i=0; i<workers.size(); i++ ) {
-            WorkerInfo w = workers.get(i);
-            if( w.port.ibisIdentifier().equals( id ) ) {
-                return w;
-            }
-        }
-        return null;
+	for( int i=0; i<workers.size(); i++ ) {
+	    WorkerInfo w = workers.get(i);
+	    if( w.port.ibisIdentifier().equals( id ) ) {
+		return w;
+	    }
+	}
+	return null;
     }
 
     private static int searchWorker( List<WorkerInfo> workers, ReceivePortIdentifier id ) {
-        for( int i=0; i<workers.size(); i++ ) {
-            WorkerInfo w = workers.get(i);
-            if( w.port.equals( id ) ) {
-                return i;
-            }
-        }
-        return -1;
+	for( int i=0; i<workers.size(); i++ ) {
+	    WorkerInfo w = workers.get(i);
+	    if( w.port.equals( id ) ) {
+		return i;
+	    }
+	}
+	return -1;
     }
 
     WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, MasterIdentifier identifierForWorker )
     {
-        Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
+	Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
         WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker );
 
         if( Settings.traceMasterProgress ){
-            System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
-        }
-        workers.add( worker );
-        return workerID;
+	    System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
+	}
+	workers.add( worker );
+	return workerID;
     }
 
     /**
@@ -73,7 +73,6 @@ public class WorkerList {
         }
     }
 
-
     /**
      * We know the given ibis has disappeared from the computation.
      * Remove any workers on that ibis.
@@ -81,10 +80,10 @@ public class WorkerList {
      */
     void removeWorker( WorkerIdentifier identifier )
     {
-        WorkerInfo wi = searchWorker( workers, identifier );
-        if( wi != null ) {
-            wi.setDead();
-        }
+	WorkerInfo wi = searchWorker( workers, identifier );
+	if( wi != null ) {
+	    wi.setDead();
+	}
     }
 
     /** Returns true iff we have a worker on our list with the
@@ -126,11 +125,31 @@ public class WorkerList {
         }
         return true;
     }
+    
+    /**
+     * Given a job type, return true iff there is a worker in this
+     * list that can execute a job of this type right now.
+     * @param jobType The job type under consideration.
+     * @return True iff there is a worker that can execute this type of job right now.
+     */
+    private boolean canNowExecute( JobType jobType )
+    {
+	for( WorkerInfo wi: workers ) {
+	    if( wi.canNowExecute(jobType)) {
+		return true;
+	    }
+	}
+	return true;
+    }
 
     /**
      * Given a job type, select the best worker from the list that has a
      * free slot. In this context 'best' is simply the worker with the
-     * shortest round-trip interval.
+     * shortest round-trip interval. We take into account fast workers that
+     * can complete a job earlier even if they are busy right now, but
+     * if there are more jobs in the queue we may still want to assign
+     * a job to a slower processor that can execute the job right now.
+     *  
      * @param jobType The type of job we want to execute.
      * @return The info of the best worker for this job, or <code>null</code>
      *         if there currently aren't any workers for this job type.
@@ -142,12 +161,16 @@ public class WorkerList {
         long bestInterval = Long.MAX_VALUE;
         int reservations[] = new int[workers.size()];
 
-        while( queuedJobs>0 ) {
-            // Keep looking for a job that can be executed now until
-            // all jobs are exhausted, or we have found one.
-            queuedJobs--;
-            for( int i=0; i<workers.size(); i++ ) {
-                WorkerInfo wi = workers.get(i);
+	if( !canNowExecute( jobType ) ) {
+	    // All workers are at their maximum load, we may as well give up.
+	    return null;
+	}
+	while( queuedJobs>0 ) {
+	    // Keep looking for a job that can be executed now until
+	    // all jobs are exhausted, or we have found one.
+	    queuedJobs--;
+	    for( int i=0; i<workers.size(); i++ ) {
+		WorkerInfo wi = workers.get( i );
 
                 if( !wi.isDead() ) {
                     long val = wi.estimateRoundTripInterval( jobType, reservations[i] );
@@ -160,27 +183,27 @@ public class WorkerList {
                 }
             }
             if( best == null || best.canNowExecute( jobType ) ){
-                break;
-            }
+		break;
+	    }
             // Add a reservation for this worker.
             reservations[bestix]++;
             best = null;
-        }
-        if( Settings.traceMasterQueue ){
-            if( best == null ) {
-                int busy = 0;
-                int notSupported = 0;
-                for( WorkerInfo wi: workers ){
-                    if( wi.supportsType( jobType ) ){
-                        busy++;
-                    }
-                    else {
-                        notSupported++;
-                    }
-                }
-                System.out.println( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for job of type " + jobType );
-            }
-            else {
+	}
+	if( Settings.traceMasterQueue ){
+	    if( best == null ) {
+		int busy = 0;
+		int notSupported = 0;
+		for( WorkerInfo wi: workers ){
+		    if( wi.supportsType( jobType ) ){
+			busy++;
+		    }
+		    else {
+			notSupported++;
+		    }
+		}
+		System.out.println( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for job of type " + jobType );
+	    }
+	    else {
                 System.out.println( "Selected worker " + best + " for job of type " + jobType + "; roundTripTime=" + Service.formatNanoseconds( bestInterval ) );
             }
         }
@@ -194,8 +217,8 @@ public class WorkerList {
      */
     boolean isKnownWorker( ReceivePortIdentifier worker )
     {
-        int ix = searchWorker( workers, worker );
-        return ix>=0;
+	int ix = searchWorker( workers, worker );
+	return ix>=0;
     }
 
     /**
@@ -219,11 +242,11 @@ public class WorkerList {
      */
     void registerWorkerJobTypes( ReceivePortIdentifier worker, JobType allowedType )
     {
-        int ix = searchWorker( workers, worker );
-        if( ix>=0 ){
-            WorkerInfo wi = workers.get( ix );
-            wi.registerAllowedType( allowedType );
-        }
+	int ix = searchWorker( workers, worker );
+	if( ix>=0 ){
+	    WorkerInfo wi = workers.get( ix );
+	    wi.registerAllowedType( allowedType );
+	}
     }
 
     /** Given a worker identifier, declare it dead.
@@ -231,8 +254,8 @@ public class WorkerList {
      */
     void declareDead( WorkerIdentifier workerID )
     {
-        WorkerInfo w = workers.get( workerID.value );
-        w.setDead();
+	WorkerInfo w = workers.get( workerID.value );
+	w.setDead();
     }
 
     /** Given a new list of allowed types, update our adminstration
@@ -243,10 +266,10 @@ public class WorkerList {
      */
     void updateJobTypes( WorkerIdentifier workerID, JobType[] allowedTypes )
     {
-        WorkerInfo w = workers.get( workerID.value );
-        for( JobType t: allowedTypes ){
-            w.registerAllowedType( t );
-        }
+	WorkerInfo w = workers.get( workerID.value );
+	for( JobType t: allowedTypes ){
+	    w.registerAllowedType( t );
+	}
     }
 
     /**
@@ -256,22 +279,6 @@ public class WorkerList {
     int getWorkerCount()
     {
         return workers.size();
-    }
-
-    /**
-     * Given a job type, return true iff any of the workers supports
-     * this type.
-     * @param type The job type we're searching for.
-     * @return True iff the job type is supported by a worker.
-     */
-    boolean anyoneSupports( JobType type )
-    {
-        for( WorkerInfo wi: workers ) {
-            if( wi.supportsType( type ) ) {
-                return true;
-            }
-        }
-        return false;
     }
 
     /**

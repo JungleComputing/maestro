@@ -5,12 +5,7 @@ package ibis.maestro;
 
 
 class WorkerJobInfo {
-    /** Estimated minimal time in ns to complete a job, including communication. */
-    private long minimalRoundTripInterval = 10000000;
-
-    /** Estimated maximal time in ns to complete a job, including communication. 
-     * 50 days is close enough to infinity for our purposes. */
-    private long maximalRoundTripInterval = 1000000000L*60*60*24*50;
+    private final TimeEstimate roundTripEstimate = new TimeEstimate();
 
     /** How many instances of this job does this worker currently have? */
     private int outstandingJobs = 0;
@@ -26,22 +21,6 @@ class WorkerJobInfo {
      * willing to consider an increased allowance.
      */
     private boolean mayIncreaseAllowance = false;
-
-    /**
-     * Returns the round-trip interval for this worker and this job type, or
-     * a very large number if currently there are no job slots.
-     * @return The round-trip interval.
-     */
-    long getMinimalRoundTripInterval()
-    {
-        if( maximalAllowance == 0 ){
-            System.err.println( "Zero allowance" );
-        }
-        if( outstandingJobs>=maximalAllowance ){
-            return Long.MAX_VALUE;
-        }
-	return minimalRoundTripInterval;
-    }
     
     boolean canNowExecute()
     {
@@ -57,19 +36,16 @@ class WorkerJobInfo {
     long estimateRoundTripInterval( int reservations )
     {
         if( maximalAllowance == 0 ){
-            System.err.println( "Zero allowance" );
+            System.err.println( "Internal error: zero allowance" );
         }
         if( outstandingJobs>=maximalAllowance ){
             // This worker is fully booked for the moment, but estimate anyway how long
             // it would take by using a pessimistic round-trip time.
 
-            final long val = minimalRoundTripInterval+((1+reservations)*maximalRoundTripInterval);
-            if( val<0 ){
-                System.err.println( "Internal error: estimateRoundTripInterval returns negative value val=" + val + " minimalRoundTripInterval=" + minimalRoundTripInterval + " maximalRoundTripInterval=" + maximalRoundTripInterval + " reservations=" + reservations + " maximalAllowance=" + maximalAllowance );
-            }
+            final long val = roundTripEstimate.getEstimate( 1+(outstandingJobs-maximalAllowance)+reservations  );
             return val;
         }
-	return minimalRoundTripInterval;
+	return roundTripEstimate.getEstimate();
     }
 
     /**
@@ -88,8 +64,7 @@ class WorkerJobInfo {
     void registerJobCompleted( long theRoundTripInterval )
     {
 	executedJobs++;
-	minimalRoundTripInterval = (3*minimalRoundTripInterval+theRoundTripInterval)/4;
-	//maximalRoundTripInterval = (3*maximalRoundTripInterval+theRoundTripInterval)/4;
+	roundTripEstimate.addSample(theRoundTripInterval);
 	outstandingJobs--;
 	if( Settings.traceWorkerProgress ) {
 	    System.out.println( "New roundtrip time " + Service.formatNanoseconds( minimalRoundTripInterval ) + "..." + Service.formatNanoseconds( maximalRoundTripInterval ) );
