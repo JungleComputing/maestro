@@ -10,7 +10,7 @@ import java.util.Random;
 public class TimeEstimate
 {
     private static final int SAMPLE_WINDOW = 20;
-    private static final long sampleValues[] = new long[SAMPLE_WINDOW];
+    private final long sampleValues[] = new long[SAMPLE_WINDOW];
     private int updateIndex = 0;
     private int sampleCount = 0;
     private int minIndex;
@@ -19,7 +19,7 @@ public class TimeEstimate
 
     TimeEstimate()
     {
-        // Nothing.
+
     }
 
     /**
@@ -49,7 +49,7 @@ public class TimeEstimate
         long max;
         if( sampleCount == 0 ) {
             min = 0;
-            max = 1000000000; // Completely arbitary: 1 second
+            max = 1000; // Completely arbitary: 1 us
         }
         else if( sampleCount == 1 ){
             // We only have one sample; add a bit of spread.
@@ -57,8 +57,8 @@ public class TimeEstimate
             max = sampleValues[minIndex]*3;
         }
         else {
-        min = sampleValues[minIndex];
-        max = sampleValues[maxIndex];
+	    min = sampleValues[minIndex];
+	    max = sampleValues[maxIndex];
         }
         return (long) (min + (max-min)*rng.nextFloat());
     }
@@ -75,7 +75,7 @@ public class TimeEstimate
         long max;
         if( sampleCount == 0 ) {
             min = 0;
-            max = n*1000000000; // Completely arbitary: 1 second
+            max = n*1000; // Completely arbitary: 1 us
         }
         else if( sampleCount == 1 ){
             // We only have one sample; add a bit of spread.
@@ -86,7 +86,8 @@ public class TimeEstimate
             min = n*sampleValues[minIndex];
             max = n*sampleValues[maxIndex];
         }
-        return (long) (min + (max-min)*rng.nextFloat());
+        //return (long) (min + (max-min)*rng.nextFloat());
+        return max;
     }
 
     /**
@@ -102,7 +103,7 @@ public class TimeEstimate
             maxIndex = updateIndex;
             // Fill the entire array with this sample to avoid
             // special-casing the max and min calculations below.
-            for( int i=1; i<SAMPLE_WINDOW; i++ ) {
+            for( int i=0; i<SAMPLE_WINDOW; i++ ) {
                 sampleValues[i] = val;
             }
         }
@@ -141,5 +142,21 @@ public class TimeEstimate
         if( updateIndex>=SAMPLE_WINDOW ) {
             updateIndex = 0;
         }
+	if( false ){
+	    for( int i=0; i<SAMPLE_WINDOW; i++ ){
+		System.out.print( "sampleValues[" + i + "]=" + sampleValues[i] );
+		if( i == minIndex ){
+		    System.out.print( " <minIndex>" );
+		}
+		if( i == maxIndex ){
+		    System.out.print( " <maxIndex>" );
+		}
+		if( i == updateIndex ){
+		    System.out.print( " <updateIndex>" );
+		}
+		System.out.println();
+	    }
+	    System.out.println();
+	}
     }
 }
