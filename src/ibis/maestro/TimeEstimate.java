@@ -19,7 +19,12 @@ public class TimeEstimate
 
     TimeEstimate()
     {
-
+        // The sample values array is filled with 0, which suits us fine,
+        // but until we have a first sample we make a very pessimistic
+        // assumption about the time.
+        sampleValues[0] = 50*1000000*60*60*24;   // 50 days
+        maxIndex = 0;
+        minIndex = 1;
     }
 
     /**
@@ -32,7 +37,7 @@ public class TimeEstimate
             return "no information";
         }
         if( sampleCount == 1 ){
-            return "one sample: " + Service.formatNanoseconds( sampleValues[minIndex] );
+            return "one sample: " + Service.formatNanoseconds( sampleValues[maxIndex] );
         }
         return Service.formatNanoseconds( sampleValues[minIndex] ) + "..." + Service.formatNanoseconds( sampleValues[maxIndex] );
     }
@@ -45,49 +50,19 @@ public class TimeEstimate
      */
     long getEstimate()
     {
-        long min;
-        long max;
-        if( sampleCount == 0 ) {
-            min = 0;
-            max = 1000; // Completely arbitary: 1 us
-        }
-        else if( sampleCount == 1 ){
-            // We only have one sample; add a bit of spread.
-            min = 0;
-            max = sampleValues[minIndex]*3;
-        }
-        else {
-	    min = sampleValues[minIndex];
-	    max = sampleValues[maxIndex];
-        }
+        long min = sampleValues[minIndex];
+        long max = sampleValues[maxIndex];
         return (long) (min + (max-min)*rng.nextFloat());
     }
 
     /**
-     * Returns a time estimate based on the current samples.
-     * This method returns random number with uniform distribution between
-     * the current minimum and maximum value in this list of samples.
+     * Estimate the time to run 'n' jobs. We make it deliberately pessimistic.
+     * @param n The number of jobs to run.
      * @return The time estimate.
      */
     long getEstimate( int n )
     {
-        long min;
-        long max;
-        if( sampleCount == 0 ) {
-            min = 0;
-            max = n*1000; // Completely arbitary: 1 us
-        }
-        else if( sampleCount == 1 ){
-            // We only have one sample; add a bit of spread.
-            min = 0;
-            max = n*sampleValues[minIndex]*3;
-        }
-        else {
-            min = n*sampleValues[minIndex];
-            max = n*sampleValues[maxIndex];
-        }
-        //return (long) (min + (max-min)*rng.nextFloat());
-        return max;
+        return n*sampleValues[maxIndex];
     }
 
     /**
@@ -97,16 +72,6 @@ public class TimeEstimate
     void addSample( long val )
     {
         sampleValues[updateIndex] = val;
-        if( sampleCount == 0 ) {
-            // This is the first sample.
-            minIndex = updateIndex;
-            maxIndex = updateIndex;
-            // Fill the entire array with this sample to avoid
-            // special-casing the max and min calculations below.
-            for( int i=0; i<SAMPLE_WINDOW; i++ ) {
-                sampleValues[i] = val;
-            }
-        }
         if( minIndex == updateIndex ) {
             // We've just overwritten the current minimum, scan all
             // samples for the new one.
