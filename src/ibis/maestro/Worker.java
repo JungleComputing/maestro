@@ -56,7 +56,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     private long idleDuration = 0;      // Cumulative idle time during the run.
     private int runningJobs = 0;
     private int jobSettleCount = 0;
-    private boolean askForWork = true;
+    private boolean askMastersForWork = true;
     private final Random rng = new Random();
 
     private static class JobStats {
@@ -246,7 +246,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 	    System.out.println( "Worker: don't ask for work" );
 	}
 	synchronized( queue ){
-	    askForWork = false;
+	    askMastersForWork = false;
 	}
     }
 
@@ -399,7 +399,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 	}
 
 	synchronized( queue ){
-	    if( !askForWork ){
+	    if( !askMastersForWork ){
 		return;
 	    }
 	    jobSettleCount--;
@@ -561,7 +561,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 	long now = System.nanoTime();
 	long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
 
-	WorkerMessage msg = new WorkerStatusMessage( jobMessage.workerIdentifier, jobMessage.jobId, queueInterval );
+        // FIXME: fill in a real value here.
+        long taskCompletionInterval = 0L;
+	WorkerMessage msg = new WorkerStatusMessage( jobMessage.workerIdentifier, jobMessage.jobId, queueInterval, taskCompletionInterval );
 	final MasterIdentifier master = jobMessage.source;
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( Settings.traceWorkerProgress ) {
