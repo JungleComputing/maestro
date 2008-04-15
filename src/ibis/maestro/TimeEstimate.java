@@ -55,16 +55,13 @@ public class TimeEstimate
     }
 
     /**
-     * Estimate the time to run 'n' jobs. We make it deliberately pessimistic.
-     * @param n The number of jobs to run.
-     * @return The time estimate.
+     * Returns a reasonable average time estimate.
+     * @return The average time.
      */
-    long getEstimate( int n )
+    long getAverage()
     {
-        if( sampleCount<SAMPLE_WINDOW ){
-            return Long.MAX_VALUE/2;
-        }
-        return 8*n*sampleValues[maxIndex];
+	// FIXME: use a true average.
+	return (sampleValues[minIndex]+sampleValues[maxIndex])/2;
     }
 
     /**

@@ -38,6 +38,8 @@ public class Settings {
     /** Trace the events in the master queue? */
     public static final boolean traceMasterQueue = false;
 
+    /** Trace the administration of remaining task time. */
+    public static final boolean traceRemainingTaskTime = true;
     /** Trace the progress of masters? */
     public static final boolean traceMasterProgress = false;
 

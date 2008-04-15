@@ -561,8 +561,8 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 	long now = System.nanoTime();
 	long queueInterval = jobMessage.getRunTime()-jobMessage.getQueueTime();
 
-        // FIXME: fill in a real value here.
-        long taskCompletionInterval = 0L;
+	JobType jobType = jobMessage.job.getType();
+        long taskCompletionInterval = node.getRemainingTaskTime( jobType );
 	WorkerMessage msg = new WorkerStatusMessage( jobMessage.workerIdentifier, jobMessage.jobId, queueInterval, taskCompletionInterval );
 	final MasterIdentifier master = jobMessage.source;
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
@@ -576,7 +576,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 		    jobSources.add( mi );
 		}
 	    }
-            JobType jobType = jobMessage.job.getType();
             if( !jobStats.containsKey(jobType) ){
                 jobStats.put( jobType, new JobStats() );
             }

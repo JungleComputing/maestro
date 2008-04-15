@@ -125,22 +125,6 @@ public class WorkerList {
         }
         return true;
     }
-    
-    /**
-     * Given a job type, return true iff there is a worker in this
-     * list that can execute a job of this type right now.
-     * @param jobType The job type under consideration.
-     * @return True iff there is a worker that can execute this type of job right now.
-     */
-    private boolean canNowExecute( JobType jobType )
-    {
-	for( WorkerInfo wi: workers ) {
-	    if( wi.canNowExecute(jobType)) {
-		return true;
-	    }
-	}
-	return true;
-    }
 
     /**
      * Given a job type, select the best worker from the list that has a
@@ -154,41 +138,23 @@ public class WorkerList {
      * @return The info of the best worker for this job, or <code>null</code>
      *         if there currently aren't any workers for this job type.
      */
-    WorkerInfo selectBestWorker( JobType jobType, int queuedJobs )
+    WorkerInfo selectBestWorker( JobType jobType )
     {
         WorkerInfo best = null;
-        int bestix = 0;
         long bestInterval = Long.MAX_VALUE;
-        int reservations[] = new int[workers.size()];
 
-	if( !canNowExecute( jobType ) ) {
-	    // All workers are at their maximum load, we may as well give up.
-	    return null;
-	}
-	while( queuedJobs>0 ) {
-	    // Keep looking for a job that can be executed now until
-	    // all jobs are exhausted, or we have found one.
-	    queuedJobs--;
-	    for( int i=0; i<workers.size(); i++ ) {
-		WorkerInfo wi = workers.get( i );
+        for( int i=0; i<workers.size(); i++ ) {
+            WorkerInfo wi = workers.get( i );
 
-                if( !wi.isDead() ) {
-                    long val = wi.estimateRoundTripInterval( jobType, reservations[i] );
+            if( !wi.isDead() ) {
+        	long val = wi.estimateTaskCompletion( jobType );
 
-                    if( val<bestInterval ) {
-                        bestInterval = val;
-                        best = wi;
-                        bestix = i;
-                    }
-                }
+        	if( val<bestInterval ) {
+        	    bestInterval = val;
+        	    best = wi;
+        	}
             }
-            if( best == null || best.canNowExecute( jobType ) ){
-		break;
-	    }
-            // Add a reservation for this worker.
-            reservations[bestix]++;
-            best = null;
-	}
+        }
 	if( Settings.traceMasterQueue ){
 	    if( best == null ) {
 		int busy = 0;
@@ -291,5 +257,17 @@ public class WorkerList {
         for( WorkerInfo wi: workers ) {
             wi.printStatistics( out );
         }
+    }
+
+    long getRemainingTaskTime( JobType jobType )
+    {
+	long res = Long.MAX_VALUE;
+	for( WorkerInfo wi: workers ) {
+	    long val = wi.getRemainingTaskTime( jobType );
+	    if( val<res ) {
+		res = val;
+	    }
+	}
+	return res;
     }
 }

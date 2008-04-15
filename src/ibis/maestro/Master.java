@@ -469,4 +469,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         sendPort.printStats( "master send port" );
         workers.printStatistics( System.out );
     }
+
+    long getRemainingTaskTime( JobType jobType )
+    {
+	return workers.getRemainingTaskTime( jobType );
+    }
 }

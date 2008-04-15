@@ -403,4 +403,9 @@ public final class Node {
 	    // Nothing we can do about it.
 	}
     }
+
+    long getRemainingTaskTime( JobType jobType )
+    {
+	return master.getRemainingTaskTime( jobType );
+    }
 }

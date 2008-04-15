@@ -114,7 +114,7 @@ class WorkerInfo {
 	if( knownDelayedJobs>0 ) {
 	    knownDelayedJobs--;
 	}
-	e.workerJobInfo.registerJobCompleted( newRoundTripInterval );
+	e.workerJobInfo.registerJobCompleted( newRoundTripInterval, result.taskCompletionInterval );
 	if( queueInterval>(2*newRoundTripInterval)/3 ) {
 	    reduceLongQueueTime( e.workerJobInfo );
 	}
@@ -190,28 +190,13 @@ class WorkerInfo {
 	workerJobInfoTable.put( type, info );
     }
 
-    /** Returns true iff this worker can execute a job of the given type now.
-     * @return Whether this worker can execute a job of this type now.
-     */
-    boolean canNowExecute( JobType jobType )
-    {
-	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
-	
-	if( workerJobInfo == null ) {
-	    // We don't support this job type, so the answer is obviously `no'.
-	    return false;
-	}
-	return workerJobInfo.canNowExecute();
-    }
-
     /** Given a job type, return the maximal bond of the round-trip interval
      *  for this job type, or
      * Long.MAX_VALUE if the job type is not allowed on this worker.
      * @param jobType The job type for which we want to know the round-trip interval.
-     * @param reservations The reservations we already have for this job type.
      * @return The interval, or Long.MAX_VALUE if this type of job is not allowed.
      */
-    long estimateRoundTripInterval( JobType jobType, int reservations )
+    long estimateTaskCompletion( JobType jobType )
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
 	if( workerJobInfo == null ) {
@@ -220,8 +205,22 @@ class WorkerInfo {
 	    }
 	    return Long.MAX_VALUE;
 	}
-	return workerJobInfo.estimateRoundTripInterval( reservations );
+	return workerJobInfo.estimateTaskCompletion();
     }
+
+    long getRemainingTaskTime( JobType jobType )
+    {
+	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
+
+	if( workerJobInfo == null ) {
+	    if( Settings.traceTypeHandling ){
+	        System.out.println( "getRemainingTaskTime(): worker " + identifier + " does not support type " + jobType );
+	    }
+	    return Long.MAX_VALUE;
+	}
+	return workerJobInfo.remainingTaskTime;
+    }
+
     /**
      * Tries to increment the maximal number of outstanding jobs for this worker.
      * @param jobType The job type for which we want to increase our allowance.
