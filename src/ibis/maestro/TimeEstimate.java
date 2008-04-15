@@ -64,7 +64,7 @@ public class TimeEstimate
         if( sampleCount<SAMPLE_WINDOW ){
             return Long.MAX_VALUE/2;
         }
-        return n*sampleValues[maxIndex];
+        return 8*n*sampleValues[maxIndex];
     }
 
     /**
