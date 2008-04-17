@@ -33,7 +33,7 @@ public class JobWaiter implements CompletionListener {
      */
     public synchronized void submit( Node node, Job j )
     {
-	TaskIdentifier id = node.buildTaskIdentifier( new WaiterTaskIdentifier( jobNo++ ) );
+	TaskInstanceIdentifier id = node.buildTaskIdentifier( new WaiterTaskIdentifier( jobNo++ ) );
         outstandingJobs++;
         node.submitTask( j, this, id );
     }
@@ -45,7 +45,7 @@ public class JobWaiter implements CompletionListener {
      * @param result The result of the task.
      */
     @Override
-    public synchronized void jobCompleted( Node node, TaskIdentifier id, JobResultValue result )
+    public synchronized void jobCompleted( Node node, TaskInstanceIdentifier id, JobResultValue result )
     {
         Object userId = id.userId;
         if( userId instanceof WaiterTaskIdentifier ){

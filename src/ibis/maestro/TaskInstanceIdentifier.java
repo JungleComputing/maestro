@@ -9,7 +9,7 @@ import java.io.Serializable;
  *
  * @author Kees van Reeuwijk.
  */
-public class TaskIdentifier implements Serializable
+public class TaskInstanceIdentifier implements Serializable
 {
     private static final long serialVersionUID = -7567750999837567234L;
     private static long serialNo = 0;
@@ -23,7 +23,7 @@ public class TaskIdentifier implements Serializable
      * @param userId The user identifier to include.
      * @param receivePortIdentifier The receive port to send the result to.
      */
-    public TaskIdentifier( Object userId, ReceivePortIdentifier receivePortIdentifier )
+    public TaskInstanceIdentifier( Object userId, ReceivePortIdentifier receivePortIdentifier )
     {
         this.id = serialNo++;
         this.userId = userId;
@@ -68,7 +68,7 @@ public class TaskIdentifier implements Serializable
             return false;
         if (getClass() != obj.getClass())
             return false;
-        final TaskIdentifier other = (TaskIdentifier) obj;
+        final TaskInstanceIdentifier other = (TaskInstanceIdentifier) obj;
         if (id != other.id)
             return false;
         return true;

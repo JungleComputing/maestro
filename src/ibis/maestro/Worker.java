@@ -649,7 +649,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      * @param result The result to send.
      * @return The size of the sent message, or -1 if the transmission failed.
      */
-    public long sendResultMessage(ReceivePortIdentifier port, TaskIdentifier id,
+    public long sendResultMessage(ReceivePortIdentifier port, TaskInstanceIdentifier id,
 	    JobResultValue result) {
 	WorkerMessage msg = new ResultMessage( id, result );
 	return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );

@@ -302,7 +302,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * @param j The job to add to the queue.
      * @param id The identifier of the task this job belongs to.
      */
-    void submit( Job j, TaskIdentifier id )
+    void submit( Job j, TaskInstanceIdentifier id )
     {
         if( Settings.traceMasterProgress ) {
             System.out.println( "Master: received job " + j );
@@ -321,7 +321,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * @param j The job to add to the queue.
      * @param id The identifier of the task this job belongs to.
      */
-    void submitWhenRoom( Job j, TaskIdentifier id )
+    void submitWhenRoom( Job j, TaskInstanceIdentifier id )
     {
         if( Settings.traceMasterProgress ) {
             System.out.println( "Master: received job " + j );

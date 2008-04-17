@@ -13,5 +13,5 @@ public interface CompletionListener {
      * @param id The id of the task that was completed.
      * @param result The result of the task.
      */
-    void jobCompleted( Node node, TaskIdentifier id, JobResultValue result );
+    void jobCompleted( Node node, TaskInstanceIdentifier id, JobResultValue result );
 }

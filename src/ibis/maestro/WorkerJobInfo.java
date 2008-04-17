@@ -27,7 +27,7 @@ class WorkerJobInfo {
      */
     private boolean mayIncreaseAllowance = false;
 
-    private final Hashtable<TaskIdentifier,Long> workerJobInfoTable = new Hashtable<TaskIdentifier, Long>();
+    private final Hashtable<TaskInstanceIdentifier,Long> workerJobInfoTable = new Hashtable<TaskInstanceIdentifier, Long>();
 
     /**
      * Returns the maximal round-trip interval for this worker and this job type, or
@@ -132,7 +132,7 @@ class WorkerJobInfo {
 	return "executed " + executedJobs + " jobs; maximal ever allowance: " + maximalEverAllowance + " estimated round-trip interval: " + roundTripEstimate;
     }
 
-    long getRemainingTaskTime( TaskIdentifier task )
+    long getRemainingTaskTime( TaskInstanceIdentifier task )
     {
 	Long val = workerJobInfoTable.get( task );
 	if( val == null ) {
@@ -142,7 +142,7 @@ class WorkerJobInfo {
 	return val;
     }
 
-    void setRemainingTaskTime( TaskIdentifier task, long val )
+    void setRemainingTaskTime( TaskInstanceIdentifier task, long val )
     {
 	workerJobInfoTable.put( task, val );
     }

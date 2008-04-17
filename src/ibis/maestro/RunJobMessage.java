@@ -17,7 +17,7 @@ public class RunJobMessage extends MasterMessage {
     final long jobId;
     private transient long queueTime = 0;
     private transient long runTime = 0;
-    final TaskIdentifier taskIdentifier;
+    final TaskInstanceIdentifier taskIdentifier;
 
     /**
      * Given a job and its source, constructs a new RunJobMessage.
@@ -25,7 +25,7 @@ public class RunJobMessage extends MasterMessage {
      * @param job The job to run.
      * @param jobId The identifier of the job.
      */
-    RunJobMessage( Worker.MasterIdentifier source, WorkerIdentifier workerIdentifier, Job job, long jobId, TaskIdentifier taskId )
+    RunJobMessage( Worker.MasterIdentifier source, WorkerIdentifier workerIdentifier, Job job, long jobId, TaskInstanceIdentifier taskId )
     {
 	super( source );
 	this.workerIdentifier = workerIdentifier;

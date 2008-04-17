@@ -26,6 +26,8 @@ public final class Node {
     private final Worker worker;
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
     RegistryEventHandler registryEventHandler;
+    private ArrayList<Task> tasks = new ArrayList<Task>();
+    private static int taskCounter = 0;
 
     /** The list of maestro nodes in this computation. */
     private final ArrayList<MaestroInfo> maestros = new ArrayList<MaestroInfo>();
@@ -104,7 +106,7 @@ public final class Node {
     }
 
     private static class TaskInfo {
-        final TaskIdentifier identifier;
+        final TaskInstanceIdentifier identifier;
         final CompletionListener listener;
 
         /**
@@ -113,7 +115,7 @@ public final class Node {
          * @param identifier The task identifier.
          * @param listener The completion listener associated with the task.
          */
-        public TaskInfo( final TaskIdentifier identifier, final CompletionListener listener )
+        public TaskInfo( final TaskInstanceIdentifier identifier, final CompletionListener listener )
         {
             this.identifier = identifier;
             this.listener = listener;
@@ -298,7 +300,7 @@ public final class Node {
      * @param id The task that has been completed.
      * @param result The task result.
      */
-    public void reportCompletion( TaskIdentifier id, JobResultValue result )
+    public void reportCompletion( TaskInstanceIdentifier id, JobResultValue result )
     {
         TaskInfo task = null;
 
@@ -316,7 +318,7 @@ public final class Node {
         }
     }
 
-    private void addRunningTask( TaskIdentifier id, CompletionListener listener )
+    private void addRunningTask( TaskInstanceIdentifier id, CompletionListener listener )
     {
         synchronized( runningTasks ){
             runningTasks.add( new TaskInfo( id, listener ) );
@@ -328,7 +330,7 @@ public final class Node {
      * @param j The job to submit.
      * @param id The task it is part of.
      */
-    public void submit( Job j, TaskIdentifier id )
+    public void submit( Job j, TaskInstanceIdentifier id )
     {
         master.submit( j, id );
     }
@@ -339,7 +341,7 @@ public final class Node {
      * @param listener The listener who is interested in the result of the task.
      * @param id The identifier of the task this job belongs to.
      */
-    public void submitTask( Job j, CompletionListener listener, TaskIdentifier id )
+    public void submitTask( Job j, CompletionListener listener, TaskInstanceIdentifier id )
     {
         addRunningTask( id, listener );
         master.submit( j, id );
@@ -351,7 +353,7 @@ public final class Node {
      * @param listener The listener who is interested in the result of the task.
      * @param id The identifier of the task this job belongs to.
      */
-    public void submitTaskWhenRoom( Job j, CompletionListener listener, TaskIdentifier id )
+    public void submitTaskWhenRoom( Job j, CompletionListener listener, TaskInstanceIdentifier id )
     {
 	addRunningTask( id, listener );
         master.submitWhenRoom( j, id );
@@ -372,9 +374,9 @@ public final class Node {
      * @param userIdentifier The user identifier to include in this identifier.
      * @return The newly constructed identifier.
      */
-    public TaskIdentifier buildTaskIdentifier( Object userIdentifier )
+    public TaskInstanceIdentifier buildTaskIdentifier( Object userIdentifier )
     {
-	return new TaskIdentifier( userIdentifier, master.identifier() );
+	return new TaskInstanceIdentifier( userIdentifier, master.identifier() );
     }
 
     /**
@@ -384,7 +386,7 @@ public final class Node {
      * @param result The result.
      * @return The size of the transmitted message, or -1 if the transmission failed.
      */
-    public long sendResultMessage( ReceivePortIdentifier receivePort, TaskIdentifier id,
+    public long sendResultMessage( ReceivePortIdentifier receivePort, TaskInstanceIdentifier id,
 	    JobResultValue result ) {
 	return worker.sendResultMessage( receivePort, id, result );
     }
@@ -407,5 +409,21 @@ public final class Node {
     long getRemainingTaskTime( JobType jobType )
     {
 	return master.getRemainingTaskTime( jobType );
+    }
+
+    /**
+     * Creates a task with the given name and the given sequence of jobs.
+     * 
+     * @param name The name of the task.
+     * @param jobs The list of jobs of the task.
+     * @return A new task instance representing this task.
+     */
+    public Task createTask( String name, Job... jobs )
+    {
+	int taskId = taskCounter++;
+	Task task = new Task( this, taskId, name, jobs );
+	
+	tasks.add( task );
+	return task;
     }
 }

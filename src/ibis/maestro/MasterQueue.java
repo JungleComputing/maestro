@@ -61,9 +61,9 @@ final class MasterQueue {
 
     private static final class QueueEntry {
         final Job job;
-        final TaskIdentifier taskId;
+        final TaskInstanceIdentifier taskId;
 
-        QueueEntry(Job job, TaskIdentifier id) {
+        QueueEntry(Job job, TaskInstanceIdentifier id) {
             this.job = job;
             this.taskId = id;
         }
@@ -75,7 +75,7 @@ final class MasterQueue {
      * @param j The job to submit.
      * @param taskId The task it belongs to.
      */
-    void submit( Job j, TaskIdentifier taskId )
+    void submit( Job j, TaskInstanceIdentifier taskId )
     {
         QueueEntry e = new QueueEntry( j, taskId );
         JobType t = j.getType();

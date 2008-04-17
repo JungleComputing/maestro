@@ -14,7 +14,7 @@ public interface Job extends Serializable {
      * @param node The node this job runs on.
      * @param taskId The identifier of the task this job belongs to.
      */
-    void run( Node node, TaskIdentifier taskId );
+    void run( Node node, TaskInstanceIdentifier taskId );
 
     /**
      * Returns the type of this job.

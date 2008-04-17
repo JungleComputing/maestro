@@ -24,7 +24,7 @@ public class AdditionJob implements Job {
      * Runs this job.
      */
     @Override
-    public void run( Node node, TaskIdentifier taskid )
+    public void run( Node node, TaskInstanceIdentifier taskid )
     {
 	for( int i=0; i<ITERATIONS; i++ ) {
 	    for( double v: values ) {

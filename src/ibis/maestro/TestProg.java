@@ -21,7 +21,7 @@ public class TestProg {
          * @param result The result of the job.
          */
         @Override
-        public void jobCompleted( Node node, TaskIdentifier id, JobResultValue result ) {
+        public void jobCompleted( Node node, TaskInstanceIdentifier id, JobResultValue result ) {
             //System.out.println( "result is " + result );
             jobsCompleted++;
             //System.out.println( "I now have " + jobsCompleted + "/" + jobCount + " jobs" );
@@ -83,7 +83,7 @@ public class TestProg {
         if( node.isMaestro() ) {
             System.out.println( "I am maestro; submitting " + jobCount + " jobs" );
             for( int i=0; i<jobCount; i++ ){
-                TaskIdentifier id = node.buildTaskIdentifier( i );
+                TaskInstanceIdentifier id = node.buildTaskIdentifier( i );
                 AdditionJob j = new AdditionJob( 12*i );
                 node.submitTaskWhenRoom( j, listener, id );
             }
