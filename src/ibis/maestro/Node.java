@@ -370,16 +370,6 @@ public final class Node {
     }
 
     /**
-     * Builds a new identifier containing the given user identifier.
-     * @param userIdentifier The user identifier to include in this identifier.
-     * @return The newly constructed identifier.
-     */
-    public TaskInstanceIdentifier buildTaskIdentifier( Object userIdentifier )
-    {
-	return new TaskInstanceIdentifier( userIdentifier, master.identifier() );
-    }
-
-    /**
      * 
      * @param receivePort The port to send it to.
      * @param id The identifier of the task.

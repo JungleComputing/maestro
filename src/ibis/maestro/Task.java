@@ -21,6 +21,7 @@ public class Task {
 	}
     }
 
+    @SuppressWarnings("synthetic-access")
     Task( Node node, int id, String name, Job[] jobs )
     {
 	this.node = node;
@@ -29,11 +30,21 @@ public class Task {
 	this.jobs = jobs;
     }
 
+    /**
+     * Builds a new identifier containing the given user identifier.
+     * @param userIdentifier The user identifier to include in this identifier.
+     * @return The newly constructed identifier.
+     */
+    public TaskInstanceIdentifier buildTaskInstanceIdentifier( Object userIdentifier )
+    {
+        return new TaskInstanceIdentifier( userIdentifier, node.master.identifier() );
+    }
+
     private void submit( TaskInstanceIdentifier tii, Object value, int jobNo )
     {
 	Job j = jobs[jobNo];
 	
-	//node.submit( j, tii, value );
+	node.submit( j, tii, value );
     }
     
     /**
@@ -42,7 +53,7 @@ public class Task {
      */
     public void submit( Object userId, Object value )
     {
-	//TaskInstanceIdentifier tii = new TaskInstanceIdentifier( userId, node.master.identifier() );
-	//submit( tii, value, 0 );
+	TaskInstanceIdentifier tii = new TaskInstanceIdentifier( userId, node.master.identifier() );
+	submit( tii, value, 0 );
     }
 }

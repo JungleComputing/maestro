@@ -6,6 +6,11 @@ package ibis.maestro;
  *
  */
 public class TestProg {
+    private static final int BLOCK_SIZE = 4000;
+    private static final int ITERATIONS = 800;  // The number of times we should do the addition.
+
+    static final int LEVELS = 4;
+
     private static class Listener implements CompletionListener
     {
         int jobsCompleted = 0;
@@ -54,7 +59,7 @@ public class TestProg {
         public void initialize( Node w )
         {
             for( int level=0; level<=AdditionJob.LEVELS; level++ ) {
-        	w.allowJobType( AdditionJob.buildJobType( level ) );
+                w.allowJobType( AdditionJob.buildJobType( level ) );
             }
         }
 
@@ -72,53 +77,97 @@ public class TestProg {
 
     }
 
-    @SuppressWarnings("synthetic-access")
-    private void run( int jobCount, boolean goForMaestro ) throws Exception
-    {
-        Node node = new Node( new TestTypeInformation(), goForMaestro );
-        Listener listener = new Listener( jobCount );
+    private static class AdditionData {
+        final double data[];
 
-        System.out.println( "Node created" );
-        long startTime = System.nanoTime();
-        if( node.isMaestro() ) {
-            System.out.println( "I am maestro; submitting " + jobCount + " jobs" );
-            for( int i=0; i<jobCount; i++ ){
-                TaskInstanceIdentifier id = node.buildTaskIdentifier( i );
-                AdditionJob j = new AdditionJob( 12*i );
-                node.submitTaskWhenRoom( j, listener, id );
+        private AdditionData(final double[] data) {
+            this.data = data;
+        }
+    }
+
+    private static class CreateArrayJob implements Job
+    {
+
+        public AdditionData run(Integer length, Node node, TaskInstanceIdentifier taskId)
+        {
+            double a[] = new double [length];
+            for( int i=0; i<length; i++ ) {
+                a[i] = i+42;
             }
+            return new AdditionData( a );
         }
-        node.waitToTerminate();
-        long stopTime = System.nanoTime();
-        System.out.println( "Duration of this run: " + Service.formatNanoseconds( stopTime-startTime ) );
     }
 
-    /** The command-line interface of this program.
-     * 
-     * @param args The list of command-line parameters.
-     */
-    public static void main( String args[] )
+    private static class AdditionJob implements Job
     {
-        boolean goForMaestro = true;
-        int jobCount = 0;
+        private static final long serialVersionUID = 7652370809998864296L;
 
-        if( args.length == 0 ){
-            System.err.println( "Missing parameter: I need a job count, or 'worker'" );
-            System.exit( 1 );
+        public AdditionData run( Object obj, Node node, TaskInstanceIdentifier taskId )
+        {
+            AdditionData data = (AdditionData) obj;
+            double sum = 0.0;
+            for( int i=0; i<ITERATIONS; i++ ) {
+                for( double v: data.data ) {
+                    sum += v;
+                }
+            }
+            return data;
         }
-        String arg = args[0];
-        if( arg.equalsIgnoreCase( "worker" ) ){
-            goForMaestro = false;
-        }
-        else {
-            jobCount = Integer.parseInt( arg );
-        }
-        System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro + "; jobCount=" + jobCount );
-        try {
-            new TestProg().run( jobCount, goForMaestro );
-        }
-        catch( Exception e ) {
-            e.printStackTrace( System.err );
+
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+}
+
+@SuppressWarnings("synthetic-access")
+private void run( int jobCount, boolean goForMaestro ) throws Exception
+{
+    Node node = new Node( new TestTypeInformation(), goForMaestro );
+    Listener listener = new Listener( jobCount );
+
+    Task task = new Task( "testprog", new CreateArrayJob(), new AdditionJob(), new AdditionJob(), new AdditionJob(), new AdditionJob() );
+    System.out.println( "Node created" );
+    long startTime = System.nanoTime();
+    if( node.isMaestro() ) {
+        System.out.println( "I am maestro; submitting " + jobCount + " jobs" );
+        for( int i=0; i<jobCount; i++ ){
+            TaskInstanceIdentifier id = node.buildTaskIdentifier( i );
+            AdditionJob j = new AdditionJob( 12*i );
+            node.submitTaskWhenRoom( j, listener, id );
         }
     }
+    node.waitToTerminate();
+    long stopTime = System.nanoTime();
+    System.out.println( "Duration of this run: " + Service.formatNanoseconds( stopTime-startTime ) );
+}
+
+/** The command-line interface of this program.
+ * 
+ * @param args The list of command-line parameters.
+ */
+public static void main( String args[] )
+{
+    boolean goForMaestro = true;
+    int jobCount = 0;
+
+    if( args.length == 0 ){
+        System.err.println( "Missing parameter: I need a job count, or 'worker'" );
+        System.exit( 1 );
+    }
+    String arg = args[0];
+    if( arg.equalsIgnoreCase( "worker" ) ){
+        goForMaestro = false;
+    }
+    else {
+        jobCount = Integer.parseInt( arg );
+    }
+    System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro + "; jobCount=" + jobCount );
+    try {
+        new TestProg().run( jobCount, goForMaestro );
+    }
+    catch( Exception e ) {
+        e.printStackTrace( System.err );
+    }
+}
 }

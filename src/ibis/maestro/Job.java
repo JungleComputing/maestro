@@ -14,12 +14,5 @@ public interface Job extends Serializable {
      * @param node The node this job runs on.
      * @param taskId The identifier of the task this job belongs to.
      */
-    void run( Node node, TaskInstanceIdentifier taskId );
-
-    /**
-     * Returns the type of this job.
-     * Different job types are treated differently during scheduling.
-     * @return The type of this job.
-     */
-    JobType getType();
+    Object run( Object input, Node node, TaskInstanceIdentifier taskId );
 }

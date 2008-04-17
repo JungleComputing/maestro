@@ -4,12 +4,13 @@ import java.io.Serializable;
 import java.util.ArrayList;
 
 /**
- * Waits for the given set of jobs.
+ * Waits for the given task.
  * 
  * @author Kees van Reeuwijk
  *
  */
-public class JobWaiter implements CompletionListener {
+public class TaskWaiter implements CompletionListener
+{
     private int jobNo = 0;
     private int outstandingJobs = 0;
     private ArrayList<JobResultValue> results = new ArrayList<JobResultValue>();
@@ -31,11 +32,11 @@ public class JobWaiter implements CompletionListener {
      * @param node The node to submit the job to.
      * @param j The job to submit.
      */
-    public synchronized void submit( Node node, Job j )
+    public synchronized void submit( Task task, Job j )
     {
-	TaskInstanceIdentifier id = node.buildTaskIdentifier( new WaiterTaskIdentifier( jobNo++ ) );
+	TaskInstanceIdentifier id = task.buildTaskInstanceIdentifier( new WaiterTaskIdentifier( jobNo++ ) );
         outstandingJobs++;
-        node.submitTask( j, this, id );
+        task.submitTask( j, this, id );
     }
 
     /**
