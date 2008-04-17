@@ -7,7 +7,7 @@ package ibis.maestro;
  *
  */
 class Submission {
-    Job job = null;
+    JobInstance job = null;
     WorkerInfo worker = null;
     TaskInstanceIdentifier taskId = null;
 }

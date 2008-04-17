@@ -6,14 +6,14 @@ package ibis.maestro;
  *
  */
 class ActiveJob {
-    final Job job;
+    final JobInstance job;
     final long id;
     final WorkerJobInfo workerJobInfo;
 
     /** The time this job was sent to the worker. */
     final long startTime;
 
-    ActiveJob( Job job, long id, long startTime, WorkerJobInfo workerJobInfo )
+    ActiveJob( JobInstance job, long id, long startTime, WorkerJobInfo workerJobInfo )
     {
         this.job = job;
         this.id = id;

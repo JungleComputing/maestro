@@ -13,7 +13,7 @@ public class RunJobMessage extends MasterMessage {
     /** */
     private static final long serialVersionUID = 1L;
     final WorkerIdentifier workerIdentifier;
-    final Job job;
+    final JobInstance job;
     final long jobId;
     private transient long queueTime = 0;
     private transient long runTime = 0;
@@ -25,7 +25,7 @@ public class RunJobMessage extends MasterMessage {
      * @param job The job to run.
      * @param jobId The identifier of the job.
      */
-    RunJobMessage( Worker.MasterIdentifier source, WorkerIdentifier workerIdentifier, Job job, long jobId, TaskInstanceIdentifier taskId )
+    RunJobMessage( Worker.MasterIdentifier source, WorkerIdentifier workerIdentifier, JobInstance job, long jobId, TaskInstanceIdentifier taskId )
     {
 	super( source );
 	this.workerIdentifier = workerIdentifier;

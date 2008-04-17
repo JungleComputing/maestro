@@ -137,11 +137,11 @@ class WorkerInfo {
      * @param job The job that was started.
      * @param id The id given to the job.
      */
-    public void registerJobStart( Job job, long id )
+    public void registerJobStart( JobInstance job, long id )
     {
-	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( job.getType() );
+	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( job.type );
 	if( workerJobInfo == null ) {
-	    System.err.println( "No worker job info for job type " + job.getType() );
+	    System.err.println( "No worker job info for job type " + job.type );
 	    return;
 	}
 	workerJobInfo.incrementOutstandingJobs();

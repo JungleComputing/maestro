@@ -60,11 +60,11 @@ final class MasterQueue {
     }
 
     private static final class QueueEntry {
-        final Job job;
+        final JobInstance job;
         final TaskInstanceIdentifier taskId;
 
-        QueueEntry(Job job, TaskInstanceIdentifier id) {
-            this.job = job;
+        QueueEntry(JobInstance j, TaskInstanceIdentifier id) {
+            this.job = j;
             this.taskId = id;
         }
     }
@@ -75,10 +75,10 @@ final class MasterQueue {
      * @param j The job to submit.
      * @param taskId The task it belongs to.
      */
-    void submit( Job j, TaskInstanceIdentifier taskId )
+    void submit( JobInstance j, TaskInstanceIdentifier taskId )
     {
         QueueEntry e = new QueueEntry( j, taskId );
-        JobType t = j.getType();
+        JobType t = j.type;
 
         size++;
         // TODO: since we have an ordered list, use binary search.
