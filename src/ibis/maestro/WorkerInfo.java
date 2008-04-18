@@ -94,17 +94,16 @@ final class WorkerInfo {
 
     /**
      * Register a job result for an outstanding job.
-     * @param master The master this info belongs to.
      * @param result The job result message that tells about this job.
      */
-    void registerWorkerStatus( ReceivePortIdentifier master, WorkerStatusMessage result )
+    void registerWorkerStatus( WorkerStatusMessage result )
     {
 	final long id = result.jobId;    // The identifier of the job, as handed out by us.
 
 	long now = System.nanoTime();
 	ActiveJob e = searchQueueEntry( id );
 	if( e == null ) {
-	    Globals.log.reportInternalError( "Master " + master + ": ignoring reported result from job with unknown id " + id );
+	    Globals.log.reportInternalError( "Master: ignoring reported result from job with unknown id " + id );
 	    return;
 	}
 	activeJobs.remove( e );
@@ -119,7 +118,7 @@ final class WorkerInfo {
 	    reduceLongQueueTime( e.workerJobInfo );
 	}
 	if( Settings.traceMasterProgress ){
-	    System.out.println( "Master " + master + ": retired job " + e + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );
+	    System.out.println( "Master: retired job " + e + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );
 	}
     }
 
@@ -208,7 +207,7 @@ final class WorkerInfo {
 	    }
 	    return Long.MAX_VALUE;
 	}
-	return workerJobInfo.remainingTaskTime;
+	return workerJobInfo.getAverageCompletionTime();
     }
 
     /**

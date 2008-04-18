@@ -20,7 +20,7 @@ final class WorkerJobInfo {
     private int maximalAllowance = 1;
 
     /** How long it takes to complete the rest of the task this job belongs to. */
-    long remainingTaskTime = 0L;
+    private long remainingTasksTime = 0L;
 
     /** We have reached the maximal allowance of this worker, so we are
      * willing to consider an increased allowance.
@@ -35,15 +35,23 @@ final class WorkerJobInfo {
      * @param The number of reservations we already have.
      * @return The round-trip interval.
      */
-    long estimateRoundTripInterval()
+    private long estimateRoundTripTime()
     {
         if( maximalAllowance == 0 ){
             System.err.println( "Internal error: zero allowance" );
         }
-        if( outstandingJobs>=maximalAllowance ){
+        if( outstandingJobs>=maximalAllowance || remainingTasksTime == Long.MAX_VALUE ){
             return Long.MAX_VALUE;
         }
 	return roundTripEstimate.getEstimate();
+    }
+    
+    long getAverageCompletionTime()
+    {
+	if( remainingTasksTime == Long.MAX_VALUE ) {
+	    return Long.MAX_VALUE;
+	}
+	return roundTripEstimate.getAverage() + remainingTasksTime;
     }
 
     /**
@@ -54,7 +62,10 @@ final class WorkerJobInfo {
      */
     long estimateTaskCompletion()
     {
-	return remainingTaskTime + estimateRoundTripInterval();
+	if( remainingTasksTime == Long.MAX_VALUE ) {
+	    return Long.MAX_VALUE;
+	}
+	return remainingTasksTime + estimateRoundTripTime();
     }
 
     /**
@@ -75,10 +86,10 @@ final class WorkerJobInfo {
     {
 	executedJobs++;
 	roundTripEstimate.addSample( theRoundTripInterval );
-	this.remainingTaskTime = taskCompletionTime;
+	this.remainingTasksTime = taskCompletionTime;
 	outstandingJobs--;
 	if( Settings.traceWorkerProgress ) {
-	    System.out.println( "New roundtrip time estimate: " + roundTripEstimate );
+	    System.out.println( "New roundtrip time estimate: " + roundTripEstimate + ", task completion time: " + Service.formatNanoseconds( taskCompletionTime ) );
 	}
     }
 

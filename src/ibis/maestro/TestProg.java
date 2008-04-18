@@ -62,8 +62,14 @@ public class TestProg {
     {
         private static final long serialVersionUID = 2347248108353357517L;
 
+        /**
+         * Runs this job.
+         * @param obj The input parameter of this job.
+         * @param node The node this job is running on.
+         * @return The result value of this job.
+         */
         @SuppressWarnings("synthetic-access")
-        public AdditionData run(Object obj, Node node )
+        public AdditionData run( Object obj, Node node )
         {
             Integer length = (Integer) obj;
             double a[] = new double [length];

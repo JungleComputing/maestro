@@ -99,17 +99,16 @@ final class WorkerList {
 
     /**
      * Register a job result in the info of the worker that handled it.
-     * @param me Which master am I?
      * @param result The job result.
      */
-    void registerWorkerStatus( ReceivePortIdentifier me, WorkerStatusMessage result )
+    void registerWorkerStatus( WorkerStatusMessage result )
     {
         WorkerInfo w = searchWorker( workers, result.source );
         if( w == null ) {
-            System.err.println( "Job result from unknown worker " + result.source );
+            System.err.println( "Worker status message from unknown worker " + result.source );
             return;
         }
-        w.registerWorkerStatus( me, result );
+        w.registerWorkerStatus( result );
     }
 
     /**

@@ -46,7 +46,11 @@ public final class Task
             final TaskIdentifier other = (TaskIdentifier) obj;
             return (id == other.id);
         }
-        
+
+        /**
+         * Returns a string representation of this task.
+         * @return The string representation.
+         */
         @Override
         public String toString()
         {
@@ -103,7 +107,11 @@ public final class Task
         node.addRunningTask( tii, listener );
         submitAJob( tii, 0, value );
     }
-    
+
+    /**
+     * Returns a string representation of this task.
+     * @return The string representation.
+     */
     @Override
     public String toString()
     {

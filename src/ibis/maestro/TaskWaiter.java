@@ -29,7 +29,7 @@ public class TaskWaiter implements CompletionListener
      * Internally we keep track of the number of submitted jobs so that
      * we can wait for all of them to complete.
      * 
-     * @param node The node to submit the job to.
+     * @param task The task to submit to.
      * @param j The job to submit.
      */
     public synchronized void submit( Task task, Job j )

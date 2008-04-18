@@ -151,7 +151,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             Globals.log.reportProgress( "Received a worker status message " + result );
         }
         synchronized( queue ){
-            workers.registerWorkerStatus( receivePort.identifier(), result );
+            workers.registerWorkerStatus( result );
             handledJobCount++;
             queue.notifyAll();
         }

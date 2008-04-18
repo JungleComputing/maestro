@@ -30,6 +30,10 @@ class TaskInstanceIdentifier implements Serializable
         this.receivePort = receivePortIdentifier;
     }
 
+    /**
+     * Returns a string representation of this task instance identifier.
+     * @return The string representation.
+     */
     @Override
     public String toString()
     {

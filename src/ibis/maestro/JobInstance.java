@@ -23,7 +23,11 @@ class JobInstance implements Serializable {
 	this.type = type;
 	this.input = input;
     }
-    
+
+    /**
+     * Returns a string representation of this job instance.
+     * @return The string representation.
+     */
     @Override
     public String toString()
     {
