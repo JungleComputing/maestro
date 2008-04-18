@@ -402,7 +402,7 @@ public final class Node {
                 // This is the task of this job.
                 Job j = t.jobs[type.jobNo];
 
-                Object result = j.run( t, this );
+                Object result = j.run( job.input, this );
                 int nextJobNo = type.jobNo+1;
                 if( nextJobNo<t.jobs.length ){
                     // There is a next step to take.

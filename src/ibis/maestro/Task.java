@@ -29,10 +29,7 @@ public final class Task
          */
         @Override
         public int hashCode() {
-            final int PRIME = 31;
-            int result = 1;
-            result = PRIME * result + id;
-            return result;
+            return id;
         }
 
         /* (non-Javadoc)
@@ -47,9 +44,7 @@ public final class Task
             if (getClass() != obj.getClass())
                 return false;
             final TaskIdentifier other = (TaskIdentifier) obj;
-            if (id != other.id)
-                return false;
-            return true;
+            return (id == other.id);
         }
         
         @Override

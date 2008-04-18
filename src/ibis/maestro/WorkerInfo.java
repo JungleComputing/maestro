@@ -191,7 +191,7 @@ final class WorkerInfo {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
 	if( workerJobInfo == null ) {
 	    if( Settings.traceTypeHandling ){
-	        System.out.println( "Worker " + identifier + " does not support type " + jobType );
+	        System.out.println( "estimateTaskCompletion(): Worker " + identifier + " does not support type " + jobType );
 	    }
 	    return Long.MAX_VALUE;
 	}

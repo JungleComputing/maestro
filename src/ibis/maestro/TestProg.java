@@ -50,6 +50,9 @@ public class TestProg {
         @Override
         public String toString()
         {
+            if( data.length == 0 ){
+                return "(AdditionData [<empty>])";
+            }
             return "(AdditionData [" + data[0] + ",...," + data[data.length-1] + "])";
         }
 

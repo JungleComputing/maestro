@@ -42,11 +42,7 @@ class JobType implements Serializable
      */
     @Override
     public int hashCode() {
-        final int PRIME = 31;
-        int result = super.hashCode();
-        result = PRIME * result + jobNo;
-        result = PRIME * result + ((task == null) ? 0 : task.hashCode());
-        return result;
+        return task.hashCode()*100 + jobNo;
     }
 
     /* (non-Javadoc)
