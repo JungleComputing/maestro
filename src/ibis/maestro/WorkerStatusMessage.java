@@ -8,7 +8,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-class WorkerStatusMessage extends WorkerMessage {
+final class WorkerStatusMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     final long jobId;   // The identifier of the job

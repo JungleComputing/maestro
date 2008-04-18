@@ -9,7 +9,7 @@ import ibis.maestro.Master.WorkerIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-public class RunJobMessage extends MasterMessage {
+final class RunJobMessage extends MasterMessage {
     /** */
     private static final long serialVersionUID = 1L;
     final WorkerIdentifier workerIdentifier;

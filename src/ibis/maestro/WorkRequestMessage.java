@@ -9,7 +9,7 @@ import ibis.maestro.Master.WorkerIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-public class WorkRequestMessage extends WorkerMessage {
+final class WorkRequestMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 

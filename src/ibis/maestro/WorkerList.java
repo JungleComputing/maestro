@@ -14,7 +14,7 @@ import java.util.List;
  * 
  * @author Kees van Reeuwijk
  */
-public class WorkerList {
+final class WorkerList {
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
 
     private static WorkerInfo searchWorker( List<WorkerInfo> workers, WorkerIdentifier workerIdentifier ) {

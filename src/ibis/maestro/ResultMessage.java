@@ -6,7 +6,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-public final class ResultMessage extends WorkerMessage {
+final class ResultMessage extends WorkerMessage {
     private static final long serialVersionUID = 5158569253342276404L;
     final TaskInstanceIdentifier id;
     final Object result;

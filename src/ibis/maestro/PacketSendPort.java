@@ -21,7 +21,7 @@ import java.util.HashMap;
  *
  * @param <T> The type of data that will be sent over this port.
  */
-public class PacketSendPort<T extends Serializable> {
+class PacketSendPort<T extends Serializable> {
     static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
     private final Ibis ibis;
     private long sentBytes = 0;

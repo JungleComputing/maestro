@@ -5,11 +5,11 @@ import ibis.maestro.Task.TaskIdentifier;
 import java.io.Serializable;
 
 /**
- * The interface of a class that represents a job type.
+ * A job type.
+ * 
  * @author Kees van Reeuwijk
- *
  */
-public class JobType implements Serializable
+class JobType implements Serializable
 {
     /** Contractual obligation. */
     private static final long serialVersionUID = 13451L;
@@ -21,7 +21,7 @@ public class JobType implements Serializable
      * @param id The task this job belongs to.
      * @param jobNo The sequence number within the task.
      */
-    public JobType( TaskIdentifier id, int jobNo)
+    JobType( TaskIdentifier id, int jobNo)
     {
         this.task = id;
         this.jobNo = jobNo;
@@ -78,7 +78,7 @@ public class JobType implements Serializable
      * @param b The other job type to compare.
      * @return The comparison result.
      */
-    public static int comparePriorities( JobType a, JobType b )
+    static int comparePriorities( JobType a, JobType b )
     {
         if( a.jobNo>b.jobNo ) {
             return 1;

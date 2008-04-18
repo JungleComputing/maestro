@@ -17,7 +17,7 @@ import java.io.Serializable;
  *
  * @param <T> The type of the packets that will be received on this port.
  */
-public class PacketUpcallReceivePort<T extends Serializable> implements MessageUpcall {
+class PacketUpcallReceivePort<T extends Serializable> implements MessageUpcall {
     static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
     private final ReceivePort port;
     private PacketReceiveListener<T> listener;

@@ -12,7 +12,7 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
-class WorkerInfo {
+final class WorkerInfo {
     /** Our identifier with this worker. */
     final MasterIdentifier identifierWithWorker;
 
@@ -127,7 +127,7 @@ class WorkerInfo {
      * Returns true iff this worker is idle.
      * @return True iff this worker is idle.
      */
-    public boolean isIdle()
+    boolean isIdle()
     {
 	return activeJobs.isEmpty();
     }
@@ -137,7 +137,7 @@ class WorkerInfo {
      * @param job The job that was started.
      * @param id The id given to the job.
      */
-    public void registerJobStart( JobInstance job, long id )
+    void registerJobStart( JobInstance job, long id )
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( job.type );
 	if( workerJobInfo == null ) {
@@ -154,7 +154,7 @@ class WorkerInfo {
      * For some reason we could not send this job to the worker.
      * @param id The identifier of the job.
      */
-    public void retractJob( long id )
+    void retractJob( long id )
     {
 	ActiveJob e = searchQueueEntry( id );
 	if( e == null ) {
@@ -164,16 +164,6 @@ class WorkerInfo {
 	activeJobs.remove( e );
 	System.out.println( "Master: retired job " + e );		
 
-    }
-
-    /**
-     * Returns true iff this worker has information about the given job type.
-     * @param type The job type we want to know about.
-     * @return True iff this worker has information about the given type.
-     */
-    public boolean knowsJobType( JobType type )
-    {
-	return workerJobInfoTable.containsKey( type );
     }
 
     /**
@@ -226,7 +216,7 @@ class WorkerInfo {
      * @param jobType The job type for which we want to increase our allowance.
      * @return True iff we could increment the allowance of this type.
      */
-    public boolean incrementAllowance( JobType jobType )
+    boolean incrementAllowance( JobType jobType )
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
 	if( workerJobInfo == null ) {
@@ -238,7 +228,7 @@ class WorkerInfo {
     /** Registers that the worker can support the given type.
      * @param allowedType An allowed type of this worker.
      */
-    public void registerAllowedType( JobType allowedType )
+    void registerAllowedType( JobType allowedType )
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( allowedType );
 	if( workerJobInfo == null ) {
@@ -259,7 +249,7 @@ class WorkerInfo {
     /** Mark this worker as dead.
      * 
      */
-    public void setDead()
+    void setDead()
     {
 	dead = true;
     }

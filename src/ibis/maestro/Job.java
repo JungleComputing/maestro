@@ -13,8 +13,7 @@ public interface Job extends Serializable {
 
      * @param input The input value of this job run.
      * @param node The node this job runs on.
-     * @param taskId The identifier of the task this job belongs to.
      * @return The result of the job run.
      */
-    Object run( Object input, Node node, TaskInstanceIdentifier taskId );
+    Object run( Object input, Node node );
 }

@@ -11,7 +11,7 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  *
  */
-public abstract class Message implements Serializable {
+abstract class Message implements Serializable {
 
     /** Contractual obligation. */
     private static final long serialVersionUID = 1547379144090317151L;

@@ -8,7 +8,7 @@ import ibis.maestro.Master.WorkerIdentifier;
  * 
  * @author Kees van Reeuwijk.
  */
-class WorkerResignMessage extends WorkerMessage {
+final class WorkerResignMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 

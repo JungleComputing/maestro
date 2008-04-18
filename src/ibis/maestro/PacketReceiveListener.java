@@ -10,7 +10,7 @@ import java.io.Serializable;
  * The interface of a listener to a packet receive port.
  * @param <T> The type of packets that are transmitted over the receive port.
  */
-public interface PacketReceiveListener<T extends Serializable> {
+interface PacketReceiveListener<T extends Serializable> {
     /**
      * Handle the reception of packet <code>packet</code>.
      * @param packet The packet that was received.

@@ -5,7 +5,7 @@ package ibis.maestro;
  *
  * @author Kees van Reeuwijk.
  */
-class WorkThread extends Thread
+final class WorkThread extends Thread
 {
     private final WorkSource source;
     private final Node localNode;

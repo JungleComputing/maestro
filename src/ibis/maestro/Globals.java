@@ -7,13 +7,13 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-public class Globals {
+class Globals {
     /** The name of the master port of a node. */
-    public static final String masterReceivePortName = "masterReceivePort";
+    static final String masterReceivePortName = "masterReceivePort";
     
     /** The name of the worker port of a node. */
-    public static final String workerReceivePortName = "workerReceivePort";
+    static final String workerReceivePortName = "workerReceivePort";
     
     /** The logger. */
-    public final static Logger log = new Logger();
+    final static Logger log = new Logger();
 }

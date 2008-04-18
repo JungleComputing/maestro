@@ -7,7 +7,7 @@ import java.util.Random;
  *
  * @author Kees van Reeuwijk.
  */
-public class TimeEstimate
+class TimeEstimate
 {
     private static final int SAMPLE_WINDOW = 30;
     private final long sampleValues[] = new long[SAMPLE_WINDOW];

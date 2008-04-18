@@ -5,7 +5,7 @@ package ibis.maestro;
  *
  * @author Kees van Reeuwijk.
  */
-public interface WorkSource
+interface WorkSource
 {
 
     /** Gets a job from this work source.

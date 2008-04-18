@@ -3,6 +3,7 @@ package ibis.maestro;
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
+import ibis.maestro.Task.TaskIdentifier;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -39,9 +40,6 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     private ArrayList<JobType> jobTypes = new ArrayList<JobType>();
 
     private final Node node;
-
-    /** The reasoning engine for type support. */
-    private final TypeInformation typeAdder;
 
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
@@ -146,14 +144,12 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      * Create a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to.
      * @param node The master that jobs may submit new jobs to.
-     * @param typeAdder The types of job this worker can handle.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis, Node node, TypeInformation typeAdder ) throws IOException
+    public Worker( Ibis ibis, Node node ) throws IOException
     {
 	super( "Worker" );   // Create a thread with a name.
 	this.node = node;
-	this.typeAdder = typeAdder;
 	receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
 	sendPort = new PacketSendPort<WorkerMessage>( ibis );
 	for( int i=0; i<numberOfProcessors; i++ ) {
@@ -192,22 +188,11 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 	}
     }
 
-    /** The neighbors can now support the given job types.
-     * Register any new types this worker can support.
-     * @param l A list of supported job types.
-     */
-    void updateNeighborJobTypes( JobType l[] )
-    {
-	for( JobType t: l ) {
-	    typeAdder.registerNeighborType( node, t );
-	}
-    }
-
     /**
      * Set the local listener to the given class instance.
      * @param localListener The local listener to use.
      */
-    public void setLocalListener( PacketReceiveListener<WorkerMessage> localListener )
+    void setLocalListener( PacketReceiveListener<WorkerMessage> localListener )
     {
 	sendPort.setLocalListener( localListener );
     }
@@ -653,5 +638,21 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 	    Object result) {
 	WorkerMessage msg = new ResultMessage( id, result );
 	return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+    }
+
+    /**
+     * Register a new task.
+     * 
+     * @param task The task to register.
+     */
+    public void registerTask( Task task )
+    {
+        TaskIdentifier id = task.id;
+        Job jobs[] = task.jobs;
+        
+        for( int i=0; i<jobs.length; i++ ){
+            // FIXME: ask the job itself it it wants to run on this platform.
+            allowJobType( new JobType( id, i ) );
+        }
     }
 }

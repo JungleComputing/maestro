@@ -82,13 +82,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     /** Creates a new master instance.
      * @param ibis The Ibis instance this master belongs to.
      * @param node The node this master belongs to.
-     * @param typeInformation The type information class to use.
      * @throws IOException Thrown if the master cannot be created.
      */
-    Master( Ibis ibis, Node node, TypeInformation typeInformation ) throws IOException
+    Master( Ibis ibis, Node node ) throws IOException
     {
         super( "Master" );
-        this.queue = new MasterQueue( typeInformation );
+        this.queue = new MasterQueue();
         this.node = node;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
@@ -178,8 +177,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     /**
      * A worker has sent us a message telling us it can handle the given
      * job types. Presumably some of the types are new.
-     * Tell our own worker about these types; it may allow it to support
-     * new types.
      * 
      * @param m The type registration message.
      */
@@ -194,7 +191,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             workers.updateJobTypes( workerID, allowedTypes );
             queue.notifyAll();
         }
-        node.updateNeighborJobTypes( allowedTypes );
     }
 
     /**

@@ -7,7 +7,7 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  *
  */
-public class JobInstance implements Serializable {
+class JobInstance implements Serializable {
     private static final long serialVersionUID = -5669565112253289488L;
     final TaskInstanceIdentifier taskInstance;
     final JobType type;

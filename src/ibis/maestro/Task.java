@@ -8,7 +8,8 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  *
  */
-public class Task {
+public final class Task
+{
     private final Node node;
     final TaskIdentifier id;
     final String name;

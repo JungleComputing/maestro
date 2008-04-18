@@ -16,13 +16,12 @@ import java.util.LinkedList;
  *
  */
 final class MasterQueue {
-    private final TypeInformation typeInformation;
     private final ArrayList<QueueType> queueTypes = new ArrayList<QueueType>();
     int size = 0;
 
-    MasterQueue( TypeInformation typeInformation )
+    MasterQueue()
     {
-        this.typeInformation = typeInformation;
+        // Empty
     }
 
     /**
@@ -88,7 +87,7 @@ final class MasterQueue {
         ix = 0;
         while( ix<queueTypes.size() ){
             QueueType q = queueTypes.get( ix );
-            int cmp = typeInformation.compare( t, q.type );
+            int cmp = t.jobNo-q.type.jobNo;
             if( cmp>0 ){
                 break;
             }

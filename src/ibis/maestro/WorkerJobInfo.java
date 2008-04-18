@@ -6,7 +6,7 @@ package ibis.maestro;
 import java.util.Hashtable;
 
 
-class WorkerJobInfo {
+final class WorkerJobInfo {
     private final TimeEstimate roundTripEstimate = new TimeEstimate();
 
     /** How many instances of this job does this worker currently have? */

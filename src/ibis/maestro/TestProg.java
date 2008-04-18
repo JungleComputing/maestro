@@ -25,7 +25,7 @@ public class TestProg {
          * @param result The result of the job.
          */
         @Override
-        public void jobCompleted( Node node, TaskInstanceIdentifier id, Object result ) {
+        public void jobCompleted( Node node, Object id, Object result ) {
             //System.out.println( "result is " + result );
             jobsCompleted++;
             //System.out.println( "I now have " + jobsCompleted + "/" + jobCount + " jobs" );
@@ -34,44 +34,6 @@ public class TestProg {
                 node.setStopped();
             }
         }
-    }
-
-    private static final class TestTypeInformation implements TypeInformation {
-        private static final long serialVersionUID = -4358159127247563219L;
-
-        /**
-         * Registers that a neighbor supports the given type of job.
-         * @param w The worker to register the info with.
-         * @param t The type a neighbor supports.
-         */
-        @Override
-        public void registerNeighborType( Node w, JobType t )
-        {
-            // Nothing to do.
-        }
-
-        /** Registers the initial types of this worker.
-         * 
-         * @param w The worker to initialize.
-         */
-        @Override
-        public void initialize( Node w )
-        {
-            // Nothing to do.
-        }
-
-        /**
-         * Compares two job types based on priority. Returns
-         * 1 if type a has more priority as b, etc.
-         * @param a One of the job types to compare.
-         * @param b The other job type to compare.
-         * @return The comparison result.
-         */
-        public int compare( JobType a, JobType b )
-        {
-            return JobType.comparePriorities( a, b);
-        }
-
     }
 
     private static class AdditionData {
@@ -98,7 +60,7 @@ public class TestProg {
         private static final long serialVersionUID = 2347248108353357517L;
 
         @SuppressWarnings("synthetic-access")
-        public AdditionData run(Object obj, Node node, TaskInstanceIdentifier taskId)
+        public AdditionData run(Object obj, Node node )
         {
             Integer length = (Integer) obj;
             double a[] = new double [length];
@@ -119,7 +81,7 @@ public class TestProg {
          * @param taskId
          * @return
          */
-        public AdditionData run( Object obj, Node node, TaskInstanceIdentifier taskId )
+        public AdditionData run( Object obj, Node node )
         {
             AdditionData data = (AdditionData) obj;
             double sum = 0.0;
@@ -135,7 +97,7 @@ public class TestProg {
     @SuppressWarnings("synthetic-access")
     private void run( int jobCount, boolean goForMaestro ) throws Exception
     {
-        Node node = new Node( new TestTypeInformation(), goForMaestro );
+        Node node = new Node( goForMaestro );
         Listener listener = new Listener( jobCount );
 
         Task task = node.createTask( "testprog", new CreateArrayJob(), new AdditionJob(), new AdditionJob(), new AdditionJob(), new AdditionJob() );

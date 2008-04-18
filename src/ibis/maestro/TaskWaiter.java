@@ -42,13 +42,12 @@ public class TaskWaiter implements CompletionListener
     /**
      * 
      * @param node The node we're running on.
-     * @param id The identifier of the task that was completed.
+     * @param userId The identifier of the task that was completed.
      * @param result The result of the task.
      */
     @Override
-    public synchronized void jobCompleted( Node node, TaskInstanceIdentifier id, Object result )
+    public synchronized void jobCompleted( Node node, Object userId, Object result )
     {
-        Object userId = id.userId;
         if( userId instanceof WaiterTaskIdentifier ){
             int ix = ((WaiterTaskIdentifier) userId).id;
             while( results.size()<=ix ){

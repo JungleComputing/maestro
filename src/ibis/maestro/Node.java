@@ -182,24 +182,22 @@ public final class Node {
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
-     * @param typeAdder The type deduction class.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public Node( TypeInformation typeAdder ) throws IbisCreationFailedException, IOException
+    public Node() throws IbisCreationFailedException, IOException
     {
-        this( typeAdder, true );
+        this( true );
     }
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
-     * @param typeInformation The list of types this job allows.
      * @param runForMaestro If true, try to get elected as maestro.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
     @SuppressWarnings("synthetic-access")
-    public Node( TypeInformation typeInformation, boolean runForMaestro) throws IbisCreationFailedException, IOException
+    public Node( boolean runForMaestro) throws IbisCreationFailedException, IOException
     {
         Properties ibisProperties = new Properties();
         IbisIdentifier maestro;
@@ -230,22 +228,16 @@ public final class Node {
         if( Settings.traceNodes ) {
             System.out.println( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
         }
-        master = new Master( ibis, this, typeInformation );
-        worker = new Worker( ibis, this, typeInformation );
+        master = new Master( ibis, this );
+        worker = new Worker( ibis, this );
         master.setLocalListener( worker );
         worker.setLocalListener( master );
         master.start();
         worker.start();
         registry.enableEvents();
-        typeInformation.initialize( this );
         if( Settings.traceNodes ) {
             Globals.log.log( "Started a Maestro node" );
         }
-    }
-
-    void updateNeighborJobTypes( JobType jobTypes[] )
-    {
-        worker.updateNeighborJobTypes( jobTypes );
     }
 
     /** Set this node to the stopped state.
@@ -387,6 +379,7 @@ public final class Node {
 	Task task = new Task( this, taskId, name, jobs );
 
         tasks.add( task );
+        worker.registerTask( task );
 	return task;
     }
 
@@ -409,7 +402,7 @@ public final class Node {
                 // This is the task of this job.
                 Job j = t.jobs[type.jobNo];
 
-                Object result = j.run( t, this, job.taskInstance );
+                Object result = j.run( t, this );
                 int nextJobNo = type.jobNo+1;
                 if( nextJobNo<t.jobs.length ){
                     // There is a next step to take.
