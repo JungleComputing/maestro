@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.maestro.Task.TaskIdentifier;
+
 import java.io.Serializable;
 
 /**
@@ -11,17 +13,18 @@ public class JobType implements Serializable
 {
     /** Contractual obligation. */
     private static final long serialVersionUID = 13451L;
-    final String name;
-    final int priority;
+    final int jobNo;
+    final TaskIdentifier task;
 
     /** Constructs a new job type.
      * 
-     * @param priority The priority of this job.
-     * @param name The name of the type.
+     * @param id The task this job belongs to.
+     * @param jobNo The sequence number within the task.
      */
-    public JobType( int priority, String name) {
-	this.priority = priority;
-	this.name = name;
+    public JobType( TaskIdentifier id, int jobNo)
+    {
+	this.task = id;
+	this.jobNo = jobNo;
     }
     
     /**
@@ -31,7 +34,7 @@ public class JobType implements Serializable
     @Override
     public String toString()
     {
-	return "job type " + name + "(priority=" + priority + ")";
+	return "(task=" + task + ",jobNo=" + jobNo + ")";
     }
 
     /**
@@ -42,23 +45,7 @@ public class JobType implements Serializable
     @Override
     public int hashCode()
     {
-        return priority ^ name.hashCode();
-    }
-
-    /**
-     * Returns true iff the given jobtype is equal to this one.
-     */
-    @Override
-    public boolean equals( Object o )
-    {
-        if( o instanceof JobType ){
-            JobType other = (JobType) o;
-            if( other.priority != this.priority ){
-        	return false;
-            }
-	    return this.name.equals( other.name );
-        }
-        return false;
+        return task.hashCode() ^ jobNo;
     }
 
 	/**
@@ -70,10 +57,10 @@ public class JobType implements Serializable
 	 */
     public static int comparePriorities( JobType a, JobType b )
     {
-	if( a.priority>b.priority ) {
+	if( a.jobNo>b.jobNo ) {
 	    return 1;
 	}
-	if( a.priority<b.priority ) {
+	if( a.jobNo<b.jobNo ) {
 	    return -1;
 	}
 	return 0;

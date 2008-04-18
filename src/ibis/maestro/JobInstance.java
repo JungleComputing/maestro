@@ -8,14 +8,17 @@ import java.io.Serializable;
  *
  */
 public class JobInstance implements Serializable {
+    final TaskInstanceIdentifier taskInstance;
     final JobType type;
     final Object input;
 
     /**
+     * @param tii 
      * @param type
-     * @param input
+     * @param input The input for this job.
      */
-    public JobInstance(JobType type, Object input) {
+    JobInstance(TaskInstanceIdentifier tii, JobType type, Object input) {
+	taskInstance = tii;
 	this.type = type;
 	this.input = input;
     }

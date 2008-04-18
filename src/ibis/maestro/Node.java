@@ -318,21 +318,16 @@ public final class Node {
         }
     }
 
-    private void addRunningTask( TaskInstanceIdentifier id, CompletionListener listener )
+    void addRunningTask( TaskInstanceIdentifier id, CompletionListener listener )
     {
         synchronized( runningTasks ){
             runningTasks.add( new TaskInfo( id, listener ) );
         }
     }
 
-    /**
-     * Submits the given job, which is part of the given task.
-     * @param j The job to submit.
-     * @param id The task it is part of.
-     */
-    public void submit( Job j, TaskInstanceIdentifier id )
+    void submit( JobInstance j )
     {
-        master.submit( j, id );
+	master.submit( j );
     }
 
     /**
@@ -415,5 +410,10 @@ public final class Node {
 	
 	tasks.add( task );
 	return task;
+    }
+
+    ReceivePortIdentifier identifier()
+    {
+	return master.identifier();
     }
 }

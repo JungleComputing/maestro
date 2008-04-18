@@ -36,7 +36,7 @@ final class MasterQueue {
         final JobType type;
 
         /** The work queue for these jobs. */
-        final LinkedList<QueueEntry> queue = new LinkedList<QueueEntry>();
+        final LinkedList<JobInstance> queue = new LinkedList<JobInstance>();
 
         QueueType( JobType type ){
             this.type = type;
@@ -59,25 +59,13 @@ final class MasterQueue {
         }
     }
 
-    private static final class QueueEntry {
-        final JobInstance job;
-        final TaskInstanceIdentifier taskId;
-
-        QueueEntry(JobInstance j, TaskInstanceIdentifier id) {
-            this.job = j;
-            this.taskId = id;
-        }
-    }
-
     /**
      * Submit a new job, belonging to the task with the given identifier,
      * to the queue.
      * @param j The job to submit.
-     * @param taskId The task it belongs to.
      */
-    void submit( JobInstance j, TaskInstanceIdentifier taskId )
+    void submit( JobInstance j )
     {
-        QueueEntry e = new QueueEntry( j, taskId );
         JobType t = j.type;
 
         size++;
@@ -87,7 +75,7 @@ final class MasterQueue {
             ix--;
             QueueType x = queueTypes.get( ix );
             if( x.type.equals( t ) ) {
-                x.queue.add( e );
+                x.queue.add( j );
                 return;
             }
         }
@@ -107,7 +95,7 @@ final class MasterQueue {
             ix++;
         }
         QueueType qt = new QueueType( t );
-        qt.queue.add( e );
+        qt.queue.add( j );
         queueTypes.add( ix, qt );
     }
 
@@ -162,7 +150,6 @@ final class MasterQueue {
     {
         boolean noWork = true;
         sub.worker = null;
-        sub.taskId = null;
         sub.job = null;
         for( QueueType t: queueTypes ) {
             if( Settings.traceMasterQueue ){
@@ -183,9 +170,8 @@ final class MasterQueue {
                     }
                 }
                 else {
-                    QueueEntry e = t.queue.removeFirst();
-                    sub.job = e.job;
-                    sub.taskId = e.taskId;
+                    JobInstance e = t.queue.removeFirst();
+                    sub.job = e;
                     sub.worker = worker;
                     size--;
                     if( Settings.traceMasterQueue ){

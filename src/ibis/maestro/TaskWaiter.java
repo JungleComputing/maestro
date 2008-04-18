@@ -36,7 +36,7 @@ public class TaskWaiter implements CompletionListener
     {
 	TaskInstanceIdentifier id = task.buildTaskInstanceIdentifier( new WaiterTaskIdentifier( jobNo++ ) );
         outstandingJobs++;
-        task.submitTask( j, this, id );
+        task.submit( j, this, id );
     }
 
     /**

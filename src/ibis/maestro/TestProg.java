@@ -6,7 +6,6 @@ package ibis.maestro;
  *
  */
 public class TestProg {
-    private static final int BLOCK_SIZE = 4000;
     private static final int ITERATIONS = 800;  // The number of times we should do the addition.
 
     static final int LEVELS = 4;

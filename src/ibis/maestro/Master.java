@@ -299,17 +299,16 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * Adds the given job to the work queue of this master.
      * Note that the master uses a priority queue for its scheduling,
      * so jobs may not be executed in chronological order.
-     * @param j The job to add to the queue.
-     * @param id The identifier of the task this job belongs to.
+     * @param j The job instance to add to the queue.
      */
-    void submit( Job j, TaskInstanceIdentifier id )
+    void submit( JobInstance j )
     {
         if( Settings.traceMasterProgress ) {
             System.out.println( "Master: received job " + j );
         }
         synchronized ( queue ) {
             incomingJobCount++;
-            queue.submit( j, id );
+            queue.submit( j );
             queue.notifyAll();
         }
     }
@@ -354,12 +353,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             jobId = nextJobId++;
             sub.worker.registerJobStart( sub.job, jobId );
         }
-        RunJobMessage msg = new RunJobMessage( sub.worker.identifierWithWorker, sub.worker.identifier, sub.job, jobId, sub.taskId );
+        RunJobMessage msg = new RunJobMessage( sub.worker.identifierWithWorker, sub.worker.identifier, sub.job, jobId );
         long sz = sendPort.tryToSend( sub.worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( sz<0 ){
             // Try to put the paste back in the tube.
             synchronized( queue ){
-        	queue.submit( msg.job, sub.taskId );
+        	queue.submit( msg.job );
         	sub.worker.retractJob( msg.jobId );
             }
         }

@@ -37,23 +37,36 @@ public class Task {
      */
     public TaskInstanceIdentifier buildTaskInstanceIdentifier( Object userIdentifier )
     {
-        return new TaskInstanceIdentifier( userIdentifier, node.master.identifier() );
+        return new TaskInstanceIdentifier( userIdentifier, node.identifier() );
+    }
+    
+    private JobType createJobType( int jobNo )
+    {
+	return new JobType( id, jobNo );
     }
 
-    private void submit( TaskInstanceIdentifier tii, Object value, int jobNo )
+    /**
+     * Submits a job for execution. 
+     * @param tii The task instance this job belongs to.
+     * @param jobNo The sequence number of the job to execute in the list of jobs of a task.
+     * @param value The input value of the job.
+     */
+    private void submit( TaskInstanceIdentifier tii, int jobNo, Object value )
     {
-	Job j = jobs[jobNo];
-	
-	node.submit( j, tii, value );
+	JobType type = createJobType( jobNo );
+	JobInstance j = new JobInstance( tii, type, value );
+	node.submit( j );
     }
     
     /**
      * Submits the given input value to the first job of the task.
      * @param value The value to submit.
+     * @param listener The completion listener to use.
      */
-    public void submit( Object userId, Object value )
+    public void submit( Object userId, Object value, CompletionListener listener )
     {
-	TaskInstanceIdentifier tii = new TaskInstanceIdentifier( userId, node.master.identifier() );
-	submit( tii, value, 0 );
+	TaskInstanceIdentifier tii = buildTaskInstanceIdentifier( userId );
+	node.addRunningTask( tii, listener );
+	submit( tii, 0, value );
     }
 }
