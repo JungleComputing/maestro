@@ -13,7 +13,7 @@ public class TaskWaiter implements CompletionListener
 {
     private int jobNo = 0;
     private int outstandingJobs = 0;
-    private ArrayList<JobResultValue> results = new ArrayList<JobResultValue>();
+    private ArrayList<Object> results = new ArrayList<Object>();
 
     private static class WaiterTaskIdentifier implements Serializable {
         private static final long serialVersionUID = -3256737277889247302L;
@@ -36,7 +36,7 @@ public class TaskWaiter implements CompletionListener
     {
 	TaskInstanceIdentifier id = task.buildTaskInstanceIdentifier( new WaiterTaskIdentifier( jobNo++ ) );
         outstandingJobs++;
-        task.submit( j, this, id );
+        task.submit( j, id, this );
     }
 
     /**
@@ -46,7 +46,7 @@ public class TaskWaiter implements CompletionListener
      * @param result The result of the task.
      */
     @Override
-    public synchronized void jobCompleted( Node node, TaskInstanceIdentifier id, JobResultValue result )
+    public synchronized void jobCompleted( Node node, TaskInstanceIdentifier id, Object result )
     {
         Object userId = id.userId;
         if( userId instanceof WaiterTaskIdentifier ){
@@ -68,14 +68,14 @@ public class TaskWaiter implements CompletionListener
      * @param node The node this waiter runs on.
      * @return The array of all reported job results.
      */
-    public JobResultValue[] sync( Node node )
+    public Object[] sync( Node node )
     {
-        JobResultValue res[];
+        Object res[];
         WorkThread thread = node.startExtraWorker();
         while( true ) {
             synchronized( this ){
                 if( outstandingJobs == 0 ){
-                    res = new JobResultValue[results.size()];
+                    res = new Object[results.size()];
                     results.toArray( res );
 
                     // Prepare for a possible new round.

@@ -36,7 +36,7 @@ public class TaskInstanceIdentifier implements Serializable
      * @param result The result to report.
      * @return The size of the transmitted message, or -1 if the transmission failed.
      */
-    public long reportResult( Node node, JobResultValue result )
+    public long reportResult( Node node, Object result )
     {
         return node.sendResultMessage( receivePort, this, result );
     }

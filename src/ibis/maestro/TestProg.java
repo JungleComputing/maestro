@@ -12,145 +12,146 @@ public class TestProg {
 
     private static class Listener implements CompletionListener
     {
-	int jobsCompleted = 0;
-	private final int jobCount;
+        int jobsCompleted = 0;
+        private final int jobCount;
 
-	Listener( int jobCount )
-	{
-	    this.jobCount = jobCount;
-	}
+        Listener( int jobCount )
+        {
+            this.jobCount = jobCount;
+        }
 
-	/** Handle the completion of job 'j': the result is 'result'.
-	 * @param id The job that was completed.
-	 * @param result The result of the job.
-	 */
-	@Override
-	public void jobCompleted( Node node, TaskInstanceIdentifier id, JobResultValue result ) {
-	    //System.out.println( "result is " + result );
-	    jobsCompleted++;
-	    //System.out.println( "I now have " + jobsCompleted + "/" + jobCount + " jobs" );
-	    if( jobsCompleted>=jobCount ){
-		System.out.println( "I got all job results back; stopping test program" );
-		node.setStopped();
-	    }
-	}
+        /** Handle the completion of job 'j': the result is 'result'.
+         * @param id The job that was completed.
+         * @param result The result of the job.
+         */
+        @Override
+        public void jobCompleted( Node node, TaskInstanceIdentifier id, Object result ) {
+            //System.out.println( "result is " + result );
+            jobsCompleted++;
+            //System.out.println( "I now have " + jobsCompleted + "/" + jobCount + " jobs" );
+            if( jobsCompleted>=jobCount ){
+                System.out.println( "I got all job results back; stopping test program" );
+                node.setStopped();
+            }
+        }
     }
 
     private static final class TestTypeInformation implements TypeInformation {
-	private static final long serialVersionUID = -4358159127247563219L;
+        private static final long serialVersionUID = -4358159127247563219L;
 
-	/**
-	 * Registers that a neighbor supports the given type of job.
-	 * @param w The worker to register the info with.
-	 * @param t The type a neighbor supports.
-	 */
-	@Override
-	public void registerNeighborType( Node w, JobType t )
-	{
-	    // Nothing to do.
-	}
+        /**
+         * Registers that a neighbor supports the given type of job.
+         * @param w The worker to register the info with.
+         * @param t The type a neighbor supports.
+         */
+        @Override
+        public void registerNeighborType( Node w, JobType t )
+        {
+            // Nothing to do.
+        }
 
-	/** Registers the initial types of this worker.
-	 * 
-	 * @param w The worker to initialize.
-	 */
-	@Override
-	public void initialize( Node w )
-	{
-	    // Nothing to do.
-	}
+        /** Registers the initial types of this worker.
+         * 
+         * @param w The worker to initialize.
+         */
+        @Override
+        public void initialize( Node w )
+        {
+            // Nothing to do.
+        }
 
-	/**
-	 * Compares two job types based on priority. Returns
-	 * 1 if type a has more priority as b, etc.
-	 * @param a One of the job types to compare.
-	 * @param b The other job type to compare.
-	 * @return The comparison result.
-	 */
-	public int compare( JobType a, JobType b )
-	{
-	    return JobType.comparePriorities( a, b);
-	}
+        /**
+         * Compares two job types based on priority. Returns
+         * 1 if type a has more priority as b, etc.
+         * @param a One of the job types to compare.
+         * @param b The other job type to compare.
+         * @return The comparison result.
+         */
+        public int compare( JobType a, JobType b )
+        {
+            return JobType.comparePriorities( a, b);
+        }
 
     }
 
     private static class AdditionData {
-	final double data[];
+        final double data[];
 
-	private AdditionData(final double[] data) {
-	    this.data = data;
-	}
+        private AdditionData(final double[] data) {
+            this.data = data;
+        }
 
-	/**
-	 * Returns a string representation of this multiply job.
-	 * @return The string representation.
-	 */
-	@Override
-	public String toString()
-	{
-	    return "(AdditionData [" + data[0] + ",...," + data[data.length-1] + "])";
-	}
+        /**
+         * Returns a string representation of this multiply job.
+         * @return The string representation.
+         */
+        @Override
+        public String toString()
+        {
+            return "(AdditionData [" + data[0] + ",...," + data[data.length-1] + "])";
+        }
 
     }
 
     private static class CreateArrayJob implements Job
     {
-	private static final long serialVersionUID = 2347248108353357517L;
+        private static final long serialVersionUID = 2347248108353357517L;
 
-	public AdditionData run(Object obj, Node node, TaskInstanceIdentifier taskId)
-	{
-	    Integer length = (Integer) obj;
-	    double a[] = new double [length];
-	    for( int i=0; i<length; i++ ) {
-		a[i] = i+42;
-	    }
-	    return new AdditionData( a );
-	}
+        @SuppressWarnings("synthetic-access")
+        public AdditionData run(Object obj, Node node, TaskInstanceIdentifier taskId)
+        {
+            Integer length = (Integer) obj;
+            double a[] = new double [length];
+            for( int i=0; i<length; i++ ) {
+                a[i] = i+42;
+            }
+            return new AdditionData( a );
+        }
     }
 
     private static class AdditionJob implements Job
     {
-	private static final long serialVersionUID = 7652370809998864296L;
+        private static final long serialVersionUID = 7652370809998864296L;
 
-	/**
-	 * @param obj
-	 * @param node
-	 * @param taskId
-	 * @return
-	 */
-	public AdditionData run( Object obj, Node node, TaskInstanceIdentifier taskId )
-	{
-	    AdditionData data = (AdditionData) obj;
-	    double sum = 0.0;
-	    for( int i=0; i<ITERATIONS; i++ ) {
-		for( double v: data.data ) {
-		    sum += v;
-		}
-	    }
-	    return data;
-	}
+        /**
+         * @param obj
+         * @param node
+         * @param taskId
+         * @return
+         */
+        public AdditionData run( Object obj, Node node, TaskInstanceIdentifier taskId )
+        {
+            AdditionData data = (AdditionData) obj;
+            double sum = 0.0;
+            for( int i=0; i<ITERATIONS; i++ ) {
+                for( double v: data.data ) {
+                    sum += v;
+                }
+            }
+            return data;
+        }
     }
 
     @SuppressWarnings("synthetic-access")
     private void run( int jobCount, boolean goForMaestro ) throws Exception
     {
-	Node node = new Node( new TestTypeInformation(), goForMaestro );
-	Listener listener = new Listener( jobCount );
+        Node node = new Node( new TestTypeInformation(), goForMaestro );
+        Listener listener = new Listener( jobCount );
 
-	Task task = node.createTask( "testprog", new CreateArrayJob(), new AdditionJob(), new AdditionJob(), new AdditionJob(), new AdditionJob() );
-	System.out.println( "Node created" );
-	long startTime = System.nanoTime();
-	if( node.isMaestro() ) {
-	    System.out.println( "I am maestro; submitting " + jobCount + " jobs" );
-	    for( int i=0; i<jobCount; i++ ){
-		TaskInstanceIdentifier id = task.buildTaskInstanceIdentifier( i );
-		Integer length = new Integer( 12*i );
-		node.submitTaskWhenRoom( length, listener, id );
-	    }
-	}
-	node.waitToTerminate();
-	long stopTime = System.nanoTime();
-	System.out.println( "Duration of this run: " + Service.formatNanoseconds( stopTime-startTime ) );
+        Task task = node.createTask( "testprog", new CreateArrayJob(), new AdditionJob(), new AdditionJob(), new AdditionJob(), new AdditionJob() );
+        System.out.println( "Node created" );
+        long startTime = System.nanoTime();
+        if( node.isMaestro() ) {
+            System.out.println( "I am maestro; submitting " + jobCount + " jobs" );
+            for( int i=0; i<jobCount; i++ ){
+                TaskInstanceIdentifier id = task.buildTaskInstanceIdentifier( i );
+                Integer length = new Integer( 12*i );
+                task.submit( length, id, listener );
+            }
+        }
+        node.waitToTerminate();
+        long stopTime = System.nanoTime();
+        System.out.println( "Duration of this run: " + Service.formatNanoseconds( stopTime-startTime ) );
     }
 
     /** The command-line interface of this program.
@@ -159,26 +160,26 @@ public class TestProg {
      */
     public static void main( String args[] )
     {
-	boolean goForMaestro = true;
-	int jobCount = 0;
+        boolean goForMaestro = true;
+        int jobCount = 0;
 
-	if( args.length == 0 ){
-	    System.err.println( "Missing parameter: I need a job count, or 'worker'" );
-	    System.exit( 1 );
-	}
-	String arg = args[0];
-	if( arg.equalsIgnoreCase( "worker" ) ){
-	    goForMaestro = false;
-	}
-	else {
-	    jobCount = Integer.parseInt( arg );
-	}
-	System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro + "; jobCount=" + jobCount );
-	try {
-	    new TestProg().run( jobCount, goForMaestro );
-	}
-	catch( Exception e ) {
-	    e.printStackTrace( System.err );
-	}
+        if( args.length == 0 ){
+            System.err.println( "Missing parameter: I need a job count, or 'worker'" );
+            System.exit( 1 );
+        }
+        String arg = args[0];
+        if( arg.equalsIgnoreCase( "worker" ) ){
+            goForMaestro = false;
+        }
+        else {
+            jobCount = Integer.parseInt( arg );
+        }
+        System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro + "; jobCount=" + jobCount );
+        try {
+            new TestProg().run( jobCount, goForMaestro );
+        }
+        catch( Exception e ) {
+            e.printStackTrace( System.err );
+        }
     }
 }

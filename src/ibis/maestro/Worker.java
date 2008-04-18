@@ -650,7 +650,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      * @return The size of the sent message, or -1 if the transmission failed.
      */
     public long sendResultMessage(ReceivePortIdentifier port, TaskInstanceIdentifier id,
-	    JobResultValue result) {
+	    Object result) {
 	WorkerMessage msg = new ResultMessage( id, result );
 	return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
     }

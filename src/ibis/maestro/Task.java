@@ -8,9 +8,9 @@ package ibis.maestro;
  */
 public class Task {
     private final Node node;
-    private TaskIdentifier id;
-    private final String name;
-    private final Job[] jobs;
+    final TaskIdentifier id;
+    final String name;
+    final Job[] jobs;
 
     static final class TaskIdentifier {
 	final int id;
@@ -51,7 +51,7 @@ public class Task {
      * @param jobNo The sequence number of the job to execute in the list of jobs of a task.
      * @param value The input value of the job.
      */
-    private void submit( TaskInstanceIdentifier tii, int jobNo, Object value )
+    private void submitAJob( TaskInstanceIdentifier tii, int jobNo, Object value )
     {
 	JobType type = createJobType( jobNo );
 	JobInstance j = new JobInstance( tii, type, value );
@@ -59,14 +59,15 @@ public class Task {
     }
     
     /**
-     * Submits the given input value to the first job of the task.
+     * Submits a task by giving a user-defined identifier, and the input value to the first job of the task.
      * @param value The value to submit.
-     * @param listener The completion listener to use.
+     * @param userId The identifier for the user of this task.
+     * @param listener 
      */
-    public void submit( Object userId, Object value, CompletionListener listener )
+    public void submit( Object value, Object userId, CompletionListener listener )
     {
 	TaskInstanceIdentifier tii = buildTaskInstanceIdentifier( userId );
 	node.addRunningTask( tii, listener );
-	submit( tii, 0, value );
+	submitAJob( tii, 0, value );
     }
 }

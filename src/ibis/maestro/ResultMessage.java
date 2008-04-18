@@ -9,14 +9,14 @@ package ibis.maestro;
 public final class ResultMessage extends WorkerMessage {
     private static final long serialVersionUID = 5158569253342276404L;
     final TaskInstanceIdentifier id;
-    final JobResultValue result;
+    final Object result;
 
     /**
      * Constructs a new result message.
      * @param id The identifier of the task this is a result for.
      * @param result The result value.
      */
-    public ResultMessage( TaskInstanceIdentifier id, JobResultValue result )
+    public ResultMessage( TaskInstanceIdentifier id, Object result )
     {
 	super( null );
 	this.id = id;

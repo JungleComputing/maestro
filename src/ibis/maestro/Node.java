@@ -8,6 +8,7 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.Registry;
 import ibis.ipl.RegistryEventHandler;
+import ibis.maestro.Task.TaskIdentifier;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -300,7 +301,7 @@ public final class Node {
      * @param id The task that has been completed.
      * @param result The task result.
      */
-    public void reportCompletion( TaskInstanceIdentifier id, JobResultValue result )
+    public void reportCompletion( TaskInstanceIdentifier id, Object result )
     {
         TaskInfo task = null;
 
@@ -330,34 +331,10 @@ public final class Node {
 	master.submit( j );
     }
 
-    /**
-     * Submits the given job, which is the first job of the given task.
-     * @param j The job to submit.
-     * @param listener The listener who is interested in the result of the task.
-     * @param id The identifier of the task this job belongs to.
-     */
-    public void submitTask( Job j, CompletionListener listener, TaskInstanceIdentifier id )
-    {
-        addRunningTask( id, listener );
-        master.submit( j, id );
-    }
-
-    /**
-     * Submits the given job, which is the first job of the given task.
-     * @param j The job to submit.
-     * @param listener The listener who is interested in the result of the task.
-     * @param id The identifier of the task this job belongs to.
-     */
-    public void submitTaskWhenRoom( Job j, CompletionListener listener, TaskInstanceIdentifier id )
-    {
-	addRunningTask( id, listener );
-        master.submitWhenRoom( j, id );
-    }
-
     /** Start an extra work thread to replace the one that is blocked.
      * @return The newly started work thread.
      */
-    public WorkThread startExtraWorker()
+    WorkThread startExtraWorker()
     {
 	WorkThread t = new WorkThread( worker, this );
         t.start();
@@ -371,8 +348,8 @@ public final class Node {
      * @param result The result.
      * @return The size of the transmitted message, or -1 if the transmission failed.
      */
-    public long sendResultMessage( ReceivePortIdentifier receivePort, TaskInstanceIdentifier id,
-	    JobResultValue result ) {
+    long sendResultMessage( ReceivePortIdentifier receivePort, TaskInstanceIdentifier id,
+	    Object result ) {
 	return worker.sendResultMessage( receivePort, id, result );
     }
 
@@ -400,6 +377,7 @@ public final class Node {
      * Creates a task with the given name and the given sequence of jobs.
      * 
      * @param name The name of the task.
+     * @param listener The completion listener for this task.
      * @param jobs The list of jobs of the task.
      * @return A new task instance representing this task.
      */
@@ -407,13 +385,41 @@ public final class Node {
     {
 	int taskId = taskCounter++;
 	Task task = new Task( this, taskId, name, jobs );
-	
-	tasks.add( task );
+
+        tasks.add( task );
 	return task;
     }
 
     ReceivePortIdentifier identifier()
     {
 	return master.identifier();
+    }
+
+    /** Runs the given job instance.
+     * 
+     * @param job The job instance to run.
+     */
+    public void run( JobInstance job )
+    {
+        JobType type = job.type;
+        TaskIdentifier task = type.task;
+        
+        for( Task t: tasks ){
+            if( t.id.equals( task ) ){
+                // This is the task of this job.
+                Job j = t.jobs[type.jobNo];
+
+                Object result = j.run( t, this, job.taskInstance );
+                int nextJobNo = type.jobNo+1;
+                if( nextJobNo<t.jobs.length ){
+                    // There is a next step to take.
+                    JobInstance nextJob = new JobInstance( job.taskInstance, new JobType( type.task, nextJobNo ), result );
+                    submit( nextJob );
+                }
+                else {
+                    job.taskInstance.reportResult( this, result );
+                }
+            }
+        }
     }
 }
