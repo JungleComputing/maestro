@@ -21,33 +21,34 @@ public class Settings {
     // Debugging flags.
     
     /** Trace type handling? */
-    public static final boolean traceTypeHandling = false;
+    public static final boolean traceTypeHandling = true;
 
     /** Trace the progress of workers? */
-    public static final boolean traceWorkerProgress = false;
+    public static final boolean traceWorkerProgress = true;
 
     /** Trace the handling or result jobs? */
-    public static final boolean traceResultJobs = false;
+    public static final boolean traceResultJobs = true;
 
     /** Trace the progress of the worker lists of masters. */
     public static final boolean traceWorkerList = false;
     
     /** Trace the creation and destruction of Nodes. */
-    public static final boolean traceNodes = false;
+    public static final boolean traceNodes = true;
 
     /** Trace the events in the master queue? */
-    public static final boolean traceMasterQueue = false;
+    public static final boolean traceMasterQueue = true;
 
     /** Trace the administration of remaining task time. */
     public static final boolean traceRemainingTaskTime = true;
+
     /** Trace the progress of masters? */
-    public static final boolean traceMasterProgress = false;
+    public static final boolean traceMasterProgress = true;
 
     /** Trace the adventures of the submission interval variable? */
-    public static final boolean traceSubmissionInterval = false;
+    public static final boolean traceSubmissionInterval = true;
 
     /** Trace all send events. */
-    public static final boolean traceSends = false;
+    public static final boolean traceSends = true;
 
     /** We limit the master queue to this many jobs per known worker. */
     public static final int JOBS_PER_WORKER = 10;

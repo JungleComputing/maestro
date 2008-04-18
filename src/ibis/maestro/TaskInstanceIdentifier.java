@@ -16,7 +16,7 @@ public class TaskInstanceIdentifier implements Serializable
 
     final long id;
     final Object userId;
-    private final ReceivePortIdentifier receivePort;
+    final ReceivePortIdentifier receivePort;
 
     /**
      * Constructs a new identifier.
@@ -30,17 +30,11 @@ public class TaskInstanceIdentifier implements Serializable
         this.receivePort = receivePortIdentifier;
     }
 
-    /** Reports the result of the task back to the original submitter.
-     * 
-     * @param node The node we're running on.
-     * @param result The result to report.
-     * @return The size of the transmitted message, or -1 if the transmission failed.
-     */
-    public long reportResult( Node node, Object result )
+    @Override
+    public String toString()
     {
-        return node.sendResultMessage( receivePort, this, result );
+        return "(task instance: id=" + id + " user id=" + userId + " port=" + receivePort + ")";
     }
-
     /**
      * Returns a hash code for this task identifier.
      * 
@@ -62,15 +56,19 @@ public class TaskInstanceIdentifier implements Serializable
      */
     @Override
     public boolean equals(Object obj) {
-        if (this == obj)
+        if (this == obj) {
             return true;
-        if (obj == null)
+        }
+        if (obj == null) {
             return false;
-        if (getClass() != obj.getClass())
+        }
+        if (getClass() != obj.getClass()) {
             return false;
+        }
         final TaskInstanceIdentifier other = (TaskInstanceIdentifier) obj;
-        if (id != other.id)
+        if (id != other.id) {
             return false;
+        }
         return true;
     }
 

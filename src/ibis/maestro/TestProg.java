@@ -144,9 +144,8 @@ public class TestProg {
         if( node.isMaestro() ) {
             System.out.println( "I am maestro; submitting " + jobCount + " jobs" );
             for( int i=0; i<jobCount; i++ ){
-                TaskInstanceIdentifier id = task.buildTaskInstanceIdentifier( i );
                 Integer length = new Integer( 12*i );
-                task.submit( length, id, listener );
+                task.submit( length, i, listener );
             }
         }
         node.waitToTerminate();

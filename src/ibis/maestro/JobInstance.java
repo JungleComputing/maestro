@@ -14,13 +14,19 @@ public class JobInstance implements Serializable {
     final Object input;
 
     /**
-     * @param tii 
-     * @param type
+     * @param tii The task this job belongs to.
+     * @param type The type of this job instance.
      * @param input The input for this job.
      */
     JobInstance(TaskInstanceIdentifier tii, JobType type, Object input) {
 	taskInstance = tii;
 	this.type = type;
 	this.input = input;
+    }
+    
+    @Override
+    public String toString()
+    {
+        return "(job instance: task instance=" + taskInstance + " type=" + type + " input=" + input + ")";
     }
 }

@@ -34,7 +34,7 @@ public class TaskWaiter implements CompletionListener
      */
     public synchronized void submit( Task task, Job j )
     {
-	TaskInstanceIdentifier id = task.buildTaskInstanceIdentifier( new WaiterTaskIdentifier( jobNo++ ) );
+	Object id = new WaiterTaskIdentifier( jobNo++ );
         outstandingJobs++;
         task.submit( j, id, this );
     }

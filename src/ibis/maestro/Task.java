@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.io.Serializable;
+
 /**
  * A task, consisting of a sequence of jobs.
  * 
@@ -12,22 +14,57 @@ public class Task {
     final String name;
     final Job[] jobs;
 
-    static final class TaskIdentifier {
-	final int id;
-	
-	private TaskIdentifier( int id )
-	{
-	    this.id = id;
-	}
+    static final class TaskIdentifier implements Serializable {
+        private static final long serialVersionUID = -5895857432770361027L;
+        final int id;
+
+        private TaskIdentifier( int id )
+        {
+            this.id = id;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#hashCode()
+         */
+        @Override
+        public int hashCode() {
+            final int PRIME = 31;
+            int result = 1;
+            result = PRIME * result + id;
+            return result;
+        }
+
+        /* (non-Javadoc)
+         * @see java.lang.Object#equals(java.lang.Object)
+         */
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj)
+                return true;
+            if (obj == null)
+                return false;
+            if (getClass() != obj.getClass())
+                return false;
+            final TaskIdentifier other = (TaskIdentifier) obj;
+            if (id != other.id)
+                return false;
+            return true;
+        }
+        
+        @Override
+        public String toString()
+        {
+            return "id=" + id;
+        }
     }
 
     @SuppressWarnings("synthetic-access")
     Task( Node node, int id, String name, Job[] jobs )
     {
-	this.node = node;
-	this.id = new TaskIdentifier( id );
-	this.name = name;
-	this.jobs = jobs;
+        this.node = node;
+        this.id = new TaskIdentifier( id );
+        this.name = name;
+        this.jobs = jobs;
     }
 
     /**
@@ -35,14 +72,14 @@ public class Task {
      * @param userIdentifier The user identifier to include in this identifier.
      * @return The newly constructed identifier.
      */
-    public TaskInstanceIdentifier buildTaskInstanceIdentifier( Object userIdentifier )
+    private TaskInstanceIdentifier buildTaskInstanceIdentifier( Object userIdentifier )
     {
         return new TaskInstanceIdentifier( userIdentifier, node.identifier() );
     }
-    
+
     private JobType createJobType( int jobNo )
     {
-	return new JobType( id, jobNo );
+        return new JobType( id, jobNo );
     }
 
     /**
@@ -53,11 +90,11 @@ public class Task {
      */
     private void submitAJob( TaskInstanceIdentifier tii, int jobNo, Object value )
     {
-	JobType type = createJobType( jobNo );
-	JobInstance j = new JobInstance( tii, type, value );
-	node.submit( j );
+        JobType type = createJobType( jobNo );
+        JobInstance j = new JobInstance( tii, type, value );
+        node.submit( j );
     }
-    
+
     /**
      * Submits a task by giving a user-defined identifier, and the input value to the first job of the task.
      * @param value The value to submit.
@@ -66,8 +103,14 @@ public class Task {
      */
     public void submit( Object value, Object userId, CompletionListener listener )
     {
-	TaskInstanceIdentifier tii = buildTaskInstanceIdentifier( userId );
-	node.addRunningTask( tii, listener );
-	submitAJob( tii, 0, value );
+        TaskInstanceIdentifier tii = buildTaskInstanceIdentifier( userId );
+        node.addRunningTask( tii, listener );
+        submitAJob( tii, 0, value );
+    }
+    
+    @Override
+    public String toString()
+    {
+        return "(task " + name + " " + id + ")";
     }
 }

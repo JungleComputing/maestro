@@ -417,7 +417,9 @@ public final class Node {
                     submit( nextJob );
                 }
                 else {
-                    job.taskInstance.reportResult( this, result );
+                    // This was the final step. Report back the result.
+                    TaskInstanceIdentifier identifier = job.taskInstance;
+                    sendResultMessage( identifier.receivePort, identifier, result );
                 }
             }
         }
