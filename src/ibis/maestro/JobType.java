@@ -37,16 +37,20 @@ class JobType implements Serializable
         return "(task=" + task + ",jobNo=" + jobNo + ")";
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#hashCode()
+    /**
+     * Returns the hash code of this job type.
+     * @return The hash code.
      */
     @Override
     public int hashCode() {
         return task.hashCode()*100 + jobNo;
     }
 
-    /* (non-Javadoc)
-     * @see java.lang.Object#equals(java.lang.Object)
+    /**
+     * Returns true iff the given object is a job type that is equal
+     * to this one.
+     * @param obj The object to compare to.
+     * @return True iff this and the given object are equal.
      */
     @Override
     public boolean equals(Object obj) {

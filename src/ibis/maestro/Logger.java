@@ -7,7 +7,7 @@ import java.io.PrintStream;
  *
  * @author Kees van Reeuwijk
  */
-public class Logger {
+class Logger {
     private final PrintStream logfile;
     
     /** Create a new logger. */
@@ -44,14 +44,14 @@ public class Logger {
     /** Given an error message, report an internal error.
      * @param msg The error message.
      */
-    public void reportInternalError( String msg )
+    void reportInternalError( String msg )
     {
         logfile.print( "Internal error: " );
         logfile.println( msg );
     }
     
     /** Close the logger. */
-    public void close()
+    void close()
     {
 	if( logfile != null ) {
 	    logfile.close();
@@ -61,7 +61,7 @@ public class Logger {
     /** Returns the print stream of this logger.
      * @return The print stream.
      */
-    public PrintStream getPrintStream()
+    PrintStream getPrintStream()
     {
         return logfile;
     }

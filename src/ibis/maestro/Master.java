@@ -30,6 +30,14 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final long startTime;
     private long stopTime = 0;
 
+    /**
+     * A worker identifier.
+     * This is in essence just an int, but we encapsulate it to make
+     * sure we don't mix it up with other kinds of identifier that
+     * we use.
+     * @author Kees van Reeuwijk
+     *
+     */
     static final class WorkerIdentifier implements Serializable {
         private static final long serialVersionUID = 3271311796768467853L;
         final int value;
@@ -40,17 +48,17 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	}
 
 	/**
+	 * Returns the hash code of this worker identifier.
 	 * @return A hash code for this identifier.
 	 */
 	@Override
 	public int hashCode() {
-	    final int prime = 31;
-	    int result = 1;
-	    result = prime * result + value;
-	    return result;
+	    return value;
 	}
 
 	/**
+	 * Returns true iff this worker identifier is equal to the given
+	 * one.
 	 * @param obj The object to compare to.
 	 * @return True iff the two identifiers are equal.
 	 */
@@ -146,7 +154,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * A worker has sent use a status message for a job. Process it.
      * @param result The status message.
      */
-    private void handleWorkerStatusMessage( WorkerStatusMessage result )
+    private void handleWorkerStatusMessage( JobCompletedMessage result )
     {
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Received a worker status message " + result );
@@ -195,8 +203,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /**
-     * A worker has sent us a message asking for work. This may be a new
-     * worker, or a known one who wants more work.
+     * A worker has sent us a message asking for more work.
      * 
      * @param m The work request message.
      */
@@ -214,8 +221,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
     /**
      * A worker has sent us a message to register itself with us. This is
-     * just to tell us that it's out there. We tell it what our receive port
-     * and the handle we assigned to it are, so that it can then inform us
+     * just to tell us that it's out there. We tell it what our receive port is,
+     * and which handle we have assigned to it, so that it can then inform us
      * of the types of jobs it supports.
      *
      * @param m The worker registration message.
@@ -257,8 +264,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Master: received message " + msg );
         }
-        if( msg instanceof WorkerStatusMessage ) {
-            WorkerStatusMessage result = (WorkerStatusMessage) msg;
+        if( msg instanceof JobCompletedMessage ) {
+            JobCompletedMessage result = (JobCompletedMessage) msg;
 
             handleWorkerStatusMessage( result );
         }
@@ -294,26 +301,24 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
     /**
      * Adds the given job to the work queue of this master.
-     * Note that the master uses a priority queue for its scheduling,
-     * so jobs may not be executed in chronological order.
-     * @param j The job instance to add to the queue.
+     * @param job The job instance to add to the queue.
      */
-    void submit( JobInstance j )
+    void submit( JobInstance job )
     {
         if( Settings.traceMasterProgress ) {
-            System.out.println( "Master: received job " + j );
+            System.out.println( "Master: received job " + job );
         }
         synchronized ( queue ) {
             incomingJobCount++;
-            queue.submit( j );
+            queue.submit( job );
             queue.notifyAll();
         }
     }
 
     /**
      * Adds the given job to the work queue of this master.
-     * Note that the master uses a priority queue for its scheduling,
-     * so jobs may not be executed in chronological order.
+     * This method only returns when the work queue was drained far enough
+     * to submit this job.
      * @param j The job to add to the queue.
      * @param id The identifier of the task this job belongs to.
      */

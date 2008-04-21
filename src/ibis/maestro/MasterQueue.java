@@ -187,7 +187,7 @@ final class MasterQueue {
      * Returns the number of elements in this work queue.
      * @return The number of elements in this queue.
      */
-    public int size()
+    int size()
     {
         return size;
     }

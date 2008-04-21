@@ -101,7 +101,7 @@ final class WorkerList {
      * Register a job result in the info of the worker that handled it.
      * @param result The job result.
      */
-    void registerWorkerStatus( WorkerStatusMessage result )
+    void registerWorkerStatus( JobCompletedMessage result )
     {
         WorkerInfo w = searchWorker( workers, result.source );
         if( w == null ) {

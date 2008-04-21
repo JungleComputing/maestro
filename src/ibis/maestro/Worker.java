@@ -15,7 +15,7 @@ import java.util.Random;
 import java.util.Set;
 
 /**
- * A worker in the Maestro multiple master-worker system.
+ * A worker in the Maestro workflow framework.
  * @author Kees van Reeuwijk
  */
 @SuppressWarnings("synthetic-access")
@@ -23,7 +23,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 
     /** The list of all known masters, in the order that they were handed their
      * id. Thus, element <code>i</code> of the list is guaranteed to have
-     * <code>i</code> as its id; otherwise the entry is empty.
+     * <code>i</code> as its id.
      */
     private final ArrayList<MasterInfo> masters = new ArrayList<MasterInfo>();
 
@@ -63,19 +63,19 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         private long queueDuration = 0;     // Cumulative queue time of all jobs.
 
         /**
-         * Registers the completion of a new job of this particular type, with the
+         * Registers the completion of a job of this particular type, with the
          * given queue interval and the given work interval.
          * @param queueInterval The time this job spent in the queue.
          * @param workInterval The time it took to execute this job.
          */
-        public void countJob(long queueInterval, long workInterval )
+        private void countJob(long queueInterval, long workInterval )
         {
             jobCount++;
             queueDuration += queueInterval;
             workDuration += workInterval;
         }
 
-        protected void reportStats( PrintStream out, JobType t, double workInterval )
+        private void reportStats( PrintStream out, JobType t, double workInterval )
         {
             double workPercentage = 100.0*(workDuration/workInterval);
             out.println( "Worker: " + t + ":" );
@@ -111,6 +111,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 	}
 
 	/**
+	 * Compares this master identifier to the given object.
 	 * @param obj The object to compare to.
 	 * @return True iff the two identifiers are equal.
 	 */
@@ -141,12 +142,12 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     }
 
     /**
-     * Create a new Maestro worker instance using the given Ibis instance.
+     * Creates a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to.
-     * @param node The master that jobs may submit new jobs to.
+     * @param node The node this worker belongs to.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    public Worker( Ibis ibis, Node node ) throws IOException
+    Worker( Ibis ibis, Node node ) throws IOException
     {
 	super( "Worker" );   // Create a thread with a name.
 	this.node = node;
@@ -168,7 +169,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      * this worker.
      * @param jobType The allowed job type.
      */
-    public void allowJobType( JobType jobType )
+    void allowJobType( JobType jobType )
     {
 	synchronized( queue ) {
 	    if( !Service.member( jobTypes, jobType ) ) {
@@ -189,7 +190,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     }
 
     /**
-     * Set the local listener to the given class instance.
+     * Sets the local listener to the given class instance.
      * @param localListener The local listener to use.
      */
     void setLocalListener( PacketReceiveListener<WorkerMessage> localListener )
@@ -198,10 +199,10 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     }
 
     /** Given a master identifier, returns the master info
-     * for the master with that id, or null if there is no such
+     * for the master with that id, or <code>null</code> if there is no such
      * master (any more).
-     * @param master The master id to search for.
-     * @return The master info, or null if there is no such master.
+     * @param master The master identifier to search for.
+     * @return The master info, or <code>null</code> if there is no such master.
      */
     private MasterInfo getMasterInfo( MasterIdentifier master )
     {
@@ -211,9 +212,9 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     }
 
     /**
-     * Stop this worker.
+     * Sets the stopped state of this worker.
      */
-    public void setStopped()
+    void setStopped()
     {
 	synchronized( queue ) {
 	    stopped = true;
@@ -225,7 +226,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     /**
      * Tells this worker not to ask for work any more.
      */
-    public void stopAskingForWork()
+    void stopAskingForWork()
     {
 	if( Settings.traceWorkerProgress ) {
 	    System.out.println( "Worker: don't ask for work" );
@@ -549,7 +550,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
 
 	JobType jobType = jobMessage.job.type;
 	taskCompletionInterval= node.getRemainingTasksTime( jobType );
-	WorkerMessage msg = new WorkerStatusMessage( jobMessage.workerIdentifier, jobMessage.jobId, queueInterval, taskCompletionInterval );
+	WorkerMessage msg = new JobCompletedMessage( jobMessage.workerIdentifier, jobMessage.jobId, queueInterval, taskCompletionInterval );
 	final MasterIdentifier master = jobMessage.source;
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( Settings.traceWorkerProgress ) {
@@ -577,7 +578,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      * Make sure we don't talk to it.
      * @param theIbis The ibis that was gone.
      */
-    public void removeIbis( IbisIdentifier theIbis )
+    void removeIbis( IbisIdentifier theIbis )
     {
 	synchronized( queue ) {
 	    for( MasterInfo master: masters ){
@@ -603,7 +604,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     }
 
     /** Print some statistics about the entire worker run. */
-    public void printStatistics()
+    void printStatistics()
     {
 	if( stopTime<startTime ) {
 	    System.err.println( "Worker didn't stop yet" );
@@ -635,7 +636,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      * @param result The result to send.
      * @return The size of the sent message, or -1 if the transmission failed.
      */
-    public long sendResultMessage(ReceivePortIdentifier port, TaskInstanceIdentifier id,
+    long sendResultMessage(ReceivePortIdentifier port, TaskInstanceIdentifier id,
 	    Object result) {
 	WorkerMessage msg = new ResultMessage( id, result );
 	return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
@@ -646,7 +647,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      * 
      * @param task The task to register.
      */
-    public void registerTask( Task task )
+    void registerTask( Task task )
     {
         TaskIdentifier id = task.id;
         Job jobs[] = task.jobs;

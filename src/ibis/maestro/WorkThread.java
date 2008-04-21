@@ -52,7 +52,7 @@ final class WorkThread extends Thread
     /** Tell this work thread to shut down. We don't wait for
      * it to stop, since it won't run a new job in any case.
      */
-    public void shutdown()
+    void shutdown()
     {
 	synchronized( this ) {
 	    stopped = true;

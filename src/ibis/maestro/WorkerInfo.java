@@ -96,7 +96,7 @@ final class WorkerInfo {
      * Register a job result for an outstanding job.
      * @param result The job result message that tells about this job.
      */
-    void registerWorkerStatus( WorkerStatusMessage result )
+    void registerWorkerStatus( JobCompletedMessage result )
     {
 	final long id = result.jobId;    // The identifier of the job, as handed out by us.
 

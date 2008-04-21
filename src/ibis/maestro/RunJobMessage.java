@@ -35,7 +35,7 @@ final class RunJobMessage extends MasterMessage {
     /** Set the start time of this job to the given time in ns.
      * @param t The start time.
      */
-    public void setQueueTime(long t) {
+    void setQueueTime(long t) {
         this.queueTime = t;
     }
 
@@ -43,7 +43,7 @@ final class RunJobMessage extends MasterMessage {
      * Registers the given time as the moment this job started running.
      * @param t The start time.
      */
-    public void setRunTime(long t )
+    void setRunTime(long t )
     {
         this.runTime = t;
     }
@@ -52,16 +52,15 @@ final class RunJobMessage extends MasterMessage {
      * 
      * @return The registered enqueueing time.
      */
-    public long getQueueTime() {
+    long getQueueTime() {
         return queueTime;
     }
-
 
     /** Returns the registered start time.
      * 
      * @return The registered start time.
      */
-    public long getRunTime() {
+    long getRunTime() {
         return runTime;
     }
 

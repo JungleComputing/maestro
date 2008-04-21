@@ -36,6 +36,12 @@ public final class Task
         /* (non-Javadoc)
          * @see java.lang.Object#equals(java.lang.Object)
          */
+        /**
+         * Returns true iff the given object is a task identifier that is equal
+         * to this one.
+         * @param obj The object to compare to.
+         * @return True iff this and the given object are equal.
+         */
         @Override
         public boolean equals(Object obj) {
             if (this == obj)

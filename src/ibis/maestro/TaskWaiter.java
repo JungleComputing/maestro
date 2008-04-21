@@ -19,7 +19,7 @@ public class TaskWaiter implements CompletionListener
         private static final long serialVersionUID = -3256737277889247302L;
         final int id;
 
-        WaiterTaskIdentifier( int id )
+        private WaiterTaskIdentifier( int id )
         {
             this.id = id;
         }
@@ -40,7 +40,8 @@ public class TaskWaiter implements CompletionListener
     }
 
     /**
-     * 
+     * Handle the completion of a job. We do this by storing the result
+     * in a local array.
      * @param node The node we're running on.
      * @param userId The identifier of the task that was completed.
      * @param result The result of the task.

@@ -99,7 +99,7 @@ final class WorkerJobInfo {
     }
 
     /** Register a new outstanding job. */
-    public void incrementOutstandingJobs()
+    void incrementOutstandingJobs()
     {
 	outstandingJobs++;
 	if( outstandingJobs == maximalAllowance ) {
@@ -114,7 +114,7 @@ final class WorkerJobInfo {
      *  this type of work.
      *  @return True iff we really incremented the allowance.
      */
-    public boolean incrementAllowance()
+    boolean incrementAllowance()
     {
 	if( !mayIncreaseAllowance ) {
 	    return false;
