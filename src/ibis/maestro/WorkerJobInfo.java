@@ -43,7 +43,7 @@ final class WorkerJobInfo {
         if( maximalAllowance == 0 ){
             System.err.println( "Internal error: zero allowance" );
         }
-        if( outstandingJobs>=maximalAllowance || getRemainingTasksTime() == Long.MAX_VALUE ){
+        if( outstandingJobs>=maximalAllowance ){
             return Long.MAX_VALUE;
         }
 	return roundTripEstimate.getEstimate();
@@ -52,10 +52,10 @@ final class WorkerJobInfo {
     long getAverageCompletionTime()
     {
 	long average = roundTripEstimate.getAverage();
-	if( getRemainingTasksTime() == Long.MAX_VALUE || average == Long.MAX_VALUE ) {
+	if( remainingTasksTime == Long.MAX_VALUE || average == Long.MAX_VALUE ) {
 	    return Long.MAX_VALUE;
 	}
-	return average + getRemainingTasksTime();
+	return average + remainingTasksTime;
     }
 
     /**
@@ -67,10 +67,10 @@ final class WorkerJobInfo {
     long estimateTaskCompletion()
     {
 	long roundTripTime = estimateRoundTripTime();
-	if( getRemainingTasksTime() == Long.MAX_VALUE || roundTripTime == Long.MAX_VALUE ) {
+	if( remainingTasksTime == Long.MAX_VALUE || roundTripTime == Long.MAX_VALUE ) {
 	    return Long.MAX_VALUE;
 	}
-	return getRemainingTasksTime() + roundTripTime;
+	return remainingTasksTime + roundTripTime;
     }
 
     /**
@@ -156,14 +156,5 @@ final class WorkerJobInfo {
 	    return 0L;
 	}
 	return val;
-    }
-
-    void setRemainingTaskTime( TaskInstanceIdentifier task, long val )
-    {
-	workerJobInfoTable.put( task, val );
-    }
-
-    public long getRemainingTasksTime() {
-	return remainingTasksTime;
     }
 }

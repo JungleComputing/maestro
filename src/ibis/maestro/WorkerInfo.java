@@ -207,7 +207,7 @@ final class WorkerInfo {
 	    }
 	    return Long.MAX_VALUE;
 	}
-	return workerJobInfo.getRemainingTasksTime();
+        return workerJobInfo.getAverageCompletionTime();
     }
 
     /**
