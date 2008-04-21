@@ -468,6 +468,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
     long getRemainingTasksTime( JobType jobType )
     {
-	return workers.getRemainingTasksTime( jobType );
+        synchronized( queue ){
+            return workers.getRemainingTasksTime( jobType );
+        }
     }
 }

@@ -548,9 +548,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
         long taskCompletionInterval;
 
 	JobType jobType = jobMessage.job.type;
-        synchronized( queue ){
-            taskCompletionInterval= node.getRemainingTasksTime( jobType );
-        }
+	taskCompletionInterval= node.getRemainingTasksTime( jobType );
 	WorkerMessage msg = new WorkerStatusMessage( jobMessage.workerIdentifier, jobMessage.jobId, queueInterval, taskCompletionInterval );
 	final MasterIdentifier master = jobMessage.source;
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
