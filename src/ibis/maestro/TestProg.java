@@ -9,6 +9,7 @@ import java.io.Serializable;
  */
 public class TestProg {
     private static final int ITERATIONS = 800;  // The number of times we should do the addition.
+    private static final int ARRAY_SIZE = 2000;
 
     static final int LEVELS = 4;
 
@@ -74,10 +75,10 @@ public class TestProg {
         @SuppressWarnings("synthetic-access")
         public AdditionData run( Object obj, Node node )
         {
-            Integer length = (Integer) obj;
-            double a[] = new double [length];
-            for( int i=0; i<length; i++ ) {
-                a[i] = i+42;
+            Integer val = (Integer) obj;
+            double a[] = new double [ARRAY_SIZE];
+            for( int i=0; i<ARRAY_SIZE; i++ ) {
+                a[i] = i+val;
             }
             return new AdditionData( a );
         }
