@@ -24,8 +24,9 @@ public final class Task
             this.id = id;
         }
 
-        /* (non-Javadoc)
-         * @see java.lang.Object#hashCode()
+        /**
+         * Returns the hash code of this task.
+         * @return The hash code.
          */
         @Override
         public int hashCode() {

@@ -9,7 +9,7 @@ import java.util.Random;
  */
 class TimeEstimate
 {
-    private static final int SAMPLE_WINDOW = 30;
+    private static final int SAMPLE_WINDOW = 10;
     private final long sampleValues[] = new long[SAMPLE_WINDOW];
     private int updateIndex = 0;
     private int sampleCount = 0;
@@ -19,9 +19,9 @@ class TimeEstimate
 
     TimeEstimate()
     {
-        // The sample values array is filled with 0, which suits us fine,
-        // but until we have a first sample we make a very pessimistic
-        // assumption about the time.
+        // The sample values array is filled with 0, which suits us fine.
+	// Until we have filled the entire sample window, we make
+	// a very optimistic assumption about the minimum time.
         maxIndex = SAMPLE_WINDOW-1;
         minIndex = SAMPLE_WINDOW-1;
     }

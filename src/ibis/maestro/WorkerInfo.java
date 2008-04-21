@@ -41,7 +41,7 @@ final class WorkerInfo {
     @Override
     public String toString()
     {
-	return "Worker";
+	return "Worker " + identifier;
     }
 
     WorkerInfo( ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker )
@@ -175,7 +175,7 @@ final class WorkerInfo {
         if( Settings.traceTypeHandling ){
             System.out.println( "worker " + identifier + " (" + port + ") can handle " + type );
         }
-	WorkerJobInfo info = new WorkerJobInfo();
+	WorkerJobInfo info = new WorkerJobInfo( toString() + " job type " + type );
 	workerJobInfoTable.put( type, info );
     }
 
@@ -190,24 +190,24 @@ final class WorkerInfo {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
 	if( workerJobInfo == null ) {
 	    if( Settings.traceTypeHandling ){
-	        System.out.println( "estimateTaskCompletion(): Worker " + identifier + " does not support type " + jobType );
+	        System.out.println( "estimateTaskCompletion(): worker " + identifier + " does not support type " + jobType );
 	    }
 	    return Long.MAX_VALUE;
 	}
 	return workerJobInfo.estimateTaskCompletion();
     }
 
-    long getRemainingTaskTime( JobType jobType )
+    long getRemainingTasksTime( JobType jobType )
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
 
 	if( workerJobInfo == null ) {
 	    if( Settings.traceTypeHandling ){
-	        System.out.println( "getRemainingTaskTime(): worker " + identifier + " does not support type " + jobType );
+		Globals.log.reportInternalError( "Internal error: getRemainingTaskTime(): worker " + identifier + " does not support type " + jobType );
 	    }
 	    return Long.MAX_VALUE;
 	}
-	return workerJobInfo.getAverageCompletionTime();
+	return workerJobInfo.getRemainingTasksTime();
     }
 
     /**

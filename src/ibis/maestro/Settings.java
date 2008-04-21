@@ -48,7 +48,7 @@ class Settings {
     static final boolean traceSubmissionInterval = true;
 
     /** Trace all send events. */
-    static final boolean traceSends = true;
+    static final boolean traceSends = false;
 
     /** We limit the master queue to this many jobs per known worker. */
     static final int JOBS_PER_WORKER = 10;

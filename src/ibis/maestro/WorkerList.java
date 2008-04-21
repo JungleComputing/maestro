@@ -169,7 +169,7 @@ final class WorkerList {
 		System.out.println( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for job of type " + jobType );
 	    }
 	    else {
-                System.out.println( "Selected worker " + best + " for job of type " + jobType + "; roundTripTime=" + Service.formatNanoseconds( bestInterval ) );
+                System.out.println( "Selected " + best + " for job of type " + jobType + "; estimated task completion time" + Service.formatNanoseconds( bestInterval ) );
             }
         }
         return best;
@@ -258,11 +258,11 @@ final class WorkerList {
         }
     }
 
-    long getRemainingTaskTime( JobType jobType )
+    long getRemainingTasksTime( JobType jobType )
     {
 	long res = Long.MAX_VALUE;
 	for( WorkerInfo wi: workers ) {
-	    long val = wi.getRemainingTaskTime( jobType );
+	    long val = wi.getRemainingTasksTime( jobType );
 	    if( val<res ) {
 		res = val;
 	    }

@@ -7,6 +7,9 @@ import java.util.Hashtable;
 
 
 final class WorkerJobInfo {
+    /** label of this worker/job combination in traces. */
+    private final String label;
+
     private final TimeEstimate roundTripEstimate = new TimeEstimate();
 
     /** How many instances of this job does this worker currently have? */
@@ -40,7 +43,7 @@ final class WorkerJobInfo {
         if( maximalAllowance == 0 ){
             System.err.println( "Internal error: zero allowance" );
         }
-        if( outstandingJobs>=maximalAllowance || remainingTasksTime == Long.MAX_VALUE ){
+        if( outstandingJobs>=maximalAllowance || getRemainingTasksTime() == Long.MAX_VALUE ){
             return Long.MAX_VALUE;
         }
 	return roundTripEstimate.getEstimate();
@@ -48,10 +51,11 @@ final class WorkerJobInfo {
     
     long getAverageCompletionTime()
     {
-	if( remainingTasksTime == Long.MAX_VALUE ) {
+	long average = roundTripEstimate.getAverage();
+	if( getRemainingTasksTime() == Long.MAX_VALUE || average == Long.MAX_VALUE ) {
 	    return Long.MAX_VALUE;
 	}
-	return roundTripEstimate.getAverage() + remainingTasksTime;
+	return average + getRemainingTasksTime();
     }
 
     /**
@@ -62,19 +66,20 @@ final class WorkerJobInfo {
      */
     long estimateTaskCompletion()
     {
-	if( remainingTasksTime == Long.MAX_VALUE ) {
+	long roundTripTime = estimateRoundTripTime();
+	if( getRemainingTasksTime() == Long.MAX_VALUE || roundTripTime == Long.MAX_VALUE ) {
 	    return Long.MAX_VALUE;
 	}
-	return remainingTasksTime + estimateRoundTripTime();
+	return getRemainingTasksTime() + roundTripTime;
     }
 
     /**
      * Constructs a new information class for a particular job type
      * for a particular worker.
      */
-    WorkerJobInfo()
+    WorkerJobInfo( String label )
     {
-        // Nothing to do.
+	this.label = label;
     }
 
     /**
@@ -86,10 +91,10 @@ final class WorkerJobInfo {
     {
 	executedJobs++;
 	roundTripEstimate.addSample( theRoundTripInterval );
-	this.remainingTasksTime = taskCompletionTime;
+	remainingTasksTime = taskCompletionTime;
 	outstandingJobs--;
 	if( Settings.traceWorkerProgress ) {
-	    System.out.println( "New roundtrip time estimate: " + roundTripEstimate + ", task completion time: " + Service.formatNanoseconds( taskCompletionTime ) );
+	    System.out.println( label + ": new roundtrip time estimate: " + roundTripEstimate + ", remaining tasks completion time: " + Service.formatNanoseconds( taskCompletionTime ) );
 	}
     }
 
@@ -156,5 +161,9 @@ final class WorkerJobInfo {
     void setRemainingTaskTime( TaskInstanceIdentifier task, long val )
     {
 	workerJobInfoTable.put( task, val );
+    }
+
+    public long getRemainingTasksTime() {
+	return remainingTasksTime;
     }
 }

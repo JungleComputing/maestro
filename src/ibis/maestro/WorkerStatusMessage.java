@@ -28,4 +28,10 @@ final class WorkerStatusMessage extends WorkerMessage {
         this.queueInterval = queueInterval;
         this.taskCompletionInterval = taskCompletionInterval;
     }
+    
+    @Override
+    public String toString()
+    {
+	return "worker status message: jobId=" + jobId + " queueInterval=" + Service.formatNanoseconds(queueInterval) + " taskCompletionInterval=" + Service.formatNanoseconds( taskCompletionInterval );
+    }
 }

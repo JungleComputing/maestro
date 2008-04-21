@@ -55,7 +55,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	 * @return True iff the two identifiers are equal.
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(Object obj)
+	{
 	    if (this == obj)
 		return true;
 	    if (obj == null)
@@ -383,7 +384,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 }
             }
 	    if( Settings.traceMasterQueue ) {
-	        System.out.println( "Selected worker " + sub.worker + " as best for job " + sub.job );
+	        System.out.println( "Selected " + sub.worker + " as best for job " + sub.job );
 	    }
 	    submitJobToWorker( sub );
 	}
@@ -465,8 +466,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         workers.printStatistics( System.out );
     }
 
-    long getRemainingTaskTime( JobType jobType )
+    long getRemainingTasksTime( JobType jobType )
     {
-	return workers.getRemainingTaskTime( jobType );
+	return workers.getRemainingTasksTime( jobType );
     }
 }

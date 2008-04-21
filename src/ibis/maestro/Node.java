@@ -360,9 +360,9 @@ public final class Node {
 	}
     }
 
-    long getRemainingTaskTime( JobType jobType )
+    long getRemainingTasksTime( JobType jobType )
     {
-	return master.getRemainingTaskTime( jobType );
+	return master.getRemainingTasksTime( jobType );
     }
 
     /**
