@@ -8,8 +8,8 @@ import java.io.Serializable;
  *
  */
 public class TestProg {
-    private static final int ITERATIONS = 800;  // The number of times we should do the addition.
-    private static final int ARRAY_SIZE = 2000;
+    private static final int ITERATIONS = 1000;  // The number of times we should do the addition.
+    private static final int ARRAY_SIZE = 20000;
 
     static final int LEVELS = 4;
 

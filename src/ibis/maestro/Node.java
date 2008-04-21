@@ -369,7 +369,6 @@ public final class Node {
      * Creates a task with the given name and the given sequence of jobs.
      * 
      * @param name The name of the task.
-     * @param listener The completion listener for this task.
      * @param jobs The list of jobs of the task.
      * @return A new task instance representing this task.
      */
