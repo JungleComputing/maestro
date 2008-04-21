@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.io.Serializable;
+
 /**
  * Small test program.
  * @author Kees van Reeuwijk
@@ -36,7 +38,8 @@ public class TestProg {
         }
     }
 
-    private static class AdditionData {
+    private static class AdditionData implements Serializable {
+        private static final long serialVersionUID = 1673728176628719415L;
         final double data[];
 
         private AdditionData(final double[] data) {
