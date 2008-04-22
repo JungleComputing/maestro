@@ -258,11 +258,19 @@ final class WorkerList {
         }
     }
 
-    long getRemainingTasksTime( JobType jobType )
+    /**
+     * Given a job type, return the estimated average time it will take
+     * to execute this job and all subsequent jobs in the task by
+     * the fastest route.
+     * 
+     * @param jobType The type of the job.
+     * @return The estimated time in nanoseconds.
+     */
+    long getAverageCompletionTime( JobType jobType )
     {
 	long res = Long.MAX_VALUE;
 	for( WorkerInfo wi: workers ) {
-	    long val = wi.getRemainingTasksTime( jobType );
+	    long val = wi.getAverageCompletionTime( jobType );
 	    if( val<res ) {
 		res = val;
 	    }

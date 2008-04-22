@@ -40,96 +40,96 @@ public final class Node {
 
     private class NodeRegistryEventHandler implements RegistryEventHandler {
 
-        /**
-         * A new Ibis joined the computation.
-         * @param theIbis The ibis that joined the computation.
-         */
-        @SuppressWarnings("synthetic-access")
-        @Override
-        public void joined( IbisIdentifier theIbis )
-        {
-            registerIbisJoined( theIbis );
-            worker.addJobSource( theIbis );
-        }
+	/**
+	 * A new Ibis joined the computation.
+	 * @param theIbis The ibis that joined the computation.
+	 */
+	@SuppressWarnings("synthetic-access")
+	@Override
+	public void joined( IbisIdentifier theIbis )
+	{
+	    registerIbisJoined( theIbis );
+	    worker.addJobSource( theIbis );
+	}
 
-        /**
-         * An ibis has died.
-         * @param theIbis The ibis that died.
-         */
-        @SuppressWarnings("synthetic-access")
-        @Override
-        public void died( IbisIdentifier theIbis )
-        {
-            registerIbisLeft( theIbis );
-            worker.removeIbis( theIbis );
-            master.removeIbis( theIbis );
-        }
+	/**
+	 * An ibis has died.
+	 * @param theIbis The ibis that died.
+	 */
+	@SuppressWarnings("synthetic-access")
+	@Override
+	public void died( IbisIdentifier theIbis )
+	{
+	    registerIbisLeft( theIbis );
+	    worker.removeIbis( theIbis );
+	    master.removeIbis( theIbis );
+	}
 
-        /**
-         * An ibis has explicitly left the computation.
-         * @param theIbis The ibis that left.
-         */
-        @SuppressWarnings("synthetic-access")
-        @Override
-        public void left( IbisIdentifier theIbis )
-        {
-            registerIbisLeft( theIbis );
-            worker.removeIbis( theIbis );
-            master.removeIbis( theIbis );
-        }
+	/**
+	 * An ibis has explicitly left the computation.
+	 * @param theIbis The ibis that left.
+	 */
+	@SuppressWarnings("synthetic-access")
+	@Override
+	public void left( IbisIdentifier theIbis )
+	{
+	    registerIbisLeft( theIbis );
+	    worker.removeIbis( theIbis );
+	    master.removeIbis( theIbis );
+	}
 
-        /**
-         * The results of an election are known.
-         * @param name The name of the election.
-         * @param theIbis The ibis that was elected.
-         */
-        @SuppressWarnings("synthetic-access")
-        @Override
-        public void electionResult( String name, IbisIdentifier theIbis )
-        {
-            if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
-                synchronized( maestros ){
-                    maestros.add( new MaestroInfo( theIbis ) );
-                }
-            }
-        }
+	/**
+	 * The results of an election are known.
+	 * @param name The name of the election.
+	 * @param theIbis The ibis that was elected.
+	 */
+	@SuppressWarnings("synthetic-access")
+	@Override
+	public void electionResult( String name, IbisIdentifier theIbis )
+	{
+	    if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
+		synchronized( maestros ){
+		    maestros.add( new MaestroInfo( theIbis ) );
+		}
+	    }
+	}
 
-        /**
-         * Our ibis got a signal.
-         * @param signal The signal.
-         */
-        @Override
-        public void gotSignal( String signal )
-        {
-            // Not interested.
-        }
+	/**
+	 * Our ibis got a signal.
+	 * @param signal The signal.
+	 */
+	@Override
+	public void gotSignal( String signal )
+	{
+	    // Not interested.
+	}
 
     }
 
     private static class TaskInfo {
-        final TaskInstanceIdentifier identifier;
-        final CompletionListener listener;
+	final TaskInstanceIdentifier identifier;
+	final CompletionListener listener;
 
-        /**
-         * Constructs an information class for the given task identifier.
-         * 
-         * @param identifier The task identifier.
-         * @param listener The completion listener associated with the task.
-         */
-        public TaskInfo( final TaskInstanceIdentifier identifier, final CompletionListener listener )
-        {
-            this.identifier = identifier;
-            this.listener = listener;
-        }
+	/**
+	 * Constructs an information class for the given task identifier.
+	 * 
+	 * @param identifier The task identifier.
+	 * @param listener The completion listener associated with the task.
+	 */
+	public TaskInfo( final TaskInstanceIdentifier identifier, final CompletionListener listener )
+	{
+	    this.identifier = identifier;
+	    this.listener = listener;
+	}
     }
 
     /** The list of maestros in this computation. */
     private static class MaestroInfo {
-        IbisIdentifier ibis;   // The identifier of the maestro.
+	IbisIdentifier ibis;   // The identifier of the maestro.
 
-        MaestroInfo( IbisIdentifier id ) {
-            this.ibis = id;
-        }
+	MaestroInfo( IbisIdentifier id ) {
+	    this.ibis = id;
+	}
     }
 
     /**
@@ -145,13 +145,13 @@ public final class Node {
      */
     private void registerIbisJoined( IbisIdentifier id )
     {
-        synchronized( maestros ){
-            for( MaestroInfo m: maestros ) {
-                if( m.ibis.equals( id ) ) {
-                    System.out.println( "Maestro ibis " + id + " was registered" );
-                }
-            }
-        }
+	synchronized( maestros ){
+	    for( MaestroInfo m: maestros ) {
+		if( m.ibis.equals( id ) ) {
+		    System.out.println( "Maestro ibis " + id + " was registered" );
+		}
+	    }
+	}
     }
 
     /** Registers the ibis with the given identifier as one that has left the
@@ -160,24 +160,24 @@ public final class Node {
      */
     private void registerIbisLeft( IbisIdentifier id )
     {
-        boolean noMaestrosLeft = false;
+	boolean noMaestrosLeft = false;
 
-        synchronized( maestros ){
-            int ix = maestros.size();
+	synchronized( maestros ){
+	    int ix = maestros.size();
 
-            while( ix>0 ) {
-                ix--;
-                MaestroInfo m = maestros.get( ix );
-                if( m.ibis.equals( id ) ) {
-                    maestros.remove( ix );
-                    noMaestrosLeft = maestros.isEmpty();
-                }
-            }
-        }
-        if( noMaestrosLeft ) {
-            System.out.println( "No maestros left; stopping.." );
-            setStopped();
-        }
+	    while( ix>0 ) {
+		ix--;
+		MaestroInfo m = maestros.get( ix );
+		if( m.ibis.equals( id ) ) {
+		    maestros.remove( ix );
+		    noMaestrosLeft = maestros.isEmpty();
+		}
+	    }
+	}
+	if( noMaestrosLeft ) {
+	    System.out.println( "No maestros left; stopping.." );
+	    setStopped();
+	}
     }
 
     /**
@@ -187,7 +187,7 @@ public final class Node {
      */
     public Node() throws IbisCreationFailedException, IOException
     {
-        this( true );
+	this( true );
     }
 
     /**
@@ -199,45 +199,45 @@ public final class Node {
     @SuppressWarnings("synthetic-access")
     public Node( boolean runForMaestro) throws IbisCreationFailedException, IOException
     {
-        Properties ibisProperties = new Properties();
-        IbisIdentifier maestro;
+	Properties ibisProperties = new Properties();
+	IbisIdentifier maestro;
 
-        ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
-        registryEventHandler = new NodeRegistryEventHandler();
-        ibis = IbisFactory.createIbis(
-                ibisCapabilities,
-                ibisProperties,
-                true,
-                registryEventHandler,
-                PacketSendPort.portType,
-                PacketUpcallReceivePort.portType,
-                PacketBlockingReceivePort.portType
-        );
-        if( Settings.traceNodes ) {
-            System.out.println( "Created ibis " + ibis );
-        }
-        Registry registry = ibis.registry();
-        if( runForMaestro ){
-            maestro = registry.elect( MAESTRO_ELECTION_NAME );
-            isMaestro = maestro.equals( ibis.identifier() );
-        }
-        else {
-            isMaestro = false;
+	ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
+	registryEventHandler = new NodeRegistryEventHandler();
+	ibis = IbisFactory.createIbis(
+		ibisCapabilities,
+		ibisProperties,
+		true,
+		registryEventHandler,
+		PacketSendPort.portType,
+		PacketUpcallReceivePort.portType,
+		PacketBlockingReceivePort.portType
+	);
+	if( Settings.traceNodes ) {
+	    System.out.println( "Created ibis " + ibis );
+	}
+	Registry registry = ibis.registry();
+	if( runForMaestro ){
+	    maestro = registry.elect( MAESTRO_ELECTION_NAME );
+	    isMaestro = maestro.equals( ibis.identifier() );
+	}
+	else {
+	    isMaestro = false;
 
-        }
-        if( Settings.traceNodes ) {
-            System.out.println( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
-        }
-        master = new Master( ibis, this );
-        worker = new Worker( ibis, this );
-        master.setLocalListener( worker );
-        worker.setLocalListener( master );
-        master.start();
-        worker.start();
-        registry.enableEvents();
-        if( Settings.traceNodes ) {
-            Globals.log.log( "Started a Maestro node" );
-        }
+	}
+	if( Settings.traceNodes ) {
+	    System.out.println( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
+	}
+	master = new Master( ibis, this );
+	worker = new Worker( ibis, this );
+	master.setLocalListener( worker );
+	worker.setLocalListener( master );
+	master.start();
+	worker.start();
+	registry.enableEvents();
+	if( Settings.traceNodes ) {
+	    Globals.log.log( "Started a Maestro node" );
+	}
     }
 
     /** Set this node to the stopped state.
@@ -246,8 +246,8 @@ public final class Node {
      */
     public void setStopped()
     {
-        worker.stopAskingForWork();
-        master.setStopped();
+	worker.stopAskingForWork();
+	master.setStopped();
     }
 
     /**
@@ -255,28 +255,28 @@ public final class Node {
      */
     public void waitToTerminate()
     {
-        /**
-         * Everything interesting happens in the master and worker.
-         * So all we do here is wait for the master and worker to terminate.
-         * We only stop this thread if both are terminated, so we can just wait
-         * for one to terminate, and then the other.
-         */
-        Service.waitToTerminate( master );
+	/**
+	 * Everything interesting happens in the master and worker.
+	 * So all we do here is wait for the master and worker to terminate.
+	 * We only stop this thread if both are terminated, so we can just wait
+	 * for one to terminate, and then the other.
+	 */
+	Service.waitToTerminate( master );
 
-        /** Once the master has stopped, stop the worker. */
-        worker.setStopped();
-        Service.waitToTerminate( worker );
-        master.printStatistics();
-        worker.printStatistics();
-        try {
-            ibis.end();
-        }
-        catch( IOException x ) {
-            // Nothing we can do about it.
-        }
-        if( Settings.traceNodes ) {
-            System.out.println( "Node has terminated" );
-        }
+	/** Once the master has stopped, stop the worker. */
+	worker.setStopped();
+	Service.waitToTerminate( worker );
+	master.printStatistics();
+	worker.printStatistics();
+	try {
+	    ibis.end();
+	}
+	catch( IOException x ) {
+	    // Nothing we can do about it.
+	}
+	if( Settings.traceNodes ) {
+	    System.out.println( "Node has terminated" );
+	}
     }
 
     /**
@@ -286,7 +286,7 @@ public final class Node {
      */
     public void allowJobType( JobType jobType )
     {
-        worker.allowJobType( jobType );
+	worker.allowJobType( jobType );
     }
 
     /** Report the completion of the task with the given identifier.
@@ -295,27 +295,27 @@ public final class Node {
      */
     public void reportCompletion( TaskInstanceIdentifier id, Object result )
     {
-        TaskInfo task = null;
+	TaskInfo task = null;
 
-        synchronized( runningTasks ){
-            for( int i=0; i<runningTasks.size(); i++ ){
-                task = runningTasks.get( i );
-                if( task.identifier.equals( id ) ){
-                    runningTasks.remove( i );
-                    break;
-                }
-            }
-        }
-        if( task != null ){
-            task.listener.jobCompleted( this, id, result );
-        }
+	synchronized( runningTasks ){
+	    for( int i=0; i<runningTasks.size(); i++ ){
+		task = runningTasks.get( i );
+		if( task.identifier.equals( id ) ){
+		    runningTasks.remove( i );
+		    break;
+		}
+	    }
+	}
+	if( task != null ){
+	    task.listener.jobCompleted( this, id, result );
+	}
     }
 
     void addRunningTask( TaskInstanceIdentifier id, CompletionListener listener )
     {
-        synchronized( runningTasks ){
-            runningTasks.add( new TaskInfo( id, listener ) );
-        }
+	synchronized( runningTasks ){
+	    runningTasks.add( new TaskInfo( id, listener ) );
+	}
     }
 
     void submit( JobInstance j )
@@ -329,7 +329,7 @@ public final class Node {
     WorkThread startExtraWorker()
     {
 	WorkThread t = new WorkThread( worker, this );
-        t.start();
+	t.start();
 	return t;
     }
 
@@ -360,9 +360,28 @@ public final class Node {
 	}
     }
 
-    long getRemainingTasksTime( JobType jobType )
+    /**
+     * Given a job type, return the estimated average time it will take
+     * to execute all subsequent jobs in the task by
+     * the fastest route.
+     * 
+     * @param jobType The type of the job.
+     * @return The estimated time in nanoseconds.
+     */
+    long getRemainingJobsTime( JobType jobType )
     {
-	return master.getRemainingTasksTime( jobType );
+	int ix = searchTask( jobType.task );
+	if( ix<0 ) {
+	    Globals.log.reportInternalError( "Unknown task id in job type " + jobType );
+	    return 0;
+	}
+	Task t = tasks.get(ix);
+	JobType nextJobType = t.getNextJobType( jobType );
+	if( nextJobType == null ) {
+	    // There is no next job type; that's an easy estimate to make.
+	    return 0l;
+	}
+	return master.getAverageCompletionTime( jobType );
     }
 
     /**
@@ -377,8 +396,8 @@ public final class Node {
 	int taskId = taskCounter++;
 	Task task = new Task( this, taskId, name, jobs );
 
-        tasks.add( task );
-        worker.registerTask( task );
+	tasks.add( task );
+	worker.registerTask( task );
 	return task;
     }
 
@@ -387,33 +406,51 @@ public final class Node {
 	return master.identifier();
     }
 
+    /** Given a task identifier, return the index in <code>tasks</code>
+     * of this identifier, or -1 if it doesn't exist.
+     * @param task The task to search for.
+     * @return The index of the task in <code>tasks</code>
+     */
+    private int searchTask( TaskIdentifier task )
+    {
+	for( int i=0; i<tasks.size(); i++ ) {
+	    Task t = tasks.get( i );
+	    if( t.id.equals( task ) ){
+		return i;
+	    }
+	}
+	return -1;
+
+    }
+
     /** Runs the given job instance.
      * 
      * @param job The job instance to run.
      */
     public void run( JobInstance job )
     {
-        JobType type = job.type;
-        TaskIdentifier task = type.task;
-        
-        for( Task t: tasks ){
-            if( t.id.equals( task ) ){
-                // This is the task of this job.
-                Job j = t.jobs[type.jobNo];
+	JobType type = job.type;
+	TaskIdentifier task = type.task;
 
-                Object result = j.run( job.input, this );
-                int nextJobNo = type.jobNo+1;
-                if( nextJobNo<t.jobs.length ){
-                    // There is a next step to take.
-                    JobInstance nextJob = new JobInstance( job.taskInstance, new JobType( type.task, nextJobNo ), result );
-                    submit( nextJob );
-                }
-                else {
-                    // This was the final step. Report back the result.
-                    TaskInstanceIdentifier identifier = job.taskInstance;
-                    sendResultMessage( identifier.receivePort, identifier, result );
-                }
-            }
-        }
+	int ix = searchTask( task );
+	if( ix<0 ) {
+	    Globals.log.reportInternalError( "Unknown task id " + task );
+	    return;
+	}
+	Task t = tasks.get( ix );
+	Job j = t.jobs[type.jobNo];
+
+	Object result = j.run( job.input, this );
+	int nextJobNo = type.jobNo+1;
+	if( nextJobNo<t.jobs.length ){
+	    // There is a next step to take.
+	    JobInstance nextJob = new JobInstance( job.taskInstance, new JobType( type.task, nextJobNo ), result );
+	    submit( nextJob );
+	}
+	else {
+	    // This was the final step. Report back the result.
+	    TaskInstanceIdentifier identifier = job.taskInstance;
+	    sendResultMessage( identifier.receivePort, identifier, result );
+	}
     }
 }

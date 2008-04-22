@@ -93,7 +93,7 @@ final class WorkerJobInfo {
 	roundTripEstimate.addSample( theRoundTripInterval );
 	remainingTasksTime = taskCompletionTime;
 	outstandingJobs--;
-	if( Settings.traceWorkerProgress ) {
+	if( Settings.traceWorkerProgress || Settings.traceRemainingTaskTime ) {
 	    System.out.println( label + ": new roundtrip time estimate: " + roundTripEstimate + ", remaining tasks completion time: " + Service.formatNanoseconds( taskCompletionTime ) );
 	}
     }

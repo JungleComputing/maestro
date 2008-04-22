@@ -71,6 +71,6 @@ final class RunJobMessage extends MasterMessage {
     @Override
     public String toString()
     {
-	return "Job message for job " + jobId;
+	return "Job message for job " + jobId + " of type " + job.type;
     }
 }

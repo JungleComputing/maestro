@@ -39,13 +39,10 @@ class Settings {
     static final boolean traceMasterQueue = false;
 
     /** Trace the administration of remaining task time. */
-    static final boolean traceRemainingTaskTime = false;
+    static final boolean traceRemainingTaskTime = true;
 
     /** Trace the progress of masters? */
     static final boolean traceMasterProgress = false;
-
-    /** Trace the adventures of the submission interval variable? */
-    static final boolean traceSubmissionInterval = false;
 
     /** Trace all send events. */
     static final boolean traceSends = false;

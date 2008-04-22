@@ -124,4 +124,21 @@ public final class Task
     {
         return "(task " + name + " " + id + ")";
     }
+
+    /**
+     * Given a job type, return the next one in the tasks sequence.
+     * @param jobType The current job type.
+     * @return The next job type, or <code>null</code> if there isn't one.
+     */
+    public JobType getNextJobType( JobType jobType )
+    {
+	if( !id.equals( jobType.task ) ) {
+	    Globals.log.reportInternalError( "getNextJobType(): not my task: " + jobType.task );
+	    return null;
+	}
+	if( jobType.jobNo<jobs.length ) {
+	    return new JobType( jobType.task, jobType.jobNo+1 );
+	}
+	return null;
+    }
 }

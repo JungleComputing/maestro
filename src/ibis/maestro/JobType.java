@@ -81,10 +81,10 @@ class JobType implements Serializable
     static int comparePriorities( JobType a, JobType b )
     {
         if( a.jobNo>b.jobNo ) {
-            return 1;
+            return -1;
         }
         if( a.jobNo<b.jobNo ) {
-            return -1;
+            return 1;
         }
         return 0;
     }

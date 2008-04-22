@@ -197,7 +197,7 @@ final class WorkerInfo {
 	return workerJobInfo.estimateTaskCompletion();
     }
 
-    long getRemainingTasksTime( JobType jobType )
+    long getAverageCompletionTime( JobType jobType )
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
 

@@ -471,10 +471,18 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         workers.printStatistics( System.out );
     }
 
-    long getRemainingTasksTime( JobType jobType )
+    /**
+     * Given a job type, return the estimated average time it will take
+     * to execute this job and all subsequent jobs in the task by
+     * the fastest route.
+     * 
+     * @param jobType The type of the job.
+     * @return The estimated time in nanoseconds.
+     */
+    long getAverageCompletionTime( JobType jobType )
     {
         synchronized( queue ){
-            return workers.getRemainingTasksTime( jobType );
+            return workers.getAverageCompletionTime( jobType );
         }
     }
 }
