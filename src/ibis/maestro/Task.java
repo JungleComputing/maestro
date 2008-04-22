@@ -136,7 +136,7 @@ public final class Task
 	    Globals.log.reportInternalError( "getNextJobType(): not my task: " + jobType.task );
 	    return null;
 	}
-	if( jobType.jobNo<jobs.length ) {
+	if( jobType.jobNo<jobs.length-1 ) {
 	    return new JobType( jobType.task, jobType.jobNo+1 );
 	}
 	return null;

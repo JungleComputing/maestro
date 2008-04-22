@@ -373,15 +373,15 @@ public final class Node {
 	int ix = searchTask( jobType.task );
 	if( ix<0 ) {
 	    Globals.log.reportInternalError( "Unknown task id in job type " + jobType );
-	    return 0;
+	    return 0L;
 	}
 	Task t = tasks.get(ix);
 	JobType nextJobType = t.getNextJobType( jobType );
 	if( nextJobType == null ) {
 	    // There is no next job type; that's an easy estimate to make.
-	    return 0l;
+	    return 0L;
 	}
-	return master.getAverageCompletionTime( jobType );
+	return master.getAverageCompletionTime( nextJobType );
     }
 
     /**

@@ -275,6 +275,9 @@ final class WorkerList {
 		res = val;
 	    }
 	}
+        if( res == Long.MAX_VALUE ){
+            System.out.println( "Zero workers??" );
+        }
 	return res;
     }
 }
