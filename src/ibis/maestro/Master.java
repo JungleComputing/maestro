@@ -166,9 +166,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
     }
 
-    private void handleResultMessage( ResultMessage m )
+    private void handleResultMessage( TaskResultMessage m )
     {
-	node.reportCompletion( m.id, m.result );
+	node.reportCompletion( m.task, m.result );
     }
 
     private void sendAcceptMessage( Master.WorkerIdentifier workerID, ReceivePortIdentifier myport, Worker.MasterIdentifier idOnWorker )
@@ -269,8 +269,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
             handleWorkerStatusMessage( result );
         }
-        else if( msg instanceof ResultMessage ) {
-            ResultMessage m = (ResultMessage) msg;
+        else if( msg instanceof TaskResultMessage ) {
+            TaskResultMessage m = (TaskResultMessage) msg;
             
             handleResultMessage( m );
         }
@@ -320,7 +320,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * This method only returns when the work queue was drained far enough
      * to submit this job.
      * @param j The job to add to the queue.
-     * @param id The identifier of the task this job belongs to.
+     * @param task The identifier of the task this job belongs to.
      */
     private void submitWhenRoom( JobInstance j )
     {

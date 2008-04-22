@@ -639,7 +639,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
      */
     long sendResultMessage(ReceivePortIdentifier port, TaskInstanceIdentifier id,
 	    Object result) {
-	WorkerMessage msg = new ResultMessage( id, result );
+	WorkerMessage msg = new TaskResultMessage( id, result );
 	return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
     }
 

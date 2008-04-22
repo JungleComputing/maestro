@@ -145,7 +145,7 @@ final class WorkerJobInfo {
     
     String buildStatisticsString()
     {
-	return "executed " + executedJobs + " jobs; maximal ever allowance: " + maximalEverAllowance + " estimated round-trip interval: " + roundTripEstimate;
+	return "executed " + executedJobs + " jobs; maximal ever allowance: " + maximalEverAllowance + " estimated round-trip interval: " + roundTripEstimate + " remaining tasks time " + Service.formatNanoseconds( remainingTasksTime );
     }
 
     long getRemainingTaskTime( TaskInstanceIdentifier task )

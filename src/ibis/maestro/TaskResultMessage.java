@@ -6,20 +6,20 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-final class ResultMessage extends WorkerMessage {
+final class TaskResultMessage extends WorkerMessage {
     private static final long serialVersionUID = 5158569253342276404L;
-    final TaskInstanceIdentifier id;
+    final TaskInstanceIdentifier task;
     final Object result;
 
     /**
      * Constructs a new result message.
-     * @param id The identifier of the task this is a result for.
+     * @param task The identifier of the task this is a result for.
      * @param result The result value.
      */
-    public ResultMessage( TaskInstanceIdentifier id, Object result )
+    public TaskResultMessage( TaskInstanceIdentifier task, Object result )
     {
 	super( null );
-	this.id = id;
+	this.task = task;
 	this.result = result;
     }
 

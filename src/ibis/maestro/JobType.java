@@ -9,7 +9,7 @@ import java.io.Serializable;
  * 
  * @author Kees van Reeuwijk
  */
-class JobType implements Serializable
+final class JobType implements Serializable
 {
     /** Contractual obligation. */
     private static final long serialVersionUID = 13451L;

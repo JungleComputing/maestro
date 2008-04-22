@@ -108,17 +108,21 @@ public final class Node {
 
     private static class TaskInfo {
 	final TaskInstanceIdentifier identifier;
+	final Task task;
 	final CompletionListener listener;
+	private final long startTime = System.nanoTime();
 
 	/**
 	 * Constructs an information class for the given task identifier.
 	 * 
 	 * @param identifier The task identifier.
+	 * @param task The task this belongs to.
 	 * @param listener The completion listener associated with the task.
 	 */
-	public TaskInfo( final TaskInstanceIdentifier identifier, final CompletionListener listener )
+	private TaskInfo( final TaskInstanceIdentifier identifier, Task task, final CompletionListener listener )
 	{
 	    this.identifier = identifier;
+	    this.task = task;
 	    this.listener = listener;
 	}
     }
@@ -250,6 +254,12 @@ public final class Node {
 	master.setStopped();
     }
 
+    public void printStatistics()
+    {
+	for( Task t: tasks ) {
+	    t.printStatistics();
+	}
+    }
     /**
      * Wait for this node to finish.
      */
@@ -266,6 +276,7 @@ public final class Node {
 	/** Once the master has stopped, stop the worker. */
 	worker.setStopped();
 	Service.waitToTerminate( worker );
+	printStatistics();
 	master.printStatistics();
 	worker.printStatistics();
 	try {
@@ -301,6 +312,8 @@ public final class Node {
 	    for( int i=0; i<runningTasks.size(); i++ ){
 		task = runningTasks.get( i );
 		if( task.identifier.equals( id ) ){
+		    long taskInterval = System.nanoTime()-task.startTime;
+		    task.task.registerTaskTime( taskInterval );
 		    runningTasks.remove( i );
 		    break;
 		}
@@ -311,10 +324,10 @@ public final class Node {
 	}
     }
 
-    void addRunningTask( TaskInstanceIdentifier id, CompletionListener listener )
+    void addRunningTask( TaskInstanceIdentifier id, Task task, CompletionListener listener )
     {
 	synchronized( runningTasks ){
-	    runningTasks.add( new TaskInfo( id, listener ) );
+	    runningTasks.add( new TaskInfo( id, task, listener ) );
 	}
     }
 

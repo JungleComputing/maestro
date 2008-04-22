@@ -169,7 +169,7 @@ final class WorkerList {
 		System.out.println( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for job of type " + jobType );
 	    }
 	    else {
-                System.out.println( "Selected " + best + " for job of type " + jobType + "; estimated task completion time" + Service.formatNanoseconds( bestInterval ) );
+                System.out.println( "Selected " + best + " for job of type " + jobType + "; estimated task completion time " + Service.formatNanoseconds( bestInterval ) );
             }
         }
         return best;

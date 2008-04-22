@@ -18,7 +18,7 @@ class JobInstance implements Serializable {
      * @param type The type of this job instance.
      * @param input The input for this job.
      */
-    JobInstance(TaskInstanceIdentifier tii, JobType type, Object input) {
+    JobInstance( TaskInstanceIdentifier tii, JobType type, Object input) {
 	taskInstance = tii;
 	this.type = type;
 	this.input = input;

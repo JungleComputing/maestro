@@ -14,6 +14,7 @@ public final class Task
     final TaskIdentifier id;
     final String name;
     final Job[] jobs;
+    final TimeEstimate taskTime = new TimeEstimate();
 
     static final class TaskIdentifier implements Serializable {
         private static final long serialVersionUID = -5895857432770361027L;
@@ -111,7 +112,7 @@ public final class Task
     public void submit( Object value, Object userId, CompletionListener listener )
     {
         TaskInstanceIdentifier tii = buildTaskInstanceIdentifier( userId );
-        node.addRunningTask( tii, listener );
+        node.addRunningTask( tii, this, listener );
         submitAJob( tii, 0, value );
     }
 
@@ -130,7 +131,7 @@ public final class Task
      * @param jobType The current job type.
      * @return The next job type, or <code>null</code> if there isn't one.
      */
-    public JobType getNextJobType( JobType jobType )
+    JobType getNextJobType( JobType jobType )
     {
 	if( !id.equals( jobType.task ) ) {
 	    Globals.log.reportInternalError( "getNextJobType(): not my task: " + jobType.task );
@@ -140,5 +141,18 @@ public final class Task
 	    return new JobType( jobType.task, jobType.jobNo+1 );
 	}
 	return null;
+    }
+
+    void registerTaskTime( long taskInterval )
+    {
+	taskTime.addSample( taskInterval );
+    }
+
+    /**
+     * Prints some statistics for this task.
+     */
+    public void printStatistics()
+    {
+	System.out.println( name + ": " + taskTime.toString() );
     }
 }

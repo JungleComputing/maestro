@@ -21,7 +21,7 @@ final class WorkThread extends Thread
         super( "Work thread" );
         // Unfortunately, bureaucracy has to go before work,
         // because we have to make sure other nodes get work too.
-        setPriority( NORM_PRIORITY-1 );
+        //setPriority( NORM_PRIORITY-1 );
         this.source = source;
         this.localNode = localMaster;
     }
