@@ -308,7 +308,7 @@ public final class Node {
      * @param id The task that has been completed.
      * @param result The task result.
      */
-    public void reportCompletion( TaskInstanceIdentifier id, Object result )
+    void reportCompletion( TaskInstanceIdentifier id, Object result )
     {
 	TaskInfo task = null;
 
@@ -324,7 +324,7 @@ public final class Node {
 	    }
 	}
 	if( task != null ){
-	    task.listener.jobCompleted( this, id, result );
+	    task.listener.jobCompleted( this, id.userId, result );
 	}
     }
 

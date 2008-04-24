@@ -108,7 +108,7 @@ public final class Task
      * Submits a task by giving a user-defined identifier, and the input value to the first job of the task.
      * @param value The value to submit.
      * @param userId The identifier for the user of this task.
-     * @param listener 
+     * @param listener The listener that should be informed when this task is completed.
      */
     public void submit( Object value, Object userId, CompletionListener listener )
     {
