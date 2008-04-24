@@ -36,10 +36,10 @@ class Settings {
     static final boolean traceNodes = false;
 
     /** Trace the events in the master queue? */
-    static final boolean traceMasterQueue = true;
+    static final boolean traceMasterQueue = false;
 
     /** Trace the administration of remaining task time. */
-    static final boolean traceRemainingTaskTime = true;
+    static final boolean traceRemainingTaskTime = false;
 
     /** Trace the progress of masters? */
     static final boolean traceMasterProgress = false;

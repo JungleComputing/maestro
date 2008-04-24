@@ -9,7 +9,7 @@ import java.io.Serializable;
  */
 public class TestProg {
     private static final int ITERATIONS = 2000;  // The number of times we should do the addition.
-    private static final int ARRAY_SIZE = 200000;
+    private static final int ARRAY_SIZE = 50000;
 
     static final int LEVELS = 4;
 
