@@ -61,6 +61,9 @@ public class Service
      */
     public static String formatNanoseconds( final long t )
     {
+	if( t == Long.MAX_VALUE ) {
+	    return "infinite";
+	}
 	if( t == 0 ) {
 	    return "0 s";
 	}

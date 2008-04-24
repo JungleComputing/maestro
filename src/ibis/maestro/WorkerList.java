@@ -148,6 +148,9 @@ final class WorkerList {
             if( !wi.isDead() ) {
         	long val = wi.estimateTaskCompletion( jobType );
 
+        	if( Settings.traceRemainingTaskTime ) {
+        	    System.out.println( "Worker " + wi + ": job type " + jobType + ": estimated completion time " + Service.formatNanoseconds( val ) );
+        	}
         	if( val<bestInterval ) {
         	    bestInterval = val;
         	    best = wi;

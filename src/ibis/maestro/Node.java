@@ -11,6 +11,7 @@ import ibis.ipl.RegistryEventHandler;
 import ibis.maestro.Task.TaskIdentifier;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -152,7 +153,7 @@ public final class Node {
 	synchronized( maestros ){
 	    for( MaestroInfo m: maestros ) {
 		if( m.ibis.equals( id ) ) {
-		    System.out.println( "Maestro ibis " + id + " was registered" );
+		    Globals.log.reportProgress( "Maestro ibis " + id + " was registered" );
 		}
 	    }
 	}
@@ -179,7 +180,7 @@ public final class Node {
 	    }
 	}
 	if( noMaestrosLeft ) {
-	    System.out.println( "No maestros left; stopping.." );
+	    Globals.log.reportProgress( "No maestros left; stopping.." );
 	    setStopped();
 	}
     }
@@ -201,7 +202,7 @@ public final class Node {
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
     @SuppressWarnings("synthetic-access")
-    public Node( boolean runForMaestro) throws IbisCreationFailedException, IOException
+    public Node( boolean runForMaestro ) throws IbisCreationFailedException, IOException
     {
 	Properties ibisProperties = new Properties();
 	IbisIdentifier maestro;
@@ -218,7 +219,7 @@ public final class Node {
 		PacketBlockingReceivePort.portType
 	);
 	if( Settings.traceNodes ) {
-	    System.out.println( "Created ibis " + ibis );
+	    Globals.log.reportProgress( "Created ibis " + ibis );
 	}
 	Registry registry = ibis.registry();
 	if( runForMaestro ){
@@ -230,7 +231,7 @@ public final class Node {
 
 	}
 	if( Settings.traceNodes ) {
-	    System.out.println( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
+	    Globals.log.reportProgress( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
 	}
 	master = new Master( ibis, this );
 	worker = new Worker( ibis, this );
@@ -254,10 +255,13 @@ public final class Node {
 	master.setStopped();
     }
 
-    public void printStatistics()
+    /** Print extensive statistics of this node.
+     * @param s The stream to print to.
+     */
+    public void printStatistics( PrintStream s )
     {
 	for( Task t: tasks ) {
-	    t.printStatistics();
+	    t.printStatistics( s );
 	}
     }
     /**
@@ -276,7 +280,7 @@ public final class Node {
 	/** Once the master has stopped, stop the worker. */
 	worker.setStopped();
 	Service.waitToTerminate( worker );
-	printStatistics();
+	printStatistics( System.out );
 	master.printStatistics();
 	worker.printStatistics();
 	try {
@@ -286,7 +290,7 @@ public final class Node {
 	    // Nothing we can do about it.
 	}
 	if( Settings.traceNodes ) {
-	    System.out.println( "Node has terminated" );
+	    Globals.log.reportProgress( "Node has terminated" );
 	}
     }
 

@@ -1,5 +1,6 @@
 package ibis.maestro;
 
+import java.io.PrintStream;
 import java.io.Serializable;
 
 /**
@@ -150,9 +151,10 @@ public final class Task
 
     /**
      * Prints some statistics for this task.
+     * @param s The stream to print to.
      */
-    public void printStatistics()
+    public void printStatistics( PrintStream s )
     {
-	System.out.println( name + ": " + taskTime.toString() );
+	s.println( name + ": " + taskTime.toString() );
     }
 }

@@ -46,7 +46,7 @@ class PacketSendPort<T extends Serializable> {
 
     /** One entry in the list of destinations. */
     private static final class DestinationInfo {
-	static final class InfoComparator implements Comparator<DestinationInfo>, Serializable {
+	private static final class InfoComparator implements Comparator<DestinationInfo>, Serializable {
 	    private static final long serialVersionUID = 9141273343902181193L;
 
 	    /**
@@ -83,23 +83,23 @@ class PacketSendPort<T extends Serializable> {
 
 	}
 
-	CacheInfo cacheSlot;
-	int sentCount = 0;
-	int sentBytes = 0;
-	final ReceivePortIdentifier portIdentifier;
-	boolean local;
+	private CacheInfo cacheSlot;
+	private int sentCount = 0;
+	private int sentBytes = 0;
+	private final ReceivePortIdentifier portIdentifier;
+	private boolean local;
 
 	/** Create a new destination info entry.
 	 * @param portIdentifier The destination port.
 	 * @param local True iff this destination represents the local master or worker.
 	 */
-	public DestinationInfo( ReceivePortIdentifier portIdentifier, boolean local ){
+	private DestinationInfo( ReceivePortIdentifier portIdentifier, boolean local ){
 	    this.portIdentifier = portIdentifier;
 	    this.local = local;
 	}
 
 	/** Print statistics for this destination. */
-	public void printStats() {
+	private void printStats() {
 	    char dest = local?'L':'R'; 
 	    System.out.format( " %c %5d messages %7d bytes; port %s\n", dest, sentCount, sentBytes, portIdentifier.toString() );
 	}
@@ -212,37 +212,44 @@ class PacketSendPort<T extends Serializable> {
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
-    private synchronized long send( int destination, T data, int timeout ) throws IOException
+    private long send( int destination, T data, int timeout ) throws IOException
     {
 	long len;
 
 	DestinationInfo info = destinations.get( destination );
 	if( info.local ) {
+	    // This is the local destination. Use the back door to get
+	    // the info to the destination.
 	    localListener.messageReceived( data );
-	    localSentCount++;
 	    len = 0;
+	    synchronized( this ) {
+		localSentCount++;
+		info.sentCount++;
+	    }
 	    if( Settings.traceSends ) {
 		System.out.println( "Sent local message" );
 	    }
 	}
 	else {
-	    ensureOpenDestination( info, timeout );
-	    long startTime = System.nanoTime();
-	    final CacheInfo cacheInfo = info.cacheSlot;
-	    WriteMessage msg = cacheInfo.port.newMessage();
-	    msg.writeObject( data );
-	    len = msg.finish();
-	    cacheInfo.recentlyUsed = true;
-	    long stopTime = System.nanoTime();
-	    sentBytes += len;
-	    sentCount++;
-	    info.sentBytes += len;
-	    sendTime += (stopTime-startTime);
-	    if( Settings.traceSends ) {
-		System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-startTime) );
+	    synchronized( this ) {
+		ensureOpenDestination( info, timeout );
+		long startTime = System.nanoTime();
+		final CacheInfo cacheInfo = info.cacheSlot;
+		WriteMessage msg = cacheInfo.port.newMessage();
+		msg.writeObject( data );
+		len = msg.finish();
+		cacheInfo.recentlyUsed = true;
+		long stopTime = System.nanoTime();
+		sentBytes += len;
+		sentCount++;
+		info.sentBytes += len;
+		sendTime += (stopTime-startTime);
+		info.sentCount++;
+		if( Settings.traceSends ) {
+		    System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-startTime) );
+		}
 	    }
 	}
-	info.sentCount++;
 	return len;
     }
 
@@ -255,27 +262,28 @@ class PacketSendPort<T extends Serializable> {
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
-    public synchronized long send( IbisIdentifier receiver, String portname, T data, int timeout ) throws IOException
+    private long send( IbisIdentifier receiver, String portname, T data, int timeout ) throws IOException
     {
 	long len;
 
-	long startTime = System.nanoTime();
-	long setupTime;
-	SendPort port = ibis.createSendPort(portType);
-	port.connect( receiver, portname, timeout, true );
-	WriteMessage msg = port.newMessage();
-	setupTime = System.nanoTime();
-	msg.writeObject( data );
-	len = msg.finish();
-	port.close();
-	long stopTime = System.nanoTime();
-	if( Settings.traceSends ) {
-	    System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) );
+	synchronized( this ) {
+	    long startTime = System.nanoTime();
+	    SendPort port = ibis.createSendPort( portType );
+	    port.connect( receiver, portname, timeout, true );
+	    long setupTime = System.nanoTime();
+	    WriteMessage msg = port.newMessage();
+	    msg.writeObject( data );
+	    len = msg.finish();
+	    port.close();
+	    long stopTime = System.nanoTime();
+	    if( Settings.traceSends ) {
+		System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) );
+	    }
+	    uncachedAdminTime += (setupTime-startTime);
+	    uncachedSendTime += (stopTime-setupTime);
+	    uncachedSentBytes += len;
+	    uncachedSentCount++;
 	}
-	uncachedAdminTime += (setupTime-startTime);
-	uncachedSendTime += (stopTime-setupTime);
-	uncachedSentBytes += len;
-	uncachedSentCount++;
 	return len;
     }
 
@@ -283,7 +291,7 @@ class PacketSendPort<T extends Serializable> {
      * 
      * @param portname The name of the port.
      */
-    public synchronized void printStats( String portname )
+    synchronized void printStats( String portname )
     {
 	System.out.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " remote messages; " + localSentCount + " local sends; "+ evictions + " evictions" );
 	if( sentCount>0 ) {
@@ -309,7 +317,7 @@ class PacketSendPort<T extends Serializable> {
     /**
      * Tries to close all open connections.
      */
-    public void close()
+    void close()
     {
 	for( CacheInfo e: cache ) {
 	    if( e != null ) {
@@ -332,7 +340,8 @@ class PacketSendPort<T extends Serializable> {
      * @param timeout The timeout on the message.
      * @return The number of transmitted bytes, or 0 if the message could not be sent.
      */
-    public long tryToSend( IbisIdentifier theIbis, String portName, T msg, int timeout ) {
+    long tryToSend( IbisIdentifier theIbis, String portName, T msg, int timeout )
+    {
 	long sz = 0;
 	try {
 	    sz = send( theIbis, portName, msg, timeout );
@@ -351,7 +360,7 @@ class PacketSendPort<T extends Serializable> {
      * @param timeout The timeout of the transmission.
      * @return The length of the transmitted data, or 0 if nothing could be transmitted.
      */
-    public long tryToSend( int destination, T msg, int timeout ) {
+    long tryToSend( int destination, T msg, int timeout ) {
 	long sz = -1;
 	try {
 	    sz = send( destination, msg, timeout );
@@ -369,16 +378,18 @@ class PacketSendPort<T extends Serializable> {
      * @param timeout The timeout value to use.
      * @return The size of the transmitted message, or -1 if the transmission failed.
      */
-    public long tryToSend( ReceivePortIdentifier port, T data, int timeout )
+    long tryToSend( ReceivePortIdentifier port, T data, int timeout )
     {
 	long len = -1;
 	try {
 	    Integer destination = PortToIdMap.get( port );
 	    if( destination != null ) {
 		// We have this one registered, use that port.
-		return send( destination, data, timeout);
+		return send( destination, data, timeout );
 	    }
 	    synchronized( this ) {
+		// We don't have information about this destination,
+		// just send it.
 		long tStart = System.nanoTime();
 		SendPort sendPort = ibis.createSendPort( portType );
 		sendPort.connect( port, timeout, true );
