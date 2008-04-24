@@ -25,18 +25,19 @@ public class TaskWaiter implements CompletionListener
         }
     }
 
-    /** Submits the given job to the given node.
-     * Internally we keep track of the number of submitted jobs so that
+    /** Submits a new task instance with the given input for the first job of the task.
+     * Internally we keep track of the number of submitted tasks so that
      * we can wait for all of them to complete.
      * 
      * @param task The task to submit to.
-     * @param j The job to submit.
+     * @param j Input for the (first job of the) task.
      */
-    public synchronized void submit( Task task, Job j )
+    @SuppressWarnings("synthetic-access")
+    public synchronized void submit( Task task, Object input )
     {
 	Object id = new WaiterTaskIdentifier( jobNo++ );
         outstandingJobs++;
-        task.submit( j, id, this );
+        task.submit( input, id, this );
     }
 
     /**

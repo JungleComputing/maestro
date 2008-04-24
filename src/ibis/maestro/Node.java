@@ -328,6 +328,7 @@ public final class Node {
 	}
     }
 
+    @SuppressWarnings("synthetic-access")
     void addRunningTask( TaskInstanceIdentifier id, Task task, CompletionListener listener )
     {
 	synchronized( runningTasks ){
