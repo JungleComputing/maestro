@@ -308,6 +308,7 @@ public final class Node {
      * @param id The task that has been completed.
      * @param result The task result.
      */
+    @SuppressWarnings("synthetic-access")
     void reportCompletion( TaskInstanceIdentifier id, Object result )
     {
 	TaskInfo task = null;
