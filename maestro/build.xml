@@ -32,25 +32,6 @@
     <property name="javadoc" location="javadoc" />
     <property name="sources" location="sources" />
 
-    <!-- copy external dependancies to lib, including provided GAT -->
-    <target name="copy-included-gat">
-        <mkdir dir="${lib}" />
-
-        <copy todir="${lib}">
-            <fileset dir="GAT" />
-        </copy>
-    </target>
-
-    <!-- copy javaGAT specified by GAT-location  -->
-    <target name="copy-external-gat">
-        <mkdir dir="${lib}" />
-
-        <copy todir="${lib}">
-            <fileset dir="${gat}/lib" />
-        </copy>
-
-    </target>
-
     <!-- Compile -->
     <target name="compile">
         <mkdir dir="${tmp}" />
