@@ -1,0 +1,100 @@
+[*] Waiting for work
+[*] Got registered message 123 compress [in: get.2.59] [out: put.2.59]
+[*] Got component compress
+[*] Need to create get queue get.2.59
+[*]   type image.UncompressedImage
+[*]   length 5
+[*]  connected to [put.1.27]
+[*] Created queue color[27]->compress[27,59] max length 5
+[*] Need to create put queue put.2.59
+[*]   type image.Image
+[*]   length 5
+[*]   connected to [get.3.0]
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]->counter[0] max length 5
+[*] Got message from (Ibis 0, location fs0.das3.cs.vu.nl) data true
+[*] Create component compress
+[*]  - Type     : processors.Compressor
+[*]  - In type  : image.UncompressedImage
+[*]  - In name  : color[27]->compress[27,59]
+[*]  - In ok    : true
+[*]  - Out type : image.Image
+[*]  - Out name : compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]->counter[0]
+[*] - Out ok   : true
+[*]  - Options  : {type=JPG}
+[*] Started component compress
+1.00 0 0
+2.01 0 0
+3.01 0 0
+4.02 1 130393
+5.02 0 0
+6.21 1 130333
+7.22 0 0
+8.22 1 130333
+9.23 1 130333
+10.24 0 0
+11.25 1 130333
+12.26 1 130333
+13.26 0 0
+14.27 1 130333
+15.28 0 0
+16.29 1 130333
+17.63 1 130333
+18.82 1 130333
+19.82 0 0
+20.99 1 130333
+22.22 1 130333
+23.23 1 130333
+24.23 0 0
+25.24 1 130333
+26.24 1 130333
+27.24 0 0
+28.45 1 130333
+29.51 1 130333
+30.73 0 0
+31.74 1 130333
+[*] Ibis READER took 33916 read 2892 put 15253 bytes 622082627 205.1397731854873 17.49216370009521
+32.74 1 130333
+33.75 0 0
+34.75 1 130333
+35.76 1 130333
+36.77 0 0
+37.77 1 130333
+38.94 1 130333
+39.94 1 130333
+[*] Ibis WRITER took 40882 send 183 get 40675 bytes 3258385 16.980535997067644 0.0760099331603977
+40.95 1 130333
+40.95 0 0
+[*] Statistic for 123: compress (Compressor)
+[*] Processed 25 images
+[*]  - Total time      : 40878 ms.
+[*]  - Processing time : 38985 ms.
+[*]  - Idle time       : 1893 ms. (4%)
+[*]  - Avg. proc. time : 1559 ms/image.
+[*]
+[*]  - Data in         : 593.26 MB
+[*]  - Data out        : 3.10 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 127.17 KB/image.
+[*]  - Overall rate in : 121.74 MBit/sec.
+[*]  - Overall rate out: 637.15 KBit/sec.
+[*]  - Proc. rate in   : 127.66 MBit/sec.
+[*]  - Proc. rate out  : 668.09 KBit/sec.
+[*]  - Done : true
+[*] Queue: color[27]->compress[27,59]
+[*]   len: 5
+[*]   put: 25
+[*] block: 12
+[*]  time: 15253
+[*]   get: 25
+[*] block: 1
+[*]  time: 1859
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]->counter[0]
+[*]   len: 5
+[*]   put: 25
+[*] block: 0
+[*]  time: 0
+[*]   get: 25
+[*] block: 26
+[*]  time: 40674
+[*] compress is done ?

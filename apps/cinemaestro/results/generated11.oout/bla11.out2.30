@@ -1,0 +1,1317 @@
+30
+[*] Waiting for work
+[*] Got registered message 30 counter [in: get.2.0] [out: none]
+[*] Got component counter
+[*] Need to create get queue get.2.0
+[*]   type image.Image
+[*]   length 1
+[*]  connected to [put.1.0, put.1.1, put.1.2, put.1.3, put.1.4, put.1.5, put.1.6, put.1.7, put.1.8, put.1.9, put.1.10, put.1.11, put.1.12, put.1.13, put.1.14, put.1.15, put.1.16, put.1.17, put.1.18, put.1.19]
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0] max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].0 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].1 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].2 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].3 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].4 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].5 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].6 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].7 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].8 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].9 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].10 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].11 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].12 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].13 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].14 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].15 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].16 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].17 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].18 max length 1
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].19 max length 1
+[*] Got message from (Ibis 0, location fs0.das3.cs.vu.nl) data true
+[*] Create component counter
+[*]  - Type     : processors.FrameRateCounter
+[*]  - In type  : image.Image
+[*]  - In name  : compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0]
+[*]  - In ok    : true
+[*]  - Out type : none
+[*]  - Out name : none
+[*] - Out ok   : true
+[*]  - Options  : {frames=1000}
+[*] Started component counter
+1.00 0 0
+2.01 0 0
+3.01 0 0
+4.02 0 0
+5.02 0 0
+6.03 0 0
+7.04 0 0
+8.04 0 0
+9.05 0 0
+10.06 0 0
+11.06 0 0
+12.07 0 0
+13.07 0 0
+14.08 0 0
+15.08 0 0
+16.08 0 0
+17.09 0 0
+18.09 0 0
+19.10 0 0
+20.10 0 0
+21.10 0 0
+22.11 0 0
+23.11 0 0
+24.12 0 0
+25.12 0 0
+26.12 0 0
+27.13 0 0
+28.13 0 0
+29.14 0 0
+30.14 0 0
+31.14 0 0
+32.15 0 0
+33.15 0 0
+34.16 0 0
+35.16 0 0
+36.16 0 0
+37.17 0 0
+38.17 0 0
+39.18 0 0
+40.18 0 0
+41.18 0 0
+42.19 0 0
+43.19 0 0
+44.19 0 0
+45.20 0 0
+46.20 0 0
+47.21 0 0
+48.21 0 0
+49.21 0 0
+50.23 0 0
+51.23 0 0
+52.23 0 0
+53.24 0 0
+54.24 0 0
+55.25 0 0
+56.25 0 0
+57.25 0 0
+58.26 0 0
+59.26 0 0
+60.27 0 0
+61.27 0 0
+62.27 0 0
+63.28 0 0
+64.28 0 0
+65.29 0 0
+66.29 0 0
+67.30 0 0
+68.31 0 0
+69.31 0 0
+70.32 0 0
+71.33 0 0
+72.33 0 0
+[*] Ibis READER took 73178 read 263 put 4201 bytes 11235894 40.74290315461249 0.14642902962178642
+[*] Ibis READER took 73233 read 87 put 286 bytes 11176702 122.5164786152456 0.14554823152849627
+[*] Ibis READER took 73153 read 36 put 26048 bytes 11252361 298.0857690175374 0.14669374714135233
+[*] Ibis READER took 73093 read 39 put 45248 bytes 11245597 274.9906931167994 0.14672591125764678
+[*] Ibis READER took 73455 read 92 put 697 bytes 11109714 115.16357504803202 0.14423863459831116
+73.33 0 0
+[*] Ibis READER took 73528 read 321 put 1 bytes 11141497 33.10080852092612 0.14450766422610822
+[*] Ibis READER took 73968 read 91 put 0 bytes 11223716 117.62384267953726 0.14470811274926848
+[*] Ibis READER took 73912 read 56 put 1 bytes 11248440 191.5597915649414 0.14513676165760253
+[*] Ibis READER took 74005 read 55 put 3 bytes 11186351 193.96610260009766 0.1441542550233818
+[*] Ibis READER took 74129 read 38 put 0 bytes 11208768 281.3030042146382 0.1442015157381895
+[*] Ibis READER took 74161 read 64 put 0 bytes 11189353 166.73435270786285 0.14388962626317367
+[*] Ibis READER took 74163 read 34 put 7436 bytes 11156650 312.93560476864087 0.14346521260107856
+[*] Ibis READER took 74093 read 124 put 3159 bytes 11122229 85.54019466523201 0.14315770907492975
+[*] Ibis READER took 74055 read 53 put 8100 bytes 11178575 201.14565795322633 0.14395678713822155
+[*] Ibis READER took 74612 read 51 put 1 bytes 11209459 209.6112382178213 0.14327686094876008
+[*] Ibis READER took 74544 read 70 put 1 bytes 11168646 152.16072627476282 0.1428854212174474
+74.34 0 0
+[*] Ibis READER took 74495 read 54 put 0 bytes 11185221 197.53811094495984 0.14319159663101996
+[*] Ibis READER took 74746 read 43 put 0 bytes 11181281 247.98373288886492 0.14266048369439424
+[*] Ibis READER took 75031 read 111 put 1 bytes 11119326 95.53347407160578 0.14133112476107532
+[*] Checking if all are done!
+[*] Ensure done took 1
+[*] Ibis READER took 75355 read 69 put 2 bytes 11142415 154.00340591651806 0.1410156593224039
+[*] Frame arrival times: 
+[*] 1 2225 0.449438202247191
+[*] 2 0 Infinity
+[*] 3 0 Infinity
+[*] 4 0 Infinity
+[*] 5 0 Infinity
+[*] 6 165 6.0606060606060606
+[*] 7 0 Infinity
+[*] 8 0 Infinity
+[*] 9 39 25.641025641025642
+[*] 10 0 Infinity
+[*] 11 450 2.2222222222222223
+[*] 12 97 10.309278350515465
+[*] 13 7 142.85714285714286
+[*] 14 0 Infinity
+[*] 15 0 Infinity
+[*] 16 0 Infinity
+[*] 17 0 Infinity
+[*] 18 6 166.66666666666666
+[*] 19 0 Infinity
+[*] 20 0 Infinity
+[*] 21 1002 0.998003992015968
+[*] 22 23 43.47826086956522
+[*] 23 60 16.666666666666668
+[*] 24 0 Infinity
+[*] 25 79 12.658227848101266
+[*] 26 178 5.617977528089888
+[*] 27 0 Infinity
+[*] 28 0 Infinity
+[*] 29 35 28.571428571428573
+[*] 30 0 Infinity
+[*] 31 325 3.076923076923077
+[*] 32 58 17.24137931034483
+[*] 33 299 3.3444816053511706
+[*] 34 0 Infinity
+[*] 35 0 Infinity
+[*] 36 218 4.587155963302752
+[*] 37 57 17.54385964912281
+[*] 38 0 Infinity
+[*] 39 0 Infinity
+[*] 40 0 Infinity
+[*] 41 197 5.0761421319796955
+[*] 42 55 18.181818181818183
+[*] 43 185 5.405405405405405
+[*] 44 263 3.802281368821293
+[*] 45 21 47.61904761904762
+[*] 46 105 9.523809523809524
+[*] 47 1 1000.0
+[*] 48 0 Infinity
+[*] 49 0 Infinity
+[*] 50 0 Infinity
+[*] 51 92 10.869565217391305
+[*] 52 83 12.048192771084338
+[*] 53 111 9.00900900900901
+[*] 54 0 Infinity
+[*] 55 39 25.641025641025642
+[*] 56 500 2.0
+[*] 57 0 Infinity
+[*] 58 0 Infinity
+[*] 59 0 Infinity
+[*] 60 0 Infinity
+[*] 61 75 13.333333333333334
+[*] 62 35 28.571428571428573
+[*] 63 251 3.9840637450199203
+[*] 64 379 2.638522427440633
+[*] 65 100 10.0
+[*] 66 24 41.666666666666664
+[*] 67 0 Infinity
+[*] 68 0 Infinity
+[*] 69 0 Infinity
+[*] 70 0 Infinity
+[*] 71 0 Infinity
+[*] 72 18 55.55555555555556
+[*] 73 96 10.416666666666666
+[*] 74 76 13.157894736842104
+[*] 75 227 4.405286343612334
+[*] 76 317 3.1545741324921135
+[*] 77 0 Infinity
+[*] 78 0 Infinity
+[*] 79 0 Infinity
+[*] 80 0 Infinity
+[*] 81 11 90.9090909090909
+[*] 82 47 21.27659574468085
+[*] 83 339 2.949852507374631
+[*] 84 300 3.3333333333333335
+[*] 85 153 6.5359477124183005
+[*] 86 0 Infinity
+[*] 87 0 Infinity
+[*] 88 0 Infinity
+[*] 89 0 Infinity
+[*] 90 0 Infinity
+[*] 91 0 Infinity
+[*] 92 29 34.48275862068966
+[*] 93 255 3.9215686274509802
+[*] 94 0 Infinity
+[*] 95 177 5.649717514124294
+[*] 96 271 3.690036900369004
+[*] 97 0 Infinity
+[*] 98 0 Infinity
+[*] 99 0 Infinity
+[*] 100 0 Infinity
+[*] 101 0 Infinity
+[*] 102 0 Infinity
+[*] 103 461 2.1691973969631237
+[*] 104 169 5.9171597633136095
+[*] 105 261 3.8314176245210727
+[*] 106 128 7.8125
+[*] 107 0 Infinity
+[*] 108 0 Infinity
+[*] 109 0 Infinity
+[*] 110 0 Infinity
+[*] 111 0 Infinity
+[*] 112 0 Infinity
+[*] 113 178 5.617977528089888
+[*] 114 0 Infinity
+[*] 115 214 4.672897196261682
+[*] 116 286 3.4965034965034967
+[*] 117 0 Infinity
+[*] 118 0 Infinity
+[*] 119 0 Infinity
+[*] 120 0 Infinity
+[*] 121 0 Infinity
+[*] 122 0 Infinity
+[*] 123 364 2.7472527472527473
+[*] 124 134 7.462686567164179
+[*] 125 420 2.380952380952381
+[*] 126 0 Infinity
+[*] 127 0 Infinity
+[*] 128 0 Infinity
+[*] 129 0 Infinity
+[*] 130 0 Infinity
+[*] 131 0 Infinity
+[*] 132 0 Infinity
+[*] 133 0 Infinity
+[*] 134 0 Infinity
+[*] 135 250 4.0
+[*] 136 507 1.9723865877712032
+[*] 137 0 Infinity
+[*] 138 0 Infinity
+[*] 139 0 Infinity
+[*] 140 0 Infinity
+[*] 141 0 Infinity
+[*] 142 0 Infinity
+[*] 143 280 3.5714285714285716
+[*] 144 138 7.246376811594203
+[*] 145 60 16.666666666666668
+[*] 146 381 2.6246719160104988
+[*] 147 0 Infinity
+[*] 148 0 Infinity
+[*] 149 0 Infinity
+[*] 150 0 Infinity
+[*] 151 0 Infinity
+[*] 152 0 Infinity
+[*] 153 0 Infinity
+[*] 154 141 7.092198581560283
+[*] 155 92 10.869565217391305
+[*] 156 547 1.8281535648994516
+[*] 157 0 Infinity
+[*] 158 0 Infinity
+[*] 159 0 Infinity
+[*] 160 0 Infinity
+[*] 161 0 Infinity
+[*] 162 80 12.5
+[*] 163 59 16.949152542372882
+[*] 164 304 3.289473684210526
+[*] 165 9 111.11111111111111
+[*] 166 406 2.4630541871921183
+[*] 167 0 Infinity
+[*] 168 0 Infinity
+[*] 169 0 Infinity
+[*] 170 0 Infinity
+[*] 171 0 Infinity
+[*] 172 0 Infinity
+[*] 173 0 Infinity
+[*] 174 0 Infinity
+[*] 175 128 7.8125
+[*] 176 729 1.3717421124828533
+[*] 177 0 Infinity
+[*] 178 0 Infinity
+[*] 179 0 Infinity
+[*] 180 0 Infinity
+[*] 181 0 Infinity
+[*] 182 0 Infinity
+[*] 183 7 142.85714285714286
+[*] 184 286 3.4965034965034967
+[*] 185 0 Infinity
+[*] 186 517 1.9342359767891684
+[*] 187 0 Infinity
+[*] 188 0 Infinity
+[*] 189 0 Infinity
+[*] 190 0 Infinity
+[*] 191 0 Infinity
+[*] 192 0 Infinity
+[*] 193 0 Infinity
+[*] 194 0 Infinity
+[*] 195 107 9.345794392523365
+[*] 196 744 1.3440860215053763
+[*] 197 0 Infinity
+[*] 198 0 Infinity
+[*] 199 0 Infinity
+[*] 200 0 Infinity
+[*] 201 0 Infinity
+[*] 202 0 Infinity
+[*] 203 0 Infinity
+[*] 204 244 4.098360655737705
+[*] 205 0 Infinity
+[*] 206 149 6.7114093959731544
+[*] 207 0 Infinity
+[*] 208 0 Infinity
+[*] 209 234 4.273504273504273
+[*] 210 0 Infinity
+[*] 211 0 Infinity
+[*] 212 0 Infinity
+[*] 213 64 15.625
+[*] 214 0 Infinity
+[*] 215 136 7.352941176470588
+[*] 216 830 1.2048192771084338
+[*] 217 0 Infinity
+[*] 218 0 Infinity
+[*] 219 0 Infinity
+[*] 220 0 Infinity
+[*] 221 0 Infinity
+[*] 222 0 Infinity
+[*] 223 0 Infinity
+[*] 224 275 3.6363636363636362
+[*] 225 1 1000.0
+[*] 226 164 6.097560975609756
+[*] 227 0 Infinity
+[*] 228 0 Infinity
+[*] 229 37 27.027027027027028
+[*] 230 0 Infinity
+[*] 231 0 Infinity
+[*] 232 0 Infinity
+[*] 233 134 7.462686567164179
+[*] 234 0 Infinity
+[*] 235 0 Infinity
+[*] 236 943 1.0604453870625663
+[*] 237 0 Infinity
+[*] 238 0 Infinity
+[*] 239 0 Infinity
+[*] 240 0 Infinity
+[*] 241 0 Infinity
+[*] 242 0 Infinity
+[*] 243 0 Infinity
+[*] 244 288 3.4722222222222223
+[*] 245 0 Infinity
+[*] 246 129 7.751937984496124
+[*] 247 0 Infinity
+[*] 248 0 Infinity
+[*] 249 44 22.727272727272727
+[*] 250 0 Infinity
+[*] 251 0 Infinity
+[*] 252 0 Infinity
+[*] 253 390 2.5641025641025643
+[*] 254 0 Infinity
+[*] 255 0 Infinity
+[*] 256 693 1.443001443001443
+[*] 257 0 Infinity
+[*] 258 0 Infinity
+[*] 259 0 Infinity
+[*] 260 0 Infinity
+[*] 261 0 Infinity
+[*] 262 0 Infinity
+[*] 263 0 Infinity
+[*] 264 0 Infinity
+[*] 265 219 4.566210045662101
+[*] 266 186 5.376344086021505
+[*] 267 0 Infinity
+[*] 268 0 Infinity
+[*] 269 19 52.63157894736842
+[*] 270 0 Infinity
+[*] 271 179 5.58659217877095
+[*] 272 0 Infinity
+[*] 273 37 27.027027027027028
+[*] 274 138 7.246376811594203
+[*] 275 0 Infinity
+[*] 276 852 1.1737089201877935
+[*] 277 0 Infinity
+[*] 278 0 Infinity
+[*] 279 0 Infinity
+[*] 280 0 Infinity
+[*] 281 0 Infinity
+[*] 282 0 Infinity
+[*] 283 0 Infinity
+[*] 284 0 Infinity
+[*] 285 133 7.518796992481203
+[*] 286 266 3.7593984962406015
+[*] 287 0 Infinity
+[*] 288 0 Infinity
+[*] 289 0 Infinity
+[*] 290 0 Infinity
+[*] 291 160 6.25
+[*] 292 0 Infinity
+[*] 293 103 9.70873786407767
+[*] 294 124 8.064516129032258
+[*] 295 0 Infinity
+[*] 296 726 1.3774104683195592
+[*] 297 0 Infinity
+[*] 298 0 Infinity
+[*] 299 0 Infinity
+[*] 300 0 Infinity
+[*] 301 0 Infinity
+[*] 302 0 Infinity
+[*] 303 0 Infinity
+[*] 304 194 5.154639175257732
+[*] 305 0 Infinity
+[*] 306 0 Infinity
+[*] 307 0 Infinity
+[*] 308 0 Infinity
+[*] 309 322 3.1055900621118013
+[*] 310 0 Infinity
+[*] 311 82 12.195121951219512
+[*] 312 0 Infinity
+[*] 313 0 Infinity
+[*] 314 374 2.6737967914438503
+[*] 315 0 Infinity
+[*] 316 369 2.710027100271003
+[*] 317 0 Infinity
+[*] 318 0 Infinity
+[*] 319 0 Infinity
+[*] 320 0 Infinity
+[*] 321 0 Infinity
+[*] 322 0 Infinity
+[*] 323 0 Infinity
+[*] 324 191 5.2356020942408374
+[*] 325 0 Infinity
+[*] 326 259 3.861003861003861
+[*] 327 0 Infinity
+[*] 328 0 Infinity
+[*] 329 57 17.54385964912281
+[*] 330 0 Infinity
+[*] 331 454 2.202643171806167
+[*] 332 0 Infinity
+[*] 333 0 Infinity
+[*] 334 320 3.125
+[*] 335 0 Infinity
+[*] 336 371 2.6954177897574123
+[*] 337 0 Infinity
+[*] 338 0 Infinity
+[*] 339 0 Infinity
+[*] 340 0 Infinity
+[*] 341 0 Infinity
+[*] 342 0 Infinity
+[*] 343 0 Infinity
+[*] 344 236 4.237288135593221
+[*] 345 0 Infinity
+[*] 346 0 Infinity
+[*] 347 0 Infinity
+[*] 348 0 Infinity
+[*] 349 321 3.115264797507788
+[*] 350 0 Infinity
+[*] 351 116 8.620689655172415
+[*] 352 0 Infinity
+[*] 353 0 Infinity
+[*] 354 236 4.237288135593221
+[*] 355 0 Infinity
+[*] 356 414 2.4154589371980677
+[*] 357 0 Infinity
+[*] 358 0 Infinity
+[*] 359 0 Infinity
+[*] 360 0 Infinity
+[*] 361 0 Infinity
+[*] 362 0 Infinity
+[*] 363 0 Infinity
+[*] 364 260 3.8461538461538463
+[*] 365 0 Infinity
+[*] 366 0 Infinity
+[*] 367 0 Infinity
+[*] 368 0 Infinity
+[*] 369 321 3.115264797507788
+[*] 370 0 Infinity
+[*] 371 46 21.73913043478261
+[*] 372 0 Infinity
+[*] 373 166 6.024096385542169
+[*] 374 0 Infinity
+[*] 375 0 Infinity
+[*] 376 859 1.1641443538998837
+[*] 377 1 1000.0
+[*] 378 0 Infinity
+[*] 379 0 Infinity
+[*] 380 0 Infinity
+[*] 381 0 Infinity
+[*] 382 0 Infinity
+[*] 383 0 Infinity
+[*] 384 296 3.3783783783783785
+[*] 385 0 Infinity
+[*] 386 0 Infinity
+[*] 387 0 Infinity
+[*] 388 0 Infinity
+[*] 389 289 3.4602076124567476
+[*] 390 0 Infinity
+[*] 391 61 16.39344262295082
+[*] 392 0 Infinity
+[*] 393 0 Infinity
+[*] 394 181 5.524861878453039
+[*] 395 0 Infinity
+[*] 396 545 1.834862385321101
+[*] 397 0 Infinity
+[*] 398 0 Infinity
+[*] 399 0 Infinity
+[*] 400 0 Infinity
+[*] 401 0 Infinity
+[*] 402 1 1000.0
+[*] 403 0 Infinity
+[*] 404 266 3.7593984962406015
+[*] 405 0 Infinity
+[*] 406 0 Infinity
+[*] 407 0 Infinity
+[*] 408 0 Infinity
+[*] 409 193 5.181347150259067
+[*] 410 0 Infinity
+[*] 411 395 2.5316455696202533
+[*] 412 0 Infinity
+[*] 413 0 Infinity
+[*] 414 0 Infinity
+[*] 415 0 Infinity
+[*] 416 868 1.152073732718894
+[*] 417 0 Infinity
+[*] 418 0 Infinity
+[*] 419 0 Infinity
+[*] 420 0 Infinity
+[*] 421 0 Infinity
+[*] 422 0 Infinity
+[*] 423 0 Infinity
+[*] 424 0 Infinity
+[*] 425 0 Infinity
+[*] 426 0 Infinity
+[*] 427 0 Infinity
+[*] 428 0 Infinity
+[*] 429 117 8.547008547008547
+[*] 430 0 Infinity
+[*] 431 382 2.6178010471204187
+[*] 432 0 Infinity
+[*] 433 0 Infinity
+[*] 434 433 2.3094688221709005
+[*] 435 0 Infinity
+[*] 436 329 3.0395136778115504
+[*] 437 0 Infinity
+[*] 438 0 Infinity
+[*] 439 0 Infinity
+[*] 440 0 Infinity
+[*] 441 0 Infinity
+[*] 442 0 Infinity
+[*] 443 0 Infinity
+[*] 444 185 5.405405405405405
+[*] 445 0 Infinity
+[*] 446 0 Infinity
+[*] 447 0 Infinity
+[*] 448 0 Infinity
+[*] 449 363 2.7548209366391183
+[*] 450 1 1000.0
+[*] 451 372 2.6881720430107525
+[*] 452 0 Infinity
+[*] 453 0 Infinity
+[*] 454 40 25.0
+[*] 455 0 Infinity
+[*] 456 380 2.6315789473684212
+[*] 457 0 Infinity
+[*] 458 0 Infinity
+[*] 459 0 Infinity
+[*] 460 0 Infinity
+[*] 461 0 Infinity
+[*] 462 0 Infinity
+[*] 463 0 Infinity
+[*] 464 204 4.901960784313726
+[*] 465 0 Infinity
+[*] 466 0 Infinity
+[*] 467 0 Infinity
+[*] 468 0 Infinity
+[*] 469 391 2.557544757033248
+[*] 470 0 Infinity
+[*] 471 320 3.125
+[*] 472 0 Infinity
+[*] 473 0 Infinity
+[*] 474 381 2.6246719160104988
+[*] 475 0 Infinity
+[*] 476 424 2.358490566037736
+[*] 477 0 Infinity
+[*] 478 1 1000.0
+[*] 479 0 Infinity
+[*] 480 0 Infinity
+[*] 481 0 Infinity
+[*] 482 0 Infinity
+[*] 483 0 Infinity
+[*] 484 123 8.130081300813009
+[*] 485 0 Infinity
+[*] 486 0 Infinity
+[*] 487 0 Infinity
+[*] 488 0 Infinity
+[*] 489 0 Infinity
+[*] 490 0 Infinity
+[*] 491 249 4.016064257028113
+[*] 492 0 Infinity
+[*] 493 0 Infinity
+[*] 494 925 1.0810810810810811
+[*] 495 0 Infinity
+[*] 496 23 43.47826086956522
+[*] 497 0 Infinity
+[*] 498 0 Infinity
+[*] 499 0 Infinity
+[*] 500 0 Infinity
+[*] 501 0 Infinity
+[*] 502 0 Infinity
+[*] 503 0 Infinity
+[*] 504 101 9.900990099009901
+[*] 505 0 Infinity
+[*] 506 0 Infinity
+[*] 507 0 Infinity
+[*] 508 0 Infinity
+[*] 509 229 4.366812227074236
+[*] 510 0 Infinity
+[*] 511 283 3.5335689045936394
+[*] 512 0 Infinity
+[*] 513 0 Infinity
+[*] 514 604 1.6556291390728477
+[*] 515 0 Infinity
+[*] 516 426 2.347417840375587
+[*] 517 0 Infinity
+[*] 518 0 Infinity
+[*] 519 0 Infinity
+[*] 520 0 Infinity
+[*] 521 0 Infinity
+[*] 522 0 Infinity
+[*] 523 0 Infinity
+[*] 524 163 6.134969325153374
+[*] 525 0 Infinity
+[*] 526 0 Infinity
+[*] 527 0 Infinity
+[*] 528 0 Infinity
+[*] 529 0 Infinity
+[*] 530 0 Infinity
+[*] 531 95 10.526315789473685
+[*] 532 0 Infinity
+[*] 533 0 Infinity
+[*] 534 1130 0.8849557522123894
+[*] 535 0 Infinity
+[*] 536 0 Infinity
+[*] 537 0 Infinity
+[*] 538 0 Infinity
+[*] 539 0 Infinity
+[*] 540 0 Infinity
+[*] 541 0 Infinity
+[*] 542 0 Infinity
+[*] 543 0 Infinity
+[*] 544 33 30.303030303030305
+[*] 545 1 1000.0
+[*] 546 0 Infinity
+[*] 547 0 Infinity
+[*] 548 0 Infinity
+[*] 549 0 Infinity
+[*] 550 0 Infinity
+[*] 551 525 1.9047619047619047
+[*] 552 0 Infinity
+[*] 553 0 Infinity
+[*] 554 694 1.440922190201729
+[*] 555 0 Infinity
+[*] 556 0 Infinity
+[*] 557 0 Infinity
+[*] 558 0 Infinity
+[*] 559 0 Infinity
+[*] 560 0 Infinity
+[*] 561 0 Infinity
+[*] 562 0 Infinity
+[*] 563 0 Infinity
+[*] 564 89 11.235955056179776
+[*] 565 0 Infinity
+[*] 566 0 Infinity
+[*] 567 0 Infinity
+[*] 568 0 Infinity
+[*] 569 0 Infinity
+[*] 570 0 Infinity
+[*] 571 392 2.5510204081632653
+[*] 572 0 Infinity
+[*] 573 0 Infinity
+[*] 574 871 1.148105625717566
+[*] 575 0 Infinity
+[*] 576 0 Infinity
+[*] 577 0 Infinity
+[*] 578 0 Infinity
+[*] 579 0 Infinity
+[*] 580 0 Infinity
+[*] 581 0 Infinity
+[*] 582 0 Infinity
+[*] 583 0 Infinity
+[*] 584 450 2.2222222222222223
+[*] 585 0 Infinity
+[*] 586 0 Infinity
+[*] 587 0 Infinity
+[*] 588 0 Infinity
+[*] 589 0 Infinity
+[*] 590 0 Infinity
+[*] 591 0 Infinity
+[*] 592 0 Infinity
+[*] 593 0 Infinity
+[*] 594 1223 0.8176614881439084
+[*] 595 0 Infinity
+[*] 596 0 Infinity
+[*] 597 0 Infinity
+[*] 598 0 Infinity
+[*] 599 0 Infinity
+[*] 600 0 Infinity
+[*] 601 0 Infinity
+[*] 602 0 Infinity
+[*] 603 0 Infinity
+[*] 604 35 28.571428571428573
+[*] 605 0 Infinity
+[*] 606 147 6.802721088435374
+[*] 607 0 Infinity
+[*] 608 0 Infinity
+[*] 609 0 Infinity
+[*] 610 0 Infinity
+[*] 611 343 2.9154518950437316
+[*] 612 0 Infinity
+[*] 613 0 Infinity
+[*] 614 651 1.5360983102918586
+[*] 615 0 Infinity
+[*] 616 0 Infinity
+[*] 617 0 Infinity
+[*] 618 0 Infinity
+[*] 619 0 Infinity
+[*] 620 0 Infinity
+[*] 621 0 Infinity
+[*] 622 0 Infinity
+[*] 623 0 Infinity
+[*] 624 62 16.129032258064516
+[*] 625 0 Infinity
+[*] 626 216 4.62962962962963
+[*] 627 0 Infinity
+[*] 628 0 Infinity
+[*] 629 0 Infinity
+[*] 630 0 Infinity
+[*] 631 306 3.2679738562091503
+[*] 632 0 Infinity
+[*] 633 0 Infinity
+[*] 634 746 1.3404825737265416
+[*] 635 0 Infinity
+[*] 636 0 Infinity
+[*] 637 0 Infinity
+[*] 638 0 Infinity
+[*] 639 0 Infinity
+[*] 640 0 Infinity
+[*] 641 0 Infinity
+[*] 642 0 Infinity
+[*] 643 0 Infinity
+[*] 644 426 2.347417840375587
+[*] 645 0 Infinity
+[*] 646 186 5.376344086021505
+[*] 647 0 Infinity
+[*] 648 0 Infinity
+[*] 649 0 Infinity
+[*] 650 0 Infinity
+[*] 651 100 10.0
+[*] 652 0 Infinity
+[*] 653 0 Infinity
+[*] 654 473 2.1141649048625792
+[*] 655 0 Infinity
+[*] 656 279 3.5842293906810037
+[*] 657 0 Infinity
+[*] 658 0 Infinity
+[*] 659 0 Infinity
+[*] 660 0 Infinity
+[*] 661 0 Infinity
+[*] 662 0 Infinity
+[*] 663 0 Infinity
+[*] 664 239 4.184100418410042
+[*] 665 0 Infinity
+[*] 666 106 9.433962264150944
+[*] 667 0 Infinity
+[*] 668 0 Infinity
+[*] 669 0 Infinity
+[*] 670 0 Infinity
+[*] 671 615 1.6260162601626016
+[*] 672 1 1000.0
+[*] 673 0 Infinity
+[*] 674 483 2.070393374741201
+[*] 675 0 Infinity
+[*] 676 0 Infinity
+[*] 677 0 Infinity
+[*] 678 0 Infinity
+[*] 679 0 Infinity
+[*] 680 0 Infinity
+[*] 681 0 Infinity
+[*] 682 0 Infinity
+[*] 683 0 Infinity
+[*] 684 63 15.873015873015873
+[*] 685 0 Infinity
+[*] 686 132 7.575757575757576
+[*] 687 0 Infinity
+[*] 688 0 Infinity
+[*] 689 0 Infinity
+[*] 690 0 Infinity
+[*] 691 586 1.7064846416382253
+[*] 692 0 Infinity
+[*] 693 0 Infinity
+[*] 694 404 2.4752475247524752
+[*] 695 0 Infinity
+[*] 696 23 43.47826086956522
+[*] 697 0 Infinity
+[*] 698 0 Infinity
+[*] 699 0 Infinity
+[*] 700 0 Infinity
+[*] 701 0 Infinity
+[*] 702 0 Infinity
+[*] 703 0 Infinity
+[*] 704 264 3.787878787878788
+[*] 705 0 Infinity
+[*] 706 37 27.027027027027028
+[*] 707 0 Infinity
+[*] 708 266 3.7593984962406015
+[*] 709 0 Infinity
+[*] 710 0 Infinity
+[*] 711 420 2.380952380952381
+[*] 712 0 Infinity
+[*] 713 0 Infinity
+[*] 714 296 3.3783783783783785
+[*] 715 1 1000.0
+[*] 716 77 12.987012987012987
+[*] 717 0 Infinity
+[*] 718 0 Infinity
+[*] 719 0 Infinity
+[*] 720 0 Infinity
+[*] 721 0 Infinity
+[*] 722 0 Infinity
+[*] 723 0 Infinity
+[*] 724 826 1.2106537530266344
+[*] 725 0 Infinity
+[*] 726 0 Infinity
+[*] 727 0 Infinity
+[*] 728 0 Infinity
+[*] 729 0 Infinity
+[*] 730 0 Infinity
+[*] 731 52 19.23076923076923
+[*] 732 0 Infinity
+[*] 733 0 Infinity
+[*] 734 225 4.444444444444445
+[*] 735 0 Infinity
+[*] 736 731 1.3679890560875514
+[*] 737 0 Infinity
+[*] 738 0 Infinity
+[*] 739 0 Infinity
+[*] 740 0 Infinity
+[*] 741 0 Infinity
+[*] 742 0 Infinity
+[*] 743 0 Infinity
+[*] 744 247 4.048582995951417
+[*] 745 1 1000.0
+[*] 746 0 Infinity
+[*] 747 0 Infinity
+[*] 748 0 Infinity
+[*] 749 0 Infinity
+[*] 750 0 Infinity
+[*] 751 457 2.1881838074398248
+[*] 752 0 Infinity
+[*] 753 0 Infinity
+[*] 754 275 3.6363636363636362
+[*] 755 0 Infinity
+[*] 756 291 3.4364261168384878
+[*] 757 0 Infinity
+[*] 758 0 Infinity
+[*] 759 0 Infinity
+[*] 760 0 Infinity
+[*] 761 0 Infinity
+[*] 762 0 Infinity
+[*] 763 0 Infinity
+[*] 764 331 3.0211480362537766
+[*] 765 0 Infinity
+[*] 766 0 Infinity
+[*] 767 0 Infinity
+[*] 768 0 Infinity
+[*] 769 0 Infinity
+[*] 770 0 Infinity
+[*] 771 417 2.3980815347721824
+[*] 772 0 Infinity
+[*] 773 0 Infinity
+[*] 774 200 5.0
+[*] 775 0 Infinity
+[*] 776 463 2.159827213822894
+[*] 777 0 Infinity
+[*] 778 0 Infinity
+[*] 779 0 Infinity
+[*] 780 0 Infinity
+[*] 781 0 Infinity
+[*] 782 0 Infinity
+[*] 783 0 Infinity
+[*] 784 172 5.813953488372093
+[*] 785 0 Infinity
+[*] 786 0 Infinity
+[*] 787 0 Infinity
+[*] 788 0 Infinity
+[*] 789 0 Infinity
+[*] 790 0 Infinity
+[*] 791 356 2.808988764044944
+[*] 792 0 Infinity
+[*] 793 0 Infinity
+[*] 794 347 2.881844380403458
+[*] 795 0 Infinity
+[*] 796 335 2.985074626865672
+[*] 797 0 Infinity
+[*] 798 0 Infinity
+[*] 799 0 Infinity
+[*] 800 0 Infinity
+[*] 801 0 Infinity
+[*] 802 0 Infinity
+[*] 803 0 Infinity
+[*] 804 325 3.076923076923077
+[*] 805 0 Infinity
+[*] 806 0 Infinity
+[*] 807 0 Infinity
+[*] 808 0 Infinity
+[*] 809 0 Infinity
+[*] 810 0 Infinity
+[*] 811 287 3.484320557491289
+[*] 812 0 Infinity
+[*] 813 0 Infinity
+[*] 814 860 1.1627906976744187
+[*] 815 0 Infinity
+[*] 816 255 3.9215686274509802
+[*] 817 0 Infinity
+[*] 818 0 Infinity
+[*] 819 0 Infinity
+[*] 820 0 Infinity
+[*] 821 0 Infinity
+[*] 822 0 Infinity
+[*] 823 0 Infinity
+[*] 824 374 2.6737967914438503
+[*] 825 0 Infinity
+[*] 826 0 Infinity
+[*] 827 0 Infinity
+[*] 828 0 Infinity
+[*] 829 0 Infinity
+[*] 830 0 Infinity
+[*] 831 0 Infinity
+[*] 832 0 Infinity
+[*] 833 0 Infinity
+[*] 834 593 1.6863406408094435
+[*] 835 0 Infinity
+[*] 836 301 3.3222591362126246
+[*] 837 0 Infinity
+[*] 838 0 Infinity
+[*] 839 0 Infinity
+[*] 840 0 Infinity
+[*] 841 0 Infinity
+[*] 842 0 Infinity
+[*] 843 0 Infinity
+[*] 844 286 3.4965034965034967
+[*] 845 0 Infinity
+[*] 846 0 Infinity
+[*] 847 0 Infinity
+[*] 848 0 Infinity
+[*] 849 0 Infinity
+[*] 850 0 Infinity
+[*] 851 226 4.424778761061947
+[*] 852 0 Infinity
+[*] 853 0 Infinity
+[*] 854 549 1.8214936247723132
+[*] 855 0 Infinity
+[*] 856 149 6.7114093959731544
+[*] 857 0 Infinity
+[*] 858 0 Infinity
+[*] 859 1 1000.0
+[*] 860 0 Infinity
+[*] 861 0 Infinity
+[*] 862 0 Infinity
+[*] 863 0 Infinity
+[*] 864 416 2.4038461538461537
+[*] 865 0 Infinity
+[*] 866 0 Infinity
+[*] 867 0 Infinity
+[*] 868 0 Infinity
+[*] 869 0 Infinity
+[*] 870 0 Infinity
+[*] 871 63 15.873015873015873
+[*] 872 0 Infinity
+[*] 873 0 Infinity
+[*] 874 627 1.594896331738437
+[*] 875 0 Infinity
+[*] 876 264 3.787878787878788
+[*] 877 0 Infinity
+[*] 878 0 Infinity
+[*] 879 0 Infinity
+[*] 880 0 Infinity
+[*] 881 0 Infinity
+[*] 882 0 Infinity
+[*] 883 0 Infinity
+[*] 884 226 4.424778761061947
+[*] 885 0 Infinity
+[*] 886 0 Infinity
+[*] 887 0 Infinity
+[*] 888 0 Infinity
+[*] 889 0 Infinity
+[*] 890 0 Infinity
+[*] 891 188 5.319148936170213
+[*] 892 0 Infinity
+[*] 893 0 Infinity
+[*] 894 970 1.0309278350515463
+[*] 895 1 1000.0
+[*] 896 0 Infinity
+[*] 897 0 Infinity
+[*] 898 0 Infinity
+[*] 899 0 Infinity
+[*] 900 0 Infinity
+[*] 901 0 Infinity
+[*] 902 0 Infinity
+[*] 903 0 Infinity
+[*] 904 99 10.1010101010101
+[*] 905 0 Infinity
+[*] 906 0 Infinity
+[*] 907 0 Infinity
+[*] 908 0 Infinity
+[*] 909 0 Infinity
+[*] 910 0 Infinity
+[*] 911 124 8.064516129032258
+[*] 912 0 Infinity
+[*] 913 0 Infinity
+[*] 914 960 1.0416666666666667
+[*] 915 0 Infinity
+[*] 916 0 Infinity
+[*] 917 0 Infinity
+[*] 918 0 Infinity
+[*] 919 0 Infinity
+[*] 920 0 Infinity
+[*] 921 0 Infinity
+[*] 922 0 Infinity
+[*] 923 0 Infinity
+[*] 924 85 11.764705882352942
+[*] 925 0 Infinity
+[*] 926 0 Infinity
+[*] 927 0 Infinity
+[*] 928 0 Infinity
+[*] 929 0 Infinity
+[*] 930 0 Infinity
+[*] 931 213 4.694835680751174
+[*] 932 0 Infinity
+[*] 933 0 Infinity
+[*] 934 969 1.0319917440660475
+[*] 935 0 Infinity
+[*] 936 0 Infinity
+[*] 937 0 Infinity
+[*] 938 0 Infinity
+[*] 939 0 Infinity
+[*] 940 0 Infinity
+[*] 941 0 Infinity
+[*] 942 0 Infinity
+[*] 943 0 Infinity
+[*] 944 91 10.989010989010989
+[*] 945 0 Infinity
+[*] 946 0 Infinity
+[*] 947 0 Infinity
+[*] 948 0 Infinity
+[*] 949 0 Infinity
+[*] 950 0 Infinity
+[*] 951 133 7.518796992481203
+[*] 952 0 Infinity
+[*] 953 0 Infinity
+[*] 954 956 1.0460251046025104
+[*] 955 0 Infinity
+[*] 956 0 Infinity
+[*] 957 0 Infinity
+[*] 958 0 Infinity
+[*] 959 0 Infinity
+[*] 960 0 Infinity
+[*] 961 0 Infinity
+[*] 962 0 Infinity
+[*] 963 0 Infinity
+[*] 964 95 10.526315789473685
+[*] 965 0 Infinity
+[*] 966 0 Infinity
+[*] 967 0 Infinity
+[*] 968 0 Infinity
+[*] 969 0 Infinity
+[*] 970 0 Infinity
+[*] 971 277 3.6101083032490973
+[*] 972 0 Infinity
+[*] 973 0 Infinity
+[*] 974 893 1.1198208286674132
+[*] 975 0 Infinity
+[*] 976 0 Infinity
+[*] 977 0 Infinity
+[*] 978 0 Infinity
+[*] 979 0 Infinity
+[*] 980 0 Infinity
+[*] 981 0 Infinity
+[*] 982 0 Infinity
+[*] 983 0 Infinity
+[*] 984 229 4.366812227074236
+[*] 985 0 Infinity
+[*] 986 0 Infinity
+[*] 987 0 Infinity
+[*] 988 0 Infinity
+[*] 989 0 Infinity
+[*] 990 0 Infinity
+[*] 991 71 14.084507042253522
+[*] 992 0 Infinity
+[*] 993 0 Infinity
+[*] 994 870 1.1494252873563218
+[*] 995 0 Infinity
+[*] 996 0 Infinity
+[*] 997 0 Infinity
+[*] 998 0 Infinity
+[*] 999 0 Infinity
+[*] 1000 0 Infinity
+[*] Overall gap: 71 ms.
+[*] Overall fps: 13.691495922702666
+75.34 0 0
+75.34 0 0
+[*] Statistic for 30: counter (Counter)
+[*] Processed 1000 images
+[*]  - Total time      : 75224 ms.
+[*]  - Processing time : 0 ms.
+[*]  - Idle time       : 75224 ms. (100%)
+[*]  - Avg. proc. time : 0 ms/image.
+[*]
+[*]  - Data in         : 213.26 MB
+[*]  - Data out        : 0.00 B
+[*]
+[*] - Avg. size in    : 218.38 KB/image.
+[*] - Avg. size out   : 0.00 B/image.
+[*]  - Overall rate in : 23.78 MBit/sec.
+[*]  - Overall rate out: 0.00 Bit/sec.
+[*]  - Done : true
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].0
+[*]   len: 1
+[*]   put: 50
+[*] block: 14
+[*]  time: 4201
+[*]   get: 50
+[*] block: 5
+[*]  time: 3510
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].1
+[*]   len: 1
+[*]   put: 50
+[*] block: 5
+[*]  time: 286
+[*]   get: 50
+[*] block: 5
+[*]  time: 240
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].2
+[*]   len: 1
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 9
+[*]  time: 2006
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].3
+[*]   len: 1
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 45
+[*]  time: 10462
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].4
+[*]   len: 1
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 10
+[*]  time: 1455
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].5
+[*]   len: 1
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 20
+[*]  time: 3880
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].6
+[*]   len: 1
+[*]   put: 50
+[*] block: 29
+[*]  time: 26048
+[*]   get: 50
+[*] block: 0
+[*]  time: 0
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].7
+[*]   len: 1
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 1
+[*]  time: 266
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].8
+[*]   len: 1
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 16
+[*]  time: 3011
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].9
+[*]   len: 1
+[*]   put: 50
+[*] block: 41
+[*]  time: 45248
+[*]   get: 50
+[*] block: 0
+[*]  time: 0
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].10
+[*]   len: 1
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 38
+[*]  time: 10212
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].11
+[*]   len: 1
+[*]   put: 50
+[*] block: 5
+[*]  time: 697
+[*]   get: 50
+[*] block: 5
+[*]  time: 285
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].12
+[*]   len: 1
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 12
+[*]  time: 1840
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].13
+[*]   len: 1
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 37
+[*]  time: 20236
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].14
+[*]   len: 1
+[*]   put: 50
+[*] block: 20
+[*]  time: 7436
+[*]   get: 50
+[*] block: 9
+[*]  time: 1370
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].15
+[*]   len: 1
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 36
+[*]  time: 16339
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].16
+[*]   len: 1
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 1
+[*]  time: 56
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].17
+[*]   len: 1
+[*]   put: 50
+[*] block: 12
+[*]  time: 3158
+[*]   get: 50
+[*] block: 1
+[*]  time: 6
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].18
+[*]   len: 1
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 0
+[*]  time: 0
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0].19
+[*]   len: 1
+[*]   put: 50
+[*] block: 27
+[*]  time: 8098
+[*]   get: 50
+[*] block: 0
+[*]  time: 0
+[*] counter is done ?

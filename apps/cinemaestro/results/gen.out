@@ -1,0 +1,57 @@
+[*] Waiting for work
+[*] Got registered message 0 generator [in: none] [out: put.0.0]
+[*] Got component generator
+[*] Need to create put queue put.0.0
+[*]   type image.UncompressedImage
+[*]   length 1
+[*]   connected to [get.1.0]
+[*] Got message from (Ibis 0, location Unknown location) data true
+[*] Created queue generator[0]->compress[0] max length 1
+[*] Create component generator
+[*]  - Type     : processors.Generator
+[*]  - In type  : none
+[*]  - In name  : none
+[*]  - In ok    : true
+[*]  - Out type : image.UncompressedImage
+[*]  - Out name : generator[0]->compress[0]
+[*] - Out ok   : true
+[*]  - Options  : {height=2160, frames=10, width=3840, bits=48}
+[*] Started component generator
+[*] GENERATOR TARGET GAP 0
+6.80 1 49766470
+7.86 2 99532908
+9.75 1 49766454
+11.89 1 49766454
+13.81 1 49766454
+15.81 1 49766454
+17.78 1 49766454
+[*] Statistic for 0: generator (UncompressedFileReader)
+[*] Processed 10 images
+[*]  - Total time      : 17778 ms.
+[*]  - Processing time : 8936 ms.
+[*]  - Idle time       : 8842 ms. (49%)
+[*]  - Avg. proc. time : 893 ms/image.
+[*]
+[*]  - Data in         : 474.61 MB
+[*]  - Data out        : 474.61 MB
+[*]
+[*] - Avg. size in    : 47.46 MB/image.
+[*] - Avg. size out   : 47.46 MB/image.
+[*]  - Overall rate in : 223.95 MBit/sec.
+[*]  - Overall rate out: 223.95 MBit/sec.
+[*]  - Proc. rate in   : 445.54 MBit/sec.
+[*]  - Proc. rate out  : 445.54 MBit/sec.
+[*]  - Done : true
+[*] Queue: generator[0]->compress[0]
+[*]   len: 1
+[*]   put: 10
+[*] block: 7
+[*]  time: 8835
+[*]   get: 9
+[*] block: 1
+[*]  time: 6295
+generator is done ?
+19.88 1 49766454
+21.42 1 49766454
+21.42 0 0
+[*] Ibis WRITER took 21417 send 15090 get 6319 bytes 547431010 34.5971434222222 24.3764716926429

@@ -1,0 +1,5880 @@
+Adding component generator
+Adding component color
+Adding component compress
+Adding component counter
+Put queue! generator 5
+Get and put queue! 5 color 5
+Get and put queue! 5 compress 5
+Get queue! 5 counter
+New QD generator[0]->color[0] 5 5
+Adding queue description: generator[0]->color[0]
+Adding queue endpoint: put.0.0
+Adding queue description: generator[0]->color[0]
+Adding queue endpoint: get.1.0
+New QD generator[1]->color[1] 5 5
+Adding queue description: generator[1]->color[1]
+Adding queue endpoint: put.0.1
+Adding queue description: generator[1]->color[1]
+Adding queue endpoint: get.1.1
+New QD generator[2]->color[2] 5 5
+Adding queue description: generator[2]->color[2]
+Adding queue endpoint: put.0.2
+Adding queue description: generator[2]->color[2]
+Adding queue endpoint: get.1.2
+New QD generator[3]->color[3] 5 5
+Adding queue description: generator[3]->color[3]
+Adding queue endpoint: put.0.3
+Adding queue description: generator[3]->color[3]
+Adding queue endpoint: get.1.3
+New QD generator[4]->color[4] 5 5
+Adding queue description: generator[4]->color[4]
+Adding queue endpoint: put.0.4
+Adding queue description: generator[4]->color[4]
+Adding queue endpoint: get.1.4
+New QD generator[5]->color[5] 5 5
+Adding queue description: generator[5]->color[5]
+Adding queue endpoint: put.0.5
+Adding queue description: generator[5]->color[5]
+Adding queue endpoint: get.1.5
+New QD generator[6]->color[6] 5 5
+Adding queue description: generator[6]->color[6]
+Adding queue endpoint: put.0.6
+Adding queue description: generator[6]->color[6]
+Adding queue endpoint: get.1.6
+New QD generator[7]->color[7] 5 5
+Adding queue description: generator[7]->color[7]
+Adding queue endpoint: put.0.7
+Adding queue description: generator[7]->color[7]
+Adding queue endpoint: get.1.7
+New QD generator[8]->color[8] 5 5
+Adding queue description: generator[8]->color[8]
+Adding queue endpoint: put.0.8
+Adding queue description: generator[8]->color[8]
+Adding queue endpoint: get.1.8
+New QD generator[9]->color[9] 5 5
+Adding queue description: generator[9]->color[9]
+Adding queue endpoint: put.0.9
+Adding queue description: generator[9]->color[9]
+Adding queue endpoint: get.1.9
+New QD generator[10]->color[10] 5 5
+Adding queue description: generator[10]->color[10]
+Adding queue endpoint: put.0.10
+Adding queue description: generator[10]->color[10]
+Adding queue endpoint: get.1.10
+New QD generator[11]->color[11] 5 5
+Adding queue description: generator[11]->color[11]
+Adding queue endpoint: put.0.11
+Adding queue description: generator[11]->color[11]
+Adding queue endpoint: get.1.11
+New QD generator[12]->color[12] 5 5
+Adding queue description: generator[12]->color[12]
+Adding queue endpoint: put.0.12
+Adding queue description: generator[12]->color[12]
+Adding queue endpoint: get.1.12
+New QD generator[13]->color[13] 5 5
+Adding queue description: generator[13]->color[13]
+Adding queue endpoint: put.0.13
+Adding queue description: generator[13]->color[13]
+Adding queue endpoint: get.1.13
+New QD generator[14]->color[14] 5 5
+Adding queue description: generator[14]->color[14]
+Adding queue endpoint: put.0.14
+Adding queue description: generator[14]->color[14]
+Adding queue endpoint: get.1.14
+New QD generator[15]->color[15] 5 5
+Adding queue description: generator[15]->color[15]
+Adding queue endpoint: put.0.15
+Adding queue description: generator[15]->color[15]
+Adding queue endpoint: get.1.15
+New QD generator[16]->color[16] 5 5
+Adding queue description: generator[16]->color[16]
+Adding queue endpoint: put.0.16
+Adding queue description: generator[16]->color[16]
+Adding queue endpoint: get.1.16
+New QD generator[17]->color[17] 5 5
+Adding queue description: generator[17]->color[17]
+Adding queue endpoint: put.0.17
+Adding queue description: generator[17]->color[17]
+Adding queue endpoint: get.1.17
+New QD generator[18]->color[18] 5 5
+Adding queue description: generator[18]->color[18]
+Adding queue endpoint: put.0.18
+Adding queue description: generator[18]->color[18]
+Adding queue endpoint: get.1.18
+New QD generator[19]->color[19] 5 5
+Adding queue description: generator[19]->color[19]
+Adding queue endpoint: put.0.19
+Adding queue description: generator[19]->color[19]
+Adding queue endpoint: get.1.19
+New QD generator[20]->color[20] 5 5
+Adding queue description: generator[20]->color[20]
+Adding queue endpoint: put.0.20
+Adding queue description: generator[20]->color[20]
+Adding queue endpoint: get.1.20
+New QD generator[21]->color[21] 5 5
+Adding queue description: generator[21]->color[21]
+Adding queue endpoint: put.0.21
+Adding queue description: generator[21]->color[21]
+Adding queue endpoint: get.1.21
+New QD generator[22]->color[22] 5 5
+Adding queue description: generator[22]->color[22]
+Adding queue endpoint: put.0.22
+Adding queue description: generator[22]->color[22]
+Adding queue endpoint: get.1.22
+New QD generator[23]->color[23] 5 5
+Adding queue description: generator[23]->color[23]
+Adding queue endpoint: put.0.23
+Adding queue description: generator[23]->color[23]
+Adding queue endpoint: get.1.23
+New QD generator[24]->color[24] 5 5
+Adding queue description: generator[24]->color[24]
+Adding queue endpoint: put.0.24
+Adding queue description: generator[24]->color[24]
+Adding queue endpoint: get.1.24
+New QD generator[25]->color[25] 5 5
+Adding queue description: generator[25]->color[25]
+Adding queue endpoint: put.0.25
+Adding queue description: generator[25]->color[25]
+Adding queue endpoint: get.1.25
+New QD generator[26]->color[26] 5 5
+Adding queue description: generator[26]->color[26]
+Adding queue endpoint: put.0.26
+Adding queue description: generator[26]->color[26]
+Adding queue endpoint: get.1.26
+New QD generator[27]->color[27] 5 5
+Adding queue description: generator[27]->color[27]
+Adding queue endpoint: put.0.27
+Adding queue description: generator[27]->color[27]
+Adding queue endpoint: get.1.27
+New QD generator[28]->color[28] 5 5
+Adding queue description: generator[28]->color[28]
+Adding queue endpoint: put.0.28
+Adding queue description: generator[28]->color[28]
+Adding queue endpoint: get.1.28
+New QD generator[29]->color[29] 5 5
+Adding queue description: generator[29]->color[29]
+Adding queue endpoint: put.0.29
+Adding queue description: generator[29]->color[29]
+Adding queue endpoint: get.1.29
+New QD generator[30]->color[30] 5 5
+Adding queue description: generator[30]->color[30]
+Adding queue endpoint: put.0.30
+Adding queue description: generator[30]->color[30]
+Adding queue endpoint: get.1.30
+New QD generator[31]->color[31] 5 5
+Adding queue description: generator[31]->color[31]
+Adding queue endpoint: put.0.31
+Adding queue description: generator[31]->color[31]
+Adding queue endpoint: get.1.31
+New QD color[0]->compress[0,32] 5 5
+Adding queue description: color[0]->compress[0,32]
+Adding queue endpoint: put.1.0
+Adding queue description: color[0]->compress[0,32]
+Adding queue endpoint: get.2.0
+Adding queue endpoint: get.2.32
+New QD color[1]->compress[1,33] 5 5
+Adding queue description: color[1]->compress[1,33]
+Adding queue endpoint: put.1.1
+Adding queue description: color[1]->compress[1,33]
+Adding queue endpoint: get.2.1
+Adding queue endpoint: get.2.33
+New QD color[2]->compress[2,34] 5 5
+Adding queue description: color[2]->compress[2,34]
+Adding queue endpoint: put.1.2
+Adding queue description: color[2]->compress[2,34]
+Adding queue endpoint: get.2.2
+Adding queue endpoint: get.2.34
+New QD color[3]->compress[3,35] 5 5
+Adding queue description: color[3]->compress[3,35]
+Adding queue endpoint: put.1.3
+Adding queue description: color[3]->compress[3,35]
+Adding queue endpoint: get.2.3
+Adding queue endpoint: get.2.35
+New QD color[4]->compress[4,36] 5 5
+Adding queue description: color[4]->compress[4,36]
+Adding queue endpoint: put.1.4
+Adding queue description: color[4]->compress[4,36]
+Adding queue endpoint: get.2.4
+Adding queue endpoint: get.2.36
+New QD color[5]->compress[5,37] 5 5
+Adding queue description: color[5]->compress[5,37]
+Adding queue endpoint: put.1.5
+Adding queue description: color[5]->compress[5,37]
+Adding queue endpoint: get.2.5
+Adding queue endpoint: get.2.37
+New QD color[6]->compress[6,38] 5 5
+Adding queue description: color[6]->compress[6,38]
+Adding queue endpoint: put.1.6
+Adding queue description: color[6]->compress[6,38]
+Adding queue endpoint: get.2.6
+Adding queue endpoint: get.2.38
+New QD color[7]->compress[7,39] 5 5
+Adding queue description: color[7]->compress[7,39]
+Adding queue endpoint: put.1.7
+Adding queue description: color[7]->compress[7,39]
+Adding queue endpoint: get.2.7
+Adding queue endpoint: get.2.39
+New QD color[8]->compress[8,40] 5 5
+Adding queue description: color[8]->compress[8,40]
+Adding queue endpoint: put.1.8
+Adding queue description: color[8]->compress[8,40]
+Adding queue endpoint: get.2.8
+Adding queue endpoint: get.2.40
+New QD color[9]->compress[9,41] 5 5
+Adding queue description: color[9]->compress[9,41]
+Adding queue endpoint: put.1.9
+Adding queue description: color[9]->compress[9,41]
+Adding queue endpoint: get.2.9
+Adding queue endpoint: get.2.41
+New QD color[10]->compress[10,42] 5 5
+Adding queue description: color[10]->compress[10,42]
+Adding queue endpoint: put.1.10
+Adding queue description: color[10]->compress[10,42]
+Adding queue endpoint: get.2.10
+Adding queue endpoint: get.2.42
+New QD color[11]->compress[11,43] 5 5
+Adding queue description: color[11]->compress[11,43]
+Adding queue endpoint: put.1.11
+Adding queue description: color[11]->compress[11,43]
+Adding queue endpoint: get.2.11
+Adding queue endpoint: get.2.43
+New QD color[12]->compress[12,44] 5 5
+Adding queue description: color[12]->compress[12,44]
+Adding queue endpoint: put.1.12
+Adding queue description: color[12]->compress[12,44]
+Adding queue endpoint: get.2.12
+Adding queue endpoint: get.2.44
+New QD color[13]->compress[13,45] 5 5
+Adding queue description: color[13]->compress[13,45]
+Adding queue endpoint: put.1.13
+Adding queue description: color[13]->compress[13,45]
+Adding queue endpoint: get.2.13
+Adding queue endpoint: get.2.45
+New QD color[14]->compress[14,46] 5 5
+Adding queue description: color[14]->compress[14,46]
+Adding queue endpoint: put.1.14
+Adding queue description: color[14]->compress[14,46]
+Adding queue endpoint: get.2.14
+Adding queue endpoint: get.2.46
+New QD color[15]->compress[15,47] 5 5
+Adding queue description: color[15]->compress[15,47]
+Adding queue endpoint: put.1.15
+Adding queue description: color[15]->compress[15,47]
+Adding queue endpoint: get.2.15
+Adding queue endpoint: get.2.47
+New QD color[16]->compress[16,48] 5 5
+Adding queue description: color[16]->compress[16,48]
+Adding queue endpoint: put.1.16
+Adding queue description: color[16]->compress[16,48]
+Adding queue endpoint: get.2.16
+Adding queue endpoint: get.2.48
+New QD color[17]->compress[17,49] 5 5
+Adding queue description: color[17]->compress[17,49]
+Adding queue endpoint: put.1.17
+Adding queue description: color[17]->compress[17,49]
+Adding queue endpoint: get.2.17
+Adding queue endpoint: get.2.49
+New QD color[18]->compress[18,50] 5 5
+Adding queue description: color[18]->compress[18,50]
+Adding queue endpoint: put.1.18
+Adding queue description: color[18]->compress[18,50]
+Adding queue endpoint: get.2.18
+Adding queue endpoint: get.2.50
+New QD color[19]->compress[19,51] 5 5
+Adding queue description: color[19]->compress[19,51]
+Adding queue endpoint: put.1.19
+Adding queue description: color[19]->compress[19,51]
+Adding queue endpoint: get.2.19
+Adding queue endpoint: get.2.51
+New QD color[20]->compress[20,52] 5 5
+Adding queue description: color[20]->compress[20,52]
+Adding queue endpoint: put.1.20
+Adding queue description: color[20]->compress[20,52]
+Adding queue endpoint: get.2.20
+Adding queue endpoint: get.2.52
+New QD color[21]->compress[21,53] 5 5
+Adding queue description: color[21]->compress[21,53]
+Adding queue endpoint: put.1.21
+Adding queue description: color[21]->compress[21,53]
+Adding queue endpoint: get.2.21
+Adding queue endpoint: get.2.53
+New QD color[22]->compress[22,54] 5 5
+Adding queue description: color[22]->compress[22,54]
+Adding queue endpoint: put.1.22
+Adding queue description: color[22]->compress[22,54]
+Adding queue endpoint: get.2.22
+Adding queue endpoint: get.2.54
+New QD color[23]->compress[23,55] 5 5
+Adding queue description: color[23]->compress[23,55]
+Adding queue endpoint: put.1.23
+Adding queue description: color[23]->compress[23,55]
+Adding queue endpoint: get.2.23
+Adding queue endpoint: get.2.55
+New QD color[24]->compress[24,56] 5 5
+Adding queue description: color[24]->compress[24,56]
+Adding queue endpoint: put.1.24
+Adding queue description: color[24]->compress[24,56]
+Adding queue endpoint: get.2.24
+Adding queue endpoint: get.2.56
+New QD color[25]->compress[25,57] 5 5
+Adding queue description: color[25]->compress[25,57]
+Adding queue endpoint: put.1.25
+Adding queue description: color[25]->compress[25,57]
+Adding queue endpoint: get.2.25
+Adding queue endpoint: get.2.57
+New QD color[26]->compress[26,58] 5 5
+Adding queue description: color[26]->compress[26,58]
+Adding queue endpoint: put.1.26
+Adding queue description: color[26]->compress[26,58]
+Adding queue endpoint: get.2.26
+Adding queue endpoint: get.2.58
+New QD color[27]->compress[27,59] 5 5
+Adding queue description: color[27]->compress[27,59]
+Adding queue endpoint: put.1.27
+Adding queue description: color[27]->compress[27,59]
+Adding queue endpoint: get.2.27
+Adding queue endpoint: get.2.59
+New QD color[28]->compress[28,60] 5 5
+Adding queue description: color[28]->compress[28,60]
+Adding queue endpoint: put.1.28
+Adding queue description: color[28]->compress[28,60]
+Adding queue endpoint: get.2.28
+Adding queue endpoint: get.2.60
+New QD color[29]->compress[29,61] 5 5
+Adding queue description: color[29]->compress[29,61]
+Adding queue endpoint: put.1.29
+Adding queue description: color[29]->compress[29,61]
+Adding queue endpoint: get.2.29
+Adding queue endpoint: get.2.61
+New QD color[30]->compress[30,62] 5 5
+Adding queue description: color[30]->compress[30,62]
+Adding queue endpoint: put.1.30
+Adding queue description: color[30]->compress[30,62]
+Adding queue endpoint: get.2.30
+Adding queue endpoint: get.2.62
+New QD color[31]->compress[31,63] 5 5
+Adding queue description: color[31]->compress[31,63]
+Adding queue endpoint: put.1.31
+Adding queue description: color[31]->compress[31,63]
+Adding queue endpoint: get.2.31
+Adding queue endpoint: get.2.63
+New QD compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]->counter[0] 5 5
+Adding queue description: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]->counter[0]
+Adding queue endpoint: put.2.0
+Adding queue endpoint: put.2.1
+Adding queue endpoint: put.2.2
+Adding queue endpoint: put.2.3
+Adding queue endpoint: put.2.4
+Adding queue endpoint: put.2.5
+Adding queue endpoint: put.2.6
+Adding queue endpoint: put.2.7
+Adding queue endpoint: put.2.8
+Adding queue endpoint: put.2.9
+Adding queue endpoint: put.2.10
+Adding queue endpoint: put.2.11
+Adding queue endpoint: put.2.12
+Adding queue endpoint: put.2.13
+Adding queue endpoint: put.2.14
+Adding queue endpoint: put.2.15
+Adding queue endpoint: put.2.16
+Adding queue endpoint: put.2.17
+Adding queue endpoint: put.2.18
+Adding queue endpoint: put.2.19
+Adding queue endpoint: put.2.20
+Adding queue endpoint: put.2.21
+Adding queue endpoint: put.2.22
+Adding queue endpoint: put.2.23
+Adding queue endpoint: put.2.24
+Adding queue endpoint: put.2.25
+Adding queue endpoint: put.2.26
+Adding queue endpoint: put.2.27
+Adding queue endpoint: put.2.28
+Adding queue endpoint: put.2.29
+Adding queue endpoint: put.2.30
+Adding queue endpoint: put.2.31
+Adding queue endpoint: put.2.32
+Adding queue endpoint: put.2.33
+Adding queue endpoint: put.2.34
+Adding queue endpoint: put.2.35
+Adding queue endpoint: put.2.36
+Adding queue endpoint: put.2.37
+Adding queue endpoint: put.2.38
+Adding queue endpoint: put.2.39
+Adding queue endpoint: put.2.40
+Adding queue endpoint: put.2.41
+Adding queue endpoint: put.2.42
+Adding queue endpoint: put.2.43
+Adding queue endpoint: put.2.44
+Adding queue endpoint: put.2.45
+Adding queue endpoint: put.2.46
+Adding queue endpoint: put.2.47
+Adding queue endpoint: put.2.48
+Adding queue endpoint: put.2.49
+Adding queue endpoint: put.2.50
+Adding queue endpoint: put.2.51
+Adding queue endpoint: put.2.52
+Adding queue endpoint: put.2.53
+Adding queue endpoint: put.2.54
+Adding queue endpoint: put.2.55
+Adding queue endpoint: put.2.56
+Adding queue endpoint: put.2.57
+Adding queue endpoint: put.2.58
+Adding queue endpoint: put.2.59
+Adding queue endpoint: put.2.60
+Adding queue endpoint: put.2.61
+Adding queue endpoint: put.2.62
+Adding queue endpoint: put.2.63
+Adding queue description: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63]->counter[0]
+Adding queue endpoint: get.3.0
+This configuration requires:
+Component compress 64
+Component color 32
+Component counter 1
+Component generator 32
+Waiting for all nodes
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 0
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 0
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 0
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 0
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 0
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 0
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 0
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 0
+Got register message from (Ibis 1, location node101.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 2, location node102.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 4, location node104.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 7, location node107.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 3, location node103.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 8, location node105.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 6, location node109.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 10, location node110.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 5, location node106.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 9, location node113.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 13, location node108.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 16, location node118.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 23, location node123.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 18, location node116.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 24, location node129.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 20, location node120.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 15, location node114.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 17, location node117.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 14, location node115.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 19, location node125.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 12, location node111.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 22, location node122.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 25, location node126.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 11, location node112.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 21, location node124.beowulf.cluster)
+Node registered of type: generator
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 25
+Got register message from (Ibis 26, location node128.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 27, location node119.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 30, location node127.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 29, location node132.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 28, location node131.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 31, location node121.beowulf.cluster)
+Node registered of type: generator
+Got register message from (Ibis 32, location node130.beowulf.cluster)
+Node registered of type: generator
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 0
+Group counter 0
+Group generator 32
+Got register message from (Ibis 33, location node202.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 35, location node211.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 36, location node203.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 34, location node201.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 45, location node214.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 42, location node219.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 38, location node207.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 47, location node230.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 41, location node217.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 40, location node206.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 43, location node210.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 46, location node225.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 44, location node215.beowulf.cluster)
+Node registered of type: color
+Group compress 0
+Group color 13
+Group counter 0
+Group generator 32
+Got register message from (Ibis 37, location node213.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 48, location node205.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 39, location node212.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 50, location node218.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 55, location node238.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 59, location node239.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 51, location node220.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 58, location node232.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 49, location node224.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 53, location node223.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 61, location node228.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 57, location node234.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 60, location node240.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 54, location node236.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 52, location node227.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 56, location node235.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 62, location node237.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 63, location node231.beowulf.cluster)
+Node registered of type: color
+Got register message from (Ibis 64, location node229.beowulf.cluster)
+Node registered of type: color
+Group compress 0
+Group color 32
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 32
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 32
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 32
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 32
+Group counter 0
+Group generator 32
+Group compress 0
+Group color 32
+Group counter 0
+Group generator 32
+Got register message from (Ibis 65, location node082.beowulf.cluster)
+Node registered of type: counter
+Got register message from (Ibis 66, location node008.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 70, location node005.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 68, location node008.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 67, location node003.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 69, location node003.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 82, location node001.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 80, location node016.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 81, location node026.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 76, location node012.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 77, location node015.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 78, location node014.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 73, location node012.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 74, location node015.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 83, location node001.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 71, location node005.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 75, location node014.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 72, location node011.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 79, location node011.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 95, location node073.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 92, location node033.beowulf.cluster)
+Got register message from (Ibis 86, location node016.beowulf.cluster)
+Node registered of type: compress
+Node registered of type: compress
+Got register message from (Ibis 97, location node035.beowulf.cluster)
+Node registered of type: compress
+Group compress 22
+Group color 32
+Group counter 1
+Group generator 32
+Got register message from (Ibis 85, location node026.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 98, location node041.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 100, location node022.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 102, location node049.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 89, location node032.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 96, location node045.beowulf.cluster)
+Got register message from (Ibis 84, location node031.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 91, location node030.beowulf.cluster)
+Node registered of type: compress
+Node registered of type: compress
+Got register message from (Ibis 93, location node037.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 103, location node072.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 108, location node058.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 106, location node071.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 88, location node030.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 105, location node071.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 99, location node029.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 87, location node031.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 101, location node049.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 94, location node022.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 104, location node041.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 90, location node029.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 107, location node072.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 109, location node033.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 121, location node045.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 123, location node079.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 114, location node058.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 126, location node032.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 112, location node054.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 118, location node064.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 125, location node062.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 110, location node076.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 119, location node073.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 122, location node039.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 115, location node084.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 127, location node035.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 120, location node054.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 129, location node037.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 124, location node079.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 111, location node039.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 116, location node076.beowulf.cluster)
+Got register message from (Ibis 128, location node062.beowulf.cluster)
+Node registered of type: compress
+Node registered of type: compress
+Got register message from (Ibis 117, location node064.beowulf.cluster)
+Node registered of type: compress
+Got register message from (Ibis 113, location node084.beowulf.cluster)
+Node registered of type: compress
+Group compress 64
+Group color 32
+Group counter 1
+Group generator 32
+I now have a node for each component!
+Starting compress
+Starting color
+Starting counter
+Starting generator
+0 129
+Info after 5 sec.
+0 129
+Info after 10 sec.
+0 129
+Info after 15 sec.
+0 129
+Info after 20 sec.
+0 129
+Info after 25 sec.
+0 129
+Info after 30 sec.
+0 129
+Info after 35 sec.
+0 129
+Info after 40 sec.
+0 129
+Info after 45 sec.
+0 129
+Info after 50 sec.
+0 129
+Info after 55 sec.
+0 129
+Info after 60 sec.
+0 129
+Info after 65 sec.
+0 129
+Info after 70 sec.
+0 129
+Info after 75 sec.
+0 129
+Info after 80 sec.
+0 129
+Info after 85 sec.
+0 129
+Info after 90 sec.
+0 129
+Info after 95 sec.
+0 129
+Info after 100 sec.
+0 129
+Info after 105 sec.
+0 129
+Info after 110 sec.
+[*] Statistic for 0: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 105998 ms.
+[*]  - Processing time : 12621 ms.
+[*]  - Idle time       : 93377 ms. (88%)
+[*]  - Avg. proc. time : 126 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.80 MBit/sec.
+[*]  - Overall rate out: 187.80 MBit/sec.
+[*]  - Proc. rate in   : 1.58 GBit/sec.
+[*]  - Proc. rate out  : 1.58 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 1: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106096 ms.
+[*]  - Processing time : 12994 ms.
+[*]  - Idle time       : 93102 ms. (87%)
+[*]  - Avg. proc. time : 129 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.63 MBit/sec.
+[*]  - Overall rate out: 187.63 MBit/sec.
+[*]  - Proc. rate in   : 1.53 GBit/sec.
+[*]  - Proc. rate out  : 1.53 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 2: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 105989 ms.
+[*]  - Processing time : 12326 ms.
+[*]  - Idle time       : 93663 ms. (88%)
+[*]  - Avg. proc. time : 123 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.82 MBit/sec.
+[*]  - Overall rate out: 187.82 MBit/sec.
+[*]  - Proc. rate in   : 1.62 GBit/sec.
+[*]  - Proc. rate out  : 1.62 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 3: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 105996 ms.
+[*]  - Processing time : 12997 ms.
+[*]  - Idle time       : 92999 ms. (87%)
+[*]  - Avg. proc. time : 129 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.80 MBit/sec.
+[*]  - Overall rate out: 187.80 MBit/sec.
+[*]  - Proc. rate in   : 1.53 GBit/sec.
+[*]  - Proc. rate out  : 1.53 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 4: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106085 ms.
+[*]  - Processing time : 12994 ms.
+[*]  - Idle time       : 93091 ms. (87%)
+[*]  - Avg. proc. time : 129 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.65 MBit/sec.
+[*]  - Overall rate out: 187.65 MBit/sec.
+[*]  - Proc. rate in   : 1.53 GBit/sec.
+[*]  - Proc. rate out  : 1.53 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 5: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106007 ms.
+[*]  - Processing time : 13014 ms.
+[*]  - Idle time       : 92993 ms. (87%)
+[*]  - Avg. proc. time : 130 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.79 MBit/sec.
+[*]  - Overall rate out: 187.79 MBit/sec.
+[*]  - Proc. rate in   : 1.53 GBit/sec.
+[*]  - Proc. rate out  : 1.53 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 6: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106053 ms.
+[*]  - Processing time : 13379 ms.
+[*]  - Idle time       : 92674 ms. (87%)
+[*]  - Avg. proc. time : 133 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.70 MBit/sec.
+[*]  - Overall rate out: 187.70 MBit/sec.
+[*]  - Proc. rate in   : 1.49 GBit/sec.
+[*]  - Proc. rate out  : 1.49 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 7: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106087 ms.
+[*]  - Processing time : 13059 ms.
+[*]  - Idle time       : 93028 ms. (87%)
+[*]  - Avg. proc. time : 130 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.64 MBit/sec.
+[*]  - Overall rate out: 187.64 MBit/sec.
+[*]  - Proc. rate in   : 1.52 GBit/sec.
+[*]  - Proc. rate out  : 1.52 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 8: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106051 ms.
+[*]  - Processing time : 13323 ms.
+[*]  - Idle time       : 92728 ms. (87%)
+[*]  - Avg. proc. time : 133 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.71 MBit/sec.
+[*]  - Overall rate out: 187.71 MBit/sec.
+[*]  - Proc. rate in   : 1.49 GBit/sec.
+[*]  - Proc. rate out  : 1.49 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 9: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106031 ms.
+[*]  - Processing time : 12665 ms.
+[*]  - Idle time       : 93366 ms. (88%)
+[*]  - Avg. proc. time : 126 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.74 MBit/sec.
+[*]  - Overall rate out: 187.74 MBit/sec.
+[*]  - Proc. rate in   : 1.57 GBit/sec.
+[*]  - Proc. rate out  : 1.57 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 10: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106002 ms.
+[*]  - Processing time : 13306 ms.
+[*]  - Idle time       : 92696 ms. (87%)
+[*]  - Avg. proc. time : 133 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.79 MBit/sec.
+[*]  - Overall rate out: 187.79 MBit/sec.
+[*]  - Proc. rate in   : 1.50 GBit/sec.
+[*]  - Proc. rate out  : 1.50 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 11: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106079 ms.
+[*]  - Processing time : 13446 ms.
+[*]  - Idle time       : 92633 ms. (87%)
+[*]  - Avg. proc. time : 134 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.66 MBit/sec.
+[*]  - Overall rate out: 187.66 MBit/sec.
+[*]  - Proc. rate in   : 1.48 GBit/sec.
+[*]  - Proc. rate out  : 1.48 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 12: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 105982 ms.
+[*]  - Processing time : 13551 ms.
+[*]  - Idle time       : 92431 ms. (87%)
+[*]  - Avg. proc. time : 135 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.83 MBit/sec.
+[*]  - Overall rate out: 187.83 MBit/sec.
+[*]  - Proc. rate in   : 1.47 GBit/sec.
+[*]  - Proc. rate out  : 1.47 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 13: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106104 ms.
+[*]  - Processing time : 13105 ms.
+[*]  - Idle time       : 92999 ms. (87%)
+[*]  - Avg. proc. time : 131 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.61 MBit/sec.
+[*]  - Overall rate out: 187.61 MBit/sec.
+[*]  - Proc. rate in   : 1.52 GBit/sec.
+[*]  - Proc. rate out  : 1.52 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 14: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106059 ms.
+[*]  - Processing time : 13576 ms.
+[*]  - Idle time       : 92483 ms. (87%)
+[*]  - Avg. proc. time : 135 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.69 MBit/sec.
+[*]  - Overall rate out: 187.69 MBit/sec.
+[*]  - Proc. rate in   : 1.47 GBit/sec.
+[*]  - Proc. rate out  : 1.47 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 15: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106035 ms.
+[*]  - Processing time : 13280 ms.
+[*]  - Idle time       : 92755 ms. (87%)
+[*]  - Avg. proc. time : 132 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.74 MBit/sec.
+[*]  - Overall rate out: 187.74 MBit/sec.
+[*]  - Proc. rate in   : 1.50 GBit/sec.
+[*]  - Proc. rate out  : 1.50 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 16: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106030 ms.
+[*]  - Processing time : 13176 ms.
+[*]  - Idle time       : 92854 ms. (87%)
+[*]  - Avg. proc. time : 131 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.74 MBit/sec.
+[*]  - Overall rate out: 187.74 MBit/sec.
+[*]  - Proc. rate in   : 1.51 GBit/sec.
+[*]  - Proc. rate out  : 1.51 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 17: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106053 ms.
+[*]  - Processing time : 13643 ms.
+[*]  - Idle time       : 92410 ms. (87%)
+[*]  - Avg. proc. time : 136 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.70 MBit/sec.
+[*]  - Overall rate out: 187.70 MBit/sec.
+[*]  - Proc. rate in   : 1.46 GBit/sec.
+[*]  - Proc. rate out  : 1.46 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 18: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106040 ms.
+[*]  - Processing time : 13068 ms.
+[*]  - Idle time       : 92972 ms. (87%)
+[*]  - Avg. proc. time : 130 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.73 MBit/sec.
+[*]  - Overall rate out: 187.73 MBit/sec.
+[*]  - Proc. rate in   : 1.52 GBit/sec.
+[*]  - Proc. rate out  : 1.52 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 19: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106066 ms.
+[*]  - Processing time : 13538 ms.
+[*]  - Idle time       : 92528 ms. (87%)
+[*]  - Avg. proc. time : 135 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.68 MBit/sec.
+[*]  - Overall rate out: 187.68 MBit/sec.
+[*]  - Proc. rate in   : 1.47 GBit/sec.
+[*]  - Proc. rate out  : 1.47 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 20: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106025 ms.
+[*]  - Processing time : 13179 ms.
+[*]  - Idle time       : 92846 ms. (87%)
+[*]  - Avg. proc. time : 131 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.75 MBit/sec.
+[*]  - Overall rate out: 187.75 MBit/sec.
+[*]  - Proc. rate in   : 1.51 GBit/sec.
+[*]  - Proc. rate out  : 1.51 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 21: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106035 ms.
+[*]  - Processing time : 13323 ms.
+[*]  - Idle time       : 92712 ms. (87%)
+[*]  - Avg. proc. time : 133 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.74 MBit/sec.
+[*]  - Overall rate out: 187.74 MBit/sec.
+[*]  - Proc. rate in   : 1.49 GBit/sec.
+[*]  - Proc. rate out  : 1.49 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 22: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106033 ms.
+[*]  - Processing time : 13160 ms.
+[*]  - Idle time       : 92873 ms. (87%)
+[*]  - Avg. proc. time : 131 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.74 MBit/sec.
+[*]  - Overall rate out: 187.74 MBit/sec.
+[*]  - Proc. rate in   : 1.51 GBit/sec.
+[*]  - Proc. rate out  : 1.51 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 23: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106065 ms.
+[*]  - Processing time : 12532 ms.
+[*]  - Idle time       : 93533 ms. (88%)
+[*]  - Avg. proc. time : 125 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.68 MBit/sec.
+[*]  - Overall rate out: 187.68 MBit/sec.
+[*]  - Proc. rate in   : 1.59 GBit/sec.
+[*]  - Proc. rate out  : 1.59 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 24: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106077 ms.
+[*]  - Processing time : 13614 ms.
+[*]  - Idle time       : 92463 ms. (87%)
+[*]  - Avg. proc. time : 136 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.66 MBit/sec.
+[*]  - Overall rate out: 187.66 MBit/sec.
+[*]  - Proc. rate in   : 1.46 GBit/sec.
+[*]  - Proc. rate out  : 1.46 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 25: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106052 ms.
+[*]  - Processing time : 13819 ms.
+[*]  - Idle time       : 92233 ms. (86%)
+[*]  - Avg. proc. time : 138 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.71 MBit/sec.
+[*]  - Overall rate out: 187.71 MBit/sec.
+[*]  - Proc. rate in   : 1.44 GBit/sec.
+[*]  - Proc. rate out  : 1.44 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 26: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106026 ms.
+[*]  - Processing time : 13423 ms.
+[*]  - Idle time       : 92603 ms. (87%)
+[*]  - Avg. proc. time : 134 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.75 MBit/sec.
+[*]  - Overall rate out: 187.75 MBit/sec.
+[*]  - Proc. rate in   : 1.48 GBit/sec.
+[*]  - Proc. rate out  : 1.48 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 27: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106013 ms.
+[*]  - Processing time : 13458 ms.
+[*]  - Idle time       : 92555 ms. (87%)
+[*]  - Avg. proc. time : 134 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.77 MBit/sec.
+[*]  - Overall rate out: 187.77 MBit/sec.
+[*]  - Proc. rate in   : 1.48 GBit/sec.
+[*]  - Proc. rate out  : 1.48 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 28: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106053 ms.
+[*]  - Processing time : 13737 ms.
+[*]  - Idle time       : 92316 ms. (87%)
+[*]  - Avg. proc. time : 137 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.70 MBit/sec.
+[*]  - Overall rate out: 187.70 MBit/sec.
+[*]  - Proc. rate in   : 1.45 GBit/sec.
+[*]  - Proc. rate out  : 1.45 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 29: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106086 ms.
+[*]  - Processing time : 13900 ms.
+[*]  - Idle time       : 92186 ms. (86%)
+[*]  - Avg. proc. time : 139 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.65 MBit/sec.
+[*]  - Overall rate out: 187.65 MBit/sec.
+[*]  - Proc. rate in   : 1.43 GBit/sec.
+[*]  - Proc. rate out  : 1.43 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 30: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106010 ms.
+[*]  - Processing time : 13413 ms.
+[*]  - Idle time       : 92597 ms. (87%)
+[*]  - Avg. proc. time : 134 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.78 MBit/sec.
+[*]  - Overall rate out: 187.78 MBit/sec.
+[*]  - Proc. rate in   : 1.48 GBit/sec.
+[*]  - Proc. rate out  : 1.48 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 31: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106027 ms.
+[*]  - Processing time : 14186 ms.
+[*]  - Idle time       : 91841 ms. (86%)
+[*]  - Avg. proc. time : 141 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.75 MBit/sec.
+[*]  - Overall rate out: 187.75 MBit/sec.
+[*]  - Proc. rate in   : 1.40 GBit/sec.
+[*]  - Proc. rate out  : 1.40 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 32: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106308 ms.
+[*]  - Processing time : 11314 ms.
+[*]  - Idle time       : 94994 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.25 MBit/sec.
+[*]  - Overall rate out: 187.25 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 33: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106502 ms.
+[*]  - Processing time : 11305 ms.
+[*]  - Idle time       : 95197 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 186.91 MBit/sec.
+[*]  - Overall rate out: 186.91 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 34: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106476 ms.
+[*]  - Processing time : 11318 ms.
+[*]  - Idle time       : 95158 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 186.96 MBit/sec.
+[*]  - Overall rate out: 186.96 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 35: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106287 ms.
+[*]  - Processing time : 11317 ms.
+[*]  - Idle time       : 94970 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.29 MBit/sec.
+[*]  - Overall rate out: 187.29 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 36: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106427 ms.
+[*]  - Processing time : 11313 ms.
+[*]  - Idle time       : 95114 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.04 MBit/sec.
+[*]  - Overall rate out: 187.04 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 37: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106238 ms.
+[*]  - Processing time : 11311 ms.
+[*]  - Idle time       : 94927 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.38 MBit/sec.
+[*]  - Overall rate out: 187.38 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 38: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106320 ms.
+[*]  - Processing time : 11318 ms.
+[*]  - Idle time       : 95002 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.23 MBit/sec.
+[*]  - Overall rate out: 187.23 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 39: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106502 ms.
+[*]  - Processing time : 11311 ms.
+[*]  - Idle time       : 95191 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 186.91 MBit/sec.
+[*]  - Overall rate out: 186.91 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 40: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106337 ms.
+[*]  - Processing time : 11319 ms.
+[*]  - Idle time       : 95018 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.20 MBit/sec.
+[*]  - Overall rate out: 187.20 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 41: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106380 ms.
+[*]  - Processing time : 11314 ms.
+[*]  - Idle time       : 95066 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.13 MBit/sec.
+[*]  - Overall rate out: 187.13 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 42: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106283 ms.
+[*]  - Processing time : 11315 ms.
+[*]  - Idle time       : 94968 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.30 MBit/sec.
+[*]  - Overall rate out: 187.30 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 43: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106406 ms.
+[*]  - Processing time : 11305 ms.
+[*]  - Idle time       : 95101 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.08 MBit/sec.
+[*]  - Overall rate out: 187.08 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 44: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106209 ms.
+[*]  - Processing time : 11317 ms.
+[*]  - Idle time       : 94892 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.43 MBit/sec.
+[*]  - Overall rate out: 187.43 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 45: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106402 ms.
+[*]  - Processing time : 11294 ms.
+[*]  - Idle time       : 95108 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.09 MBit/sec.
+[*]  - Overall rate out: 187.09 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 46: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106346 ms.
+[*]  - Processing time : 11304 ms.
+[*]  - Idle time       : 95042 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.19 MBit/sec.
+[*]  - Overall rate out: 187.19 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 47: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106284 ms.
+[*]  - Processing time : 11316 ms.
+[*]  - Idle time       : 94968 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.30 MBit/sec.
+[*]  - Overall rate out: 187.30 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 48: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106339 ms.
+[*]  - Processing time : 11321 ms.
+[*]  - Idle time       : 95018 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.20 MBit/sec.
+[*]  - Overall rate out: 187.20 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 49: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106314 ms.
+[*]  - Processing time : 11292 ms.
+[*]  - Idle time       : 95022 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.24 MBit/sec.
+[*]  - Overall rate out: 187.24 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 50: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106296 ms.
+[*]  - Processing time : 11313 ms.
+[*]  - Idle time       : 94983 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.27 MBit/sec.
+[*]  - Overall rate out: 187.27 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 51: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106408 ms.
+[*]  - Processing time : 11306 ms.
+[*]  - Idle time       : 95102 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.08 MBit/sec.
+[*]  - Overall rate out: 187.08 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 52: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106324 ms.
+[*]  - Processing time : 11318 ms.
+[*]  - Idle time       : 95006 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.23 MBit/sec.
+[*]  - Overall rate out: 187.23 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 53: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106337 ms.
+[*]  - Processing time : 11286 ms.
+[*]  - Idle time       : 95051 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.20 MBit/sec.
+[*]  - Overall rate out: 187.20 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 54: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 105596 ms.
+[*]  - Processing time : 11276 ms.
+[*]  - Idle time       : 94320 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 188.52 MBit/sec.
+[*]  - Overall rate out: 188.52 MBit/sec.
+[*]  - Proc. rate in   : 1.77 GBit/sec.
+[*]  - Proc. rate out  : 1.77 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 55: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106367 ms.
+[*]  - Processing time : 11290 ms.
+[*]  - Idle time       : 95077 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.15 MBit/sec.
+[*]  - Overall rate out: 187.15 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 56: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106325 ms.
+[*]  - Processing time : 11297 ms.
+[*]  - Idle time       : 95028 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.22 MBit/sec.
+[*]  - Overall rate out: 187.22 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 57: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106370 ms.
+[*]  - Processing time : 11299 ms.
+[*]  - Idle time       : 95071 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.14 MBit/sec.
+[*]  - Overall rate out: 187.14 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 58: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106358 ms.
+[*]  - Processing time : 11292 ms.
+[*]  - Idle time       : 95066 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.17 MBit/sec.
+[*]  - Overall rate out: 187.17 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 59: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106307 ms.
+[*]  - Processing time : 11308 ms.
+[*]  - Idle time       : 94999 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.26 MBit/sec.
+[*]  - Overall rate out: 187.26 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 60: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106347 ms.
+[*]  - Processing time : 11307 ms.
+[*]  - Idle time       : 95040 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.18 MBit/sec.
+[*]  - Overall rate out: 187.18 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 61: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106330 ms.
+[*]  - Processing time : 11310 ms.
+[*]  - Idle time       : 95020 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.21 MBit/sec.
+[*]  - Overall rate out: 187.21 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 62: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106268 ms.
+[*]  - Processing time : 11292 ms.
+[*]  - Idle time       : 94976 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.32 MBit/sec.
+[*]  - Overall rate out: 187.32 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 63: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 105534 ms.
+[*]  - Processing time : 11312 ms.
+[*]  - Idle time       : 94222 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 188.63 MBit/sec.
+[*]  - Overall rate out: 188.63 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+[*] Statistic for 64: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107022 ms.
+[*]  - Processing time : 72864 ms.
+[*]  - Idle time       : 34158 ms. (31%)
+[*]  - Avg. proc. time : 1457 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.71 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.37 KB/image.
+[*]  - Overall rate in : 93.00 MBit/sec.
+[*]  - Overall rate out: 839.59 KBit/sec.
+[*]  - Proc. rate in   : 136.60 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 65: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107387 ms.
+[*]  - Processing time : 72388 ms.
+[*]  - Idle time       : 34999 ms. (32%)
+[*]  - Avg. proc. time : 1447 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.65 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.21 KB/image.
+[*]  - Overall rate in : 92.69 MBit/sec.
+[*]  - Overall rate out: 832.29 KBit/sec.
+[*]  - Proc. rate in   : 137.50 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 66: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107400 ms.
+[*]  - Processing time : 73234 ms.
+[*]  - Idle time       : 34166 ms. (31%)
+[*]  - Avg. proc. time : 1464 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.69 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.84 KB/image.
+[*]  - Overall rate in : 92.67 MBit/sec.
+[*]  - Overall rate out: 834.59 KBit/sec.
+[*]  - Proc. rate in   : 135.91 MBit/sec.
+[*]  - Proc. rate out  : 1.22 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 67: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107112 ms.
+[*]  - Processing time : 73472 ms.
+[*]  - Idle time       : 33640 ms. (31%)
+[*]  - Avg. proc. time : 1469 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.69 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.85 KB/image.
+[*]  - Overall rate in : 92.92 MBit/sec.
+[*]  - Overall rate out: 836.89 KBit/sec.
+[*]  - Proc. rate in   : 135.47 MBit/sec.
+[*]  - Proc. rate out  : 1.22 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 68: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107189 ms.
+[*]  - Processing time : 73517 ms.
+[*]  - Idle time       : 33672 ms. (31%)
+[*]  - Avg. proc. time : 1470 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.70 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.15 KB/image.
+[*]  - Overall rate in : 92.86 MBit/sec.
+[*]  - Overall rate out: 837.42 KBit/sec.
+[*]  - Proc. rate in   : 135.39 MBit/sec.
+[*]  - Proc. rate out  : 1.22 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 69: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107473 ms.
+[*]  - Processing time : 73829 ms.
+[*]  - Idle time       : 33644 ms. (31%)
+[*]  - Avg. proc. time : 1476 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.66 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.39 KB/image.
+[*]  - Overall rate in : 92.61 MBit/sec.
+[*]  - Overall rate out: 832.34 KBit/sec.
+[*]  - Proc. rate in   : 134.82 MBit/sec.
+[*]  - Proc. rate out  : 1.21 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 70: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107116 ms.
+[*]  - Processing time : 71574 ms.
+[*]  - Idle time       : 35542 ms. (33%)
+[*]  - Avg. proc. time : 1431 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.73 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.68 KB/image.
+[*]  - Overall rate in : 92.92 MBit/sec.
+[*]  - Overall rate out: 840.02 KBit/sec.
+[*]  - Proc. rate in   : 139.06 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 71: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107262 ms.
+[*]  - Processing time : 71979 ms.
+[*]  - Idle time       : 35283 ms. (32%)
+[*]  - Avg. proc. time : 1439 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.67 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.48 KB/image.
+[*]  - Overall rate in : 92.79 MBit/sec.
+[*]  - Overall rate out: 834.30 KBit/sec.
+[*]  - Proc. rate in   : 138.28 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 72: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107034 ms.
+[*]  - Processing time : 73013 ms.
+[*]  - Idle time       : 34021 ms. (31%)
+[*]  - Avg. proc. time : 1460 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.72 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.61 KB/image.
+[*]  - Overall rate in : 92.99 MBit/sec.
+[*]  - Overall rate out: 840.42 KBit/sec.
+[*]  - Proc. rate in   : 136.32 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 73: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107275 ms.
+[*]  - Processing time : 73118 ms.
+[*]  - Idle time       : 34157 ms. (31%)
+[*]  - Avg. proc. time : 1462 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.72 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.56 KB/image.
+[*]  - Overall rate in : 92.78 MBit/sec.
+[*]  - Overall rate out: 838.35 KBit/sec.
+[*]  - Proc. rate in   : 136.13 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 74: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107046 ms.
+[*]  - Processing time : 73132 ms.
+[*]  - Idle time       : 33914 ms. (31%)
+[*]  - Avg. proc. time : 1462 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.83 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.85 KB/image.
+[*]  - Overall rate in : 92.98 MBit/sec.
+[*]  - Overall rate out: 848.91 KBit/sec.
+[*]  - Proc. rate in   : 136.10 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 75: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107175 ms.
+[*]  - Processing time : 71960 ms.
+[*]  - Idle time       : 35215 ms. (32%)
+[*]  - Avg. proc. time : 1439 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.76 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.39 KB/image.
+[*]  - Overall rate in : 92.87 MBit/sec.
+[*]  - Overall rate out: 842.30 KBit/sec.
+[*]  - Proc. rate in   : 138.32 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 76: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 106976 ms.
+[*]  - Processing time : 71893 ms.
+[*]  - Idle time       : 35083 ms. (32%)
+[*]  - Avg. proc. time : 1437 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.80 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.20 KB/image.
+[*]  - Overall rate in : 93.04 MBit/sec.
+[*]  - Overall rate out: 846.97 KBit/sec.
+[*]  - Proc. rate in   : 138.45 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 77: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107289 ms.
+[*]  - Processing time : 73554 ms.
+[*]  - Idle time       : 33735 ms. (31%)
+[*]  - Avg. proc. time : 1471 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.81 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.43 KB/image.
+[*]  - Overall rate in : 92.77 MBit/sec.
+[*]  - Overall rate out: 845.38 KBit/sec.
+[*]  - Proc. rate in   : 135.32 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 78: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107327 ms.
+[*]  - Processing time : 72511 ms.
+[*]  - Idle time       : 34816 ms. (32%)
+[*]  - Avg. proc. time : 1450 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.81 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.40 KB/image.
+[*]  - Overall rate in : 92.74 MBit/sec.
+[*]  - Overall rate out: 844.96 KBit/sec.
+[*]  - Proc. rate in   : 137.27 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 79: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107118 ms.
+[*]  - Processing time : 73042 ms.
+[*]  - Idle time       : 34076 ms. (31%)
+[*]  - Avg. proc. time : 1460 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.79 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.06 KB/image.
+[*]  - Overall rate in : 92.92 MBit/sec.
+[*]  - Overall rate out: 845.31 KBit/sec.
+[*]  - Proc. rate in   : 136.27 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 80: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107247 ms.
+[*]  - Processing time : 72668 ms.
+[*]  - Idle time       : 34579 ms. (32%)
+[*]  - Avg. proc. time : 1453 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.84 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.90 KB/image.
+[*]  - Overall rate in : 92.81 MBit/sec.
+[*]  - Overall rate out: 847.50 KBit/sec.
+[*]  - Proc. rate in   : 136.97 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 81: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107298 ms.
+[*]  - Processing time : 72586 ms.
+[*]  - Idle time       : 34712 ms. (32%)
+[*]  - Avg. proc. time : 1451 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.78 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.80 KB/image.
+[*]  - Overall rate in : 92.76 MBit/sec.
+[*]  - Overall rate out: 842.90 KBit/sec.
+[*]  - Proc. rate in   : 137.12 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 82: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107094 ms.
+[*]  - Processing time : 71616 ms.
+[*]  - Idle time       : 35478 ms. (33%)
+[*]  - Avg. proc. time : 1432 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.85 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.17 KB/image.
+[*]  - Overall rate in : 92.94 MBit/sec.
+[*]  - Overall rate out: 849.72 KBit/sec.
+[*]  - Proc. rate in   : 138.98 MBit/sec.
+[*]  - Proc. rate out  : 1.27 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 83: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107310 ms.
+[*]  - Processing time : 71519 ms.
+[*]  - Idle time       : 35791 ms. (33%)
+[*]  - Avg. proc. time : 1430 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.84 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.06 KB/image.
+[*]  - Overall rate in : 92.75 MBit/sec.
+[*]  - Overall rate out: 847.62 KBit/sec.
+[*]  - Proc. rate in   : 139.17 MBit/sec.
+[*]  - Proc. rate out  : 1.27 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 84: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107246 ms.
+[*]  - Processing time : 69030 ms.
+[*]  - Idle time       : 38216 ms. (35%)
+[*]  - Avg. proc. time : 1380 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.86 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.48 KB/image.
+[*]  - Overall rate in : 92.81 MBit/sec.
+[*]  - Overall rate out: 849.72 KBit/sec.
+[*]  - Proc. rate in   : 144.19 MBit/sec.
+[*]  - Proc. rate out  : 1.32 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 85: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107151 ms.
+[*]  - Processing time : 70629 ms.
+[*]  - Idle time       : 36522 ms. (34%)
+[*]  - Avg. proc. time : 1412 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.79 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.04 KB/image.
+[*]  - Overall rate in : 92.89 MBit/sec.
+[*]  - Overall rate out: 844.95 KBit/sec.
+[*]  - Proc. rate in   : 140.92 MBit/sec.
+[*]  - Proc. rate out  : 1.28 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 86: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107311 ms.
+[*]  - Processing time : 70789 ms.
+[*]  - Idle time       : 36522 ms. (34%)
+[*]  - Avg. proc. time : 1415 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.83 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.79 KB/image.
+[*]  - Overall rate in : 92.75 MBit/sec.
+[*]  - Overall rate out: 846.57 KBit/sec.
+[*]  - Proc. rate in   : 140.60 MBit/sec.
+[*]  - Proc. rate out  : 1.28 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 87: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107457 ms.
+[*]  - Processing time : 72856 ms.
+[*]  - Idle time       : 34601 ms. (32%)
+[*]  - Avg. proc. time : 1457 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.84 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.09 KB/image.
+[*]  - Overall rate in : 92.63 MBit/sec.
+[*]  - Overall rate out: 846.57 KBit/sec.
+[*]  - Proc. rate in   : 136.62 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 88: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107297 ms.
+[*]  - Processing time : 71734 ms.
+[*]  - Idle time       : 35563 ms. (33%)
+[*]  - Avg. proc. time : 1434 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.84 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.04 KB/image.
+[*]  - Overall rate in : 92.76 MBit/sec.
+[*]  - Overall rate out: 847.62 KBit/sec.
+[*]  - Proc. rate in   : 138.75 MBit/sec.
+[*]  - Proc. rate out  : 1.27 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 89: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107225 ms.
+[*]  - Processing time : 71954 ms.
+[*]  - Idle time       : 35271 ms. (32%)
+[*]  - Avg. proc. time : 1439 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.82 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.63 KB/image.
+[*]  - Overall rate in : 92.83 MBit/sec.
+[*]  - Overall rate out: 846.63 KBit/sec.
+[*]  - Proc. rate in   : 138.33 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 90: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107394 ms.
+[*]  - Processing time : 72545 ms.
+[*]  - Idle time       : 34849 ms. (32%)
+[*]  - Avg. proc. time : 1450 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.87 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.61 KB/image.
+[*]  - Overall rate in : 92.68 MBit/sec.
+[*]  - Overall rate out: 849.05 KBit/sec.
+[*]  - Proc. rate in   : 137.20 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 91: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107314 ms.
+[*]  - Processing time : 72067 ms.
+[*]  - Idle time       : 35247 ms. (32%)
+[*]  - Avg. proc. time : 1441 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.81 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.45 KB/image.
+[*]  - Overall rate in : 92.75 MBit/sec.
+[*]  - Overall rate out: 845.24 KBit/sec.
+[*]  - Proc. rate in   : 138.11 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 92: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107429 ms.
+[*]  - Processing time : 71478 ms.
+[*]  - Idle time       : 35951 ms. (33%)
+[*]  - Avg. proc. time : 1429 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.88 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.81 KB/image.
+[*]  - Overall rate in : 92.65 MBit/sec.
+[*]  - Overall rate out: 849.50 KBit/sec.
+[*]  - Proc. rate in   : 139.25 MBit/sec.
+[*]  - Proc. rate out  : 1.28 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 93: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107496 ms.
+[*]  - Processing time : 71484 ms.
+[*]  - Idle time       : 36012 ms. (33%)
+[*]  - Avg. proc. time : 1429 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.87 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.72 KB/image.
+[*]  - Overall rate in : 92.59 MBit/sec.
+[*]  - Overall rate out: 848.64 KBit/sec.
+[*]  - Proc. rate in   : 139.24 MBit/sec.
+[*]  - Proc. rate out  : 1.28 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 94: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107334 ms.
+[*]  - Processing time : 72648 ms.
+[*]  - Idle time       : 34686 ms. (32%)
+[*]  - Avg. proc. time : 1452 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.86 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.43 KB/image.
+[*]  - Overall rate in : 92.73 MBit/sec.
+[*]  - Overall rate out: 848.84 KBit/sec.
+[*]  - Proc. rate in   : 137.01 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 95: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107438 ms.
+[*]  - Processing time : 71977 ms.
+[*]  - Idle time       : 35461 ms. (33%)
+[*]  - Avg. proc. time : 1439 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.79 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.07 KB/image.
+[*]  - Overall rate in : 92.64 MBit/sec.
+[*]  - Overall rate out: 842.81 KBit/sec.
+[*]  - Proc. rate in   : 138.28 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 96: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107995 ms.
+[*]  - Processing time : 72250 ms.
+[*]  - Idle time       : 35745 ms. (33%)
+[*]  - Avg. proc. time : 1445 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.65 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.06 KB/image.
+[*]  - Overall rate in : 92.16 MBit/sec.
+[*]  - Overall rate out: 827.04 KBit/sec.
+[*]  - Proc. rate in   : 137.76 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 97: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108457 ms.
+[*]  - Processing time : 72854 ms.
+[*]  - Idle time       : 35603 ms. (32%)
+[*]  - Avg. proc. time : 1457 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.59 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 216.89 KB/image.
+[*]  - Overall rate in : 91.77 MBit/sec.
+[*]  - Overall rate out: 819.11 KBit/sec.
+[*]  - Proc. rate in   : 136.62 MBit/sec.
+[*]  - Proc. rate out  : 1.22 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 98: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108387 ms.
+[*]  - Processing time : 70297 ms.
+[*]  - Idle time       : 38090 ms. (35%)
+[*]  - Avg. proc. time : 1405 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.62 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 217.52 KB/image.
+[*]  - Overall rate in : 91.83 MBit/sec.
+[*]  - Overall rate out: 822.01 KBit/sec.
+[*]  - Proc. rate in   : 141.59 MBit/sec.
+[*]  - Proc. rate out  : 1.27 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 99: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108154 ms.
+[*]  - Processing time : 73815 ms.
+[*]  - Idle time       : 34339 ms. (31%)
+[*]  - Avg. proc. time : 1476 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.62 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 217.53 KB/image.
+[*]  - Overall rate in : 92.03 MBit/sec.
+[*]  - Overall rate out: 823.83 KBit/sec.
+[*]  - Proc. rate in   : 134.84 MBit/sec.
+[*]  - Proc. rate out  : 1.21 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 100: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108161 ms.
+[*]  - Processing time : 73892 ms.
+[*]  - Idle time       : 34269 ms. (31%)
+[*]  - Avg. proc. time : 1477 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.64 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 217.83 KB/image.
+[*]  - Overall rate in : 92.02 MBit/sec.
+[*]  - Overall rate out: 824.91 KBit/sec.
+[*]  - Proc. rate in   : 134.70 MBit/sec.
+[*]  - Proc. rate out  : 1.21 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 101: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107970 ms.
+[*]  - Processing time : 72030 ms.
+[*]  - Idle time       : 35940 ms. (33%)
+[*]  - Avg. proc. time : 1440 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.60 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 217.08 KB/image.
+[*]  - Overall rate in : 92.19 MBit/sec.
+[*]  - Overall rate out: 823.53 KBit/sec.
+[*]  - Proc. rate in   : 138.18 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 102: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108035 ms.
+[*]  - Processing time : 71677 ms.
+[*]  - Idle time       : 36358 ms. (33%)
+[*]  - Avg. proc. time : 1433 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.66 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.36 KB/image.
+[*]  - Overall rate in : 92.13 MBit/sec.
+[*]  - Overall rate out: 827.89 KBit/sec.
+[*]  - Proc. rate in   : 138.86 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 103: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108414 ms.
+[*]  - Processing time : 72306 ms.
+[*]  - Idle time       : 36108 ms. (33%)
+[*]  - Avg. proc. time : 1446 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.60 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 217.16 KB/image.
+[*]  - Overall rate in : 91.81 MBit/sec.
+[*]  - Overall rate out: 820.46 KBit/sec.
+[*]  - Proc. rate in   : 137.65 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 104: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108250 ms.
+[*]  - Processing time : 72137 ms.
+[*]  - Idle time       : 36113 ms. (33%)
+[*]  - Avg. proc. time : 1442 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.66 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.30 KB/image.
+[*]  - Overall rate in : 91.95 MBit/sec.
+[*]  - Overall rate out: 826.00 KBit/sec.
+[*]  - Proc. rate in   : 137.98 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 105: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108514 ms.
+[*]  - Processing time : 73304 ms.
+[*]  - Idle time       : 35210 ms. (32%)
+[*]  - Avg. proc. time : 1466 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.66 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.25 KB/image.
+[*]  - Overall rate in : 91.72 MBit/sec.
+[*]  - Overall rate out: 823.80 KBit/sec.
+[*]  - Proc. rate in   : 135.78 MBit/sec.
+[*]  - Proc. rate out  : 1.22 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 106: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108090 ms.
+[*]  - Processing time : 71281 ms.
+[*]  - Idle time       : 36809 ms. (34%)
+[*]  - Avg. proc. time : 1425 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.77 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.54 KB/image.
+[*]  - Overall rate in : 92.08 MBit/sec.
+[*]  - Overall rate out: 835.72 KBit/sec.
+[*]  - Proc. rate in   : 139.63 MBit/sec.
+[*]  - Proc. rate out  : 1.27 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 107: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108482 ms.
+[*]  - Processing time : 72045 ms.
+[*]  - Idle time       : 36437 ms. (33%)
+[*]  - Avg. proc. time : 1440 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.70 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.08 KB/image.
+[*]  - Overall rate in : 91.75 MBit/sec.
+[*]  - Overall rate out: 827.19 KBit/sec.
+[*]  - Proc. rate in   : 138.15 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 108: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108012 ms.
+[*]  - Processing time : 72004 ms.
+[*]  - Idle time       : 36008 ms. (33%)
+[*]  - Avg. proc. time : 1440 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.74 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.88 KB/image.
+[*]  - Overall rate in : 92.15 MBit/sec.
+[*]  - Overall rate out: 833.84 KBit/sec.
+[*]  - Proc. rate in   : 138.23 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 109: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108495 ms.
+[*]  - Processing time : 73360 ms.
+[*]  - Idle time       : 35135 ms. (32%)
+[*]  - Avg. proc. time : 1467 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.75 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.12 KB/image.
+[*]  - Overall rate in : 91.74 MBit/sec.
+[*]  - Overall rate out: 831.01 KBit/sec.
+[*]  - Proc. rate in   : 135.68 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 110: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108371 ms.
+[*]  - Processing time : 72051 ms.
+[*]  - Idle time       : 36320 ms. (33%)
+[*]  - Avg. proc. time : 1441 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.75 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.09 KB/image.
+[*]  - Overall rate in : 91.84 MBit/sec.
+[*]  - Overall rate out: 831.84 KBit/sec.
+[*]  - Proc. rate in   : 138.14 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 111: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108218 ms.
+[*]  - Processing time : 71617 ms.
+[*]  - Idle time       : 36601 ms. (33%)
+[*]  - Avg. proc. time : 1432 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.73 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.74 KB/image.
+[*]  - Overall rate in : 91.97 MBit/sec.
+[*]  - Overall rate out: 831.72 KBit/sec.
+[*]  - Proc. rate in   : 138.98 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 112: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108206 ms.
+[*]  - Processing time : 73650 ms.
+[*]  - Idle time       : 34556 ms. (31%)
+[*]  - Avg. proc. time : 1473 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.77 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.59 KB/image.
+[*]  - Overall rate in : 91.98 MBit/sec.
+[*]  - Overall rate out: 835.02 KBit/sec.
+[*]  - Proc. rate in   : 135.14 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 113: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108315 ms.
+[*]  - Processing time : 72702 ms.
+[*]  - Idle time       : 35613 ms. (32%)
+[*]  - Avg. proc. time : 1454 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.72 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.49 KB/image.
+[*]  - Overall rate in : 91.89 MBit/sec.
+[*]  - Overall rate out: 830.01 KBit/sec.
+[*]  - Proc. rate in   : 136.91 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 114: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108306 ms.
+[*]  - Processing time : 72791 ms.
+[*]  - Idle time       : 35515 ms. (32%)
+[*]  - Avg. proc. time : 1455 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.78 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.85 KB/image.
+[*]  - Overall rate in : 91.90 MBit/sec.
+[*]  - Overall rate out: 835.23 KBit/sec.
+[*]  - Proc. rate in   : 136.74 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 115: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108393 ms.
+[*]  - Processing time : 73074 ms.
+[*]  - Idle time       : 35319 ms. (32%)
+[*]  - Avg. proc. time : 1461 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.78 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.75 KB/image.
+[*]  - Overall rate in : 91.83 MBit/sec.
+[*]  - Overall rate out: 834.17 KBit/sec.
+[*]  - Proc. rate in   : 136.21 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 116: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108375 ms.
+[*]  - Processing time : 71641 ms.
+[*]  - Idle time       : 36734 ms. (33%)
+[*]  - Avg. proc. time : 1432 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.80 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.16 KB/image.
+[*]  - Overall rate in : 91.84 MBit/sec.
+[*]  - Overall rate out: 835.89 KBit/sec.
+[*]  - Proc. rate in   : 138.93 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 117: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108343 ms.
+[*]  - Processing time : 74135 ms.
+[*]  - Idle time       : 34208 ms. (31%)
+[*]  - Avg. proc. time : 1482 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.73 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.72 KB/image.
+[*]  - Overall rate in : 91.87 MBit/sec.
+[*]  - Overall rate out: 830.67 KBit/sec.
+[*]  - Proc. rate in   : 134.26 MBit/sec.
+[*]  - Proc. rate out  : 1.21 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 118: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108281 ms.
+[*]  - Processing time : 73145 ms.
+[*]  - Idle time       : 35136 ms. (32%)
+[*]  - Avg. proc. time : 1462 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.77 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.48 KB/image.
+[*]  - Overall rate in : 91.92 MBit/sec.
+[*]  - Overall rate out: 834.01 KBit/sec.
+[*]  - Proc. rate in   : 136.08 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 119: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108361 ms.
+[*]  - Processing time : 72469 ms.
+[*]  - Idle time       : 35892 ms. (33%)
+[*]  - Avg. proc. time : 1449 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.78 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.78 KB/image.
+[*]  - Overall rate in : 91.85 MBit/sec.
+[*]  - Overall rate out: 834.54 KBit/sec.
+[*]  - Proc. rate in   : 137.35 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 120: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108399 ms.
+[*]  - Processing time : 73658 ms.
+[*]  - Idle time       : 34741 ms. (32%)
+[*]  - Avg. proc. time : 1473 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.78 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.72 KB/image.
+[*]  - Overall rate in : 91.82 MBit/sec.
+[*]  - Overall rate out: 834.02 KBit/sec.
+[*]  - Proc. rate in   : 135.13 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 121: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108235 ms.
+[*]  - Processing time : 71723 ms.
+[*]  - Idle time       : 36512 ms. (33%)
+[*]  - Avg. proc. time : 1434 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.76 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.31 KB/image.
+[*]  - Overall rate in : 91.96 MBit/sec.
+[*]  - Overall rate out: 833.74 KBit/sec.
+[*]  - Proc. rate in   : 138.77 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 122: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108156 ms.
+[*]  - Processing time : 72558 ms.
+[*]  - Idle time       : 35598 ms. (32%)
+[*]  - Avg. proc. time : 1451 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.81 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.30 KB/image.
+[*]  - Overall rate in : 92.03 MBit/sec.
+[*]  - Overall rate out: 838.08 KBit/sec.
+[*]  - Proc. rate in   : 137.18 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 123: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108261 ms.
+[*]  - Processing time : 73266 ms.
+[*]  - Idle time       : 34995 ms. (32%)
+[*]  - Avg. proc. time : 1465 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.75 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.13 KB/image.
+[*]  - Overall rate in : 91.94 MBit/sec.
+[*]  - Overall rate out: 832.86 KBit/sec.
+[*]  - Proc. rate in   : 135.85 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 124: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108183 ms.
+[*]  - Processing time : 73244 ms.
+[*]  - Idle time       : 34939 ms. (32%)
+[*]  - Avg. proc. time : 1464 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.82 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.49 KB/image.
+[*]  - Overall rate in : 92.00 MBit/sec.
+[*]  - Overall rate out: 838.61 KBit/sec.
+[*]  - Proc. rate in   : 135.89 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 125: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108395 ms.
+[*]  - Processing time : 73354 ms.
+[*]  - Idle time       : 35041 ms. (32%)
+[*]  - Avg. proc. time : 1467 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.81 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.40 KB/image.
+[*]  - Overall rate in : 91.82 MBit/sec.
+[*]  - Overall rate out: 836.63 KBit/sec.
+[*]  - Proc. rate in   : 135.69 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 126: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108155 ms.
+[*]  - Processing time : 72691 ms.
+[*]  - Idle time       : 35464 ms. (32%)
+[*]  - Avg. proc. time : 1453 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.80 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.12 KB/image.
+[*]  - Overall rate in : 92.03 MBit/sec.
+[*]  - Overall rate out: 837.40 KBit/sec.
+[*]  - Proc. rate in   : 136.93 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 127: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108188 ms.
+[*]  - Processing time : 72689 ms.
+[*]  - Idle time       : 35499 ms. (32%)
+[*]  - Avg. proc. time : 1453 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.73 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.75 KB/image.
+[*]  - Overall rate in : 92.00 MBit/sec.
+[*]  - Overall rate out: 831.99 KBit/sec.
+[*]  - Proc. rate in   : 136.93 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+[*] Statistic for 128: counter (Counter)
+[*] Processed 3200 images
+[*]  - Total time      : 108578 ms.
+[*]  - Processing time : 0 ms.
+[*]  - Idle time       : 108578 ms. (100%)
+[*]  - Avg. proc. time : 0 ms/image.
+[*]
+[*]  - Data in         : 688.24 MB
+[*]  - Data out        : 0.00 B
+[*]
+[*] - Avg. size in    : 220.24 KB/image.
+[*] - Avg. size out   : 0.00 B/image.
+[*]  - Overall rate in : 53.17 MBit/sec.
+[*]  - Overall rate out: 0.00 Bit/sec.
+[*]  - Done : true
+129 129
+=========================================
+
+
+
+Total computation took 110 sec.
+
+
+
+[*] Statistic for 0: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 105998 ms.
+[*]  - Processing time : 12621 ms.
+[*]  - Idle time       : 93377 ms. (88%)
+[*]  - Avg. proc. time : 126 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.80 MBit/sec.
+[*]  - Overall rate out: 187.80 MBit/sec.
+[*]  - Proc. rate in   : 1.58 GBit/sec.
+[*]  - Proc. rate out  : 1.58 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 1: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106096 ms.
+[*]  - Processing time : 12994 ms.
+[*]  - Idle time       : 93102 ms. (87%)
+[*]  - Avg. proc. time : 129 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.63 MBit/sec.
+[*]  - Overall rate out: 187.63 MBit/sec.
+[*]  - Proc. rate in   : 1.53 GBit/sec.
+[*]  - Proc. rate out  : 1.53 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 2: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 105989 ms.
+[*]  - Processing time : 12326 ms.
+[*]  - Idle time       : 93663 ms. (88%)
+[*]  - Avg. proc. time : 123 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.82 MBit/sec.
+[*]  - Overall rate out: 187.82 MBit/sec.
+[*]  - Proc. rate in   : 1.62 GBit/sec.
+[*]  - Proc. rate out  : 1.62 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 3: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 105996 ms.
+[*]  - Processing time : 12997 ms.
+[*]  - Idle time       : 92999 ms. (87%)
+[*]  - Avg. proc. time : 129 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.80 MBit/sec.
+[*]  - Overall rate out: 187.80 MBit/sec.
+[*]  - Proc. rate in   : 1.53 GBit/sec.
+[*]  - Proc. rate out  : 1.53 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 4: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106085 ms.
+[*]  - Processing time : 12994 ms.
+[*]  - Idle time       : 93091 ms. (87%)
+[*]  - Avg. proc. time : 129 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.65 MBit/sec.
+[*]  - Overall rate out: 187.65 MBit/sec.
+[*]  - Proc. rate in   : 1.53 GBit/sec.
+[*]  - Proc. rate out  : 1.53 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 5: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106007 ms.
+[*]  - Processing time : 13014 ms.
+[*]  - Idle time       : 92993 ms. (87%)
+[*]  - Avg. proc. time : 130 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.79 MBit/sec.
+[*]  - Overall rate out: 187.79 MBit/sec.
+[*]  - Proc. rate in   : 1.53 GBit/sec.
+[*]  - Proc. rate out  : 1.53 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 6: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106053 ms.
+[*]  - Processing time : 13379 ms.
+[*]  - Idle time       : 92674 ms. (87%)
+[*]  - Avg. proc. time : 133 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.70 MBit/sec.
+[*]  - Overall rate out: 187.70 MBit/sec.
+[*]  - Proc. rate in   : 1.49 GBit/sec.
+[*]  - Proc. rate out  : 1.49 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 7: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106087 ms.
+[*]  - Processing time : 13059 ms.
+[*]  - Idle time       : 93028 ms. (87%)
+[*]  - Avg. proc. time : 130 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.64 MBit/sec.
+[*]  - Overall rate out: 187.64 MBit/sec.
+[*]  - Proc. rate in   : 1.52 GBit/sec.
+[*]  - Proc. rate out  : 1.52 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 8: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106051 ms.
+[*]  - Processing time : 13323 ms.
+[*]  - Idle time       : 92728 ms. (87%)
+[*]  - Avg. proc. time : 133 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.71 MBit/sec.
+[*]  - Overall rate out: 187.71 MBit/sec.
+[*]  - Proc. rate in   : 1.49 GBit/sec.
+[*]  - Proc. rate out  : 1.49 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 9: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106031 ms.
+[*]  - Processing time : 12665 ms.
+[*]  - Idle time       : 93366 ms. (88%)
+[*]  - Avg. proc. time : 126 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.74 MBit/sec.
+[*]  - Overall rate out: 187.74 MBit/sec.
+[*]  - Proc. rate in   : 1.57 GBit/sec.
+[*]  - Proc. rate out  : 1.57 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 10: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106002 ms.
+[*]  - Processing time : 13306 ms.
+[*]  - Idle time       : 92696 ms. (87%)
+[*]  - Avg. proc. time : 133 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.79 MBit/sec.
+[*]  - Overall rate out: 187.79 MBit/sec.
+[*]  - Proc. rate in   : 1.50 GBit/sec.
+[*]  - Proc. rate out  : 1.50 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 11: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106079 ms.
+[*]  - Processing time : 13446 ms.
+[*]  - Idle time       : 92633 ms. (87%)
+[*]  - Avg. proc. time : 134 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.66 MBit/sec.
+[*]  - Overall rate out: 187.66 MBit/sec.
+[*]  - Proc. rate in   : 1.48 GBit/sec.
+[*]  - Proc. rate out  : 1.48 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 12: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 105982 ms.
+[*]  - Processing time : 13551 ms.
+[*]  - Idle time       : 92431 ms. (87%)
+[*]  - Avg. proc. time : 135 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.83 MBit/sec.
+[*]  - Overall rate out: 187.83 MBit/sec.
+[*]  - Proc. rate in   : 1.47 GBit/sec.
+[*]  - Proc. rate out  : 1.47 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 13: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106104 ms.
+[*]  - Processing time : 13105 ms.
+[*]  - Idle time       : 92999 ms. (87%)
+[*]  - Avg. proc. time : 131 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.61 MBit/sec.
+[*]  - Overall rate out: 187.61 MBit/sec.
+[*]  - Proc. rate in   : 1.52 GBit/sec.
+[*]  - Proc. rate out  : 1.52 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 14: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106059 ms.
+[*]  - Processing time : 13576 ms.
+[*]  - Idle time       : 92483 ms. (87%)
+[*]  - Avg. proc. time : 135 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.69 MBit/sec.
+[*]  - Overall rate out: 187.69 MBit/sec.
+[*]  - Proc. rate in   : 1.47 GBit/sec.
+[*]  - Proc. rate out  : 1.47 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 15: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106035 ms.
+[*]  - Processing time : 13280 ms.
+[*]  - Idle time       : 92755 ms. (87%)
+[*]  - Avg. proc. time : 132 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.74 MBit/sec.
+[*]  - Overall rate out: 187.74 MBit/sec.
+[*]  - Proc. rate in   : 1.50 GBit/sec.
+[*]  - Proc. rate out  : 1.50 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 16: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106030 ms.
+[*]  - Processing time : 13176 ms.
+[*]  - Idle time       : 92854 ms. (87%)
+[*]  - Avg. proc. time : 131 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.74 MBit/sec.
+[*]  - Overall rate out: 187.74 MBit/sec.
+[*]  - Proc. rate in   : 1.51 GBit/sec.
+[*]  - Proc. rate out  : 1.51 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 17: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106053 ms.
+[*]  - Processing time : 13643 ms.
+[*]  - Idle time       : 92410 ms. (87%)
+[*]  - Avg. proc. time : 136 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.70 MBit/sec.
+[*]  - Overall rate out: 187.70 MBit/sec.
+[*]  - Proc. rate in   : 1.46 GBit/sec.
+[*]  - Proc. rate out  : 1.46 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 18: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106040 ms.
+[*]  - Processing time : 13068 ms.
+[*]  - Idle time       : 92972 ms. (87%)
+[*]  - Avg. proc. time : 130 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.73 MBit/sec.
+[*]  - Overall rate out: 187.73 MBit/sec.
+[*]  - Proc. rate in   : 1.52 GBit/sec.
+[*]  - Proc. rate out  : 1.52 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 19: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106066 ms.
+[*]  - Processing time : 13538 ms.
+[*]  - Idle time       : 92528 ms. (87%)
+[*]  - Avg. proc. time : 135 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.68 MBit/sec.
+[*]  - Overall rate out: 187.68 MBit/sec.
+[*]  - Proc. rate in   : 1.47 GBit/sec.
+[*]  - Proc. rate out  : 1.47 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 20: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106025 ms.
+[*]  - Processing time : 13179 ms.
+[*]  - Idle time       : 92846 ms. (87%)
+[*]  - Avg. proc. time : 131 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.75 MBit/sec.
+[*]  - Overall rate out: 187.75 MBit/sec.
+[*]  - Proc. rate in   : 1.51 GBit/sec.
+[*]  - Proc. rate out  : 1.51 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 21: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106035 ms.
+[*]  - Processing time : 13323 ms.
+[*]  - Idle time       : 92712 ms. (87%)
+[*]  - Avg. proc. time : 133 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.74 MBit/sec.
+[*]  - Overall rate out: 187.74 MBit/sec.
+[*]  - Proc. rate in   : 1.49 GBit/sec.
+[*]  - Proc. rate out  : 1.49 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 22: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106033 ms.
+[*]  - Processing time : 13160 ms.
+[*]  - Idle time       : 92873 ms. (87%)
+[*]  - Avg. proc. time : 131 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.74 MBit/sec.
+[*]  - Overall rate out: 187.74 MBit/sec.
+[*]  - Proc. rate in   : 1.51 GBit/sec.
+[*]  - Proc. rate out  : 1.51 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 23: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106065 ms.
+[*]  - Processing time : 12532 ms.
+[*]  - Idle time       : 93533 ms. (88%)
+[*]  - Avg. proc. time : 125 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.68 MBit/sec.
+[*]  - Overall rate out: 187.68 MBit/sec.
+[*]  - Proc. rate in   : 1.59 GBit/sec.
+[*]  - Proc. rate out  : 1.59 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 24: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106077 ms.
+[*]  - Processing time : 13614 ms.
+[*]  - Idle time       : 92463 ms. (87%)
+[*]  - Avg. proc. time : 136 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.66 MBit/sec.
+[*]  - Overall rate out: 187.66 MBit/sec.
+[*]  - Proc. rate in   : 1.46 GBit/sec.
+[*]  - Proc. rate out  : 1.46 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 25: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106052 ms.
+[*]  - Processing time : 13819 ms.
+[*]  - Idle time       : 92233 ms. (86%)
+[*]  - Avg. proc. time : 138 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.71 MBit/sec.
+[*]  - Overall rate out: 187.71 MBit/sec.
+[*]  - Proc. rate in   : 1.44 GBit/sec.
+[*]  - Proc. rate out  : 1.44 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 26: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106026 ms.
+[*]  - Processing time : 13423 ms.
+[*]  - Idle time       : 92603 ms. (87%)
+[*]  - Avg. proc. time : 134 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.75 MBit/sec.
+[*]  - Overall rate out: 187.75 MBit/sec.
+[*]  - Proc. rate in   : 1.48 GBit/sec.
+[*]  - Proc. rate out  : 1.48 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 27: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106013 ms.
+[*]  - Processing time : 13458 ms.
+[*]  - Idle time       : 92555 ms. (87%)
+[*]  - Avg. proc. time : 134 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.77 MBit/sec.
+[*]  - Overall rate out: 187.77 MBit/sec.
+[*]  - Proc. rate in   : 1.48 GBit/sec.
+[*]  - Proc. rate out  : 1.48 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 28: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106053 ms.
+[*]  - Processing time : 13737 ms.
+[*]  - Idle time       : 92316 ms. (87%)
+[*]  - Avg. proc. time : 137 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.70 MBit/sec.
+[*]  - Overall rate out: 187.70 MBit/sec.
+[*]  - Proc. rate in   : 1.45 GBit/sec.
+[*]  - Proc. rate out  : 1.45 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 29: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106086 ms.
+[*]  - Processing time : 13900 ms.
+[*]  - Idle time       : 92186 ms. (86%)
+[*]  - Avg. proc. time : 139 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.65 MBit/sec.
+[*]  - Overall rate out: 187.65 MBit/sec.
+[*]  - Proc. rate in   : 1.43 GBit/sec.
+[*]  - Proc. rate out  : 1.43 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 30: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106010 ms.
+[*]  - Processing time : 13413 ms.
+[*]  - Idle time       : 92597 ms. (87%)
+[*]  - Avg. proc. time : 134 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.78 MBit/sec.
+[*]  - Overall rate out: 187.78 MBit/sec.
+[*]  - Proc. rate in   : 1.48 GBit/sec.
+[*]  - Proc. rate out  : 1.48 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 31: generator (UncompressedFileReader)
+[*] Processed 100 images
+[*]  - Total time      : 106027 ms.
+[*]  - Processing time : 14186 ms.
+[*]  - Idle time       : 91841 ms. (86%)
+[*]  - Avg. proc. time : 141 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.75 MBit/sec.
+[*]  - Overall rate out: 187.75 MBit/sec.
+[*]  - Proc. rate in   : 1.40 GBit/sec.
+[*]  - Proc. rate out  : 1.40 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 32: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106308 ms.
+[*]  - Processing time : 11314 ms.
+[*]  - Idle time       : 94994 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.25 MBit/sec.
+[*]  - Overall rate out: 187.25 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 33: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106502 ms.
+[*]  - Processing time : 11305 ms.
+[*]  - Idle time       : 95197 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 186.91 MBit/sec.
+[*]  - Overall rate out: 186.91 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 34: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106476 ms.
+[*]  - Processing time : 11318 ms.
+[*]  - Idle time       : 95158 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 186.96 MBit/sec.
+[*]  - Overall rate out: 186.96 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 35: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106287 ms.
+[*]  - Processing time : 11317 ms.
+[*]  - Idle time       : 94970 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.29 MBit/sec.
+[*]  - Overall rate out: 187.29 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 36: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106427 ms.
+[*]  - Processing time : 11313 ms.
+[*]  - Idle time       : 95114 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.04 MBit/sec.
+[*]  - Overall rate out: 187.04 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 37: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106238 ms.
+[*]  - Processing time : 11311 ms.
+[*]  - Idle time       : 94927 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.38 MBit/sec.
+[*]  - Overall rate out: 187.38 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 38: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106320 ms.
+[*]  - Processing time : 11318 ms.
+[*]  - Idle time       : 95002 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.23 MBit/sec.
+[*]  - Overall rate out: 187.23 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 39: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106502 ms.
+[*]  - Processing time : 11311 ms.
+[*]  - Idle time       : 95191 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 186.91 MBit/sec.
+[*]  - Overall rate out: 186.91 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 40: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106337 ms.
+[*]  - Processing time : 11319 ms.
+[*]  - Idle time       : 95018 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.20 MBit/sec.
+[*]  - Overall rate out: 187.20 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 41: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106380 ms.
+[*]  - Processing time : 11314 ms.
+[*]  - Idle time       : 95066 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.13 MBit/sec.
+[*]  - Overall rate out: 187.13 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 42: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106283 ms.
+[*]  - Processing time : 11315 ms.
+[*]  - Idle time       : 94968 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.30 MBit/sec.
+[*]  - Overall rate out: 187.30 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 43: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106406 ms.
+[*]  - Processing time : 11305 ms.
+[*]  - Idle time       : 95101 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.08 MBit/sec.
+[*]  - Overall rate out: 187.08 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 44: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106209 ms.
+[*]  - Processing time : 11317 ms.
+[*]  - Idle time       : 94892 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.43 MBit/sec.
+[*]  - Overall rate out: 187.43 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 45: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106402 ms.
+[*]  - Processing time : 11294 ms.
+[*]  - Idle time       : 95108 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.09 MBit/sec.
+[*]  - Overall rate out: 187.09 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 46: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106346 ms.
+[*]  - Processing time : 11304 ms.
+[*]  - Idle time       : 95042 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.19 MBit/sec.
+[*]  - Overall rate out: 187.19 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 47: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106284 ms.
+[*]  - Processing time : 11316 ms.
+[*]  - Idle time       : 94968 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.30 MBit/sec.
+[*]  - Overall rate out: 187.30 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 48: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106339 ms.
+[*]  - Processing time : 11321 ms.
+[*]  - Idle time       : 95018 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.20 MBit/sec.
+[*]  - Overall rate out: 187.20 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 49: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106314 ms.
+[*]  - Processing time : 11292 ms.
+[*]  - Idle time       : 95022 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.24 MBit/sec.
+[*]  - Overall rate out: 187.24 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 50: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106296 ms.
+[*]  - Processing time : 11313 ms.
+[*]  - Idle time       : 94983 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.27 MBit/sec.
+[*]  - Overall rate out: 187.27 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 51: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106408 ms.
+[*]  - Processing time : 11306 ms.
+[*]  - Idle time       : 95102 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.08 MBit/sec.
+[*]  - Overall rate out: 187.08 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 52: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106324 ms.
+[*]  - Processing time : 11318 ms.
+[*]  - Idle time       : 95006 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.23 MBit/sec.
+[*]  - Overall rate out: 187.23 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 53: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106337 ms.
+[*]  - Processing time : 11286 ms.
+[*]  - Idle time       : 95051 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.20 MBit/sec.
+[*]  - Overall rate out: 187.20 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 54: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 105596 ms.
+[*]  - Processing time : 11276 ms.
+[*]  - Idle time       : 94320 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 188.52 MBit/sec.
+[*]  - Overall rate out: 188.52 MBit/sec.
+[*]  - Proc. rate in   : 1.77 GBit/sec.
+[*]  - Proc. rate out  : 1.77 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 55: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106367 ms.
+[*]  - Processing time : 11290 ms.
+[*]  - Idle time       : 95077 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.15 MBit/sec.
+[*]  - Overall rate out: 187.15 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 56: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106325 ms.
+[*]  - Processing time : 11297 ms.
+[*]  - Idle time       : 95028 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.22 MBit/sec.
+[*]  - Overall rate out: 187.22 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 57: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106370 ms.
+[*]  - Processing time : 11299 ms.
+[*]  - Idle time       : 95071 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.14 MBit/sec.
+[*]  - Overall rate out: 187.14 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 58: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106358 ms.
+[*]  - Processing time : 11292 ms.
+[*]  - Idle time       : 95066 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.17 MBit/sec.
+[*]  - Overall rate out: 187.17 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 59: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106307 ms.
+[*]  - Processing time : 11308 ms.
+[*]  - Idle time       : 94999 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.26 MBit/sec.
+[*]  - Overall rate out: 187.26 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 60: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106347 ms.
+[*]  - Processing time : 11307 ms.
+[*]  - Idle time       : 95040 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.18 MBit/sec.
+[*]  - Overall rate out: 187.18 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 61: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106330 ms.
+[*]  - Processing time : 11310 ms.
+[*]  - Idle time       : 95020 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.21 MBit/sec.
+[*]  - Overall rate out: 187.21 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 62: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 106268 ms.
+[*]  - Processing time : 11292 ms.
+[*]  - Idle time       : 94976 ms. (89%)
+[*]  - Avg. proc. time : 112 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 187.32 MBit/sec.
+[*]  - Overall rate out: 187.32 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 63: color (ColorConvertor)
+[*] Processed 100 images
+[*]  - Total time      : 105534 ms.
+[*]  - Processing time : 11312 ms.
+[*]  - Idle time       : 94222 ms. (89%)
+[*]  - Avg. proc. time : 113 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 2.32 GB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 23.73 MB/image.
+[*]  - Overall rate in : 188.63 MBit/sec.
+[*]  - Overall rate out: 188.63 MBit/sec.
+[*]  - Proc. rate in   : 1.76 GBit/sec.
+[*]  - Proc. rate out  : 1.76 GBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 64: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107022 ms.
+[*]  - Processing time : 72864 ms.
+[*]  - Idle time       : 34158 ms. (31%)
+[*]  - Avg. proc. time : 1457 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.71 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.37 KB/image.
+[*]  - Overall rate in : 93.00 MBit/sec.
+[*]  - Overall rate out: 839.59 KBit/sec.
+[*]  - Proc. rate in   : 136.60 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 65: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107387 ms.
+[*]  - Processing time : 72388 ms.
+[*]  - Idle time       : 34999 ms. (32%)
+[*]  - Avg. proc. time : 1447 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.65 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.21 KB/image.
+[*]  - Overall rate in : 92.69 MBit/sec.
+[*]  - Overall rate out: 832.29 KBit/sec.
+[*]  - Proc. rate in   : 137.50 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 66: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107400 ms.
+[*]  - Processing time : 73234 ms.
+[*]  - Idle time       : 34166 ms. (31%)
+[*]  - Avg. proc. time : 1464 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.69 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.84 KB/image.
+[*]  - Overall rate in : 92.67 MBit/sec.
+[*]  - Overall rate out: 834.59 KBit/sec.
+[*]  - Proc. rate in   : 135.91 MBit/sec.
+[*]  - Proc. rate out  : 1.22 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 67: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107112 ms.
+[*]  - Processing time : 73472 ms.
+[*]  - Idle time       : 33640 ms. (31%)
+[*]  - Avg. proc. time : 1469 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.69 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.85 KB/image.
+[*]  - Overall rate in : 92.92 MBit/sec.
+[*]  - Overall rate out: 836.89 KBit/sec.
+[*]  - Proc. rate in   : 135.47 MBit/sec.
+[*]  - Proc. rate out  : 1.22 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 68: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107189 ms.
+[*]  - Processing time : 73517 ms.
+[*]  - Idle time       : 33672 ms. (31%)
+[*]  - Avg. proc. time : 1470 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.70 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.15 KB/image.
+[*]  - Overall rate in : 92.86 MBit/sec.
+[*]  - Overall rate out: 837.42 KBit/sec.
+[*]  - Proc. rate in   : 135.39 MBit/sec.
+[*]  - Proc. rate out  : 1.22 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 69: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107473 ms.
+[*]  - Processing time : 73829 ms.
+[*]  - Idle time       : 33644 ms. (31%)
+[*]  - Avg. proc. time : 1476 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.66 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.39 KB/image.
+[*]  - Overall rate in : 92.61 MBit/sec.
+[*]  - Overall rate out: 832.34 KBit/sec.
+[*]  - Proc. rate in   : 134.82 MBit/sec.
+[*]  - Proc. rate out  : 1.21 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 70: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107116 ms.
+[*]  - Processing time : 71574 ms.
+[*]  - Idle time       : 35542 ms. (33%)
+[*]  - Avg. proc. time : 1431 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.73 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.68 KB/image.
+[*]  - Overall rate in : 92.92 MBit/sec.
+[*]  - Overall rate out: 840.02 KBit/sec.
+[*]  - Proc. rate in   : 139.06 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 71: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107262 ms.
+[*]  - Processing time : 71979 ms.
+[*]  - Idle time       : 35283 ms. (32%)
+[*]  - Avg. proc. time : 1439 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.67 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.48 KB/image.
+[*]  - Overall rate in : 92.79 MBit/sec.
+[*]  - Overall rate out: 834.30 KBit/sec.
+[*]  - Proc. rate in   : 138.28 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 72: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107034 ms.
+[*]  - Processing time : 73013 ms.
+[*]  - Idle time       : 34021 ms. (31%)
+[*]  - Avg. proc. time : 1460 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.72 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.61 KB/image.
+[*]  - Overall rate in : 92.99 MBit/sec.
+[*]  - Overall rate out: 840.42 KBit/sec.
+[*]  - Proc. rate in   : 136.32 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 73: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107275 ms.
+[*]  - Processing time : 73118 ms.
+[*]  - Idle time       : 34157 ms. (31%)
+[*]  - Avg. proc. time : 1462 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.72 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.56 KB/image.
+[*]  - Overall rate in : 92.78 MBit/sec.
+[*]  - Overall rate out: 838.35 KBit/sec.
+[*]  - Proc. rate in   : 136.13 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 74: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107046 ms.
+[*]  - Processing time : 73132 ms.
+[*]  - Idle time       : 33914 ms. (31%)
+[*]  - Avg. proc. time : 1462 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.83 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.85 KB/image.
+[*]  - Overall rate in : 92.98 MBit/sec.
+[*]  - Overall rate out: 848.91 KBit/sec.
+[*]  - Proc. rate in   : 136.10 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 75: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107175 ms.
+[*]  - Processing time : 71960 ms.
+[*]  - Idle time       : 35215 ms. (32%)
+[*]  - Avg. proc. time : 1439 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.76 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.39 KB/image.
+[*]  - Overall rate in : 92.87 MBit/sec.
+[*]  - Overall rate out: 842.30 KBit/sec.
+[*]  - Proc. rate in   : 138.32 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 76: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 106976 ms.
+[*]  - Processing time : 71893 ms.
+[*]  - Idle time       : 35083 ms. (32%)
+[*]  - Avg. proc. time : 1437 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.80 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.20 KB/image.
+[*]  - Overall rate in : 93.04 MBit/sec.
+[*]  - Overall rate out: 846.97 KBit/sec.
+[*]  - Proc. rate in   : 138.45 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 77: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107289 ms.
+[*]  - Processing time : 73554 ms.
+[*]  - Idle time       : 33735 ms. (31%)
+[*]  - Avg. proc. time : 1471 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.81 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.43 KB/image.
+[*]  - Overall rate in : 92.77 MBit/sec.
+[*]  - Overall rate out: 845.38 KBit/sec.
+[*]  - Proc. rate in   : 135.32 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 78: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107327 ms.
+[*]  - Processing time : 72511 ms.
+[*]  - Idle time       : 34816 ms. (32%)
+[*]  - Avg. proc. time : 1450 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.81 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.40 KB/image.
+[*]  - Overall rate in : 92.74 MBit/sec.
+[*]  - Overall rate out: 844.96 KBit/sec.
+[*]  - Proc. rate in   : 137.27 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 79: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107118 ms.
+[*]  - Processing time : 73042 ms.
+[*]  - Idle time       : 34076 ms. (31%)
+[*]  - Avg. proc. time : 1460 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.79 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.06 KB/image.
+[*]  - Overall rate in : 92.92 MBit/sec.
+[*]  - Overall rate out: 845.31 KBit/sec.
+[*]  - Proc. rate in   : 136.27 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 80: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107247 ms.
+[*]  - Processing time : 72668 ms.
+[*]  - Idle time       : 34579 ms. (32%)
+[*]  - Avg. proc. time : 1453 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.84 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.90 KB/image.
+[*]  - Overall rate in : 92.81 MBit/sec.
+[*]  - Overall rate out: 847.50 KBit/sec.
+[*]  - Proc. rate in   : 136.97 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 81: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107298 ms.
+[*]  - Processing time : 72586 ms.
+[*]  - Idle time       : 34712 ms. (32%)
+[*]  - Avg. proc. time : 1451 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.78 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.80 KB/image.
+[*]  - Overall rate in : 92.76 MBit/sec.
+[*]  - Overall rate out: 842.90 KBit/sec.
+[*]  - Proc. rate in   : 137.12 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 82: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107094 ms.
+[*]  - Processing time : 71616 ms.
+[*]  - Idle time       : 35478 ms. (33%)
+[*]  - Avg. proc. time : 1432 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.85 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.17 KB/image.
+[*]  - Overall rate in : 92.94 MBit/sec.
+[*]  - Overall rate out: 849.72 KBit/sec.
+[*]  - Proc. rate in   : 138.98 MBit/sec.
+[*]  - Proc. rate out  : 1.27 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 83: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107310 ms.
+[*]  - Processing time : 71519 ms.
+[*]  - Idle time       : 35791 ms. (33%)
+[*]  - Avg. proc. time : 1430 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.84 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.06 KB/image.
+[*]  - Overall rate in : 92.75 MBit/sec.
+[*]  - Overall rate out: 847.62 KBit/sec.
+[*]  - Proc. rate in   : 139.17 MBit/sec.
+[*]  - Proc. rate out  : 1.27 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 84: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107246 ms.
+[*]  - Processing time : 69030 ms.
+[*]  - Idle time       : 38216 ms. (35%)
+[*]  - Avg. proc. time : 1380 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.86 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.48 KB/image.
+[*]  - Overall rate in : 92.81 MBit/sec.
+[*]  - Overall rate out: 849.72 KBit/sec.
+[*]  - Proc. rate in   : 144.19 MBit/sec.
+[*]  - Proc. rate out  : 1.32 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 85: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107151 ms.
+[*]  - Processing time : 70629 ms.
+[*]  - Idle time       : 36522 ms. (34%)
+[*]  - Avg. proc. time : 1412 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.79 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.04 KB/image.
+[*]  - Overall rate in : 92.89 MBit/sec.
+[*]  - Overall rate out: 844.95 KBit/sec.
+[*]  - Proc. rate in   : 140.92 MBit/sec.
+[*]  - Proc. rate out  : 1.28 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 86: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107311 ms.
+[*]  - Processing time : 70789 ms.
+[*]  - Idle time       : 36522 ms. (34%)
+[*]  - Avg. proc. time : 1415 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.83 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.79 KB/image.
+[*]  - Overall rate in : 92.75 MBit/sec.
+[*]  - Overall rate out: 846.57 KBit/sec.
+[*]  - Proc. rate in   : 140.60 MBit/sec.
+[*]  - Proc. rate out  : 1.28 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 87: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107457 ms.
+[*]  - Processing time : 72856 ms.
+[*]  - Idle time       : 34601 ms. (32%)
+[*]  - Avg. proc. time : 1457 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.84 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.09 KB/image.
+[*]  - Overall rate in : 92.63 MBit/sec.
+[*]  - Overall rate out: 846.57 KBit/sec.
+[*]  - Proc. rate in   : 136.62 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 88: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107297 ms.
+[*]  - Processing time : 71734 ms.
+[*]  - Idle time       : 35563 ms. (33%)
+[*]  - Avg. proc. time : 1434 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.84 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.04 KB/image.
+[*]  - Overall rate in : 92.76 MBit/sec.
+[*]  - Overall rate out: 847.62 KBit/sec.
+[*]  - Proc. rate in   : 138.75 MBit/sec.
+[*]  - Proc. rate out  : 1.27 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 89: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107225 ms.
+[*]  - Processing time : 71954 ms.
+[*]  - Idle time       : 35271 ms. (32%)
+[*]  - Avg. proc. time : 1439 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.82 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.63 KB/image.
+[*]  - Overall rate in : 92.83 MBit/sec.
+[*]  - Overall rate out: 846.63 KBit/sec.
+[*]  - Proc. rate in   : 138.33 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 90: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107394 ms.
+[*]  - Processing time : 72545 ms.
+[*]  - Idle time       : 34849 ms. (32%)
+[*]  - Avg. proc. time : 1450 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.87 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.61 KB/image.
+[*]  - Overall rate in : 92.68 MBit/sec.
+[*]  - Overall rate out: 849.05 KBit/sec.
+[*]  - Proc. rate in   : 137.20 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 91: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107314 ms.
+[*]  - Processing time : 72067 ms.
+[*]  - Idle time       : 35247 ms. (32%)
+[*]  - Avg. proc. time : 1441 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.81 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.45 KB/image.
+[*]  - Overall rate in : 92.75 MBit/sec.
+[*]  - Overall rate out: 845.24 KBit/sec.
+[*]  - Proc. rate in   : 138.11 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 92: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107429 ms.
+[*]  - Processing time : 71478 ms.
+[*]  - Idle time       : 35951 ms. (33%)
+[*]  - Avg. proc. time : 1429 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.88 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.81 KB/image.
+[*]  - Overall rate in : 92.65 MBit/sec.
+[*]  - Overall rate out: 849.50 KBit/sec.
+[*]  - Proc. rate in   : 139.25 MBit/sec.
+[*]  - Proc. rate out  : 1.28 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 93: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107496 ms.
+[*]  - Processing time : 71484 ms.
+[*]  - Idle time       : 36012 ms. (33%)
+[*]  - Avg. proc. time : 1429 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.87 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.72 KB/image.
+[*]  - Overall rate in : 92.59 MBit/sec.
+[*]  - Overall rate out: 848.64 KBit/sec.
+[*]  - Proc. rate in   : 139.24 MBit/sec.
+[*]  - Proc. rate out  : 1.28 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 94: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107334 ms.
+[*]  - Processing time : 72648 ms.
+[*]  - Idle time       : 34686 ms. (32%)
+[*]  - Avg. proc. time : 1452 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.86 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 222.43 KB/image.
+[*]  - Overall rate in : 92.73 MBit/sec.
+[*]  - Overall rate out: 848.84 KBit/sec.
+[*]  - Proc. rate in   : 137.01 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 95: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107438 ms.
+[*]  - Processing time : 71977 ms.
+[*]  - Idle time       : 35461 ms. (33%)
+[*]  - Avg. proc. time : 1439 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.79 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.07 KB/image.
+[*]  - Overall rate in : 92.64 MBit/sec.
+[*]  - Overall rate out: 842.81 KBit/sec.
+[*]  - Proc. rate in   : 138.28 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 96: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107995 ms.
+[*]  - Processing time : 72250 ms.
+[*]  - Idle time       : 35745 ms. (33%)
+[*]  - Avg. proc. time : 1445 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.65 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.06 KB/image.
+[*]  - Overall rate in : 92.16 MBit/sec.
+[*]  - Overall rate out: 827.04 KBit/sec.
+[*]  - Proc. rate in   : 137.76 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 97: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108457 ms.
+[*]  - Processing time : 72854 ms.
+[*]  - Idle time       : 35603 ms. (32%)
+[*]  - Avg. proc. time : 1457 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.59 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 216.89 KB/image.
+[*]  - Overall rate in : 91.77 MBit/sec.
+[*]  - Overall rate out: 819.11 KBit/sec.
+[*]  - Proc. rate in   : 136.62 MBit/sec.
+[*]  - Proc. rate out  : 1.22 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 98: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108387 ms.
+[*]  - Processing time : 70297 ms.
+[*]  - Idle time       : 38090 ms. (35%)
+[*]  - Avg. proc. time : 1405 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.62 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 217.52 KB/image.
+[*]  - Overall rate in : 91.83 MBit/sec.
+[*]  - Overall rate out: 822.01 KBit/sec.
+[*]  - Proc. rate in   : 141.59 MBit/sec.
+[*]  - Proc. rate out  : 1.27 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 99: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108154 ms.
+[*]  - Processing time : 73815 ms.
+[*]  - Idle time       : 34339 ms. (31%)
+[*]  - Avg. proc. time : 1476 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.62 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 217.53 KB/image.
+[*]  - Overall rate in : 92.03 MBit/sec.
+[*]  - Overall rate out: 823.83 KBit/sec.
+[*]  - Proc. rate in   : 134.84 MBit/sec.
+[*]  - Proc. rate out  : 1.21 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 100: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108161 ms.
+[*]  - Processing time : 73892 ms.
+[*]  - Idle time       : 34269 ms. (31%)
+[*]  - Avg. proc. time : 1477 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.64 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 217.83 KB/image.
+[*]  - Overall rate in : 92.02 MBit/sec.
+[*]  - Overall rate out: 824.91 KBit/sec.
+[*]  - Proc. rate in   : 134.70 MBit/sec.
+[*]  - Proc. rate out  : 1.21 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 101: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 107970 ms.
+[*]  - Processing time : 72030 ms.
+[*]  - Idle time       : 35940 ms. (33%)
+[*]  - Avg. proc. time : 1440 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.60 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 217.08 KB/image.
+[*]  - Overall rate in : 92.19 MBit/sec.
+[*]  - Overall rate out: 823.53 KBit/sec.
+[*]  - Proc. rate in   : 138.18 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 102: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108035 ms.
+[*]  - Processing time : 71677 ms.
+[*]  - Idle time       : 36358 ms. (33%)
+[*]  - Avg. proc. time : 1433 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.66 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.36 KB/image.
+[*]  - Overall rate in : 92.13 MBit/sec.
+[*]  - Overall rate out: 827.89 KBit/sec.
+[*]  - Proc. rate in   : 138.86 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 103: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108414 ms.
+[*]  - Processing time : 72306 ms.
+[*]  - Idle time       : 36108 ms. (33%)
+[*]  - Avg. proc. time : 1446 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.60 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 217.16 KB/image.
+[*]  - Overall rate in : 91.81 MBit/sec.
+[*]  - Overall rate out: 820.46 KBit/sec.
+[*]  - Proc. rate in   : 137.65 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 104: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108250 ms.
+[*]  - Processing time : 72137 ms.
+[*]  - Idle time       : 36113 ms. (33%)
+[*]  - Avg. proc. time : 1442 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.66 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.30 KB/image.
+[*]  - Overall rate in : 91.95 MBit/sec.
+[*]  - Overall rate out: 826.00 KBit/sec.
+[*]  - Proc. rate in   : 137.98 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 105: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108514 ms.
+[*]  - Processing time : 73304 ms.
+[*]  - Idle time       : 35210 ms. (32%)
+[*]  - Avg. proc. time : 1466 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.66 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 218.25 KB/image.
+[*]  - Overall rate in : 91.72 MBit/sec.
+[*]  - Overall rate out: 823.80 KBit/sec.
+[*]  - Proc. rate in   : 135.78 MBit/sec.
+[*]  - Proc. rate out  : 1.22 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 106: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108090 ms.
+[*]  - Processing time : 71281 ms.
+[*]  - Idle time       : 36809 ms. (34%)
+[*]  - Avg. proc. time : 1425 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.77 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.54 KB/image.
+[*]  - Overall rate in : 92.08 MBit/sec.
+[*]  - Overall rate out: 835.72 KBit/sec.
+[*]  - Proc. rate in   : 139.63 MBit/sec.
+[*]  - Proc. rate out  : 1.27 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 107: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108482 ms.
+[*]  - Processing time : 72045 ms.
+[*]  - Idle time       : 36437 ms. (33%)
+[*]  - Avg. proc. time : 1440 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.70 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.08 KB/image.
+[*]  - Overall rate in : 91.75 MBit/sec.
+[*]  - Overall rate out: 827.19 KBit/sec.
+[*]  - Proc. rate in   : 138.15 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 108: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108012 ms.
+[*]  - Processing time : 72004 ms.
+[*]  - Idle time       : 36008 ms. (33%)
+[*]  - Avg. proc. time : 1440 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.74 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.88 KB/image.
+[*]  - Overall rate in : 92.15 MBit/sec.
+[*]  - Overall rate out: 833.84 KBit/sec.
+[*]  - Proc. rate in   : 138.23 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 109: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108495 ms.
+[*]  - Processing time : 73360 ms.
+[*]  - Idle time       : 35135 ms. (32%)
+[*]  - Avg. proc. time : 1467 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.75 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.12 KB/image.
+[*]  - Overall rate in : 91.74 MBit/sec.
+[*]  - Overall rate out: 831.01 KBit/sec.
+[*]  - Proc. rate in   : 135.68 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 110: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108371 ms.
+[*]  - Processing time : 72051 ms.
+[*]  - Idle time       : 36320 ms. (33%)
+[*]  - Avg. proc. time : 1441 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.75 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.09 KB/image.
+[*]  - Overall rate in : 91.84 MBit/sec.
+[*]  - Overall rate out: 831.84 KBit/sec.
+[*]  - Proc. rate in   : 138.14 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 111: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108218 ms.
+[*]  - Processing time : 71617 ms.
+[*]  - Idle time       : 36601 ms. (33%)
+[*]  - Avg. proc. time : 1432 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.73 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.74 KB/image.
+[*]  - Overall rate in : 91.97 MBit/sec.
+[*]  - Overall rate out: 831.72 KBit/sec.
+[*]  - Proc. rate in   : 138.98 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 112: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108206 ms.
+[*]  - Processing time : 73650 ms.
+[*]  - Idle time       : 34556 ms. (31%)
+[*]  - Avg. proc. time : 1473 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.77 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.59 KB/image.
+[*]  - Overall rate in : 91.98 MBit/sec.
+[*]  - Overall rate out: 835.02 KBit/sec.
+[*]  - Proc. rate in   : 135.14 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 113: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108315 ms.
+[*]  - Processing time : 72702 ms.
+[*]  - Idle time       : 35613 ms. (32%)
+[*]  - Avg. proc. time : 1454 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.72 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.49 KB/image.
+[*]  - Overall rate in : 91.89 MBit/sec.
+[*]  - Overall rate out: 830.01 KBit/sec.
+[*]  - Proc. rate in   : 136.91 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 114: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108306 ms.
+[*]  - Processing time : 72791 ms.
+[*]  - Idle time       : 35515 ms. (32%)
+[*]  - Avg. proc. time : 1455 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.78 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.85 KB/image.
+[*]  - Overall rate in : 91.90 MBit/sec.
+[*]  - Overall rate out: 835.23 KBit/sec.
+[*]  - Proc. rate in   : 136.74 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 115: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108393 ms.
+[*]  - Processing time : 73074 ms.
+[*]  - Idle time       : 35319 ms. (32%)
+[*]  - Avg. proc. time : 1461 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.78 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.75 KB/image.
+[*]  - Overall rate in : 91.83 MBit/sec.
+[*]  - Overall rate out: 834.17 KBit/sec.
+[*]  - Proc. rate in   : 136.21 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 116: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108375 ms.
+[*]  - Processing time : 71641 ms.
+[*]  - Idle time       : 36734 ms. (33%)
+[*]  - Avg. proc. time : 1432 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.80 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.16 KB/image.
+[*]  - Overall rate in : 91.84 MBit/sec.
+[*]  - Overall rate out: 835.89 KBit/sec.
+[*]  - Proc. rate in   : 138.93 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 117: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108343 ms.
+[*]  - Processing time : 74135 ms.
+[*]  - Idle time       : 34208 ms. (31%)
+[*]  - Avg. proc. time : 1482 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.73 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.72 KB/image.
+[*]  - Overall rate in : 91.87 MBit/sec.
+[*]  - Overall rate out: 830.67 KBit/sec.
+[*]  - Proc. rate in   : 134.26 MBit/sec.
+[*]  - Proc. rate out  : 1.21 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 118: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108281 ms.
+[*]  - Processing time : 73145 ms.
+[*]  - Idle time       : 35136 ms. (32%)
+[*]  - Avg. proc. time : 1462 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.77 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.48 KB/image.
+[*]  - Overall rate in : 91.92 MBit/sec.
+[*]  - Overall rate out: 834.01 KBit/sec.
+[*]  - Proc. rate in   : 136.08 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 119: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108361 ms.
+[*]  - Processing time : 72469 ms.
+[*]  - Idle time       : 35892 ms. (33%)
+[*]  - Avg. proc. time : 1449 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.78 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.78 KB/image.
+[*]  - Overall rate in : 91.85 MBit/sec.
+[*]  - Overall rate out: 834.54 KBit/sec.
+[*]  - Proc. rate in   : 137.35 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 120: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108399 ms.
+[*]  - Processing time : 73658 ms.
+[*]  - Idle time       : 34741 ms. (32%)
+[*]  - Avg. proc. time : 1473 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.78 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.72 KB/image.
+[*]  - Overall rate in : 91.82 MBit/sec.
+[*]  - Overall rate out: 834.02 KBit/sec.
+[*]  - Proc. rate in   : 135.13 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 121: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108235 ms.
+[*]  - Processing time : 71723 ms.
+[*]  - Idle time       : 36512 ms. (33%)
+[*]  - Avg. proc. time : 1434 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.76 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.31 KB/image.
+[*]  - Overall rate in : 91.96 MBit/sec.
+[*]  - Overall rate out: 833.74 KBit/sec.
+[*]  - Proc. rate in   : 138.77 MBit/sec.
+[*]  - Proc. rate out  : 1.26 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 122: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108156 ms.
+[*]  - Processing time : 72558 ms.
+[*]  - Idle time       : 35598 ms. (32%)
+[*]  - Avg. proc. time : 1451 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.81 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.30 KB/image.
+[*]  - Overall rate in : 92.03 MBit/sec.
+[*]  - Overall rate out: 838.08 KBit/sec.
+[*]  - Proc. rate in   : 137.18 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 123: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108261 ms.
+[*]  - Processing time : 73266 ms.
+[*]  - Idle time       : 34995 ms. (32%)
+[*]  - Avg. proc. time : 1465 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.75 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 220.13 KB/image.
+[*]  - Overall rate in : 91.94 MBit/sec.
+[*]  - Overall rate out: 832.86 KBit/sec.
+[*]  - Proc. rate in   : 135.85 MBit/sec.
+[*]  - Proc. rate out  : 1.23 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 124: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108183 ms.
+[*]  - Processing time : 73244 ms.
+[*]  - Idle time       : 34939 ms. (32%)
+[*]  - Avg. proc. time : 1464 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.82 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.49 KB/image.
+[*]  - Overall rate in : 92.00 MBit/sec.
+[*]  - Overall rate out: 838.61 KBit/sec.
+[*]  - Proc. rate in   : 135.89 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 125: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108395 ms.
+[*]  - Processing time : 73354 ms.
+[*]  - Idle time       : 35041 ms. (32%)
+[*]  - Avg. proc. time : 1467 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.81 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.40 KB/image.
+[*]  - Overall rate in : 91.82 MBit/sec.
+[*]  - Overall rate out: 836.63 KBit/sec.
+[*]  - Proc. rate in   : 135.69 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 126: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108155 ms.
+[*]  - Processing time : 72691 ms.
+[*]  - Idle time       : 35464 ms. (32%)
+[*]  - Avg. proc. time : 1453 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.80 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 221.12 KB/image.
+[*]  - Overall rate in : 92.03 MBit/sec.
+[*]  - Overall rate out: 837.40 KBit/sec.
+[*]  - Proc. rate in   : 136.93 MBit/sec.
+[*]  - Proc. rate out  : 1.25 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 127: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 108188 ms.
+[*]  - Processing time : 72689 ms.
+[*]  - Idle time       : 35499 ms. (32%)
+[*]  - Avg. proc. time : 1453 ms/image.
+[*]
+[*]  - Data in         : 1.16 GB
+[*]  - Data out        : 10.73 MB
+[*]
+[*] - Avg. size in    : 23.73 MB/image.
+[*] - Avg. size out   : 219.75 KB/image.
+[*]  - Overall rate in : 92.00 MBit/sec.
+[*]  - Overall rate out: 831.99 KBit/sec.
+[*]  - Proc. rate in   : 136.93 MBit/sec.
+[*]  - Proc. rate out  : 1.24 MBit/sec.
+[*]  - Done : true
+
+
+
+
+[*] Statistic for 128: counter (Counter)
+[*] Processed 3200 images
+[*]  - Total time      : 108578 ms.
+[*]  - Processing time : 0 ms.
+[*]  - Idle time       : 108578 ms. (100%)
+[*]  - Avg. proc. time : 0 ms/image.
+[*]
+[*]  - Data in         : 688.24 MB
+[*]  - Data out        : 0.00 B
+[*]
+[*] - Avg. size in    : 220.24 KB/image.
+[*] - Avg. size out   : 0.00 B/image.
+[*]  - Overall rate in : 53.17 MBit/sec.
+[*]  - Overall rate out: 0.00 Bit/sec.
+[*]  - Done : true
+
+
+
+
+=========================================
+
+
+
+Type           : compress
+Images         : 3200
+Total size in  : 74.16 GB
+Rate in        : 5.91 GBit
+Total size out : 688.24 MB
+Rate out       : 53.57 MBit
+Average time   : 107762 ms.
+  Idle         : 35319 ms.
+  Processing   : 72443 ms.
+
+Type           : color
+Images         : 3200
+Total size in  : 74.16 GB
+Rate in        : 5.99 GBit
+Total size out : 74.16 GB
+Rate out       : 5.99 GBit
+Average time   : 106297 ms.
+  Idle         : 94991 ms.
+  Processing   : 11306 ms.
+
+Type           : counter
+Images         : 3200
+Total size in  : 688.24 MB
+Rate in        : 53.17 MBit
+Total size out : 0.00 B
+Rate out       : 0.00 Bit
+Average time   : 108578 ms.
+  Idle         : 108578 ms.
+  Processing   : 0 ms.
+
+Type           : generator
+Images         : 3200
+Total size in  : 74.16 GB
+Rate in        : 6.01 GBit
+Total size out : 74.16 GB
+Rate out       : 6.01 GBit
+Average time   : 106042 ms.
+  Idle         : 92766 ms.
+  Processing   : 13275 ms.
+

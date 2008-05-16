@@ -1,0 +1,175 @@
+[*] Waiting for work
+[*] Got registered message 74 compress [in: get.2.10] [out: put.2.10]
+[*] Got component compress
+[*] Need to create get queue get.2.10
+[*]   type image.UncompressedImage
+[*]   length 5
+[*]  connected to [put.1.10]
+[*] Created queue color[10]->compress[10,42] max length 5
+[*] Need to create put queue put.2.10
+[*]   type image.Image
+[*]   length 5
+[*]   connected to [get.3.10]
+[*] Created queue compress[10,42]->counter[10] max length 5
+[*] Create component compress
+[*]  - Type     : processors.Compressor
+[*]  - In type  : image.UncompressedImage
+[*]  - In name  : color[10]->compress[10,42]
+[*]  - In ok    : true
+[*]  - Out type : image.Image
+[*]  - Out name : compress[10,42]->counter[10]
+[*] - Out ok   : true
+[*]  - Options  : {type=JPG}
+[*] Started component compress
+[*] Got message from (Ibis 0, location fs0.das3.cs.vu.nl) data true
+1.00 0 0
+2.01 0 0
+3.01 0 0
+4.02 0 0
+5.02 1 222234
+6.02 0 0
+7.03 0 0
+8.04 0 0
+9.04 1 221513
+10.28 1 221110
+11.29 0 0
+12.36 1 222849
+13.38 0 0
+14.39 1 223407
+15.40 1 225326
+16.41 0 0
+17.42 1 224352
+18.42 0 0
+19.43 1 224401
+20.63 1 225887
+21.63 0 0
+22.63 1 226792
+23.64 0 0
+24.64 1 227733
+26.25 1 226612
+27.25 0 0
+28.26 1 226816
+29.26 0 0
+30.27 1 228321
+31.27 0 0
+32.27 0 0
+33.28 0 0
+34.28 1 228919
+35.29 0 0
+36.29 1 228196
+37.31 0 0
+38.32 1 227402
+39.34 1 227040
+40.34 0 0
+41.34 1 228790
+42.35 0 0
+43.36 1 229620
+44.36 1 227414
+45.77 0 0
+46.78 1 226431
+47.78 0 0
+48.78 1 226547
+49.81 0 0
+50.82 0 0
+51.82 1 228049
+52.82 0 0
+53.83 0 0
+54.83 0 0
+55.83 0 0
+56.84 1 228836
+57.84 0 0
+58.85 0 0
+59.85 0 0
+60.85 0 0
+61.86 0 0
+62.87 0 0
+63.93 0 0
+64.94 1 227204
+66.28 1 226468
+67.29 1 226114
+68.55 0 0
+69.56 1 227713
+70.56 1 228518
+71.57 0 0
+72.57 1 229130
+73.58 0 0
+74.60 1 228292
+76.00 1 228038
+77.00 0 0
+78.00 1 229732
+79.01 1 230479
+80.01 0 0
+81.02 0 0
+82.02 0 0
+83.02 0 0
+84.03 0 0
+85.03 0 0
+86.04 0 0
+87.04 0 0
+88.04 0 0
+89.05 0 0
+90.05 0 0
+91.06 0 0
+92.06 0 0
+93.07 0 0
+94.07 0 0
+95.08 1 226594
+96.09 0 0
+97.10 1 225511
+98.11 1 225599
+99.11 0 0
+100.12 1 227256
+101.13 0 0
+102.13 1 227989
+103.56 1 229729
+104.57 0 0
+105.73 1 228867
+107.02 1 228709
+108.03 0 0
+[*] Ibis READER took 109962 read 52490 put 1312 bytes 2488322716 45.209553537425094 21.58063208362383
+109.03 1 230371
+110.03 0 0
+111.10 1 231196
+112.11 1 229097
+113.11 0 0
+114.12 1 228201
+115.12 1 227920
+116.12 0 0
+117.15 1 229653
+[*] Ibis WRITER took 118040 send 1513 get 116527 bytes 11363444 7.162607196775085 0.0918080708973289
+118.16 1 230467
+118.16 0 0
+[*] Statistic for 74: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 117821 ms.
+[*]  - Processing time : 84174 ms.
+[*]  - Idle time       : 33647 ms. (28%)
+[*]  - Avg. proc. time : 1683 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 10.83 MB
+[*]
+[*] - Avg. size in    : 47.46 MB/image.
+[*] - Avg. size out   : 221.89 KB/image.
+[*]  - Overall rate in : 168.96 MBit/sec.
+[*]  - Overall rate out: 771.38 KBit/sec.
+[*]  - Proc. rate in   : 236.49 MBit/sec.
+[*]  - Proc. rate out  : 1.08 MBit/sec.
+[*]  - Done : true
+[*] Queue: compress[10,42]->counter[10]
+[*]   len: 5
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 50
+[*]  time: 116524
+[*] Queue: color[10]->compress[10,42]
+[*]   len: 5
+[*]   put: 50
+[*] block: 2
+[*]  time: 1299
+[*]   get: 50
+[*] block: 15
+[*]  time: 33635
+[*] compress is done ?

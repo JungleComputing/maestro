@@ -1,0 +1,30 @@
+#
+# This pipeline reads raw input files, applies a color adaptions, compresses 
+# the images to JPG, and discards them
+#
+
+component reader     processors.UncompressedFileReader
+component color      processors.ColorConvertor
+component compress   processors.Compressor
+component counter    processors.FrameRateCounter
+
+pipeline big 32 reader:5 32 5:color:5 64 5:compress:5 1 5:counter 
+	
+fileset check inputset /local/jason/cinegrid5/waag-hd-24-%%%%.raw
+
+options reader input=fileset://inputset repeat=0 
+options color red=1.1
+options compress type=JPG
+options counter frames=1645
+
+deploy big
+
+
+
+
+
+
+
+
+
+

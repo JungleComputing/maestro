@@ -1,0 +1,134 @@
+18
+[*] Waiting for work
+[*] Got registered message 27 compress [in: get.1.17] [out: put.1.17]
+[*] Got component compress
+[*] Need to create get queue get.1.17
+[*]   type image.UncompressedImage
+[*]   length 5
+[*]  connected to [put.0.7]
+[*] Created queue generator[7]->compress[7,17] max length 5
+[*] Need to create put queue put.1.17
+[*]   type image.Image
+[*]   length 5
+[*]   connected to [get.2.0]
+[*] Created queue compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0] max length 5
+[*] Got message from (Ibis 0, location fs0.das3.cs.vu.nl) data true
+[*] Create component compress
+[*]  - Type     : processors.Compressor
+[*]  - In type  : image.UncompressedImage
+[*]  - In name  : generator[7]->compress[7,17]
+[*]  - In ok    : true
+[*]  - Out type : image.Image
+[*]  - Out name : compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0]
+[*] - Out ok   : true
+[*]  - Options  : {type=JPG}
+[*] Started component compress
+1.00 0 0
+2.01 0 0
+3.02 1 215789
+4.09 0 0
+5.24 1 218337
+6.24 0 0
+7.24 1 217402
+8.26 1 216805
+9.26 0 0
+10.27 1 219406
+11.27 0 0
+12.28 1 218554
+13.29 1 221398
+14.29 0 0
+15.30 1 220523
+16.31 1 220050
+17.32 0 0
+18.59 1 222268
+19.59 1 220802
+20.64 0 0
+21.83 1 223763
+22.84 1 222825
+23.85 0 0
+24.85 1 222073
+26.05 1 224704
+27.05 1 221313
+28.06 0 0
+29.06 1 224136
+30.06 1 223173
+31.07 0 0
+32.08 1 222725
+33.16 1 225168
+34.16 1 220422
+35.17 0 0
+36.17 1 223462
+37.18 1 222700
+38.32 0 0
+39.33 1 222109
+40.33 1 224417
+41.34 1 220239
+42.34 0 0
+43.34 1 223190
+44.35 1 222124
+45.35 0 0
+46.44 1 221669
+47.74 1 224234
+48.79 1 222466
+49.79 0 0
+50.80 1 225241
+51.80 1 224129
+52.81 1 223809
+54.02 0 0
+55.02 1 226091
+56.04 1 219878
+57.05 1 222591
+58.06 1 221563
+59.06 0 0
+60.07 1 221361
+61.30 1 223549
+62.31 0 0
+63.31 1 222987
+64.31 1 225713
+65.32 1 224758
+66.32 1 224211
+[*] Ibis READER took 67534 read 20801 put 0 bytes 2488322716 114.08343181478983 35.138588935638985
+67.32 0 0
+68.49 1 226826
+69.49 1 222495
+70.50 1 225118
+71.50 1 224007
+72.50 0 0
+73.51 1 223705
+[*] Ibis WRITER took 73850 send 788 get 73062 bytes 11122229 13.4606397696558 0.14362876287730222
+74.51 1 225951
+74.51 0 0
+[*] Statistic for 27: compress (Compressor)
+[*] Processed 50 images
+[*]  - Total time      : 73847 ms.
+[*]  - Processing time : 72785 ms.
+[*]  - Idle time       : 1062 ms. (1%)
+[*]  - Avg. proc. time : 1455 ms/image.
+[*]
+[*]  - Data in         : 2.32 GB
+[*]  - Data out        : 10.60 MB
+[*]
+[*] - Avg. size in    : 47.46 MB/image.
+[*] - Avg. size out   : 217.17 KB/image.
+[*]  - Overall rate in : 269.56 MBit/sec.
+[*]  - Overall rate out: 1.20 MBit/sec.
+[*]  - Proc. rate in   : 273.50 MBit/sec.
+[*]  - Proc. rate out  : 1.22 MBit/sec.
+[*]  - Done : true
+[*] Queue: compress[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]->counter[0]
+[*]   len: 5
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 51
+[*]  time: 73060
+[*] Queue: generator[7]->compress[7,17]
+[*]   len: 5
+[*]   put: 50
+[*] block: 0
+[*]  time: 0
+[*]   get: 50
+[*] block: 1
+[*]  time: 1046
+[*] compress is done ?

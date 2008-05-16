@@ -1,0 +1,57 @@
+[*] Waiting for work
+[*] Got registered message 2 counter [in: get.2.0] [out: none]
+[*] Got component counter
+[*] Need to create get queue get.2.0
+[*]   type image.Image
+[*]   length 1
+[*]  connected to [put.1.0]
+[*] Created queue compress[0]->counter[0] max length 1
+[*] Got message from (Ibis 0, location Unknown location) data true
+[*] Create component counter
+[*]  - Type     : processors.FrameRateCounter
+[*]  - In type  : image.Image
+[*]  - In name  : compress[0]->counter[0]
+[*]  - In ok    : true
+[*]  - Out type : none
+[*]  - Out name : none
+[*] - Out ok   : true
+[*]  - Options  : {frames=10}
+[*] Started component counter
+[*] Ibis READER took 26355 read 198 put 0 bytes 2190657 10.551380388664477 0.07927047303948269
+[*] Frame arrival times: 
+[*] 1 9747 0.10259567046270647
+[*] 2 1969 0.5078720162519045
+[*] 3 1896 0.5274261603375527
+[*] 4 1917 0.5216484089723527
+[*] 5 1971 0.5073566717402334
+[*] 6 1552 0.6443298969072165
+[*] 7 2179 0.45892611289582375
+[*] 8 1816 0.5506607929515418
+[*] 9 1679 0.5955926146515783
+[*] 10 1624 0.6157635467980296
+[*] Overall gap: 1496 ms.
+[*] Overall fps: 0.6008411776487083
+[*] Statistic for 2: counter (Counter)
+[*] Processed 10 images
+[*]  - Total time      : 26351 ms.
+[*]  - Processing time : 0 ms.
+[*]  - Idle time       : 26351 ms. (100%)
+[*]  - Avg. proc. time : 0 ms/image.
+[*]
+[*]  - Data in         : 2.09 MB
+[*]  - Data out        : 0.00 B
+[*]
+[*] - Avg. size in    : 213.87 KB/image.
+[*] - Avg. size out   : 0.00 B/image.
+[*]  - Overall rate in : 664.88 KBit/sec.
+[*]  - Overall rate out: 0.00 Bit/sec.
+[*]  - Done : true
+[*] Queue: compress[0]->counter[0]
+[*]   len: 1
+[*]   put: 10
+[*] block: 0
+[*]  time: 0
+[*]   get: 10
+[*] block: 11
+[*]  time: 26348
+counter is done ?

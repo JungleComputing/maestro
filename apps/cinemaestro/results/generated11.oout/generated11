@@ -1,0 +1,26 @@
+#
+# This pipeline reads raw input files, applies a color adaptions, compresses 
+# the images to JPG, and discards them
+#
+
+component generator  processors.Generator
+component compress   processors.Compressor
+component counter    processors.FrameRateCounter
+
+pipeline small 10 generator:5 20 5:compress:5 1 counter
+	
+options generator width=3840 height=2160 frames=100 bits=48 fps=15
+options compress type=JPG
+options counter frames=1000
+
+deploy small
+
+
+
+
+
+
+
+
+
+

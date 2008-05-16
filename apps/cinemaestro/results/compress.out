@@ -1,0 +1,71 @@
+[*] Waiting for work
+[*] Got registered message 1 compress [in: get.1.0] [out: put.1.0]
+[*] Got component compress
+[*] Need to create get queue get.1.0
+[*]   type image.UncompressedImage
+[*]   length 1
+[*]  connected to [put.0.0]
+[*] Created queue generator[0]->compress[0] max length 1
+[*] Need to create put queue put.1.0
+[*]   type image.Image
+[*]   length 1
+[*] Got message from (Ibis 0, location Unknown location) data true
+[*]   connected to [get.2.0]
+[*] Created queue compress[0]->counter[0] max length 1
+[*] Create component compress
+[*]  - Type     : processors.Compressor
+[*]  - In type  : image.UncompressedImage
+[*]  - In name  : generator[0]->compress[0]
+[*]  - In ok    : true
+[*]  - Out type : image.Image
+[*]  - Out name : compress[0]->counter[0]
+[*] - Out ok   : true
+[*]  - Options  : {type=JPG}
+[*] Started component compress
+9.73 1 219698
+11.71 1 216682
+13.60 1 218836
+15.52 1 219257
+17.49 1 218606
+19.04 1 218324
+21.22 1 220302
+23.04 1 217725
+[*] Ibis READER took 23149 read 4126 put 12604 bytes 497664556 115.02906089261268 20.502393418416343
+24.72 1 220884
+26.34 1 220343
+26.34 0 0
+[*] Statistic for 1: compress (Compressor)
+[*] Processed 10 images
+[*]  - Total time      : 26340 ms.
+[*]  - Processing time : 19452 ms.
+[*]  - Idle time       : 6888 ms. (26%)
+[*]  - Avg. proc. time : 1945 ms/image.
+[*]
+[*]  - Data in         : 474.61 MB
+[*]  - Data out        : 2.09 MB
+[*]
+[*] - Avg. size in    : 47.46 MB/image.
+[*] - Avg. size out   : 213.87 KB/image.
+[*] Ibis WRITER took 26340 send 249 get 26083 bytes 2190657 8.390254284962115 0.07931561567788786
+[*]  - Overall rate in : 151.15 MBit/sec.
+[*]  - Overall rate out: 665.16 KBit/sec.
+[*]  - Proc. rate in   : 204.67 MBit/sec.
+[*]  - Proc. rate out  : 900.70 KBit/sec.
+[*]  - Done : true
+[*] Queue: compress[0]->counter[0]
+[*]   len: 1
+[*]   put: 10
+[*] block: 0
+[*]  time: 0
+[*]   get: 10
+[*] block: 10
+[*]  time: 26083
+[*] Queue: generator[0]->compress[0]
+[*]   len: 1
+[*]   put: 10
+[*] block: 8
+[*]  time: 12604
+[*]   get: 10
+[*] block: 1
+[*]  time: 6840
+compress is done ?

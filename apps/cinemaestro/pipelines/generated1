@@ -1,0 +1,31 @@
+#
+# This pipeline reads raw input files, applies a color adaptions, compresses 
+# the images to JPG, and discards them
+#
+
+component generator  processors.Generator
+component compress   processors.Compressor
+component writer     processors.CompressedFileWriter
+component counter    processors.FrameRateCounter
+
+pipeline small 1 generator 1 compress 1 writer
+pipeline count 1 generator 1 counter
+	
+fileset nocheck outputset ./aap/generated%%%.jpg
+
+options generator width=1280 height=720 frames=1000 bits=48 
+options compress type=JPG
+options writer output=fileset://outputset 
+options counter frames=1000
+
+deploy count
+
+
+
+
+
+
+
+
+
+

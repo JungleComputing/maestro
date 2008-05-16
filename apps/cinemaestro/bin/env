@@ -1,0 +1,4 @@
+unset CP
+unset LD)LIBRARY_PATH
+for i in /home/jason/workspace/testbeeld/external/*.jar; do export CP=$i:$CP; done
+export LD_LIBRARY_PATH=/home/jason/workspace/testbeeld/external/i386/

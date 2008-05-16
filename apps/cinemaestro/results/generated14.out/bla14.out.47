@@ -1,0 +1,27 @@
+[*] Waiting for work
+[*] Got registered message 88 compress [in: get.2.24] [out: put.2.24]
+[*] Got component compress
+[*] Need to create get queue get.2.24
+[*]   type image.UncompressedImage
+[*]   length 5
+[*]  connected to [put.1.24]
+[*] Created queue color[24]->compress[24,56] max length 5
+[*] Need to create put queue put.2.24
+[*]   type image.Image
+[*]   length 5
+[*]   connected to [get.3.24]
+[*] Created queue compress[24,56]->counter[24] max length 5
+[*] ERROR(IbisImageReader): failed to receive message!
+java.io.EOFException: EOF encountered
+	at ibis.io.BufferedArrayInputStream.fillBuffer(BufferedArrayInputStream.java:83)
+	at ibis.io.BufferedArrayInputStream.readArray(BufferedArrayInputStream.java:190)
+	at ibis.io.DataSerializationInputStream.receive(DataSerializationInputStream.java:677)
+	at ibis.io.DataSerializationInputStream.readByte(DataSerializationInputStream.java:194)
+	at ibis.ipl.impl.tcp.TcpReceivePort$ConnectionHandler.reader(TcpReceivePort.java:72)
+	at ibis.ipl.impl.tcp.TcpReceivePort.getMessage(TcpReceivePort.java:214)
+	at ibis.ipl.impl.ReceivePort.receive(ReceivePort.java:283)
+	at ibis.ipl.impl.ReceivePort.receive(ReceivePort.java:265)
+	at ibis.ipl.impl.ReceivePort.receive(ReceivePort.java:24)
+	at net.IbisImageReader.readImage(IbisImageReader.java:46)
+	at net.IbisImageReader.run(IbisImageReader.java:82)
+[*] Ibis READER took 12194 read 0 put 0 bytes 0 NaN 0.0

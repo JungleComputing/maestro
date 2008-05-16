@@ -1,0 +1,11 @@
+           frame  req. rate   read        32x32x64(c)x1 
+            (MB)   (gbit/s)  nodes     generator    reader
+                   
+RAW 48 ED    48     11.94      24         16          1 
+       HD    12      3.0        6         18,21       2
+       SD    
+  
+RAW 24 ED    25      6.0       12         17,22       3
+       HD     6      1.5        3         19,20       4
+       SD     
+

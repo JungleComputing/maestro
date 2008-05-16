@@ -1,0 +1,47 @@
+#!/bin/sh
+
+for i in `pwd`/external/*.jar
+do
+    CP=$CP:$i
+done
+
+for i in `pwd`/external/ibis/lib/*.jar
+do
+    CP=$CP:$i
+done
+
+for i in `pwd`/jars/*.jar
+do
+    CP=$CP:$i
+done
+
+LD_LIBRARY_PATH=`pwd`/external/i386
+IBIS_HOME=`pwd`/external/ibis
+
+NORMAL=
+SPECIAL=
+
+while [ $# -gt 0 ]
+do
+
+        HEADER=`echo $1 | sed 's/\(..\).*/\1/'`
+
+        case "$HEADER" in
+        -D)
+                SPECIAL="$SPECIAL $1"
+                ;;
+        *)
+                NORMAL="$NORMAL $1"
+                ;;
+        esac
+        shift
+done
+
+# java  -XX:+PrintCompilation -XX:+CITime -XX:+PrintGC -cp $CP $SPECIAL $NORMAL
+
+echo $CP
+echo $LD_LIBRARY_PATH
+
+#java -agentlib:tijmp -Djava.library.path=/home/jason/workspace/testbeeld/external -classpath $CP $SPECIAL $NORMAL
+
+java -Xmx1500M -Xrunjmp:nomethods,nomonitors -classpath $CP $SPECIAL $NORMAL

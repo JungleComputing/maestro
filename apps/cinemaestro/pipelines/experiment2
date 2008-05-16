@@ -1,0 +1,34 @@
+#
+# This pipeline reads raw input files, applies a color adaptions, compresses 
+# the images to JPG, and discards them
+#
+
+component reader     processors.UncompressedFileReader
+component color      processors.ColorConvertor
+component compress   processors.Compressor
+component counter    processors.FrameRateCounter
+
+pipeline small 1 reader 2 color 4 compress 1 counter
+
+pipeline mid 2 reader 1 color 4 compress 1 counter
+
+pipeline big 32 reader:5 16 5:color:5 64 compress 1 counter 
+	
+fileset check inputset ../data3/waag%%%.raw
+
+options reader input=fileset://inputset repeat=0 
+options color red=1.1
+options compress type=JPG
+options counter frames=10
+
+deploy small
+
+
+
+
+
+
+
+
+
+
