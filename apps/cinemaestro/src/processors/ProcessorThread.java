@@ -1,5 +1,7 @@
 package processors;
 
+import image.Image;
+
 import java.util.HashMap;
 
 import org.apache.log4j.Logger;
@@ -92,11 +94,11 @@ public abstract class ProcessorThread extends Thread {
     
     public abstract void process() throws Exception;
     
-    public static Class getInputQueueType() { 
+    public static Class<Image> getInputQueueType() { 
         return null;
     }
     
-    public static Class getOutputQueueType() {
+    public static Class<Image> getOutputQueueType() {
         return null;
     }
    

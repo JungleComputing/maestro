@@ -1,6 +1,11 @@
 
 package processors;
 
+import image.ImageQueue;
+import image.RGB24Image;
+import image.RGB48Image;
+import image.UncompressedImage;
+
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -12,12 +17,6 @@ import java.util.HashMap;
 import util.FilesetDescription;
 import util.Options;
 import util.config.ComponentDescription;
-
-import image.CompressedImage;
-import image.ImageQueue;
-import image.RGB24Image;
-import image.RGB48Image;
-import image.UncompressedImage;
 
 public class UncompressedFileWriter extends ImageConsumer<UncompressedImage> {
 

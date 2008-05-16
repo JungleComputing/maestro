@@ -27,7 +27,7 @@ public class Discarder extends ImageConsumer {
         }
     }
     
-    public static Class getInputQueueType() {
+    public static Class<Image> getInputQueueType() {
         return Image.class;
     }
     

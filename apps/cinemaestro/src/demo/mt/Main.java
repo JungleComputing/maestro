@@ -14,7 +14,6 @@ import processors.ProcessorThread;
 import processors.StatisticsCallback;
 import util.config.ComponentDescription;
 import util.config.Config;
-import util.config.Config;
 import util.config.QueueDescription;
 
 public class Main {
@@ -100,7 +99,7 @@ public class Main {
     
     private void createComponent(ComponentDescription c) throws Exception { 
         
-        Class clazz = c.getClazz();
+        Class<?> clazz = c.getClazz();
         HashMap<String, String> options = c.getOptions();
         
         String name = c.getName();

@@ -17,9 +17,7 @@ public class DecompressorFactory {
         
         if (type.equals("JPG")) { 
             return new JPGImageDecompressor();
-        } else if (type.equals("TIF")) { 
-            return new TIFImageDecompressor();
-        } 
+        }
         
         throw new Exception("Unknown compressor " + type);        
     }

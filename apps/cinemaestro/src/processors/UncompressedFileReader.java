@@ -1,5 +1,6 @@
 package processors;
 
+import image.Image;
 import image.ImageQueue;
 import image.RGB24Image;
 import image.RGB48Image;
@@ -173,11 +174,11 @@ public class UncompressedFileReader extends ImageProducer<UncompressedImage> {
         out.setDone();
     }
 
-    public static Class getInputQueueType() { 
+    public static Class<Image> getInputQueueType() { 
         return null;
     }
     
-    public static Class getOutputQueueType() {
+    public static Class<UncompressedImage> getOutputQueueType() {
         return UncompressedImage.class;
     }    
     

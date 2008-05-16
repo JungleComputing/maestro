@@ -228,8 +228,8 @@ public class Worker implements ManagementCallback, StatisticsCallback {
             QueueDescription inQ = c.getGetQ();
             QueueDescription outQ = c.getPutQ();
 
-            Class typeIn = (inQ != null ? inQ.getType() : null);
-            Class typeOut = (outQ != null ? outQ.getType() : null);
+            Class<?> typeIn = (inQ != null ? inQ.getType() : null);
+            Class<?> typeOut = (outQ != null ? outQ.getType() : null);
 
             System.out.println("[*] Create component " + name);
             System.out.println("[*]  - Type     : " + clazz.getName());

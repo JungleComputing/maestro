@@ -28,11 +28,11 @@ public class QueueCombiner extends ImageProcessor<Image, Image> {
         out.setDone();
     }
     
-    public static Class getInputQueueType() {
+    public static Class<Image> getInputQueueType() {
         return Image.class;
     }
 
-    public static Class getOutputQueueType() {
+    public static Class<Image> getOutputQueueType() {
         return Image.class;
     }    
     

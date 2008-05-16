@@ -228,12 +228,13 @@ public class Generator extends ImageProducer<UncompressedImage> {
         return null;
     }
     
-    public static Class getOutputQueueType() {
+    public static Class<UncompressedImage> getOutputQueueType() {
         return UncompressedImage.class;
     }    
     
     public static Generator create(ComponentDescription c, 
-            ImageQueue in, ImageQueue<UncompressedImage> out,
+            ImageQueue in,
+    ImageQueue<UncompressedImage> out,
             StatisticsCallback publisher) throws Exception {
    
         HashMap<String, String> options = c.getOptions();

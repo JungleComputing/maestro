@@ -54,6 +54,7 @@ public class StreamCombiner extends ImageConsumer<CompressedImage> {
         }
     }
     
+    @SuppressWarnings("unchecked")
     public static Class getInputQueueType() {
         return CompressedImage.class;
     }

@@ -81,11 +81,11 @@ public class Compressor extends ImageProcessor<UncompressedImage, CompressedImag
         out.setDone();
     }
     
-    public static Class getInputQueueType() {
+    public static Class<UncompressedImage> getInputQueueType() {
         return UncompressedImage.class;
     }
 
-    public static Class getOutputQueueType() {
+    public static Class<CompressedImage> getOutputQueueType() {
         return CompressedImage.class;
     }   
     

@@ -23,7 +23,7 @@ public class JPGImageDecompressor implements ImageDecompressor {
     private JPEGImageReadParam readParam;
     private ImageReader reader;
     
-    public JPGImageDecompressor() throws IIOException { 
+    public JPGImageDecompressor() { 
         // Get a TIFF reader and set its input to the written TIFF image.
         ImageIO.setUseCache(false);
         

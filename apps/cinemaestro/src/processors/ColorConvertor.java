@@ -5,6 +5,7 @@ import java.util.HashMap;
 import util.Options;
 import util.config.ComponentDescription;
 
+import image.Image;
 import image.ImageQueue;
 import image.UncompressedImage;
 
@@ -52,11 +53,11 @@ public class ColorConvertor extends ImageProcessor<UncompressedImage, Uncompress
         out.setDone();
     }
     
-    public static Class getInputQueueType() {
+    public static Class<Image> getInputQueueType() {
         return UncompressedImage.class;
     }
 
-    public static Class getOutputQueueType() {
+    public static Class<Image> getOutputQueueType() {
         return UncompressedImage.class;
     }    
     
