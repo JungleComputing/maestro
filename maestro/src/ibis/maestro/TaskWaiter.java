@@ -30,7 +30,7 @@ public class TaskWaiter implements CompletionListener
      * we can wait for all of them to complete.
      * 
      * @param task The task to submit to.
-     * @param j Input for the (first job of the) task.
+     * @param input Input for the (first job of the) task.
      */
     @SuppressWarnings("synthetic-access")
     public synchronized void submit( Task task, Object input )
