@@ -1,6 +1,0 @@
-SUN=/usr/lib/jvm/java-6-sun-1.6.0.03
-CC=gcc
-
-compression:
-	$(CC) -fPIC -O3 -I$(SUN)/include -I$(SUN)/include/linux -I./build/headers -I./external/headers -shared -o libCompression.so src/native/x264.c ./external/i386/libx264.a
-
