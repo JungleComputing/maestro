@@ -1,0 +1,6 @@
+SUN=/usr/local/package/jdk1.6.0-linux-amd64
+CC=gcc
+
+compression:
+	$(CC) -fPIC -O3 -I$(SUN)/include -I$(SUN)/include/linux -I./build/headers -I./external/headers -shared -o libCompression.so src/native/x264.c ./external/amd64/libx264.a
+
