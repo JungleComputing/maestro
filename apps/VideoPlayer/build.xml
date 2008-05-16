@@ -1,0 +1,113 @@
+<project name="videoplayer" default="build" basedir=".">
+    <description>
+	Build file for VideoPlayer programs and library
+    </description>
+
+    <property name="version" value="0.0.1" />
+
+    <property name="dist-name" value="${ant.project.name}-${version}" />
+
+    <!-- Import environment properties -->
+
+    <property environment="env" />
+
+    <target name="build"
+            description="Build build all sources"
+            depends="clean,compile,javadoc" />
+
+    <target name="test"
+            description="Run tests"
+            depends="" />
+
+    <property name="src" location="src" />
+    <property name="tmp" location="tmp" />
+    <property name="lib" location="lib" />
+    <property name="external" location="support-libs" />
+    <property name="javadoc" location="javadoc" />
+    <property name="sources" location="sources" />
+
+    <!-- Compile -->
+    <target name="compile">
+        <mkdir dir="${tmp}" />
+        <mkdir dir="${lib}" />
+
+        <!-- copy jars in external directory to lib -->
+        <copy todir="${lib}">
+            <fileset dir="${external}" includes="*.jar" />
+        </copy>
+
+        <path id="default.classpath">
+            <fileset dir="${lib}">
+                <include name="*.jar" />
+            </fileset>
+            <pathelement path="${tmp}" />
+        </path>
+
+        <!-- Compile the java code from ${src} into ${tmp} -->
+        <javac srcdir="${src}" 
+               destdir="${tmp}" 
+               debug="on"
+               source="1.6"
+               target="1.6"
+               classpathref="default.classpath">
+		<compilerarg value="-Xlint:unchecked" />
+	</javac>
+
+        <!-- Create jar file -->
+        <jar destfile="${lib}/${dist-name}.jar" basedir="${tmp}" includes="**/*.class">
+        </jar>
+        <delete dir="${tmp}" />
+
+        <!-- Copy external libraries to lib directory -->
+    </target>
+
+    <!-- Generate javadoc -->
+    <target name="javadoc" description="generate all javadocs">
+        <javadoc destdir="${javadoc}"
+                 access="public"
+                 classpathref="default.classpath"
+                 packagenames="*"
+                 sourcepath="${src}"
+                 windowtitle="Ibis ${ant.project.name} Documentation"
+                 doctitle="Ibis ${ant.project.name} Documentation"
+                 bottom="The Ibis project">
+            <link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
+        </javadoc>
+    </target>
+
+    <!-- Clean up everything -->
+    <target name="clean" description="Clean up">
+        <delete dir="${tmp}" />
+        <delete dir="${lib}" />
+        <delete dir="${javadoc}" />
+    </target>
+
+    <target name="dist" depends="build">
+        <delete file="${dist-name}.zip" />
+        <delete dir="${sources}" />
+
+        <mkdir dir="${sources}" />
+
+        <zip destfile="${sources}/${dist-name}-src.zip">
+            <zipfileset dir="src"
+                        includes="**/*.java"
+                        prefix="${dist-name}" />
+
+            <zipfileset dir="."
+                        includes="LICENSE.txt"
+                        prefix="${sources-filename}" />
+        </zip>
+
+        <zip destfile="${dist-name}.zip">
+            <zipfileset dir="."
+                        prefix="${dist-name}"
+                        includes="javadoc/**,docs/*.pdf,lib/**,notices/**,sources/**,BUGS.txt,LICENSE.txt,HISTORY.txt,README.txt,INSTALL.txt,ibis.properties.example,log4j.properties,smartsockets.properties.example,examples/**,benchmarks/**"/>
+            <zipfileset dir="."
+                        prefix="${dist-name}"
+                        filemode="755"
+                        includes="bin/**" />
+        </zip>
+
+    </target>
+
+</project>
