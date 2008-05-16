@@ -46,6 +46,7 @@ public class AntialiasedText extends Applet {
           
     
     
+    @Override
     public void paint(Graphics g) {
 
         Graphics2D g2d = (Graphics2D)g;

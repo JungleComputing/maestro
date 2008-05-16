@@ -24,6 +24,7 @@ public class Compressor extends ImageProcessor<UncompressedImage, CompressedImag
         this.compressor = comp;
     }
     
+    @Override
     public void process() { 
 
         // Note: we need these field to store the processing time and input data
@@ -85,6 +86,7 @@ public class Compressor extends ImageProcessor<UncompressedImage, CompressedImag
         return UncompressedImage.class;
     }
 
+    @SuppressWarnings("unchecked")
     public static Class<CompressedImage> getOutputQueueType() {
         return CompressedImage.class;
     }   

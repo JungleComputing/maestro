@@ -228,7 +228,7 @@ public class Generator extends ImageProducer<UncompressedImage> {
         return null;
     }
     
-    public static Class<UncompressedImage> getOutputQueueType() {
+    public static Class getOutputQueueType() {
         return UncompressedImage.class;
     }    
     

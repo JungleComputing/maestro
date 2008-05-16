@@ -27,6 +27,7 @@ public class SimpleImageQueue<T extends Image> extends ImageQueue<T> {
         this("Anonymous", maxImages);
     }
     
+    @Override
     public synchronized T get() {
         
         while (size == 0) {

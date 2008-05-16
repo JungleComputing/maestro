@@ -69,11 +69,11 @@ public class FrameRateCounter extends ImageConsumer {
     
     }
     
-    public static Class getInputQueueType() {
+    public static Class<Image> getInputQueueType() {
         return Image.class;
     }
     
-    public static Class getOutputQueueType() {
+    public static Class<Image> getOutputQueueType() {
         return null;
     }
     

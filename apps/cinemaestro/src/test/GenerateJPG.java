@@ -12,8 +12,6 @@ import java.util.StringTokenizer;
 import processors.CompressedFileWriter;
 import processors.Compressor;
 import processors.Generator;
-import util.FileFinder;
-import util.FileInfo;
 import util.FilesetDescription;
 
 public class GenerateJPG {

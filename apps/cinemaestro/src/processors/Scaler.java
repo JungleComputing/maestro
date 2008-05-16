@@ -58,11 +58,11 @@ public class Scaler extends ImageProcessor<UncompressedImage, UncompressedImage>
         out.setDone();
     }
     
-    public static Class getInputQueueType() {
+    public static Class<UncompressedImage> getInputQueueType() {
         return UncompressedImage.class;
     }
 
-    public static Class getOutputQueueType() {
+    public static Class<UncompressedImage> getOutputQueueType() {
         return UncompressedImage.class;
     }    
     

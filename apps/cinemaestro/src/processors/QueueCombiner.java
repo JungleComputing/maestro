@@ -2,7 +2,6 @@ package processors;
 
 import image.Image;
 import image.ImageQueue;
-import image.UncompressedImage;
 import util.config.ComponentDescription;
 
 public class QueueCombiner extends ImageProcessor<Image, Image> {
@@ -15,6 +14,7 @@ public class QueueCombiner extends ImageProcessor<Image, Image> {
         super(componentNumber, "Combiner", name, in, out, publisher);
     }
     
+    @Override
     public void process() { 
 
         Image i = in.get();

@@ -44,11 +44,11 @@ public class ToRGB24 extends ImageProcessor<UncompressedImage, UncompressedImage
         out.setDone();
     }
     
-    public static Class<UncompressedImage> getInputQueueType() {
+    public static Class getInputQueueType() {
         return UncompressedImage.class;
     }
 
-    public static Class<UncompressedImage> getOutputQueueType() {
+    public static Class getOutputQueueType() {
         return UncompressedImage.class;
     }    
     

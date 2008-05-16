@@ -1,5 +1,6 @@
 package demo.mt;
 
+import image.Image;
 import image.ImageQueue;
 import image.queues.RoundRobinInputQueue;
 import image.queues.RoundRobinOutputQueue;
@@ -23,12 +24,14 @@ public class Main {
     private Config config;
     
     private LinkedList<ProcessorThread> threads = new LinkedList<ProcessorThread>();
+    @SuppressWarnings("unchecked")
     private HashMap<String, ImageQueue> queues = new HashMap<String, ImageQueue>(); 
     
     public Main(Config c) { 
         this.config = c;
     }
 
+    @SuppressWarnings("unchecked")
     private void addQueue(String name, ImageQueue q) {         
         System.out.println("-   Adding " + name + " to queue map");
         queues.put(name, q);        
@@ -107,8 +110,8 @@ public class Main {
         String in = c.getInput();
         String out = c.getOutput();
         
-        ImageQueue input = null;
-        ImageQueue output = null;
+        ImageQueue<?> input = null;
+        ImageQueue<?> output = null;
         
         if (in != null) { 
             input = queues.get(in);
@@ -122,8 +125,8 @@ public class Main {
             QueueDescription inQ = c.getGetQ();
             QueueDescription outQ = c.getPutQ();
             
-            Class typeIn = (inQ != null ? inQ.getType() : null);
-            Class typeOut = (outQ != null ? outQ.getType() : null);
+            Class<? extends Image> typeIn = (inQ != null ? inQ.getType() : null);
+            Class<? extends Image> typeOut = (outQ != null ? outQ.getType() : null);
             
             System.out.println("Create component " + name);
             System.out.println(" - Type     : " + clazz.getName());

@@ -1,5 +1,7 @@
 package util.config;
 
+import image.Image;
+
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -12,7 +14,7 @@ public class QueueDescription implements Serializable {
 
     private final String name;
     
-    private final Class type;
+    private final Class<? extends Image> type;
     
     private final String [] get;
     private final String [] put;
@@ -20,7 +22,7 @@ public class QueueDescription implements Serializable {
     private final int getLength;
     private final int putLength;
   
-    public QueueDescription(final String name, final Class type, 
+    public QueueDescription(final String name, final Class<? extends Image> type, 
             final String[] put, final String[] get, final int putLength, 
             final int getLength) {
         
@@ -38,7 +40,7 @@ public class QueueDescription implements Serializable {
         return name;
     }
     
-    public Class getType() { 
+    public Class<? extends Image> getType() { 
         return type;
     }
     

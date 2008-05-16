@@ -7,7 +7,7 @@ import image.ImageQueue;
 
 public class IbisImageReader extends Thread {
    
-    private final ImageQueue out;
+    private final ImageQueue<Image> out;
     private final ReceivePort in; 
     private boolean closed = false;
 
@@ -15,7 +15,7 @@ public class IbisImageReader extends Thread {
     private long putTime; 
     private long bytes;
     
-    public IbisImageReader(ReceivePort in, ImageQueue out) {
+    public IbisImageReader(ReceivePort in, ImageQueue<Image> out) {
         this.out = out;
         this.in = in;
     }

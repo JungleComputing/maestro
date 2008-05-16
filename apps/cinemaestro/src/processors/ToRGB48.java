@@ -1,14 +1,10 @@
 package processors;
 
-import java.util.HashMap;
-
-import util.Options;
-import util.config.ComponentDescription;
-
 import image.Convert;
 import image.ImageQueue;
 import image.RGB24Image;
 import image.UncompressedImage;
+import util.config.ComponentDescription;
 
 public class ToRGB48 extends ImageProcessor<UncompressedImage, UncompressedImage> {
     

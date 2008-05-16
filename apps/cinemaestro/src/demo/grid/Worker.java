@@ -3,8 +3,8 @@ package demo.grid;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePort;
 import ibis.ipl.SendPort;
+import image.Image;
 import image.ImageQueue;
-import image.queues.MultiDoneImageQueue;
 import image.queues.RoundRobinInputQueue;
 import image.queues.RoundRobinOutputQueue;
 import image.queues.SimpleImageQueue;
@@ -31,7 +31,7 @@ public class Worker implements ManagementCallback, StatisticsCallback {
 
     private final Comm comm;
 
-    private HashMap<String, ImageQueue> queues = new HashMap<String, ImageQueue>(); 
+    private HashMap<String, ImageQueue<? extends Image>> queues = new HashMap<String, ImageQueue<? extends Image>>(); 
 
     private LinkedList<IbisImageWriter> writers = new LinkedList<IbisImageWriter>(); 
     private LinkedList<IbisImageReader> readers = new LinkedList<IbisImageReader>(); 
@@ -187,7 +187,7 @@ public class Worker implements ManagementCallback, StatisticsCallback {
 
     @SuppressWarnings("unchecked")
     private ProcessorThread create(Class clazz, ComponentDescription c, 
-            ImageQueue in, ImageQueue out) throws Exception {
+            ImageQueue<? extends Image> in, ImageQueue<? extends Image> out) throws Exception {
 
         try {
             Method m = clazz.getDeclaredMethod("create", 
@@ -213,8 +213,8 @@ public class Worker implements ManagementCallback, StatisticsCallback {
         String in = c.getInput();
         String out = c.getOutput();
 
-        ImageQueue input = null;
-        ImageQueue output = null;
+        ImageQueue<? extends Image> input = null;
+        ImageQueue<? extends Image> output = null;
 
         if (in != null) { 
             input = queues.get(in);

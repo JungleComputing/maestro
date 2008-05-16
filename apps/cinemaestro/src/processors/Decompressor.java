@@ -61,6 +61,7 @@ public class Decompressor extends ImageProcessor<CompressedImage, UncompressedIm
         return d;
     }
     
+    @Override
     public void process() { 
         
         CompressedImage c = in.get();
@@ -98,10 +99,12 @@ public class Decompressor extends ImageProcessor<CompressedImage, UncompressedIm
         out.setDone();
     }
     
+    @SuppressWarnings("unchecked")
     public static Class getInputQueueType() {
         return CompressedImage.class;
     }
 
+    @SuppressWarnings("unchecked")
     public static Class getOutputQueueType() {
         return UncompressedImage.class;
     }    

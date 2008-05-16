@@ -3,7 +3,6 @@ package demo.cluster;
 import java.io.File;
 
 import util.config.Config;
-import util.config.Config;
 
 public class Main {
 

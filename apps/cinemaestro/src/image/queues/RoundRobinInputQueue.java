@@ -51,6 +51,7 @@ public class RoundRobinInputQueue<T extends Image> extends ImageQueue<T> {
         super.setDone();
     }
     
+    @Override
     public T get() {
         PutOnlyQueue<T> tmp = queues[index];
         
@@ -114,7 +115,7 @@ public class RoundRobinInputQueue<T extends Image> extends ImageQueue<T> {
     @Override
     public void printStats() {
     
-        for (PutOnlyQueue q : queues) { 
+        for (PutOnlyQueue<?> q : queues) { 
             q.printStats();
         }
         

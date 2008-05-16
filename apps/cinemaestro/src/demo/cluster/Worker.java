@@ -3,6 +3,7 @@ package demo.cluster;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePort;
 import ibis.ipl.SendPort;
+import image.Image;
 import image.ImageQueue;
 import image.queues.RoundRobinInputQueue;
 import image.queues.RoundRobinOutputQueue;
@@ -30,7 +31,7 @@ public class Worker implements ManagementCallback, StatisticsCallback {
 
     private final Comm comm;
 
-    private HashMap<String, ImageQueue> queues = new HashMap<String, ImageQueue>(); 
+    private HashMap<String, ImageQueue<? extends Image>> queues = new HashMap<String, ImageQueue<?extends Image>>(); 
 
     private LinkedList<IbisImageWriter> writers = new LinkedList<IbisImageWriter>(); 
     private LinkedList<IbisImageReader> readers = new LinkedList<IbisImageReader>(); 
@@ -140,7 +141,7 @@ public class Worker implements ManagementCallback, StatisticsCallback {
     }*/
 
     @SuppressWarnings("unchecked")
-    private ProcessorThread create(Class clazz, String name, ImageQueue in, 
+    private ProcessorThread create(Class<?> clazz, String name, ImageQueue in, 
             ImageQueue out, HashMap<String, String> options) throws Exception {
 
         try {
@@ -158,7 +159,7 @@ public class Worker implements ManagementCallback, StatisticsCallback {
 
     private void createComponent(ComponentDescription c) throws Exception { 
 
-        Class clazz = c.getClazz();
+        Class<?> clazz = c.getClazz();
         HashMap<String, String> options = c.getOptions();
 
         String name = c.getName();
@@ -166,8 +167,8 @@ public class Worker implements ManagementCallback, StatisticsCallback {
         String in = c.getInput();
         String out = c.getOutput();
 
-        ImageQueue input = null;
-        ImageQueue output = null;
+        ImageQueue<? extends Image>  input = null;
+        ImageQueue<? extends Image> output = null;
 
         if (in != null) { 
             input = queues.get(in);
@@ -181,8 +182,8 @@ public class Worker implements ManagementCallback, StatisticsCallback {
             QueueDescription inQ = c.getGetQ();
             QueueDescription outQ = c.getPutQ();
 
-            Class typeIn = (inQ != null ? inQ.getType() : null);
-            Class typeOut = (outQ != null ? outQ.getType() : null);
+            Class<? extends Image> typeIn = (inQ != null ? inQ.getType() : null);
+            Class<? extends Image> typeOut = (outQ != null ? outQ.getType() : null);
 
             System.out.println("Create component " + name);
             System.out.println(" - Type     : " + clazz.getName());

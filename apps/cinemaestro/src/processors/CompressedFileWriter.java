@@ -1,6 +1,7 @@
 package processors;
 
 import image.CompressedImage;
+import image.Image;
 import image.ImageQueue;
 
 import java.io.File;
@@ -87,14 +88,15 @@ public class CompressedFileWriter extends ImageConsumer<CompressedImage> {
         }
     }
     
-    public static Class getInputQueueType() {
+    public static Class<? extends Image> getInputQueueType() {
         return CompressedImage.class;
     }
     
-    public static Class getOutputQueueType() {
+    public static Class<? extends Image> getOutputQueueType() {
         return null;
     }
     
+    @SuppressWarnings("unchecked")
     public static CompressedFileWriter create(ComponentDescription c,
             ImageQueue<CompressedImage> in, ImageQueue out, 
              StatisticsCallback publisher) throws Exception {

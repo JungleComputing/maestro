@@ -10,7 +10,6 @@ import java.awt.image.Raster;
 import java.io.ByteArrayInputStream;
 import java.util.Iterator;
 
-import javax.imageio.IIOException;
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReader;
 import javax.imageio.plugins.jpeg.JPEGImageReadParam;

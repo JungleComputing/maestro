@@ -24,14 +24,16 @@ public class RoundRobinOutputQueue<T extends Image> extends ImageQueue<T> {
         this("Anonymous", maxImages, outputs);
     }
     
+    @Override
     public T get() {
         throw new RuntimeException("Get not allowed!");
     }
     
-    public ImageQueue<T> getQueue(int index) { 
-        return queues[index];
+    public ImageQueue<T> getQueue(int index1) { 
+        return queues[index1];
     }
 
+    @Override
     public void put(T b) {
         
         GetOnlyQueue<T> tmp = queues[index];
@@ -43,6 +45,7 @@ public class RoundRobinOutputQueue<T extends Image> extends ImageQueue<T> {
         index = (index + 1) % queues.length;
     }
     
+    @Override
     public void setDone() {
         
         for (GetOnlyQueue<T> q : queues) {
@@ -83,7 +86,7 @@ public class RoundRobinOutputQueue<T extends Image> extends ImageQueue<T> {
 
     @Override
     public void printStats() {
-        for (GetOnlyQueue q : queues) { 
+        for (GetOnlyQueue<?> q : queues) { 
             q.printStats();
         }
   

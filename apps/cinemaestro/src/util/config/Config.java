@@ -1,5 +1,7 @@
 package util.config;
 
+import image.Image;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -73,16 +75,15 @@ public class Config {
 
         Class clazz = lookupClass(className);
 
-        Class input = getInputType(clazz);
-        Class output = getOutputType(clazz);
+        Class<? extends Image> input = getInputType(clazz);
+        Class<? extends Image> output = getOutputType(clazz);
 
         Component c = new Component(name, clazz, input, output);
 
         components.put(name, c);        
     }
 
-    @SuppressWarnings("unchecked")
-    public Class getInputType(Class clazz) { 
+    public Class<? extends Image> getInputType(Class clazz) { 
 
         try {
             Method m = clazz.getDeclaredMethod("getInputQueueType", (Class[]) null);

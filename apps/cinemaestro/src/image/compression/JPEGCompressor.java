@@ -42,7 +42,7 @@ public class JPEGCompressor implements ImageCompressor {
         
         ImageOutputStream output = ImageIO.createImageOutputStream(out);
         
-        Iterator writers = ImageIO.getImageWritersByFormatName("jpg");
+        Iterator<?> writers = ImageIO.getImageWritersByFormatName("jpg");
 
         if (writers == null || !writers.hasNext()) {
             throw new RuntimeException("No writers!");

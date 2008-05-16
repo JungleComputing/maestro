@@ -12,6 +12,7 @@ public class PutOnlyQueue<T extends Image> extends SimpleImageQueue<T> {
         this("Anonymous", maxImages);
     }
     
+    @Override
     public T get() {
         throw new RuntimeException("Get not allowed!");
     }

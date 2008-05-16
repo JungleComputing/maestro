@@ -94,11 +94,11 @@ public abstract class ProcessorThread extends Thread {
     
     public abstract void process() throws Exception;
     
-    public static Class<Image> getInputQueueType() { 
+    public static Class<? extends Image> getInputQueueType() { 
         return null;
     }
     
-    public static Class<Image> getOutputQueueType() {
+    public static Class<? extends Image> getOutputQueueType() {
         return null;
     }
    

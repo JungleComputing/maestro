@@ -1,13 +1,12 @@
 package processors;
 
+import image.ImageQueue;
+import image.UncompressedImage;
+
 import java.util.HashMap;
 
 import util.Options;
 import util.config.ComponentDescription;
-
-import image.Image;
-import image.ImageQueue;
-import image.UncompressedImage;
 
 public class ColorConvertor extends ImageProcessor<UncompressedImage, UncompressedImage> {
     
@@ -27,6 +26,7 @@ public class ColorConvertor extends ImageProcessor<UncompressedImage, Uncompress
         this.b = b;
     }
     
+    @Override
     public void process() { 
 
         UncompressedImage i = in.get();
@@ -53,11 +53,11 @@ public class ColorConvertor extends ImageProcessor<UncompressedImage, Uncompress
         out.setDone();
     }
     
-    public static Class<Image> getInputQueueType() {
+    public static Class getInputQueueType() {
         return UncompressedImage.class;
     }
 
-    public static Class<Image> getOutputQueueType() {
+    public static Class getOutputQueueType() {
         return UncompressedImage.class;
     }    
     

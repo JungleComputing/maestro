@@ -1,6 +1,7 @@
 package processors;
 
 import image.CompressedImage;
+import image.Image;
 import image.ImageQueue;
 import image.JPGCompressedImage;
 import image.TIFCompressedImage;
@@ -63,6 +64,7 @@ public class CompressedFileReader extends ImageProducer<CompressedImage> {
         throw new IOException("File not found!");
     }
     
+    @Override
     public void process() {
 
         int r = 0;
@@ -92,11 +94,11 @@ public class CompressedFileReader extends ImageProducer<CompressedImage> {
         out.setDone();
     }
 
-    public static Class getInputQueueType() { 
+    public static Class<? extends Image> getInputQueueType() { 
         return null;
     }
     
-    public static Class getOutputQueueType() {
+    public static Class<CompressedImage> getOutputQueueType() {
         return CompressedImage.class;
     }    
     

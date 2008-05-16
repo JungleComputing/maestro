@@ -1,14 +1,15 @@
 package processors;
 
+import image.Image;
+import image.ImageQueue;
+import image.RGB24Image;
+import image.RGB48Image;
+import image.UncompressedImage;
+
 import java.util.HashMap;
 
 import util.Options;
 import util.config.ComponentDescription;
-import image.ImageQueue;
-import image.RGB24Image;
-import image.RGB48Image;
-import image.RGBImage;
-import image.UncompressedImage;
 
 public class EmptyImageGenerator extends ImageProducer<UncompressedImage> {
     
@@ -94,11 +95,11 @@ public class EmptyImageGenerator extends ImageProducer<UncompressedImage> {
         out.setDone();
     }
 
-    public static Class getInputQueueType() { 
+    public static Class<? extends Image> getInputQueueType() { 
         return null;
     }
     
-    public static Class getOutputQueueType() {
+    public static Class<UncompressedImage> getOutputQueueType() {
         return UncompressedImage.class;
     }    
     

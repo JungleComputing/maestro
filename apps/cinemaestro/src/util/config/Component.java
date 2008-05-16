@@ -9,7 +9,8 @@ import java.util.HashMap;
 import processors.ProcessorThread;
 
 class Component implements Serializable {
-   
+    private static final long serialVersionUID = 3539004796510858603L;
+
     private final String name;
     private final Class clazz;
     
