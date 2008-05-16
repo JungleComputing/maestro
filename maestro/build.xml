@@ -28,7 +28,7 @@
     <property name="src" location="src" />
     <property name="tmp" location="tmp" />
     <property name="lib" location="lib" />
-    <property name="external" location="ibis" />
+    <property name="external" location="support-libs" />
     <property name="javadoc" location="javadoc" />
     <property name="sources" location="sources" />
 
@@ -75,7 +75,7 @@
                source="1.6"
                target="1.6"
                classpathref="default.classpath">
-		<compilerarg value="-Xlint:unchecked" />
+               <compilerarg value="-Xlint:unchecked" />
 	</javac>
 
         <!-- Create jar file -->
