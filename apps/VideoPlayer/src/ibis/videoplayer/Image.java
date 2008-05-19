@@ -1,6 +1,8 @@
 package ibis.videoplayer;
 
-abstract class Image {
+import java.io.Serializable;
+
+abstract class Image implements Serializable {
 
     protected final int width;
     protected final int height;

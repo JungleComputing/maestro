@@ -1,13 +1,21 @@
 package ibis.videoplayer;
 
-import java.io.Serializable;
+import java.awt.Point;
+import java.awt.image.BandedSampleModel;
+import java.awt.image.BufferedImage;
+import java.awt.image.ComponentSampleModel;
+import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferUShort;
+import java.awt.image.Raster;
+import java.awt.image.SampleModel;
+import java.awt.image.WritableRaster;
 
 /**
  * A video frame.
  * 
  * @author Kees van Reeuwijk
  */
-class RGB48Image extends Image implements Serializable {
+class RGB48Image extends UncompressedImage {
     private static final long serialVersionUID = 8797700803728846092L;
     final short r[];
     final short g[];
@@ -86,5 +94,16 @@ class RGB48Image extends Image implements Serializable {
             System.out.println( "Color-corrected " + this );
         }
         return new RGB48Image( frameno, width, height, r, g, b );
+    }
+
+    @Override
+    BufferedImage toBufferedImage() {
+        short buffers[][] = new short[][] { r, g, b };
+        DataBuffer buffer = new DataBufferUShort( buffers, r.length );
+        SampleModel sampleModel = new BandedSampleModel( buffer.getDataType(), width, height, 3 );
+        WritableRaster raster = Raster.createWritableRaster( sampleModel, buffer, null );
+        //return new BufferedImage( raster );
+        // FIXME: somehow create a buffered image.
+        return null;
     }
 }
