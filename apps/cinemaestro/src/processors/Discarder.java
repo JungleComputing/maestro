@@ -4,7 +4,7 @@ import image.Image;
 import image.ImageQueue;
 import util.config.ComponentDescription;
 
-public class Discarder extends ImageConsumer {
+public class Discarder<I extends Image> extends ImageConsumer<I> {
 
     @SuppressWarnings("unchecked")
     public Discarder(int componentNumber, String name, ImageQueue in, StatisticsCallback publisher) {

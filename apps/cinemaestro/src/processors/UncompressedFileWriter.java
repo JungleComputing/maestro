@@ -1,10 +1,12 @@
 
 package processors;
 
+import image.Image;
 import image.ImageQueue;
 import image.RGB24Image;
 import image.RGB48Image;
 import image.UncompressedImage;
+import image.VoidImage;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -126,12 +128,12 @@ public class UncompressedFileWriter extends ImageConsumer<UncompressedImage> {
         return UncompressedImage.class;
     }
 
-    public static Class getOutputQueueType() {
+    public static Class<? extends Image> getOutputQueueType() {
         return null;
     }
 
     public static UncompressedFileWriter create(ComponentDescription c,
-            ImageQueue<UncompressedImage> in, ImageQueue out, 
+            ImageQueue<UncompressedImage> in, ImageQueue<VoidImage> out, 
             StatisticsCallback publisher) throws Exception {
 
         HashMap<String, String> options = c.getOptions();

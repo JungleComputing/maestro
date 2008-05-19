@@ -205,7 +205,7 @@ public class Worker implements ManagementCallback, StatisticsCallback {
 
     private void createComponent(ComponentDescription c) throws Exception { 
 
-        Class clazz = c.getClazz();
+        Class<? extends util.config.Component> clazz = c.getClazz();
         HashMap<String, String> options = c.getOptions();
 
         String name = c.getName();

@@ -96,7 +96,7 @@ public class Config {
     }
 
     @SuppressWarnings("unchecked")
-    public Class getOutputType(Class clazz) {
+    public Class<? extends Image> getOutputType(Class clazz) {
 
         try {
             Method m = clazz.getDeclaredMethod("getOutputQueueType", (Class[]) null);

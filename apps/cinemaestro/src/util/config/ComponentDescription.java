@@ -55,7 +55,7 @@ public class ComponentDescription implements Serializable {
         return component;
     } 
     
-    public Class getClazz() {
+    public Class<? extends Component> getClazz() {
         return component.getClazz();
     }
 

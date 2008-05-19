@@ -3,6 +3,7 @@ package processors;
 import image.CompressedImage;
 import image.Image;
 import image.ImageQueue;
+import image.VoidImage;
 
 import java.io.File;
 import java.io.RandomAccessFile;
@@ -31,17 +32,17 @@ public class CompressedFileWriter extends ImageConsumer<CompressedImage> {
         
         long tmp = 10;
         
-        String name = out.getPrefix();
+        String nm = out.getPrefix();
         
         for (int i=1;i<out.getPositions();i++) { 
             if (number < tmp) {
-                name += "0";
+                nm += "0";
             }
             
             tmp = tmp * 10;
         }
         
-        return name + number + out.getPostfix();
+        return nm + number + out.getPostfix();
     }
     
     
@@ -97,9 +98,8 @@ public class CompressedFileWriter extends ImageConsumer<CompressedImage> {
         return null;
     }
     
-    @SuppressWarnings("unchecked")
     public static CompressedFileWriter create(ComponentDescription c,
-            ImageQueue<CompressedImage> in, ImageQueue out, 
+            ImageQueue<CompressedImage> in, ImageQueue<VoidImage> out, 
              StatisticsCallback publisher) throws Exception {
    
         HashMap<String, String> options = c.getOptions();

@@ -1,5 +1,7 @@
 package util.config;
 
+import image.Image;
+
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -124,11 +126,11 @@ class Info {
         return stage;
     }
 
-    public Class inQueueType() {
+    public Class<? extends Image> inQueueType() {
         return stage.getComponent().getInputType();                
     }
     
-    public Class outQueueType() {
+    public Class<? extends Image> outQueueType() {
         return stage.getComponent().getOutputType();                
     }
     

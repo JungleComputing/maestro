@@ -5,7 +5,7 @@ import image.ImageQueue;
 import util.Options;
 import util.config.ComponentDescription;
 
-public class FrameRateCounter extends ImageConsumer {
+public class FrameRateCounter<I extends Image> extends ImageConsumer<I> {
 
     private final int frames;
     

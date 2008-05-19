@@ -9,18 +9,18 @@ import java.util.HashMap;
 
 import processors.ProcessorThread;
 
-class Component implements Serializable {
+public class Component implements Serializable {
     private static final long serialVersionUID = 3539004796510858603L;
 
     private final String name;
-    private final Class clazz;
+    private final Class<? extends Component> clazz;
     
     private final Class<? extends Image> inputType;
     private final Class<? extends Image> outputType;
     
     private final HashMap<String, String> options = new HashMap<String, String>();
     
-    public Component(String name, Class clazz, Class<? extends Image> inputType, Class<? extends Image> outputType) { 
+    public Component(String name, Class<? extends Component> clazz, Class<? extends Image> inputType, Class<? extends Image> outputType) { 
         this.name = name;
         this.clazz = clazz;
         this.inputType = inputType;
@@ -39,7 +39,7 @@ class Component implements Serializable {
         return options.get(key);
     }
         
-    public Class getClazz() {
+    public Class<? extends Component> getClazz() {
         return clazz;
     }
 
