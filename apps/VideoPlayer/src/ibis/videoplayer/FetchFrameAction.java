@@ -34,7 +34,7 @@ public class FetchFrameAction implements Job
             g[i] = (short) (rng.nextInt() & 0xFFFF);
             b[i] = (short) (rng.nextInt() & 0xFFFF);
         }
-        Frame frame = new Frame( frameno, Settings.FRAME_WIDTH, Settings.FRAME_HEIGHT, r, g, b );
+        Image frame = new RGB48Image( frameno, Settings.FRAME_WIDTH, Settings.FRAME_HEIGHT, r, g, b );
         if( Settings.traceActions ) {
             System.out.println( "Fetched " + frame );
         }

@@ -52,7 +52,7 @@ public final class BuildFragmentJob implements Job
         int szg = 0;
         int szb = 0;
         for( int i=0; i<res.length; i++ ){
-            Frame frame = (Frame) res[i];
+            RGB48Image frame = (RGB48Image) res[i];
             if( frame != null ){
                 szr += frame.r.length;
                 szg += frame.g.length;
@@ -66,7 +66,7 @@ public final class BuildFragmentJob implements Job
         int ixg = 0;
         int ixb = 0;
         for( int i=0; i<res.length; i++ ){
-            Frame frame = (Frame) res[i];
+            RGB48Image frame = (RGB48Image) res[i];
             if( frame != null ){
                 System.arraycopy( frame.r, 0, r, ixr, frame.r.length );
                 ixr += frame.r.length;

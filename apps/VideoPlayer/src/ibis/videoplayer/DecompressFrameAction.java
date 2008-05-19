@@ -41,7 +41,7 @@ public class DecompressFrameAction implements ibis.maestro.Job
     @Override
     public Object run(Object obj, Node node )
     {
-	Frame frame = (Frame) obj;
+	RGB48Image frame = (RGB48Image) obj;
 	short r[] = new short[frame.r.length*REPEAT*REPEAT];
 	short g[] = new short[frame.g.length*REPEAT*REPEAT];
 	short b[] = new short[frame.b.length*REPEAT*REPEAT];
@@ -52,6 +52,6 @@ public class DecompressFrameAction implements ibis.maestro.Job
         enlarge( r, frame.r, frame.width, frame.height );
         enlarge( g, frame.g, frame.width, frame.height );
         enlarge( b, frame.b, frame.width, frame.height );
-	return new Frame( frame.frameno, frame.width*REPEAT, frame.height*REPEAT, r, g, b );
+	return new RGB48Image( frame.frameno, frame.width*REPEAT, frame.height*REPEAT, r, g, b );
     }
 }
