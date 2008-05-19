@@ -64,6 +64,7 @@ public class QueueDescription implements Serializable {
         return Math.max(getLength, putLength);
     }
     
+    @Override
     public String toString() { 
         return name + " " + Arrays.toString(put) + " -> " + Arrays.toString(get);
     }

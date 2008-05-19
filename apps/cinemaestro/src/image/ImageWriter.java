@@ -12,6 +12,7 @@ public abstract class ImageWriter<T extends Image> extends Thread {
     public abstract boolean writeImage(T image);
     public abstract void close();
     
+    @Override
     public void run() {
 
         boolean cont = init();

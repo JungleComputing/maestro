@@ -57,6 +57,7 @@ public class SimpleImageQueue<T extends Image> extends ImageQueue<T> {
         return images.removeFirst();
     }
 
+    @Override
     public synchronized void put(T b) {
 
         while (size >= maxImages) {

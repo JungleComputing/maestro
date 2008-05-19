@@ -51,8 +51,8 @@ public class Statistics implements Serializable {
         return type;
     }
 
-    public void done(long end) {
-        this.end = end;
+    public void done(long v) {
+        this.end = v;
     }
 
     public boolean isDone() { 

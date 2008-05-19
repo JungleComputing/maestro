@@ -17,6 +17,7 @@ public class MultiDoneImageQueue<T extends Image> extends SimpleImageQueue<T> {
         this.doneCount = doneCount;
     }
     
+    @Override
     public synchronized void setDone() {
    
         dones++;
@@ -25,6 +26,7 @@ public class MultiDoneImageQueue<T extends Image> extends SimpleImageQueue<T> {
             super.setDone();
         }
     }
+
     public static <U extends Image> MultiDoneImageQueue<U> create(Class<U> type, String name, int max, int doneCount) {
         // Not sure if this works....
         return new MultiDoneImageQueue<U>(name, max, doneCount);

@@ -12,6 +12,7 @@ public abstract class ImageReader<T extends Image> extends Thread {
     public abstract T readImage();
     public abstract void close();
     
+    @Override
     public void run() {
  
         boolean cont = init();

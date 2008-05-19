@@ -45,6 +45,7 @@ public class CompressedFileWriter extends ImageConsumer<CompressedImage> {
     }
     
     
+    @Override
     public void process() { 
   
         CompressedImage i = in.get();

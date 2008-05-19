@@ -106,6 +106,7 @@ public abstract class ProcessorThread extends Thread {
         stats.printStatistics();
     }
     
+    @Override
     public void run() { 
         
         stats = new Statistics(componentNumber, name, type, 

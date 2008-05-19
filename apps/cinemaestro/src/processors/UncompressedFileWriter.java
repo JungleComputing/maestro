@@ -88,6 +88,7 @@ public class UncompressedFileWriter extends ImageConsumer<UncompressedImage> {
         out.close();
     }
         
+    @Override
     public void process() { 
 
         UncompressedImage i = in.get();

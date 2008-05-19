@@ -47,6 +47,7 @@ public class ListingReply implements Serializable, Comparable<ListingReply> {
         return (int)(start - other.start);
     }
     
+    @Override
     public String toString() { 
         return "ListingReply " + start + " ... " + end + ": " + stride;
     }

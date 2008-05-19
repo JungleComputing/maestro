@@ -70,10 +70,11 @@ public class RoundRobinInputQueue<T extends Image> extends ImageQueue<T> {
         return image;
     }
     
-    public ImageQueue<T> getQueue(int index) { 
-        return queues[index];
+    public ImageQueue<T> getQueue(int ix) { 
+        return queues[ix];
     }
 
+    @Override
     public void put(T b) {
         throw new RuntimeException("Get not allowed!");
     }   

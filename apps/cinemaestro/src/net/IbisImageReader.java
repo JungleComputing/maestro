@@ -70,7 +70,7 @@ public class IbisImageReader extends Thread {
         }
     }
     
-    @SuppressWarnings("unchecked")
+    @Override
     public void run() {
         
         boolean cont = true;

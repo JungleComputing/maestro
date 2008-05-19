@@ -52,6 +52,7 @@ public class FilesetDescription implements Serializable {
         return positions;
     }
     
+    @Override
     public String toString() { 
         return "FileSetDescription: " + dir + " / " + prefix + "%" + positions + postfix + " " + check;
     }

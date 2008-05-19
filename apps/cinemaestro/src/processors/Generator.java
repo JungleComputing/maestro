@@ -181,6 +181,7 @@ public class Generator extends ImageProducer<UncompressedImage> {
         }  
     }
         
+    @Override
     public void process() {
 
         long last = 0;

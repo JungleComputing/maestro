@@ -16,6 +16,7 @@ public class ToRGB48 extends ImageProcessor<UncompressedImage, UncompressedImage
         super(componentNumber, "ColorConvertor", name, in, out, publisher);
     }
     
+    @Override
     public void process() { 
 
         UncompressedImage i = in.get();

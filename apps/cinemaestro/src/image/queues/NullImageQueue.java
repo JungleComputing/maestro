@@ -13,11 +13,13 @@ public class NullImageQueue<T extends Image> extends ImageQueue<T> {
         this("Anonymous", maxImages);
     }
     
+    @Override
     public T get() {
         logger.info("Get always returns null");
         return null;
     }
 
+    @Override
     public void put(T b) {
         // drop image!
         logger.info("Put always drops image");

@@ -91,6 +91,7 @@ public class IbisImageWriter extends Thread {
         
     }
     
+    @Override
     public void run() {
         
         boolean cont = init();

@@ -169,6 +169,7 @@ class Info {
         return t;
     }                
     
+    @Override
     public String toString() {
 
         if (childeren == null) { 

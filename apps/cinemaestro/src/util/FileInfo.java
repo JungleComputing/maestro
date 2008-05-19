@@ -16,6 +16,7 @@ public class FileInfo implements Comparable<FileInfo> {
         return (int)(number - other.number);
     }
     
+    @Override
     public String toString() { 
         return file + ":" + number;
     }
