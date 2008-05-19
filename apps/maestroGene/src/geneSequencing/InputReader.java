@@ -1,8 +1,14 @@
 package geneSequencing;
 
-import neobio.alignment.*;
-import java.io.*;
-import java.util.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.util.Properties;
+import java.util.StringTokenizer;
+
+import neobio.alignment.BasicScoringScheme;
+import neobio.alignment.ScoringMatrix;
+import neobio.alignment.ScoringScheme;
 
 public class InputReader implements AlignmentAlgorithms {
 
@@ -20,7 +26,7 @@ public class InputReader implements AlignmentAlgorithms {
 
     private int numScores; //how many top scores per query sequence to record
 
-    public InputReader(String parameterFile) throws Throwable {
+    InputReader(String parameterFile) throws Throwable {
         //read and check all parameters in the inputs file
         BufferedReader inputs =
                 new BufferedReader(new FileReader(new File(parameterFile)));

@@ -42,7 +42,7 @@ public class Dsearch {
         }
     }
 
-    public static void printMemStats(String prefix) {
+    static void printMemStats(String prefix) {
         if(true) {
         Runtime r = Runtime.getRuntime();
 
@@ -89,7 +89,7 @@ public class Dsearch {
             querySequences, databaseSequences, workUnit.maxScores);
     }
 
-    public static ArrayList<Sequence> getSequences(ArrayList<Sequence> seq,
+    static ArrayList<Sequence> getSequences(ArrayList<Sequence> seq,
         int start, int end) {
         ArrayList<Sequence> res = new ArrayList<Sequence>();
 
@@ -119,7 +119,7 @@ public class Dsearch {
             return resultUnit;
     }
 
-    public ArrayList<ResSeq> generateResult(WorkUnit workUnit) {
+    ArrayList<ResSeq> generateResult(WorkUnit workUnit) {
         ArrayList<ResSeq> result;
         
         if (implementationName.equals("dc")) {
@@ -236,6 +236,10 @@ public class Dsearch {
         }
     }
 
+    /** Command-line interface of the sequence search.
+     * 
+     * @param args The list of command-line arguments.
+     */
     public static void main(String[] args) {
         new Dsearch(args).start();
     }

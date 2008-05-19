@@ -77,6 +77,10 @@ public final class Sequence implements java.io.Serializable, Comparable<Sequence
         return o.sequenceName.compareTo(sequenceName);
     }
 
+    /**
+     * Returns the length of the sequence body.
+     * @return The length.
+     */
     public int length() {
         return sequenceBody.length();
     }

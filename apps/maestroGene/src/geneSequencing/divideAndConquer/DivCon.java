@@ -11,7 +11,7 @@ public class DivCon extends ibis.satin.SatinObject implements DivConInterface {
     public DivCon() {
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     public ArrayList<ResSeq> spawn_splitSequences(WorkUnit workUnit) {
         int querySize = workUnit.querySequences.size();
         int databaseSize = workUnit.databaseSequences.size();

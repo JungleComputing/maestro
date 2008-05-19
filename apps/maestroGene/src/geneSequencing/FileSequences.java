@@ -4,10 +4,11 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.util.ArrayList;
 
-public class FileSequences implements java.io.Serializable {
+class FileSequences implements java.io.Serializable {
+    private static final long serialVersionUID = 1251403740600830972L;
     private ArrayList<Sequence> sequences;
 
-    public FileSequences(String fileName) {
+    FileSequences(String fileName) {
         sequences = new ArrayList<Sequence>();
         createFileSequences(fileName);
     }

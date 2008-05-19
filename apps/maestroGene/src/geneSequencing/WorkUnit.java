@@ -4,28 +4,27 @@ import java.util.ArrayList;
 
 import neobio.alignment.ScoringScheme;
 
-/*
+/**
  * Created on Nov 17, 2006
  */
-
 public class WorkUnit implements java.io.Serializable {
-    public String alignmentAlgorithm;
+    public final String alignmentAlgorithm;
 
-    public int scoresOrAlignments;
+    public final int scoresOrAlignments;
 
-    public ScoringScheme scoringScheme;
+    public final ScoringScheme scoringScheme;
 
     public ArrayList<Sequence> querySequences;
 
     public ArrayList<Sequence> databaseSequences;
 
-    public int maxScores;
+    public final int maxScores;
 
-    public int threshold;
+    public final int threshold;
 
-    public WorkUnit(String alignmentAlgorithm, int scoresOrAlignments,
-            ScoringScheme scoringScheme, ArrayList<Sequence> querySequences,
-            ArrayList<Sequence> databaseSequences, int maxScores, int threshold) {
+    public WorkUnit(final String alignmentAlgorithm, final int scoresOrAlignments,
+            final ScoringScheme scoringScheme, final ArrayList<Sequence> querySequences,
+            final ArrayList<Sequence> databaseSequences, final int maxScores, final int threshold) {
         super();
         this.alignmentAlgorithm = alignmentAlgorithm;
         this.scoresOrAlignments = scoresOrAlignments;
@@ -36,8 +35,8 @@ public class WorkUnit implements java.io.Serializable {
         this.threshold = threshold;
     }
 
-    public WorkUnit splitQuerySequences(int begin, int end) {
-        ArrayList<Sequence> newQuerySequences = new ArrayList<Sequence>();
+    public WorkUnit splitQuerySequences(final int begin, final int end) {
+        final ArrayList<Sequence> newQuerySequences = new ArrayList<Sequence>();
 
         for (int i = begin; i < end; i++) {
             newQuerySequences.add(querySequences.get(i));
@@ -47,8 +46,8 @@ public class WorkUnit implements java.io.Serializable {
                 threshold);
     }
 
-    public WorkUnit splitDatabaseSequences(int begin, int end) {
-        ArrayList<Sequence> newDatabaseSequences = new ArrayList<Sequence>();
+    public WorkUnit splitDatabaseSequences(final int begin, final int end) {
+        final ArrayList<Sequence> newDatabaseSequences = new ArrayList<Sequence>();
 
         for (int i = begin; i < end; i++) {
             newDatabaseSequences.add(databaseSequences.get(i));
@@ -58,8 +57,8 @@ public class WorkUnit implements java.io.Serializable {
                 threshold);
     }
     
-    public ArrayList<WorkUnit> generateWorkUnits(int threshold) {
-        ArrayList<WorkUnit> res = new ArrayList<WorkUnit>();
+    public ArrayList<WorkUnit> generateWorkUnits(final int threshold) {
+        final ArrayList<WorkUnit> res = new ArrayList<WorkUnit>();
         
         int queryParts = querySequences.size() / threshold;
         if(querySequences.size() % threshold > 0) {
@@ -73,17 +72,17 @@ public class WorkUnit implements java.io.Serializable {
 
         for (int i = 0; i < queryParts; i++) {
             for (int j = 0; j < databaseParts; j++) {
-                ArrayList<Sequence> newQuerySequences = new ArrayList<Sequence>();
-                ArrayList<Sequence> newDatabaseSequences = new ArrayList<Sequence>();
+                final ArrayList<Sequence> newQuerySequences = new ArrayList<Sequence>();
+                final ArrayList<Sequence> newDatabaseSequences = new ArrayList<Sequence>();
 
                 for(int x=0;x<threshold;x++) {
-                    int pos = i * threshold + x;
+                    final int pos = i * threshold + x;
                     if(pos >= querySequences.size()) continue;
                     newQuerySequences.add(querySequences.get(pos));
                 }
 
                 for(int x=0;x<threshold;x++) {
-                    int pos = j * threshold + x;
+                    final int pos = j * threshold + x;
                     if(pos >= databaseSequences.size()) continue;
                     newDatabaseSequences.add(databaseSequences.get(pos));
                 }
@@ -98,7 +97,7 @@ public class WorkUnit implements java.io.Serializable {
     }
     
     public String toString() {
-        String res = "workunit: alg = " + alignmentAlgorithm
+        final String res = "workunit: alg = " + alignmentAlgorithm
         + " sOrA = " + scoresOrAlignments
         + " scheme = " + scoringScheme
         + " maxScores = " + maxScores

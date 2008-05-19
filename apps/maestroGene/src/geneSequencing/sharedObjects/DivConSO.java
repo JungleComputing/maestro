@@ -12,7 +12,7 @@ public class DivConSO extends ibis.satin.SatinObject implements
     public DivConSO() {
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({ "unchecked", "cast" })
     public ArrayList<ResSeq> spawn_splitQuerySequences(WorkUnit workUnit,
         SharedData sharedData, int startQuery, int endQuery, int startDatabase,
         int EndDatabase) {

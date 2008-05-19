@@ -155,7 +155,7 @@ public class ScoringMatrix extends ScoringScheme
 		in.eolIsSignificant(true);
 
 		// skip blank lines (if any)
-		for (in.nextToken(); in.ttype == StreamTokenizer.TT_EOL; in.nextToken());
+		for (in.nextToken(); in.ttype == StreamTokenizer.TT_EOL; in.nextToken()) /* nothing */;
 
 		// read first row: column character codes
 		while ((in.ttype != StreamTokenizer.TT_EOF) &&

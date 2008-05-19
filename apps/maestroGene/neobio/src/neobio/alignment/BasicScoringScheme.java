@@ -46,6 +46,8 @@ package neobio.alignment;
  */
 public class BasicScoringScheme extends ScoringScheme
 {
+    private static final long serialVersionUID = 2402516987046724464L;
+
 	/**
 	 * The reward for a match (a substitution of equal characters).
 	 */
