@@ -1,5 +1,6 @@
 package util.config;
 
+import image.Image;
 import image.ImageQueue;
 
 import java.io.Serializable;
@@ -14,12 +15,12 @@ class Component implements Serializable {
     private final String name;
     private final Class clazz;
     
-    private final Class inputType;
-    private final Class outputType;
+    private final Class<? extends Image> inputType;
+    private final Class<? extends Image> outputType;
     
     private final HashMap<String, String> options = new HashMap<String, String>();
     
-    public Component(String name, Class clazz, Class inputType, Class outputType) { 
+    public Component(String name, Class clazz, Class<? extends Image> inputType, Class<? extends Image> outputType) { 
         this.name = name;
         this.clazz = clazz;
         this.inputType = inputType;
@@ -54,11 +55,11 @@ class Component implements Serializable {
         return (outputType != null);
     }
    
-    public Class getInputType() {
+    public Class<? extends Image> getInputType() {
         return inputType;
     }
 
-    public Class getOutputType() {
+    public Class<? extends Image> getOutputType() {
         return outputType;
     }
     
@@ -78,9 +79,8 @@ class Component implements Serializable {
         return false;
         
     }
-    
-    @SuppressWarnings("unchecked")
-    public ProcessorThread create(String name, ImageQueue in, ImageQueue out, 
+
+    public ProcessorThread create(String nm, ImageQueue in, ImageQueue out, 
             HashMap<String, String> options) throws Exception {
       
         try {
@@ -89,7 +89,7 @@ class Component implements Serializable {
                     ImageQueue.class, HashMap.class } );
             
             return (ProcessorThread) m.invoke(null, 
-                    new Object [] { name, in, out, options }); 
+                    new Object [] { nm, in, out, options }); 
      
         } catch (Exception e) {
             throw new Exception("Failed to create processor!", e);

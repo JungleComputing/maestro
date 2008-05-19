@@ -22,19 +22,19 @@ public class ToRGB48 extends ImageProcessor<UncompressedImage, UncompressedImage
 
         while (i != null) {
             try { 
-                long t1 = System.currentTimeMillis();
+                final long t1 = System.currentTimeMillis();
 
                 if (i instanceof RGB24Image) { 
                     i = Convert.toRGB48((RGB24Image) i);
                 }
                 
-                long t2 = System.currentTimeMillis();
+                final long t2 = System.currentTimeMillis();
                 
                 processedImage(i.number, t2-t1, i.getSize(), i.getSize(), out.putMayBlock());
                 
                 out.put(i);
                 
-            } catch (Exception e) { 
+            } catch (final Exception e) { 
                 logger.warn("Failed to handle " + i.number, e);
             }
 
@@ -44,11 +44,11 @@ public class ToRGB48 extends ImageProcessor<UncompressedImage, UncompressedImage
         out.setDone();
     }
     
-    public static Class getInputQueueType() {
+    public static Class<UncompressedImage> getInputQueueType() {
         return UncompressedImage.class;
     }
 
-    public static Class getOutputQueueType() {
+    public static Class<UncompressedImage> getOutputQueueType() {
         return UncompressedImage.class;
     }    
     

@@ -22,6 +22,7 @@ public class StreamCombiner extends ImageConsumer<CompressedImage> {
         this.out = out;
     }
     
+    @Override
     public void process() { 
 
         CompressedImage i = in.get();
@@ -53,9 +54,8 @@ public class StreamCombiner extends ImageConsumer<CompressedImage> {
             i = in.get();
         }
     }
-    
-    @SuppressWarnings("unchecked")
-    public static Class getInputQueueType() {
+
+    public static Class<CompressedImage> getInputQueueType() {
         return CompressedImage.class;
     }
     
@@ -64,7 +64,7 @@ public class StreamCombiner extends ImageConsumer<CompressedImage> {
     }
     
     public static StreamCombiner create(ComponentDescription c,
-            ImageQueue<CompressedImage> in, ImageQueue out, 
+            ImageQueue<CompressedImage> in, ImageQueue<CompressedImage> out, 
             StatisticsCallback publisher) 
         throws Exception {
    

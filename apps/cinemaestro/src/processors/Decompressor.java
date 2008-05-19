@@ -105,7 +105,7 @@ public class Decompressor extends ImageProcessor<CompressedImage, UncompressedIm
     }
 
     @SuppressWarnings("unchecked")
-    public static Class getOutputQueueType() {
+    public static Class<UncompressedImage> getOutputQueueType() {
         return UncompressedImage.class;
     }    
     

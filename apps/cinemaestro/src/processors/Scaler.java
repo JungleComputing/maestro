@@ -26,6 +26,7 @@ public class Scaler extends ImageProcessor<UncompressedImage, UncompressedImage>
         this.bits = bits;
     }
     
+    @Override
     public void process() { 
 
         UncompressedImage i = in.get();

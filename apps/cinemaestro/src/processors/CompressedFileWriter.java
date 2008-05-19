@@ -60,9 +60,9 @@ public class CompressedFileWriter extends ImageConsumer<CompressedImage> {
         //        logger.warn("Got wrong image " + i.number + " expected " + next);
         //    }
             
-            String name = getName(i.number);
+            String nm = getName(i.number);
             
-            File file = new File(dir, name);        
+            File file = new File(dir, nm);        
             
             long t1 = System.currentTimeMillis();
             
@@ -71,8 +71,8 @@ public class CompressedFileWriter extends ImageConsumer<CompressedImage> {
                 raf.write((byte []) i.getData());
                 raf.close();
             } catch (Exception e) { 
-                System.out.println("[*] ERROR (" + name 
-                        + "): failed to write " + name);
+                System.out.println("[*] ERROR (" + nm 
+                        + "): failed to write " + nm);
                 e.printStackTrace();
             }
 

@@ -178,7 +178,7 @@ public class UncompressedFileReader extends ImageProducer<UncompressedImage> {
         return null;
     }
     
-    public static Class getOutputQueueType() {
+    public static Class<UncompressedImage> getOutputQueueType() {
         return UncompressedImage.class;
     }    
     

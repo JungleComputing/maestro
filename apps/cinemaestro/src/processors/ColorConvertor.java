@@ -53,11 +53,11 @@ public class ColorConvertor extends ImageProcessor<UncompressedImage, Uncompress
         out.setDone();
     }
     
-    public static Class getInputQueueType() {
+    public static Class<UncompressedImage> getInputQueueType() {
         return UncompressedImage.class;
     }
 
-    public static Class getOutputQueueType() {
+    public static Class<UncompressedImage> getOutputQueueType() {
         return UncompressedImage.class;
     }    
     

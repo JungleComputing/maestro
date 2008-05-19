@@ -38,24 +38,24 @@ public class UncompressedFileWriter extends ImageConsumer<UncompressedImage> {
         
         long tmp = 10;
         
-        String name = out.getPrefix();
+        String nm = out.getPrefix();
         
         for (int i=1;i<out.getPositions();i++) { 
             if (number < tmp) {
-                name += "0";
+                nm += "0";
             }
             
             tmp = tmp * 10;
         }
         
-        return name + number + out.getPostfix();
+        return nm + number + out.getPostfix();
     }
     
     private DataOutputStream openFile(long number) throws FileNotFoundException { 
     
-        String name = getName(number);
+        String nm = getName(number);
         
-        File file = new File(dir, name);        
+        File file = new File(dir, nm);        
         FileOutputStream fs = new FileOutputStream(file);
         return new DataOutputStream(new BufferedOutputStream(fs));
     }    
@@ -121,7 +121,7 @@ public class UncompressedFileWriter extends ImageConsumer<UncompressedImage> {
         }
     }
 
-    public static Class getInputQueueType() {
+    public static Class<UncompressedImage> getInputQueueType() {
         return UncompressedImage.class;
     }
 

@@ -35,7 +35,7 @@ public class Discarder extends ImageConsumer {
         return null;
     }
     
-    public static Discarder create(ComponentDescription c,ImageQueue in, ImageQueue out, 
+    public static Discarder create(ComponentDescription c,ImageQueue<? extends Image> in, ImageQueue out, 
             StatisticsCallback publisher) 
         throws Exception {
    

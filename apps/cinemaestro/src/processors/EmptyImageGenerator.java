@@ -54,6 +54,7 @@ public class EmptyImageGenerator extends ImageProducer<UncompressedImage> {
         }  
     }
     
+    @Override
     public void process() {
 
         long last = 0;

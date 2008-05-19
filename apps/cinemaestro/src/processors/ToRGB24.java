@@ -16,6 +16,7 @@ public class ToRGB24 extends ImageProcessor<UncompressedImage, UncompressedImage
         super(componentNumber, "ToRGB24", name, in, out, publisher);
     }
     
+    @Override
     public void process() { 
 
         UncompressedImage i = in.get();
@@ -44,11 +45,11 @@ public class ToRGB24 extends ImageProcessor<UncompressedImage, UncompressedImage
         out.setDone();
     }
     
-    public static Class getInputQueueType() {
+    public static Class<UncompressedImage> getInputQueueType() {
         return UncompressedImage.class;
     }
 
-    public static Class getOutputQueueType() {
+    public static Class<UncompressedImage> getOutputQueueType() {
         return UncompressedImage.class;
     }    
     
