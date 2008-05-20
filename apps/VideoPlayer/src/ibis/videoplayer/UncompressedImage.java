@@ -2,9 +2,9 @@ package ibis.videoplayer;
 
 import java.awt.image.BufferedImage;
 
-public abstract class UncompressedImage extends Image {
+abstract class UncompressedImage extends Image {
 
-    public UncompressedImage(int width, int height, int frameno) {
+    UncompressedImage(int width, int height, int frameno) {
         super(width, height, frameno);
     }
 

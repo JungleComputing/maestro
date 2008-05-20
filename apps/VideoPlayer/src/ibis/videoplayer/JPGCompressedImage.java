@@ -1,6 +1,6 @@
 package ibis.videoplayer;
 
-public class JPGCompressedImage extends CompressedImage {
+class JPGCompressedImage extends CompressedImage {
 
     /** 
      * Generated
@@ -9,7 +9,7 @@ public class JPGCompressedImage extends CompressedImage {
 
     private final byte [] data;
     
-    public JPGCompressedImage( int width, int height, int frameno, byte [] data) {
+    JPGCompressedImage( int width, int height, int frameno, byte [] data) {
         super( width, height, frameno );
         this.data = data;
     }

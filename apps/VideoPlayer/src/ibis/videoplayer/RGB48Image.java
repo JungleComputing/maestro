@@ -1,9 +1,7 @@
 package ibis.videoplayer;
 
-import java.awt.Point;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
-import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
@@ -20,6 +18,7 @@ class RGB48Image extends UncompressedImage {
     final short r[];
     final short g[];
     final short b[];
+
     RGB48Image( int frameno, int width, int height, short r[], short g[], short b[] )
     {
         super( width, height, frameno );
@@ -38,6 +37,7 @@ class RGB48Image extends UncompressedImage {
 	return "frame " + frameno + " " + width + "x" + height;
     }
 
+    @Override
     Image scale()
     {
         if( Settings.traceScaler ){

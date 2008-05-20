@@ -2,6 +2,7 @@ package ibis.videoplayer;
 
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
@@ -9,11 +10,11 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 
-public class JPEGCompressor implements ImageCompressor {    
+class JPEGCompressor implements ImageCompressor {    
     private ImageWriter writer;
    // private JPEGImageWriteParam writeParam;
     
-    public JPEGCompressor() { 
+    JPEGCompressor() { 
     
         //      Get a TIFF reader and set its input to the written TIFF image.
              
@@ -22,7 +23,13 @@ public class JPEGCompressor implements ImageCompressor {
         //writeParam.setCompressionQuality(90);
     }
     
-    public CompressedImage addImage(UncompressedImage image) throws Exception {
+    /** FIXME. (Overrides method in superclass.)
+     * @param image The uncompressed image.
+     * @return The compressed image.
+     * @throws IOException 
+     */
+    public CompressedImage compress(UncompressedImage image) throws IOException
+    {
 
         BufferedImage b = image.toBufferedImage();
       
@@ -48,14 +55,5 @@ public class JPEGCompressor implements ImageCompressor {
       //  System.out.println("Compression " + image.width + "x" + image.height + " from " + image.getSize() + " to " + tmp.length + " bytes.");
         
         return new JPGCompressedImage( image.width, image.height, image.frameno, tmp ); 
-    }
-
-    public CompressedImage flush() throws Exception {
-        // Nothing to do here...
-        return null;
-    }
-
-    public String getType() {
-        return "JPG";
     }
 }
