@@ -1,12 +1,13 @@
 package ibis.videoplayer;
 
 import java.awt.image.BandedSampleModel;
-import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
+
+import javax.imageio.IIOImage;
+import javax.imageio.metadata.IIOMetadata;
 
 /**
  * A video frame.
@@ -97,13 +98,16 @@ class RGB48Image extends UncompressedImage {
     }
 
     @Override
-    BufferedImage toBufferedImage() {
+    IIOImage toIIOImage()
+    {
         short buffers[][] = new short[][] { r, g, b };
         DataBuffer buffer = new DataBufferUShort( buffers, r.length );
         SampleModel sampleModel = new BandedSampleModel( buffer.getDataType(), width, height, 3 );
-        WritableRaster raster = Raster.createWritableRaster( sampleModel, buffer, null );
+        Raster raster = Raster.createRaster( sampleModel, buffer, null );
+        IIOMetadata metadata = null;
+        IIOImage image = new IIOImage( raster, null, metadata ); 
         //return new BufferedImage( raster );
         // FIXME: somehow create a buffered image.
-        return null;
+        return image;
     }
 }

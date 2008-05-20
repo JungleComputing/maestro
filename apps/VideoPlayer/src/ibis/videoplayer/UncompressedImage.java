@@ -1,6 +1,6 @@
 package ibis.videoplayer;
 
-import java.awt.image.BufferedImage;
+import javax.imageio.IIOImage;
 
 abstract class UncompressedImage extends Image {
 
@@ -8,6 +8,6 @@ abstract class UncompressedImage extends Image {
         super(width, height, frameno);
     }
 
-    abstract BufferedImage toBufferedImage();
+    abstract IIOImage toIIOImage();
 
 }
