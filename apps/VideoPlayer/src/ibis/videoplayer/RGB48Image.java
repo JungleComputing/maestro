@@ -1,21 +1,16 @@
 package ibis.videoplayer;
 
-import java.awt.color.ColorSpace;
 import java.awt.image.BandedSampleModel;
-import java.awt.image.BufferedImage;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 
 import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
 import javax.imageio.metadata.IIOMetadata;
 
 /**
@@ -176,27 +171,26 @@ class RGB48Image extends UncompressedImage {
     @Override
     void write( File f ) throws IOException
     {
-        short buffers[][] = new short[][] { b, g, r };
-        DataBuffer buffer = new DataBufferUShort( buffers, r.length );
-        SampleModel sampleModel = new BandedSampleModel( buffer.getDataType(), width, height, 3 );
-        int bits[] = new int[] { 16, 16, 16 };
-        final ColorSpace colorSpace = ColorSpace.getInstance( ColorSpace.CS_sRGB );
-        ComponentColorModel cm = new ComponentColorModel( colorSpace, bits, false, false, ComponentColorModel.OPAQUE, 0 ); 
-        System.out.println( "cm=" + cm );
-        WritableRaster raster = Raster.createWritableRaster( sampleModel, buffer, null );
-        BufferedImage bi = new BufferedImage( cm, raster, false, null );
-        ImageIO.write( bi, "png", f );
-    }
-
-    private static byte[] makeByteSamples( short a[] )
-    {
-        byte res[] = new byte[a.length];
-        
-        for( int i=0; i<a.length; i++ ){
-            int val = (a[i] & 0xFFFF);
-            res[i] = (byte) ((val+127)/256);
+        FileOutputStream stream = new FileOutputStream( f );
+        String header = "P6\n" + width + ' ' + height + "\n65535\n";
+        stream.write( header.getBytes() );
+        byte buffer[] = new byte[2*3];
+        int ix = 0;
+        for( int h=0; h<height; h++ ) {
+            for( int w=0; w<width; w++ ) {
+        	int v = r[ix];
+        	buffer[0] = (byte) ((v>>8) & 0xFF);
+        	buffer[1] = (byte) (v & 0xFF);
+        	v = g[ix];
+        	buffer[2] = (byte) ((v>>8) & 0xFF);
+        	buffer[3] = (byte) (v & 0xFF);
+        	v = b[ix];
+        	buffer[4] = (byte) ((v>>8) & 0xFF);
+        	buffer[5] = (byte) (v & 0xFF);
+        	stream.write( buffer );
+            }
         }
-        return res;
+        stream.close();
     }
     
     private static short[] fillChannel( int width, int height, short val )
@@ -213,6 +207,17 @@ class RGB48Image extends UncompressedImage {
         short g[] = fillChannel( width, height, vg );
         short b[] = fillChannel( width, height, vb );
         return new RGB48Image( frameno, width, height, r, g, b );
+    }
+
+    private static byte[] makeByteSamples( short a[] )
+    {
+        byte res[] = new byte[a.length];
+        
+        for( int i=0; i<a.length; i++ ){
+            int val = (a[i] & 0xFFFF);
+            res[i] = (byte) ((val+127)/256);
+        }
+        return res;
     }
 
     RGB24Image buildRGB24Image()

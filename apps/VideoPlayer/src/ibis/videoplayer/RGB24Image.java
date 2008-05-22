@@ -3,10 +3,12 @@ package ibis.videoplayer;
 import java.awt.image.BandedSampleModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
-import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Arrays;
 
 import javax.imageio.IIOImage;
 import javax.imageio.metadata.IIOMetadata;
@@ -161,13 +163,44 @@ class RGB24Image extends UncompressedImage {
         IIOImage image = new IIOImage( raster, null, metadata ); 
         return image;
     }
-    
-    /** Writes this image to the given file. */
+
+    /**
+     * Writes this image to the given file.
+     * The file will be written in ppm format.
+     * @param f The file to write to.
+     */
     @Override
-    void write( File f )
+    void write( File f ) throws IOException
     {
+        FileOutputStream stream = new FileOutputStream( f );
+        String header = "P6\n" + width + ' ' + height + "\n255\n";
+        stream.write( header.getBytes() );
+        int ix = 0;
+        for( int h=0; h<height; h++ ) {
+            for( int w=0; w<width; w++ ) {
+        	stream.write( r[ix] );
+        	stream.write( g[ix] );
+        	stream.write( b[ix] );
+            }
+        }
+        stream.close();
+    }
+    
+    private static byte[] fillChannel( int width, int height, int val )
+    {
+        byte res[] = new byte[width*height];
+
+        Arrays.fill( res, (byte) val );
+        return res;
     }
 
+    static RGB24Image fillImage( int frameno, int width, int height, int vr, int vg, int vb )
+    {
+        byte r[] = fillChannel( width, height, vr );
+        byte g[] = fillChannel( width, height, vg );
+        byte b[] = fillChannel( width, height, vb );
+        return new RGB24Image( frameno, width, height, r, g, b );
+    }
 
     static UncompressedImage convert( Image img )
     {
