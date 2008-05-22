@@ -2,6 +2,7 @@ package ibis.videoplayer;
 
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
@@ -31,9 +32,10 @@ abstract class UncompressedImage extends Image {
     {
         BufferedImage image = ImageIO.read( f );
         SampleModel sm = image.getSampleModel();
+        int type = sm.getDataType();
         final int width = sm.getWidth();
         final int height = sm.getHeight();
-        WritableRaster raster = Raster.createBandedRaster( DataBuffer.TYPE_USHORT, width, height, sm.getNumBands(), null );
+        WritableRaster raster = Raster.createBandedRaster( type, width, height, sm.getNumBands(), null );
         raster = image.copyData( raster );
         DataBuffer buffer = raster.getDataBuffer();
         if( buffer instanceof DataBufferUShort ){
@@ -42,6 +44,13 @@ abstract class UncompressedImage extends Image {
             short banks[][] = sb.getBankData();
             return new RGB48Image( frameno, width, height, banks[0], banks[1], banks[2] );
         }
+        if( buffer instanceof DataBufferByte ){
+            DataBufferByte sb = (DataBufferByte) buffer;
+            
+            byte banks[][] = sb.getBankData();
+            return new RGB24Image( frameno, width, height, banks[0], banks[1], banks[2] );
+        }
+        System.err.println( "Don't know how to handle data buffer type " + buffer.getClass() );
         return null;
     }
 

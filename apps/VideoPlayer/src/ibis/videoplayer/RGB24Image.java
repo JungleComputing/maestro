@@ -1,21 +1,14 @@
 package ibis.videoplayer;
 
-import java.awt.color.ColorSpace;
 import java.awt.image.BandedSampleModel;
-import java.awt.image.BufferedImage;
-import java.awt.image.ComponentColorModel;
-import java.awt.image.ComponentSampleModel;
 import java.awt.image.DataBuffer;
+import java.awt.image.DataBufferByte;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
-import java.awt.image.WritableRaster;
 import java.io.File;
-import java.io.IOException;
-import java.util.Arrays;
 
 import javax.imageio.IIOImage;
-import javax.imageio.ImageIO;
 import javax.imageio.metadata.IIOMetadata;
 
 /**
@@ -23,17 +16,17 @@ import javax.imageio.metadata.IIOMetadata;
  * 
  * @author Kees van Reeuwijk
  */
-class RGB48Image extends UncompressedImage {
+class RGB24Image extends UncompressedImage {
     private static final long serialVersionUID = 8797700803728846092L;
     /**
      * The channels of the image. Each channel stores its values consecutively in one
      * large array row by row from top to bottom.
      */
-    final short r[];
-    final short g[];
-    final short b[];
+    final byte r[];
+    final byte g[];
+    final byte b[];
 
-    RGB48Image( int frameno, int width, int height, short r[], short g[], short b[] )
+    RGB24Image( int frameno, int width, int height, byte[] r, byte[] g, byte[] b )
     {
         super( width, height, frameno );
 	this.r = r;
@@ -48,7 +41,7 @@ class RGB48Image extends UncompressedImage {
     @Override
     public String toString()
     {
-	return "frame " + frameno + " RGB48 " + width + "x" + height;
+	return "frame " + frameno + " RGB24 " + width + "x" + height;
     }
     
     /**
@@ -84,13 +77,13 @@ class RGB48Image extends UncompressedImage {
      * @param factor The scale-down factor to apply.
      * @return The scaled-down image.
      */
-    private short[] scaleChannel( short channel[], int w, int h, int factor )
+    private byte[] scaleChannel( byte channel[], int w, int h, int factor )
     {
         int weight = factor*factor;
         int wt2 = weight/2;  // Used for rounding.
         int swidth = w/factor;
         int sheight = h/factor;
-        short res[] = new short[swidth*sheight];
+        byte res[] = new byte[swidth*sheight];
         
         int ix = 0;
         for( int x=0; x<swidth; x++ ){
@@ -107,7 +100,7 @@ class RGB48Image extends UncompressedImage {
         	    }
         	    offset += w;
         	}
-        	res[ix++] = (short) ((values+wt2)/weight); // Store rounded value.
+        	res[ix++] = (byte) ((values+wt2)/weight); // Store rounded value.
             }
         }
         return res;
@@ -125,13 +118,13 @@ class RGB48Image extends UncompressedImage {
         if( !checkFactor( height, "height", factor ) ) {
             return null;
         }
-        short outr[] = scaleChannel( r, width, height, factor );
-        short outg[] = scaleChannel( g, width, height, factor );
-        short outb[] = scaleChannel( b, width, height, factor );
+        byte outr[] = scaleChannel( r, width, height, factor );
+        byte outg[] = scaleChannel( g, width, height, factor );
+        byte outb[] = scaleChannel( b, width, height, factor );
         if( Settings.traceScaler ){
             System.out.println( "Scaling " + this + " by factor " + factor );
         }
-        return new RGB48Image( frameno, width/2, height/2, outr, outg, outb );
+        return new RGB24Image( frameno, width/2, height/2, outr, outg, outb );
     }
 
 
@@ -144,14 +137,14 @@ class RGB48Image extends UncompressedImage {
             double vg = fgr*r[i] + fgg*g[i] + fgb*b[i];
             double vb = fbr*r[i] + fbg*g[i] + fbb*b[i];
             
-            r[i] = (short) vr;
-            g[i] = (short) vg;
-            g[i] = (short) vb;
+            r[i] = (byte) vr;
+            g[i] = (byte) vg;
+            g[i] = (byte) vb;
         }
         if( Settings.traceActions ) {
             System.out.println( "Color-corrected " + this );
         }
-        return new RGB48Image( frameno, width, height, r, g, b );
+        return new RGB24Image( frameno, width, height, r, g, b );
     }
 
     /**
@@ -160,8 +153,8 @@ class RGB48Image extends UncompressedImage {
     @Override
     IIOImage toIIOImage()
     {
-        short buffers[][] = new short[][] { b, g, r };
-        DataBuffer buffer = new DataBufferUShort( buffers, r.length );
+        byte buffers[][] = new byte[][] { r, g, b };
+        DataBuffer buffer = new DataBufferByte( buffers, r.length );
         SampleModel sampleModel = new BandedSampleModel( buffer.getDataType(), width, height, 3 );
         Raster raster = Raster.createRaster( sampleModel, buffer, null );
         IIOMetadata metadata = null;
@@ -169,58 +162,22 @@ class RGB48Image extends UncompressedImage {
         return image;
     }
     
-    /** Writes this image to the given file. 
-     * @param f The file to write to.
-     * @throws IOException Thrown if the image cannot be written.
-     */
+    /** Writes this image to the given file. */
     @Override
-    void write( File f ) throws IOException
+    void write( File f )
     {
-        short buffers[][] = new short[][] { b, g, r };
-        DataBuffer buffer = new DataBufferUShort( buffers, r.length );
-        SampleModel sampleModel = new BandedSampleModel( buffer.getDataType(), width, height, 3 );
-        int bits[] = new int[] { 16, 16, 16 };
-        final ColorSpace colorSpace = ColorSpace.getInstance( ColorSpace.CS_sRGB );
-        ComponentColorModel cm = new ComponentColorModel( colorSpace, bits, false, false, ComponentColorModel.OPAQUE, 0 ); 
-        System.out.println( "cm=" + cm );
-        WritableRaster raster = Raster.createWritableRaster( sampleModel, buffer, null );
-        BufferedImage bi = new BufferedImage( cm, raster, false, null );
-        ImageIO.write( bi, "png", f );
     }
 
-    private static byte[] makeByteSamples( short a[] )
+
+    static UncompressedImage convert( Image img )
     {
-        byte res[] = new byte[a.length];
-        
-        for( int i=0; i<a.length; i++ ){
-            int val = (a[i] & 0xFFFF);
-            res[i] = (byte) ((val+127)/256);
+        if( img instanceof RGB48Image ){
+            RGB48Image img48 = (RGB48Image) img;
+            
+            return img48.buildRGB24Image();
         }
-        return res;
-    }
-    
-    private static short[] fillChannel( int width, int height, short val )
-    {
-        short res[] = new short[width*height];
-        
-        Arrays.fill( res, val );
-        return res;
+        System.err.println( "Don't know how to convert a " + img.getClass() + " to a RGB24 image" );
+        return null;
     }
 
-    static RGB48Image fillImage( int frameno, int width, int height, short vr, short vg, short vb )
-    {
-        short r[] = fillChannel( width, height, vr );
-        short g[] = fillChannel( width, height, vg );
-        short b[] = fillChannel( width, height, vb );
-        return new RGB48Image( frameno, width, height, r, g, b );
-    }
-
-    RGB24Image buildRGB24Image()
-    {
-        byte br[] = makeByteSamples( r );
-        byte bg[] = makeByteSamples( g );
-        byte bb[] = makeByteSamples( b );
-        
-        return new RGB24Image( frameno, width, height, br, bg, bb );
-    }
 }
