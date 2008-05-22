@@ -17,6 +17,10 @@ import javax.imageio.metadata.IIOMetadata;
  */
 class RGB48Image extends UncompressedImage {
     private static final long serialVersionUID = 8797700803728846092L;
+    /**
+     * The channels of the image. Each channel stores its values consecutively in one
+     * large array row by row from top to bottom.
+     */
     final short r[];
     final short g[];
     final short b[];
@@ -67,17 +71,17 @@ class RGB48Image extends UncompressedImage {
      * over all pixels in the original.
      * 
      * @param channel The color channel.
-     * @param width The width of the image.
-     * @param height The height of the image.
+     * @param w The width of the image.
+     * @param h The height of the image.
      * @param factor The scale-down factor to apply.
      * @return The scaled-down image.
      */
-    private short[] scaleChannel( short channel[], int width, int height, int factor )
+    private short[] scaleChannel( short channel[], int w, int h, int factor )
     {
         int weight = factor*factor;
-        int w2 = weight/2;  // Used for rounding.
-        int swidth = width/factor;
-        int sheight = height/factor;
+        int wt2 = weight/2;  // Used for rounding.
+        int swidth = w/factor;
+        int sheight = h/factor;
         short res[] = new short[swidth*sheight];
         
         int ix = 0;
@@ -87,15 +91,15 @@ class RGB48Image extends UncompressedImage {
 
         	// Compute the offset in the channel for the first row of pixels.
         	// 
-        	int offset = y*factor*width;
+        	int offset = y*factor*w;
         	for( int ypix=0; ypix<factor; ypix++ ) {
         	    for( int xpix=0; xpix<factor; xpix++ ) {
         		int v = channel[offset+xpix];
         		values += (0xFFFF & v); // Convert to unsigned and add to the average.
         	    }
-        	    offset += width;
+        	    offset += w;
         	}
-        	res[ix++] = (short) ((values+w2)/weight); // Store rounded value.
+        	res[ix++] = (short) ((values+wt2)/weight); // Store rounded value.
             }
         }
         return res;
@@ -142,6 +146,9 @@ class RGB48Image extends UncompressedImage {
         return new RGB48Image( frameno, width, height, r, g, b );
     }
 
+    /**
+     * Returns an IIOImage of this image.
+     */
     @Override
     IIOImage toIIOImage()
     {
@@ -151,8 +158,6 @@ class RGB48Image extends UncompressedImage {
         Raster raster = Raster.createRaster( sampleModel, buffer, null );
         IIOMetadata metadata = null;
         IIOImage image = new IIOImage( raster, null, metadata ); 
-        //return new BufferedImage( raster );
-        // FIXME: somehow create a buffered image.
         return image;
     }
     
