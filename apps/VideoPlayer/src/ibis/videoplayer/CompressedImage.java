@@ -1,6 +1,6 @@
 package ibis.videoplayer;
 
-class CompressedImage extends Image {
+abstract class CompressedImage extends Image {
     private static final long serialVersionUID = -825288928748291555L;
 
     CompressedImage( int width, int height, int frameno )

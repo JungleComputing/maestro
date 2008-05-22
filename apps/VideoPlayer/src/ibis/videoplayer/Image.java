@@ -1,5 +1,7 @@
 package ibis.videoplayer;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.Serializable;
 
 abstract class Image implements Serializable {
@@ -16,4 +18,6 @@ abstract class Image implements Serializable {
     }
 
     abstract Image scale();
+    
+    abstract void write( File f ) throws IOException;
 }

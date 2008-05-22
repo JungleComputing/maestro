@@ -5,6 +5,7 @@ import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferUShort;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
+import java.io.File;
 
 import javax.imageio.IIOImage;
 import javax.imageio.metadata.IIOMetadata;
@@ -109,5 +110,11 @@ class RGB48Image extends UncompressedImage {
         //return new BufferedImage( raster );
         // FIXME: somehow create a buffered image.
         return image;
+    }
+    
+    /** Writes this image to the given file. */
+    @Override
+    void write( File f )
+    {
     }
 }
