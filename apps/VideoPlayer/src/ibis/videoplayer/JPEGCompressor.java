@@ -11,25 +11,16 @@ import javax.imageio.stream.ImageOutputStream;
 
 
 class JPEGCompressor implements ImageCompressor {    
-    private ImageWriter writer;
    // private JPEGImageWriteParam writeParam;
-    
-    JPEGCompressor() { 
-    
-        //      Get a TIFF reader and set its input to the written TIFF image.
-             
-        // Create the write param.
-   //     writeParam = new JPEGImageWriteParam(null);
-        //writeParam.setCompressionQuality(90);
-    }
     
     /** FIXME. (Overrides method in superclass.)
      * @param image The uncompressed image.
      * @return The compressed image.
      * @throws IOException 
      */
-    public CompressedImage compress(UncompressedImage image) throws IOException
+    public static CompressedImage compress(UncompressedImage image) throws IOException
     {
+        ImageWriter writer;
         IIOImage b = image.toIIOImage();
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 

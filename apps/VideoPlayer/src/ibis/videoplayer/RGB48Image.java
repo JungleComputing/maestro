@@ -40,7 +40,7 @@ class RGB48Image extends UncompressedImage {
     @Override
     public String toString()
     {
-	return "frame " + frameno + " " + width + "x" + height;
+	return "frame " + frameno + " RGB48 " + width + "x" + height;
     }
     
     /**
