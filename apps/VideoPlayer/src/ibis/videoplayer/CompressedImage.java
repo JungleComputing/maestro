@@ -9,7 +9,7 @@ abstract class CompressedImage extends Image {
     }
     
     @Override
-    Image scale()
+    Image scaleDown( int factor )
     {
         System.err.println( "Scaling of compressed images not supported" );
         return null;

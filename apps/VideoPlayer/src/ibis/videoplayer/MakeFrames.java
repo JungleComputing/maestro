@@ -14,7 +14,7 @@ class MakeFrames
     static final int FULL_CIRCLE_FRAMES = 25;
     static final String BACKGROUND_COLOR = "skyblue";
 
-    /** Commandline interface.
+    /** Command line interface.
      * @param args The command line arguments
      */
     public static void main( String[] args )
@@ -27,7 +27,7 @@ class MakeFrames
             int endx = centerx + (int) (l*Math.sin( phi ));
             int endy = centery + (int) (l*Math.cos( phi ));
             String filename = String.format( "frame-%05d.png", frame );
-            String command = "convert -size " + WIDTH + 'x' + HEIGHT + " xc:" + BACKGROUND_COLOR + " -fill white -stroke black -draw \"stroke-width 5 stroke-linecap round line " + centerx + ',' + centery + ' ' +  endx + ',' + endy + "\" " + filename;
+            String command = "convert -depth 16 -size " + WIDTH + 'x' + HEIGHT + " xc:" + BACKGROUND_COLOR + " -fill white -stroke black -draw \"stroke-width 5 stroke-linecap round line " + centerx + ',' + centery + ' ' +  endx + ',' + endy + "\" " + filename;
             System.out.println( command );
         }
     }

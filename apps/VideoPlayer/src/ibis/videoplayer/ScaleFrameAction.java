@@ -23,6 +23,6 @@ public class ScaleFrameAction implements Job
     public Object run( Object obj, Node node )
     {
 	Image frame = (Image) obj;
-        return frame.scale();
+        return frame.scaleDown( 2 );
     }
 }

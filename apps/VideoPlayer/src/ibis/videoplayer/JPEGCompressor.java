@@ -50,6 +50,6 @@ class JPEGCompressor implements ImageCompressor {
 
       //  System.out.println("Compression " + image.width + "x" + image.height + " from " + image.getSize() + " to " + tmp.length + " bytes.");
         
-        return new JPGCompressedImage( image.width, image.height, image.frameno, tmp ); 
+        return new JpegCompressedImage( image.width, image.height, image.frameno, tmp ); 
     }
 }

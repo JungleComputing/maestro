@@ -17,7 +17,7 @@ abstract class Image implements Serializable {
         this.frameno = frameno;
     }
 
-    abstract Image scale();
+    abstract Image scaleDown(int i);
     
     abstract void write( File f ) throws IOException;
 }

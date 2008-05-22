@@ -38,42 +38,86 @@ class RGB48Image extends UncompressedImage {
     {
 	return "frame " + frameno + " " + width + "x" + height;
     }
+    
+    /**
+     * Make sure the given dimension is a multiple of the given factor.
+     * If not, use the given name in any error message we generate.
+     * @param dim The dimension to check.
+     * @param name The name of the dimension.
+     * @param factor The factor that should occur in the dimension
+     * @return True iff every checks out ok.
+     */
+    private static boolean checkFactor( int dim, String name, int factor )
+    {
+	if( ((dim/factor)*factor) != dim ) {
+	    System.err.println( "The " + name + " of this image (" + dim + ") is not a multiple of " + factor );
+	    return false;
+	}
+	return true;
+    }
+
+    /**
+     * Given a color channel and the dimensions of the image it belongs to,
+     * and a scale-down factor to apply, return a scaled version of the channel.
+     * We blindly assume that the dimensions of the channel are correct
+     * for the image, and that the dimensions actually allow exact scaling
+     * down with this factor.
+     * 
+     * The scaling down uses a pretty dumb algorithm: unweighted averaging
+     * over all pixels in the original.
+     * 
+     * @param channel The color channel.
+     * @param width The width of the image.
+     * @param height The height of the image.
+     * @param factor The scale-down factor to apply.
+     * @return The scaled-down image.
+     */
+    private short[] scaleChannel( short channel[], int width, int height, int factor )
+    {
+        int weight = factor*factor;
+        int w2 = weight/2;  // Used for rounding.
+        int swidth = width/factor;
+        int sheight = height/factor;
+        short res[] = new short[swidth*sheight];
+        
+        int ix = 0;
+        for( int x=0; x<swidth; x++ ){
+            for( int y=0; y<sheight; y++ ) {
+        	int values = 0; // The sum of the values we're going to average.
+
+        	// Compute the offset in the channel for the first row of pixels.
+        	// 
+        	int offset = y*factor*width;
+        	for( int ypix=0; ypix<factor; ypix++ ) {
+        	    for( int xpix=0; xpix<factor; xpix++ ) {
+        		int v = channel[offset+xpix];
+        		values += (0xFFFF & v); // Convert to unsigned and add to the average.
+        	    }
+        	    offset += width;
+        	}
+        	res[ix++] = (short) ((values+w2)/weight); // Store rounded value.
+            }
+        }
+        return res;
+    }
 
     @Override
-    Image scale()
+    Image scaleDown( int factor )
     {
         if( Settings.traceScaler ){
             System.out.println( "Scaling frame " + frameno );
         }
-        short outr[] = new short[r.length/4];
-        {
-            int ix = 0;
-
-            for( int i=0; i<r.length; i += 4 ){
-                short v = (short) ((r[i] + r[i+1] + r[i+2] + r[i+3])/4);
-                outr[ix++] = v;
-            }
+        if( !checkFactor( width, "width", factor ) ) {
+            return null;
         }
-        short outg[] = new short[g.length/4];
-        {
-            int ix = 0;
-
-            for( int i=0; i<g.length; i += 4 ){
-                short v = (short) ((g[i] + g[i+1] + g[i+2] + g[i+3])/4);
-                outg[ix++] = v;
-            }
+        if( !checkFactor( height, "height", factor ) ) {
+            return null;
         }
-        short outb[] = new short[b.length/4];
-        {
-            int ix = 0;
-
-            for( int i=0; i<b.length; i += 4 ){
-                short v = (short) ((b[i] + b[i+1] + b[i+2] + b[i+3])/4);
-                outb[ix++] = v;
-            }
-        }
+        short outr[] = scaleChannel( r, width, height, factor );
+        short outg[] = scaleChannel( g, width, height, factor );
+        short outb[] = scaleChannel( b, width, height, factor );
         if( Settings.traceScaler ){
-            System.out.println( "Scaling " + this );
+            System.out.println( "Scaling " + this + " by factor " + factor );
         }
         return new RGB48Image( frameno, width/2, height/2, outr, outg, outb );
     }
