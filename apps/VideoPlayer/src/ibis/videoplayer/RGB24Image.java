@@ -165,7 +165,6 @@ class RGB24Image extends UncompressedImage {
      */
     JpegCompressedImage toJpegImage() throws IOException
     {
-        byte nul[] = new byte[r.length];
         byte buffers[][] = new byte[][] { r, g, b };
         DataBuffer buffer = new DataBufferByte( buffers, r.length );
         SampleModel sampleModel = new BandedSampleModel( buffer.getDataType(), width, height, 3 );

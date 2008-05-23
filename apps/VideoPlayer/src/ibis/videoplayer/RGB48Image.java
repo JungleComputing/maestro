@@ -237,7 +237,7 @@ class RGB48Image extends UncompressedImage {
         
         for( int i=0; i<a.length; i++ ){
             int val = (a[i] & 0xFFFF);
-            res[i] = (byte) ((val+127)/256);
+            res[i] = (byte) (val/256);
         }
         return res;
     }
