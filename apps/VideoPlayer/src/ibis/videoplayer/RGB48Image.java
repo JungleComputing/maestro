@@ -1,18 +1,10 @@
 package ibis.videoplayer;
 
-import java.awt.image.BandedSampleModel;
-import java.awt.image.DataBuffer;
-import java.awt.image.DataBufferUShort;
-import java.awt.image.Raster;
-import java.awt.image.SampleModel;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
-
-import javax.imageio.IIOImage;
-import javax.imageio.metadata.IIOMetadata;
 
 /**
  * A video frame.
@@ -36,7 +28,7 @@ class RGB48Image extends UncompressedImage {
 	this.g = g;
 	this.b = b;
     }
-    
+
     /**
      * Returns a string representation of this frame.
      * @return The string representation.
@@ -148,21 +140,6 @@ class RGB48Image extends UncompressedImage {
             System.out.println( "Color-corrected " + this );
         }
         return new RGB48Image( frameno, width, height, r, g, b );
-    }
-
-    /**
-     * Returns an IIOImage of this image.
-     */
-    @Override
-    IIOImage toIIOImage()
-    {
-        short buffers[][] = new short[][] { b, g, r };
-        DataBuffer buffer = new DataBufferUShort( buffers, r.length );
-        SampleModel sampleModel = new BandedSampleModel( buffer.getDataType(), width, height, 3 );
-        Raster raster = Raster.createRaster( sampleModel, buffer, null );
-        IIOMetadata metadata = null;
-        IIOImage image = new IIOImage( raster, null, metadata ); 
-        return image;
     }
 
     /** Writes this image to the given file. 

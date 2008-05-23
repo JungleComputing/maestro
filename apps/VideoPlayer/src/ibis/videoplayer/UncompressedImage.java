@@ -12,7 +12,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
 
 abstract class UncompressedImage extends Image {
@@ -20,8 +19,6 @@ abstract class UncompressedImage extends Image {
     UncompressedImage(int width, int height, int frameno) {
 	super(width, height, frameno);
     }
-
-    abstract IIOImage toIIOImage();
 
     /**
      * Given a file that we know is a PNG file, load it, and return

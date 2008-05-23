@@ -23,6 +23,16 @@ class JpegCompressedImage extends CompressedImage {
     }
 
     /**
+     * Returns a string representation of this frame.
+     * @return The string representation.
+     */
+    @Override
+    public String toString()
+    {
+        return "frame " + frameno + " JPEG " + width + "x" + height;
+    }
+
+    /**
      * Writes the image to the given file.
      * @param f The file to write to.
      */
@@ -106,5 +116,16 @@ class JpegCompressedImage extends CompressedImage {
 	// Close the input stream and return bytes
 	is.close();
 	return new JpegCompressedImage( width, height, frameno, bytes );
+    }
+
+    static JpegCompressedImage convert( Image img ) throws IOException
+    {
+        if( img instanceof RGB24Image ){
+            RGB24Image img24 = (RGB24Image) img;
+
+            return img24.toJpegImage();
+        }
+        System.err.println( "Don't know how to convert a " + img.getClass() + " to a JPeg image" );
+        return null;
     }
 }

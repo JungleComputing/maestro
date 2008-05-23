@@ -17,15 +17,15 @@ public class Tester {
      */
     public static void main(String[] args) {
         try {
-            UncompressedImage img = UncompressedImage.load( new File( "foto2.ppm" ), 0 );
-            System.out.println( "read image " + img );
-            img.write( new File( "test.ppm" ) );
+            UncompressedImage img24 = UncompressedImage.load( new File( "foto1.ppm" ), 0 );
+            System.out.println( "read image " + img24 );
 //            System.out.println( "read image " + img );
 //            img.write( new File( "test-out.png" ) );
 //            UncompressedImage img24 = RGB24Image.convert( img );
 //            System.out.println( "downsampled to image " + img24 );
-//            CompressedImage cimg = JPEGCompressor.compress( img24 );
-//            cimg.write( new File( "test.jpg" ) );
+            CompressedImage cimg = JpegCompressedImage.convert( img24 );
+            System.out.println( "compressed to " + cimg );
+            cimg.write( new File( "test.jpg" ) );
             System.out.println( "Finished" );
         } catch (IOException e) {
             e.printStackTrace();

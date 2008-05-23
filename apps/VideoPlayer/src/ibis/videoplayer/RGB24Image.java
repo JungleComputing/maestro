@@ -1,18 +1,26 @@
 package ibis.videoplayer;
 
+import java.awt.Transparency;
+import java.awt.color.ColorSpace;
 import java.awt.image.BandedSampleModel;
+import java.awt.image.BufferedImage;
+import java.awt.image.ColorModel;
+import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.Iterator;
 
-import javax.imageio.IIOImage;
-import javax.imageio.metadata.IIOMetadata;
+import javax.imageio.ImageIO;
+import javax.imageio.ImageWriter;
+import javax.imageio.stream.ImageOutputStream;
 
 /**
  * A video frame.
@@ -152,18 +160,37 @@ class RGB24Image extends UncompressedImage {
     }
 
     /**
-     * Returns an IIOImage of this image.
+     * Returns a JPeg compressed version of this image.
+     * @throws IOException Thrown if the conversion causes an I/O error
      */
-    @Override
-    IIOImage toIIOImage()
+    JpegCompressedImage toJpegImage() throws IOException
     {
+        byte nul[] = new byte[r.length];
         byte buffers[][] = new byte[][] { r, g, b };
         DataBuffer buffer = new DataBufferByte( buffers, r.length );
         SampleModel sampleModel = new BandedSampleModel( buffer.getDataType(), width, height, 3 );
-        Raster raster = Raster.createRaster( sampleModel, buffer, null );
-        IIOMetadata metadata = null;
-        IIOImage image = new IIOImage( raster, null, metadata ); 
-        return image;
+        int bits[] = new int[] { 8, 8, 8 };
+        ColorModel colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ), bits, false, false, Transparency.OPAQUE, buffer.getDataType() );
+        BufferedImage img = new BufferedImage( colorModel, Raster.createWritableRaster( sampleModel, buffer, null ), false, null );
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+
+        ImageIO.setUseCache( false );
+        ImageOutputStream output = ImageIO.createImageOutputStream(out);
+        Iterator<?> writers = ImageIO.getImageWritersByFormatName( "jpg" );
+
+        if( writers == null || !writers.hasNext() ){
+            throw new RuntimeException( "No jpeg writers!" );
+        }
+        ImageWriter writer = (ImageWriter) writers.next();
+        writer.setOutput( output );
+        writer.write( img );
+        writer.dispose();
+
+        byte [] tmp = out.toByteArray();
+
+      //  System.out.println("Compression " + image.width + "x" + image.height + " from " + image.getSize() + " to " + tmp.length + " bytes.");
+        
+        return new JpegCompressedImage( width, height, frameno, tmp ); 
     }
 
     /**
@@ -249,7 +276,7 @@ class RGB24Image extends UncompressedImage {
         return new RGB24Image( frameno, width, height, r, g, b );
     }
 
-    static UncompressedImage convert( Image img )
+    static RGB24Image convert( Image img )
     {
         if( img instanceof RGB48Image ){
             RGB48Image img48 = (RGB48Image) img;
