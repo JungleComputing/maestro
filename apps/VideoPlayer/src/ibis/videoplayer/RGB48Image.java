@@ -175,22 +175,23 @@ class RGB48Image extends UncompressedImage {
         FileOutputStream stream = new FileOutputStream( f );
         String header = "P6\n" + width + ' ' + height + "\n65535\n";
         stream.write( header.getBytes() );
-        byte buffer[] = new byte[2*3];
+        byte buffer[] = new byte[2*3*width];
         int ix = 0;
         for( int h=0; h<height; h++ ) {
+            int bufix = 0;
             for( int w=0; w<width; w++ ) {
         	int v = r[ix];
-        	buffer[0] = (byte) ((v>>8) & 0xFF);
-        	buffer[1] = (byte) (v & 0xFF);
+        	buffer[bufix++] = (byte) ((v>>8) & 0xFF);
+        	buffer[bufix++] = (byte) (v & 0xFF);
         	v = g[ix];
-        	buffer[2] = (byte) ((v>>8) & 0xFF);
-        	buffer[3] = (byte) (v & 0xFF);
+        	buffer[bufix++] = (byte) ((v>>8) & 0xFF);
+        	buffer[bufix++] = (byte) (v & 0xFF);
         	v = b[ix];
-        	buffer[4] = (byte) ((v>>8) & 0xFF);
-        	buffer[5] = (byte) (v & 0xFF);
-        	stream.write( buffer );
+        	buffer[bufix++] = (byte) ((v>>8) & 0xFF);
+        	buffer[bufix++] = (byte) (v & 0xFF);
         	ix++;
             }
+            stream.write( buffer );
         }
         stream.close();
     }

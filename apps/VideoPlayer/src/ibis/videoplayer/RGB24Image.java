@@ -178,12 +178,16 @@ class RGB24Image extends UncompressedImage {
         String header = "P6\n" + width + ' ' + height + "\n255\n";
         stream.write( header.getBytes() );
         int ix = 0;
+        byte buffer[] = new byte[3*width];
         for( int h=0; h<height; h++ ) {
+            int bufix = 0;
             for( int w=0; w<width; w++ ) {
-                stream.write( r[ix] );
-                stream.write( g[ix] );
-                stream.write( b[ix] );
+                buffer[bufix++] = r[ix];
+                buffer[bufix++] = g[ix];
+                buffer[bufix++] = b[ix];
+                ix++;
             }
+            stream.write( buffer );
         }
         stream.close();
     }

@@ -17,7 +17,7 @@ public class Tester {
      */
     public static void main(String[] args) {
         try {
-            UncompressedImage img = UncompressedImage.load( new File( "foto1.ppm" ), 0 );
+            UncompressedImage img = UncompressedImage.load( new File( "foto2.ppm" ), 0 );
             System.out.println( "read image " + img );
             img.write( new File( "test.ppm" ) );
 //            System.out.println( "read image " + img );
