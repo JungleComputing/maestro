@@ -10,6 +10,7 @@ import java.awt.image.WritableRaster;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -84,6 +85,33 @@ abstract class UncompressedImage extends Image {
     {
 	return (short) ((low & 0xFF) + (high & 0xFF)*256);
     }
+    
+    /**
+     * Keep reading bytes from the given stream until the entire buffer has been filled.
+     * We might have to give up, however, if end of file is reached. In that case <code>false</code>
+     * is returned, and the buffer is necessarily only partially filled. Since this is an error
+     * situation, we don't bother to pass on how much of the buffer was filled.
+     * @param stream The stream to read from.
+     * @param buffer The buffer to fill.
+     * @return True iff we managed to fill the entire buffer.
+     * @throws IOException Thrown if there is a read error.
+     */
+    private static boolean readBuffer( InputStream stream, byte buffer[] ) throws IOException
+    {
+        int offset = 0;
+        
+        while( true ) {
+            int n = stream.read( buffer, offset, buffer.length-offset );
+            if( n<0 ) {
+                return false;
+            }
+            offset += n;
+            if( offset>=buffer.length ) {
+                break;
+            }
+        }
+        return true;
+    }
 
     /**
      * Given a file that we know is a PPM file, load it, and return
@@ -125,15 +153,19 @@ abstract class UncompressedImage extends Image {
 	    byte r[] = new byte[width*height];
 	    byte g[] = new byte[width*height];
 	    byte b[] = new byte[width*height];
-	    byte buf[] = new byte[3];
+	    byte buf[] = new byte[3*width];
 
 	    int ix = 0;
 	    for( int h=0; h<height; h++ ) {
-		for( int w=0; w<width; w++ ) {
-		    int n = stream.read( buf );
-		    r[ix] = buf[0];
-		    g[ix] = buf[1];
-		    b[ix] = buf[2];
+	        if( !readBuffer( stream, buf ) ) {
+	            System.err.println( "Image data ended prematurely" );
+	            break;
+	        }
+	        int bufix = 0;
+	        for( int w=0; w<width; w++ ) {
+		    r[ix] = buf[bufix++];
+		    g[ix] = buf[bufix++];
+		    b[ix] = buf[bufix++];
 		    ix++;
 		}
 	    }
@@ -143,15 +175,19 @@ abstract class UncompressedImage extends Image {
 	short r[] = new short[width*height];
 	short g[] = new short[width*height];
 	short b[] = new short[width*height];
-	byte buf[] = new byte[6];
+	byte buf[] = new byte[2*3*width];
 
 	int ix = 0;
 	for( int h=0; h<height; h++ ) {
+            if( !readBuffer( stream, buf ) ) {
+                System.err.println( "Image data ended prematurely" );
+                break;
+            }
+            int bufix = 0;
 	    for( int w=0; w<width; w++ ) {
-		int n = stream.read( buf );
-		r[ix] = buildShort( buf[0], buf[1] );
-		g[ix] = buildShort( buf[2], buf[3] );
-		b[ix] = buildShort( buf[4], buf[5]);
+		r[ix] = buildShort( buf[bufix++], buf[bufix++] );
+		g[ix] = buildShort( buf[bufix++], buf[bufix++] );
+		b[ix] = buildShort( buf[bufix++], buf[bufix++]);
 		ix++;
 	    }
 	}
