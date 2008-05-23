@@ -24,9 +24,9 @@ class RGB48Image extends UncompressedImage {
     RGB48Image( int frameno, int width, int height, short r[], short g[], short b[] )
     {
         super( width, height, frameno );
-	this.r = r;
-	this.g = g;
-	this.b = b;
+        this.r = r;
+        this.g = g;
+        this.b = b;
     }
 
     /**
@@ -36,9 +36,9 @@ class RGB48Image extends UncompressedImage {
     @Override
     public String toString()
     {
-	return "frame " + frameno + " RGB48 " + width + "x" + height;
+        return "frame " + frameno + " RGB48 " + width + "x" + height;
     }
-    
+
     /**
      * Make sure the given dimension is a multiple of the given factor.
      * If not, use the given name in any error message we generate.
@@ -49,11 +49,11 @@ class RGB48Image extends UncompressedImage {
      */
     private static boolean checkFactor( int dim, String name, int factor )
     {
-	if( ((dim/factor)*factor) != dim ) {
-	    System.err.println( "The " + name + " of this image (" + dim + ") is not a multiple of " + factor );
-	    return false;
-	}
-	return true;
+        if( ((dim/factor)*factor) != dim ) {
+            System.err.println( "The " + name + " of this image (" + dim + ") is not a multiple of " + factor );
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -75,34 +75,38 @@ class RGB48Image extends UncompressedImage {
     private short[] scaleDownChannel( short channel[], int w, int h, int factor )
     {
         int weight = factor*factor;
-        int wt2 = weight/2;  // Used for rounding.
         int swidth = w/factor;
         int sheight = h/factor;
         short res[] = new short[swidth*sheight];
-        
-        int ix = 0;
-        for( int x=0; x<swidth; x++ ){
-            for( int y=0; y<sheight; y++ ) {
-        	int values = 0; // The sum of the values we're going to average.
 
-        	// Compute the offset in the channel for the first row of pixels.
-        	// 
-        	int offset = y*factor*w;
-        	for( int ypix=0; ypix<factor; ypix++ ) {
-        	    for( int xpix=0; xpix<factor; xpix++ ) {
-        		int v = channel[offset+xpix];
-        		values += (0xFFFF & v); // Convert to unsigned and add to the average.
-        	    }
-        	    offset += w;
-        	}
-        	res[ix++] = (short) ((values+wt2)/weight); // Store rounded value.
+        int ix = 0;
+        for( int y=0; y<sheight; y++ ) {
+            for( int x=0; x<swidth; x++ ){
+                int values = 0; // The sum of the values we're going to average.
+
+                // Compute the offset in the channel for the first row of pixels.
+                // 
+                int offset = x*factor+y*factor*w;
+                if( true ) {
+                    for( int ypix=0; ypix<factor; ypix++ ) {
+                        for( int xpix=0; xpix<factor; xpix++ ) {
+                            int v = channel[offset+xpix];
+                            values += (0xFFFF & v); // Convert to unsigned and add to the average.
+                        }
+                        offset += w;
+                    }
+                    res[ix++] = (short) (values/weight); // Store rounded value.
+                }
+                else {
+                    res[ix++] = channel[offset];
+                }
             }
         }
         return res;
     }
 
     @Override
-    Image scaleDown( int factor )
+    UncompressedImage scaleDown( int factor )
     {
         if( Settings.traceScaler ){
             System.out.println( "Scaling frame " + frameno );
@@ -131,7 +135,7 @@ class RGB48Image extends UncompressedImage {
             double vr = frr*r[i] + frg*g[i] + frb*b[i];
             double vg = fgr*r[i] + fgg*g[i] + fgb*b[i];
             double vb = fbr*r[i] + fbg*g[i] + fbb*b[i];
-            
+
             r[i] = (short) vr;
             g[i] = (short) vg;
             g[i] = (short) vb;
@@ -157,16 +161,16 @@ class RGB48Image extends UncompressedImage {
         for( int h=0; h<height; h++ ) {
             int bufix = 0;
             for( int w=0; w<width; w++ ) {
-        	int v = r[ix];
-        	buffer[bufix++] = (byte) ((v>>8) & 0xFF);
-        	buffer[bufix++] = (byte) (v & 0xFF);
-        	v = g[ix];
-        	buffer[bufix++] = (byte) ((v>>8) & 0xFF);
-        	buffer[bufix++] = (byte) (v & 0xFF);
-        	v = b[ix];
-        	buffer[bufix++] = (byte) ((v>>8) & 0xFF);
-        	buffer[bufix++] = (byte) (v & 0xFF);
-        	ix++;
+                int v = r[ix];
+                buffer[bufix++] = (byte) ((v>>8) & 0xFF);
+                buffer[bufix++] = (byte) (v & 0xFF);
+                v = g[ix];
+                buffer[bufix++] = (byte) ((v>>8) & 0xFF);
+                buffer[bufix++] = (byte) (v & 0xFF);
+                v = b[ix];
+                buffer[bufix++] = (byte) ((v>>8) & 0xFF);
+                buffer[bufix++] = (byte) (v & 0xFF);
+                ix++;
             }
             stream.write( buffer );
         }
@@ -196,7 +200,7 @@ class RGB48Image extends UncompressedImage {
     private static short[] fillChannel( int width, int height, int val )
     {
         short res[] = new short[width*height];
-        
+
         Arrays.fill( res, (short) val );
         return res;
     }
@@ -234,7 +238,7 @@ class RGB48Image extends UncompressedImage {
     private static byte[] makeByteSamples( short a[] )
     {
         byte res[] = new byte[a.length];
-        
+
         for( int i=0; i<a.length; i++ ){
             int val = (a[i] & 0xFFFF);
             res[i] = (byte) (val/256);
@@ -247,7 +251,7 @@ class RGB48Image extends UncompressedImage {
         byte br[] = makeByteSamples( r );
         byte bg[] = makeByteSamples( g );
         byte bb[] = makeByteSamples( b );
-        
+
         return new RGB24Image( frameno, width, height, br, bg, bb );
     }
 }

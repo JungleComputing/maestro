@@ -97,13 +97,13 @@ class RGB24Image extends UncompressedImage {
         byte res[] = new byte[swidth*sheight];
 
         int ix = 0;
-        for( int x=0; x<swidth; x++ ){
-            for( int y=0; y<sheight; y++ ) {
+        for( int y=0; y<sheight; y++ ) {
+            for( int x=0; x<swidth; x++ ){
                 int values = 0; // The sum of the values we're going to average.
 
                 // Compute the offset in the channel for the first row of pixels.
                 // 
-                int offset = y*factor*w;
+                int offset = x*factor+y*factor*w;
                 for( int ypix=0; ypix<factor; ypix++ ) {
                     for( int xpix=0; xpix<factor; xpix++ ) {
                         int v = channel[offset+xpix];
@@ -119,7 +119,7 @@ class RGB24Image extends UncompressedImage {
     }
 
     @Override
-    Image scaleDown( int factor )
+    UncompressedImage scaleDown( int factor )
     {
         if( Settings.traceScaler ){
             System.out.println( "Scaling frame " + frameno );

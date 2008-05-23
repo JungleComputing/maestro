@@ -19,6 +19,8 @@ public class Tester {
         try {
             UncompressedImage img48 = UncompressedImage.load( new File( "foto2.ppm" ), 0 );
             System.out.println( "read image " + img48 );
+            img48 = img48.scaleDown( 2 );
+            System.out.println( "downscaled image " + img48 );
             UncompressedImage img24 = RGB24Image.convert( img48 );
             System.out.println( "converted to " + img24 );
 //            System.out.println( "read image " + img );

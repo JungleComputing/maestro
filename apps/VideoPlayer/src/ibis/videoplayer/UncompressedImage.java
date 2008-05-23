@@ -19,6 +19,14 @@ abstract class UncompressedImage extends Image {
     UncompressedImage(int width, int height, int frameno) {
 	super(width, height, frameno);
     }
+    /**
+     * Returns a new image with each of the dimensions reduced by the
+     * given factor.
+     * @param factor The scale factor.
+     * @return The scaled image.
+     */
+    @Override
+    abstract UncompressedImage scaleDown( int factor );
 
     /**
      * Given a file that we know is a PNG file, load it, and return
