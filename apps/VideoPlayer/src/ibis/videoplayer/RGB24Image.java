@@ -8,6 +8,7 @@ import java.awt.image.SampleModel;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Arrays;
 
 import javax.imageio.IIOImage;
@@ -183,6 +184,25 @@ class RGB24Image extends UncompressedImage {
                 stream.write( g[ix] );
                 stream.write( b[ix] );
             }
+        }
+        stream.close();
+    }
+
+    /** Prints a text dump of this image to the given file. 
+     * @param f The file to write to.
+     * @throws IOException Thrown if the image cannot be written.
+     */
+    @Override
+    void print( File f ) throws IOException
+    {
+        PrintStream stream = new PrintStream( new FileOutputStream( f ) );
+        stream.println( "RGB24 " + width + "x" + height + " frame " + frameno );
+        int ix = 0;
+        for( int h=0; h<height; h++ ) {
+            for( int w=0; w<width; w++ ) {
+                stream.format( "%02x %02x %02x\n", r[ix], g[ix], b[ix] );
+            }
+            stream.println();
         }
         stream.close();
     }

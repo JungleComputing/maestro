@@ -17,9 +17,9 @@ public class Tester {
      */
     public static void main(String[] args) {
         try {
-            UncompressedImage img = UncompressedImage.load( new File( "foto.png" ), 0 );
+            UncompressedImage img = UncompressedImage.load( new File( "foto1.ppm" ), 0 );
             System.out.println( "read image " + img );
-            img.write( new File( "foto.ppm" ) );
+            img.write( new File( "test.ppm" ) );
 //            System.out.println( "read image " + img );
 //            img.write( new File( "test-out.png" ) );
 //            UncompressedImage img24 = RGB24Image.convert( img );

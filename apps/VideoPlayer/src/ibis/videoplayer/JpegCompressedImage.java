@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 
 class JpegCompressedImage extends CompressedImage {
 
@@ -31,6 +32,32 @@ class JpegCompressedImage extends CompressedImage {
 	FileOutputStream out = new FileOutputStream( f );
 	out.write( data );
 	out.close();
+    }
+
+    /** Prints a text dump of this image to the given file. 
+     * @param f The file to write to.
+     * @throws IOException Thrown if the image cannot be written.
+     */
+    @Override
+    void print( File f ) throws IOException
+    {
+        PrintStream stream = new PrintStream( new FileOutputStream( f ) );
+        stream.println( "JPEG " + width + "x" + height + " frame " + frameno );
+
+        for( int i=0; i<data.length; i++ ) {
+            if( (i%16) == 0 ) {
+                stream.println();
+            }
+            else if( (i%16) == 8 ) {
+                stream.print( "  " );
+            }
+            else {
+                stream.print( ' ' );
+            }
+            stream.format( "%02x", data[i] );
+        }
+        stream.close();
+        
     }
 
     /**

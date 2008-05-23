@@ -8,6 +8,7 @@ import java.awt.image.SampleModel;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Arrays;
 
 import javax.imageio.IIOImage;
@@ -163,7 +164,7 @@ class RGB48Image extends UncompressedImage {
         IIOImage image = new IIOImage( raster, null, metadata ); 
         return image;
     }
-    
+
     /** Writes this image to the given file. 
      * @param f The file to write to.
      * @throws IOException Thrown if the image cannot be written.
@@ -188,11 +189,32 @@ class RGB48Image extends UncompressedImage {
         	buffer[4] = (byte) ((v>>8) & 0xFF);
         	buffer[5] = (byte) (v & 0xFF);
         	stream.write( buffer );
+        	ix++;
             }
         }
         stream.close();
     }
-    
+
+    /** Prints a text dump of this image to the given file. 
+     * @param f The file to write to.
+     * @throws IOException Thrown if the image cannot be written.
+     */
+    @Override
+    void print( File f ) throws IOException
+    {
+        PrintStream stream = new PrintStream( new FileOutputStream( f ) );
+        stream.println( "RGB48 " + width + "x" + height + " frame " + frameno );
+        int ix = 0;
+        for( int h=0; h<height; h++ ) {
+            for( int w=0; w<width; w++ ) {
+                stream.format( "%04x %04x %04x\n", r[ix], g[ix], b[ix] );
+                ix++;
+            }
+            stream.println();
+        }
+        stream.close();
+    }
+
     private static short[] fillChannel( int width, int height, int val )
     {
         short res[] = new short[width*height];

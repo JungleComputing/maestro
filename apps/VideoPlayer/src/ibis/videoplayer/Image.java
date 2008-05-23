@@ -18,8 +18,9 @@ abstract class Image implements Serializable {
     }
 
     abstract Image scaleDown(int i);
-    
+
     abstract void write( File f ) throws IOException;
+    abstract void print( File f ) throws IOException;
     
     /** Given a file name, load that file, and create an image.
      * The type of image is determined by the file extension of the filename.
@@ -36,6 +37,9 @@ abstract class Image implements Serializable {
         String fnm = f.getName();
         if( fnm.endsWith( ".png" ) ){
             return UncompressedImage.loadPNG( f, frameno );
+        }
+        if( fnm.endsWith( ".ppm" ) ){
+            return UncompressedImage.loadPPM( f, frameno );
         }
         System.err.println( "Don't know how to load a file '" + f + "'" );
         return null;
