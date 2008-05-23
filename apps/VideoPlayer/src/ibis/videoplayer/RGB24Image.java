@@ -31,11 +31,11 @@ class RGB24Image extends UncompressedImage {
     RGB24Image( int frameno, int width, int height, byte[] r, byte[] g, byte[] b )
     {
         super( width, height, frameno );
-	this.r = r;
-	this.g = g;
-	this.b = b;
+        this.r = r;
+        this.g = g;
+        this.b = b;
     }
-    
+
     /**
      * Returns a string representation of this frame.
      * @return The string representation.
@@ -43,9 +43,9 @@ class RGB24Image extends UncompressedImage {
     @Override
     public String toString()
     {
-	return "frame " + frameno + " RGB24 " + width + "x" + height;
+        return "frame " + frameno + " RGB24 " + width + "x" + height;
     }
-    
+
     /**
      * Make sure the given dimension is a multiple of the given factor.
      * If not, use the given name in any error message we generate.
@@ -56,11 +56,11 @@ class RGB24Image extends UncompressedImage {
      */
     private static boolean checkFactor( int dim, String name, int factor )
     {
-	if( ((dim/factor)*factor) != dim ) {
-	    System.err.println( "The " + name + " of this image (" + dim + ") is not a multiple of " + factor );
-	    return false;
-	}
-	return true;
+        if( ((dim/factor)*factor) != dim ) {
+            System.err.println( "The " + name + " of this image (" + dim + ") is not a multiple of " + factor );
+            return false;
+        }
+        return true;
     }
 
     /**
@@ -79,30 +79,31 @@ class RGB24Image extends UncompressedImage {
      * @param factor The scale-down factor to apply.
      * @return The scaled-down image.
      */
-    private byte[] scaleChannel( byte channel[], int w, int h, int factor )
+    private byte[] scaleDownChannel( byte channel[], int w, int h, int factor )
     {
         int weight = factor*factor;
         int wt2 = weight/2;  // Used for rounding.
         int swidth = w/factor;
         int sheight = h/factor;
         byte res[] = new byte[swidth*sheight];
-        
+
         int ix = 0;
         for( int x=0; x<swidth; x++ ){
             for( int y=0; y<sheight; y++ ) {
-        	int values = 0; // The sum of the values we're going to average.
+                int values = 0; // The sum of the values we're going to average.
 
-        	// Compute the offset in the channel for the first row of pixels.
-        	// 
-        	int offset = y*factor*w;
-        	for( int ypix=0; ypix<factor; ypix++ ) {
-        	    for( int xpix=0; xpix<factor; xpix++ ) {
-        		int v = channel[offset+xpix];
-        		values += (0xFFFF & v); // Convert to unsigned and add to the average.
-        	    }
-        	    offset += w;
-        	}
-        	res[ix++] = (byte) ((values+wt2)/weight); // Store rounded value.
+                // Compute the offset in the channel for the first row of pixels.
+                // 
+                int offset = y*factor*w;
+                for( int ypix=0; ypix<factor; ypix++ ) {
+                    for( int xpix=0; xpix<factor; xpix++ ) {
+                        int v = channel[offset+xpix];
+
+                        values += (0xFFFF & v); // Convert to unsigned and add to the average.
+                    }
+                    offset += w;
+                }
+                res[ix++] = (byte) ((values+wt2)/weight); // Store rounded value.
             }
         }
         return res;
@@ -120,9 +121,9 @@ class RGB24Image extends UncompressedImage {
         if( !checkFactor( height, "height", factor ) ) {
             return null;
         }
-        byte outr[] = scaleChannel( r, width, height, factor );
-        byte outg[] = scaleChannel( g, width, height, factor );
-        byte outb[] = scaleChannel( b, width, height, factor );
+        byte outr[] = scaleDownChannel( r, width, height, factor );
+        byte outg[] = scaleDownChannel( g, width, height, factor );
+        byte outb[] = scaleDownChannel( b, width, height, factor );
         if( Settings.traceScaler ){
             System.out.println( "Scaling " + this + " by factor " + factor );
         }
@@ -138,7 +139,7 @@ class RGB24Image extends UncompressedImage {
             double vr = frr*r[i] + frg*g[i] + frb*b[i];
             double vg = fgr*r[i] + fgg*g[i] + fgb*b[i];
             double vb = fbr*r[i] + fbg*g[i] + fbb*b[i];
-            
+
             r[i] = (byte) vr;
             g[i] = (byte) vg;
             g[i] = (byte) vb;
@@ -178,14 +179,14 @@ class RGB24Image extends UncompressedImage {
         int ix = 0;
         for( int h=0; h<height; h++ ) {
             for( int w=0; w<width; w++ ) {
-        	stream.write( r[ix] );
-        	stream.write( g[ix] );
-        	stream.write( b[ix] );
+                stream.write( r[ix] );
+                stream.write( g[ix] );
+                stream.write( b[ix] );
             }
         }
         stream.close();
     }
-    
+
     private static byte[] fillChannel( int width, int height, int val )
     {
         byte res[] = new byte[width*height];
@@ -194,7 +195,7 @@ class RGB24Image extends UncompressedImage {
         return res;
     }
 
-    static RGB24Image fillImage( int frameno, int width, int height, int vr, int vg, int vb )
+    static RGB24Image buildConstantImage( int frameno, int width, int height, int vr, int vg, int vb )
     {
         byte r[] = fillChannel( width, height, vr );
         byte g[] = fillChannel( width, height, vg );
@@ -202,11 +203,33 @@ class RGB24Image extends UncompressedImage {
         return new RGB24Image( frameno, width, height, r, g, b );
     }
 
+    static RGB24Image buildGradientImage( int frameno, int width, int height )
+    {
+        byte r[] = new byte[width*height];
+        byte g[] = new byte[width*height];
+        byte b[] = new byte[width*height];
+        int ix = 0;
+        byte vg = 0;
+
+        for( int h=0; h<height; h++ ) {
+            byte vr = 0;
+            for( int w=0; w<width; w++ ) {
+                r[ix] = vr;
+                g[ix] = vg;
+                b[ix] = 127;
+                ix++;
+                vr++;
+            }
+            vg++;
+        }
+        return new RGB24Image( frameno, width, height, r, g, b );
+    }
+
     static UncompressedImage convert( Image img )
     {
         if( img instanceof RGB48Image ){
             RGB48Image img48 = (RGB48Image) img;
-            
+
             return img48.buildRGB24Image();
         }
         System.err.println( "Don't know how to convert a " + img.getClass() + " to a RGB24 image" );

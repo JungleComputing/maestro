@@ -79,7 +79,7 @@ class RGB48Image extends UncompressedImage {
      * @param factor The scale-down factor to apply.
      * @return The scaled-down image.
      */
-    private short[] scaleChannel( short channel[], int w, int h, int factor )
+    private short[] scaleDownChannel( short channel[], int w, int h, int factor )
     {
         int weight = factor*factor;
         int wt2 = weight/2;  // Used for rounding.
@@ -120,9 +120,9 @@ class RGB48Image extends UncompressedImage {
         if( !checkFactor( height, "height", factor ) ) {
             return null;
         }
-        short outr[] = scaleChannel( r, width, height, factor );
-        short outg[] = scaleChannel( g, width, height, factor );
-        short outb[] = scaleChannel( b, width, height, factor );
+        short outr[] = scaleDownChannel( r, width, height, factor );
+        short outg[] = scaleDownChannel( g, width, height, factor );
+        short outb[] = scaleDownChannel( b, width, height, factor );
         if( Settings.traceScaler ){
             System.out.println( "Scaling " + this + " by factor " + factor );
         }
@@ -193,19 +193,41 @@ class RGB48Image extends UncompressedImage {
         stream.close();
     }
     
-    private static short[] fillChannel( int width, int height, short val )
+    private static short[] fillChannel( int width, int height, int val )
     {
         short res[] = new short[width*height];
         
-        Arrays.fill( res, val );
+        Arrays.fill( res, (short) val );
         return res;
     }
 
-    static RGB48Image fillImage( int frameno, int width, int height, short vr, short vg, short vb )
+    static RGB48Image buildConstantImage( int frameno, int width, int height, int vr, int vg, int vb )
     {
         short r[] = fillChannel( width, height, vr );
         short g[] = fillChannel( width, height, vg );
         short b[] = fillChannel( width, height, vb );
+        return new RGB48Image( frameno, width, height, r, g, b );
+    }
+
+    static RGB48Image buildGradientImage( int frameno, int width, int height )
+    {
+        short r[] = new short[width*height];
+        short g[] = new short[width*height];
+        short b[] = new short[width*height];
+        int ix = 0;
+        short vg = 0;
+
+        for( int h=0; h<height; h++ ) {
+            short vr = 0;
+            for( int w=0; w<width; w++ ) {
+                r[ix] = vr;
+                g[ix] = vg;
+                b[ix] = 127*256;
+                ix++;
+                vr += 200;
+            }
+            vg += 200;
+        }
         return new RGB48Image( frameno, width, height, r, g, b );
     }
 

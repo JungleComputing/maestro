@@ -10,7 +10,8 @@ import javax.imageio.ImageWriter;
 import javax.imageio.stream.ImageOutputStream;
 
 
-class JPEGCompressor implements ImageCompressor {    
+class JPEGCompressor
+{    
    // private JPEGImageWriteParam writeParam;
     
     /** FIXME. (Overrides method in superclass.)
