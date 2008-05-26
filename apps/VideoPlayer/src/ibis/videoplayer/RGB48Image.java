@@ -13,6 +13,8 @@ import java.util.Arrays;
  */
 class RGB48Image extends UncompressedImage {
     private static final long serialVersionUID = 8797700803728846092L;
+    private static final int CHANNELS = 3;
+
     /**
      * The channels of the image. Each channel stores its values consecutively in one
      * large array row by row from top to bottom.
@@ -36,7 +38,7 @@ class RGB48Image extends UncompressedImage {
     @Override
     public String toString()
     {
-        return "frame " + frameno + " RGB48 " + width + "x" + height;
+        return "frame " + frameno + " RGB48 " + width + "x" + height + "; " + CHANNELS + " channels";
     }
 
     /**
@@ -156,7 +158,7 @@ class RGB48Image extends UncompressedImage {
         FileOutputStream stream = new FileOutputStream( f );
         String header = "P6\n" + width + ' ' + height + "\n65535\n";
         stream.write( header.getBytes() );
-        byte buffer[] = new byte[2*3*width];
+        byte buffer[] = new byte[2*CHANNELS*width];
         int ix = 0;
         for( int h=0; h<height; h++ ) {
             int bufix = 0;

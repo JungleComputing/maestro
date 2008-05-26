@@ -29,6 +29,9 @@ import javax.imageio.stream.ImageOutputStream;
  */
 class RGB24Image extends UncompressedImage {
     private static final long serialVersionUID = 8797700803728846092L;
+
+    private static final int CHANNELS = 3;
+
     /**
      * The channels of the image. Each channel stores its values consecutively in one
      * large array row by row from top to bottom.
@@ -52,7 +55,7 @@ class RGB24Image extends UncompressedImage {
     @Override
     public String toString()
     {
-        return "frame " + frameno + " RGB24 " + width + "x" + height;
+        return "frame " + frameno + " RGB24 " + width + "x" + height + "; " + CHANNELS + " channels";
     }
 
     /**
@@ -167,7 +170,7 @@ class RGB24Image extends UncompressedImage {
     {
         byte buffers[][] = new byte[][] { r, g, b };
         DataBuffer buffer = new DataBufferByte( buffers, r.length );
-        SampleModel sampleModel = new BandedSampleModel( buffer.getDataType(), width, height, 3 );
+        SampleModel sampleModel = new BandedSampleModel( buffer.getDataType(), width, height, CHANNELS );
         int bits[] = new int[] { 8, 8, 8 };
         ColorModel colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ), bits, false, false, Transparency.OPAQUE, buffer.getDataType() );
         BufferedImage img = new BufferedImage( colorModel, Raster.createWritableRaster( sampleModel, buffer, null ), false, null );
