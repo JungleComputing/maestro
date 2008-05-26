@@ -1,5 +1,6 @@
 package ibis.videoplayer;
 
+import ibis.maestro.Context;
 import ibis.maestro.Job;
 import ibis.maestro.Node;
 
@@ -18,7 +19,7 @@ public class ColorCorrectAction implements Job
      * @return The decompressed frame.
      */
     @Override
-    public Object run(Object obj, Node node )
+    public Object run(Object obj, Node node, Context context )
     {
 	RGB48Image frame = (RGB48Image) obj;
         return frame.colorCorrect(

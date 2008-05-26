@@ -1,5 +1,6 @@
 package ibis.videoplayer;
 
+import ibis.maestro.Context;
 import ibis.maestro.Job;
 import ibis.maestro.Node;
 
@@ -20,7 +21,7 @@ public class ScaleFrameAction implements Job
      * @return The scaled image.
      */
     @Override
-    public Object run( Object obj, Node node )
+    public Object run( Object obj, Node node, Context context )
     {
 	Image frame = (Image) obj;
         return frame.scaleDown( 2 );

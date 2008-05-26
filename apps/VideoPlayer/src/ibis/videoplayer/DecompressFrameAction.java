@@ -1,5 +1,6 @@
 package ibis.videoplayer;
 
+import ibis.maestro.Context;
 import ibis.maestro.Node;
 
 /**
@@ -39,7 +40,7 @@ public class DecompressFrameAction implements ibis.maestro.Job
      * @return The decompressed frame.
      */
     @Override
-    public Object run(Object obj, Node node )
+    public Object run(Object obj, Node node, Context context )
     {
 	RGB48Image frame = (RGB48Image) obj;
 	short r[] = new short[frame.r.length*REPEAT*REPEAT];

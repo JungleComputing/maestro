@@ -1,6 +1,7 @@
 package ibis.videoplayer;
 
 import ibis.maestro.CompletionListener;
+import ibis.maestro.Context;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
 
@@ -54,11 +55,15 @@ public class BuildVideo {
             }
         }
     }
+    
+    private class VideoContext implements Context {
+        
+    }
 
     @SuppressWarnings("synthetic-access")
     private void run( int frameCount, boolean goForMaestro ) throws Exception
     {
-        Node node = new Node( goForMaestro );
+        Node node = new Node( new VideoContext(), goForMaestro );
         // How many fragments will there be?
         int fragmentCount = (frameCount+Settings.FRAME_FRAGMENT_COUNT-1)/Settings.FRAME_FRAGMENT_COUNT;
         Listener listener = new Listener( fragmentCount );

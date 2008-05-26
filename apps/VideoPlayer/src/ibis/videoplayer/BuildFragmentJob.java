@@ -3,6 +3,7 @@
  */
 package ibis.videoplayer;
 
+import ibis.maestro.Context;
 import ibis.maestro.Job;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
@@ -29,7 +30,7 @@ public final class BuildFragmentJob implements Job
      * @param node The node this job is running on.
      */
     @Override
-    public Object run( Object obj, Node node )
+    public Object run( Object obj, Node node, Context context )
     {
         TaskWaiter waiter = new TaskWaiter();
 
