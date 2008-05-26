@@ -126,7 +126,7 @@ class RGB48Image extends UncompressedImage {
         return new RGB48Image( frameno, width/2, height/2, outr, outg, outb );
     }
 
-
+    @Override
     Image colorCorrect( double frr, double frg, double frb, double fgr, double fgg, double fgb, double fbr, double fbg, double fbb )
     {
         // Apply the color correction matrix 
