@@ -156,6 +156,7 @@ class PacketSendPort<T extends Serializable> {
      * old entry.
      * @throws IOException 
      */
+    @SuppressWarnings("synthetic-access")
     private void ensureOpenDestination( DestinationInfo newDestination, int timeout ) throws IOException
     {
         if( newDestination.local || newDestination.cacheSlot != null ){
