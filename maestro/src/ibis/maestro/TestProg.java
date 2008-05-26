@@ -69,11 +69,13 @@ public class TestProg {
         /**
          * Runs this job.
          * @param obj The input parameter of this job.
-         * @param node The node this job is running on.
+         * @param node The node the job is running on.
+         * @param context The program-specific context of this node.
          * @return The result value of this job.
          */
+        @Override
         @SuppressWarnings("synthetic-access")
-        public AdditionData run( Object obj, Node node )
+        public AdditionData run( Object obj, Node node, Context context )
         {
             Integer val = (Integer) obj;
             double a[] = new double [ARRAY_SIZE];
@@ -89,12 +91,13 @@ public class TestProg {
         private static final long serialVersionUID = 7652370809998864296L;
 
         /**
-         * @param obj
-         * @param node
-         * @param taskId
-         * @return
+         * @param obj The input parameter of the job.
+         * @param node The node the job is running on.
+         * @param context The task-specific context of this job (for this program it is null).
+         * @return The result of the job.
          */
-        public AdditionData run( Object obj, Node node )
+        @Override
+        public AdditionData run( Object obj, Node node, Context context )
         {
             AdditionData data = (AdditionData) obj;
             double sum = 0.0;
@@ -110,7 +113,7 @@ public class TestProg {
     @SuppressWarnings("synthetic-access")
     private void run( int jobCount, boolean goForMaestro ) throws Exception
     {
-        Node node = new Node( goForMaestro );
+        Node node = new Node( null, goForMaestro );
         Listener listener = new Listener( jobCount );
 
         Task task = node.createTask( "testprog", new CreateArrayJob(), new AdditionJob(), new AdditionJob(), new AdditionJob(), new AdditionJob() );

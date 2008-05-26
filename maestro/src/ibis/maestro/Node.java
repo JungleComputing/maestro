@@ -26,6 +26,7 @@ public final class Node {
     private final Ibis ibis;
     private final Master master;
     private final Worker worker;
+    private final Context context;
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
     RegistryEventHandler registryEventHandler;
     private ArrayList<Task> tasks = new ArrayList<Task>();
@@ -187,12 +188,13 @@ public final class Node {
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
+     * @param context The program-specific context of this node.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public Node() throws IbisCreationFailedException, IOException
+    public Node( Context context ) throws IbisCreationFailedException, IOException
     {
-	this( true );
+	this( context, true );
     }
 
     /**
@@ -202,11 +204,12 @@ public final class Node {
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
     @SuppressWarnings("synthetic-access")
-    public Node( boolean runForMaestro ) throws IbisCreationFailedException, IOException
+    public Node( Context context, boolean runForMaestro ) throws IbisCreationFailedException, IOException
     {
 	Properties ibisProperties = new Properties();
 	IbisIdentifier maestro;
 
+        this.context = context;
 	ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
 	registryEventHandler = new NodeRegistryEventHandler();
 	ibis = IbisFactory.createIbis(
@@ -459,7 +462,7 @@ public final class Node {
 	Task t = tasks.get( ix );
 	Job j = t.jobs[type.jobNo];
 
-	Object result = j.run( job.input, this );
+	Object result = j.run( job.input, this, context );
 	int nextJobNo = type.jobNo+1;
 	if( nextJobNo<t.jobs.length ){
 	    // There is a next step to take.
