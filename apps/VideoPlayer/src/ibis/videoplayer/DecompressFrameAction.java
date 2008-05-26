@@ -19,23 +19,6 @@ public class DecompressFrameAction implements ibis.maestro.Job
      */
     private static final int REPEAT = 2;
 
-    private void enlarge( short out[], short in[], int width, int height )
-    {
-        int outix = 0;
-
-        for( int y=0; y<height; y++ ){
-            int base = y*width;
-            for( int ry = 0; ry<REPEAT; ry++ ){
-                for( int x=0; x<width; x++ ){
-                    int ix = base + x;
-                    for( int rx = 0; rx<REPEAT; rx++ ){
-                        out[outix++] = in[ix];
-                    }
-                }
-            }
-        }
-    }
-
     /** Runs this job.
      * @return The decompressed frame.
      */
@@ -43,16 +26,26 @@ public class DecompressFrameAction implements ibis.maestro.Job
     public Object run(Object obj, Node node, Context context )
     {
 	RGB48Image frame = (RGB48Image) obj;
-	short r[] = new short[frame.r.length*REPEAT*REPEAT];
-	short g[] = new short[frame.g.length*REPEAT*REPEAT];
-	short b[] = new short[frame.b.length*REPEAT*REPEAT];
+        short in[] = frame.data;
+	short data[] = new short[in.length*REPEAT*REPEAT];
 
         if( Settings.traceDecompressor ){
             System.out.println( "Decompressing frame " + frame.frameno );
         }
-        enlarge( r, frame.r, frame.width, frame.height );
-        enlarge( g, frame.g, frame.width, frame.height );
-        enlarge( b, frame.b, frame.width, frame.height );
-	return new RGB48Image( frame.frameno, frame.width*REPEAT, frame.height*REPEAT, r, g, b );
+        int outix = 0;
+
+        // FIXME: do something sane here.
+        for( int y=0; y<frame.height; y++ ){
+            int base = y*frame.width;
+            for( int ry = 0; ry<REPEAT; ry++ ){
+                for( int x=0; x<frame.width; x++ ){
+                    int ix = base + x;
+                    for( int rx = 0; rx<REPEAT; rx++ ){
+                        data[outix++] = in[ix];
+                    }
+                }
+            }
+        }
+	return new RGB48Image( frame.frameno, frame.width*REPEAT, frame.height*REPEAT, data );
     }
 }

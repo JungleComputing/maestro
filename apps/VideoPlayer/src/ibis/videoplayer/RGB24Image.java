@@ -2,12 +2,12 @@ package ibis.videoplayer;
 
 import java.awt.Transparency;
 import java.awt.color.ColorSpace;
-import java.awt.image.BandedSampleModel;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.ComponentColorModel;
 import java.awt.image.DataBuffer;
 import java.awt.image.DataBufferByte;
+import java.awt.image.PixelInterleavedSampleModel;
 import java.awt.image.Raster;
 import java.awt.image.SampleModel;
 import java.io.ByteArrayOutputStream;
@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.Arrays;
 import java.util.Iterator;
 
 import javax.imageio.ImageIO;
@@ -30,22 +29,18 @@ import javax.imageio.stream.ImageOutputStream;
 class RGB24Image extends UncompressedImage {
     private static final long serialVersionUID = 8797700803728846092L;
 
-    private static final int CHANNELS = 3;
+    static final int BANDS = 3;
 
-    /**
-     * The channels of the image. Each channel stores its values consecutively in one
-     * large array row by row from top to bottom.
+    /** The data of the image.
+     * We currently assume that there are three bands in there, each
+     * with one unsigned byte of value, with the meaning Red, Green, Blue.
      */
-    final byte r[];
-    final byte g[];
-    final byte b[];
+    final byte data[];
 
-    RGB24Image( int frameno, int width, int height, byte[] r, byte[] g, byte[] b )
+    RGB24Image( int frameno, int width, int height, byte[] data )
     {
         super( width, height, frameno );
-        this.r = r;
-        this.g = g;
-        this.b = b;
+        this.data = data;
     }
 
     /**
@@ -55,7 +50,7 @@ class RGB24Image extends UncompressedImage {
     @Override
     public String toString()
     {
-        return "frame " + frameno + " RGB24 " + width + "x" + height + "; " + CHANNELS + " channels";
+        return "frame " + frameno + " RGB24 " + width + "x" + height + "; " + BANDS + " channels";
     }
 
     /**
@@ -75,52 +70,6 @@ class RGB24Image extends UncompressedImage {
         return true;
     }
 
-    /**
-     * Given a color channel and the dimensions of the image it belongs to,
-     * and a scale-down factor to apply, return a scaled version of the channel.
-     * We blindly assume that the dimensions of the channel are correct
-     * for the image, and that the dimensions actually allow exact scaling
-     * down with this factor.
-     * 
-     * The scaling down uses a pretty dumb algorithm: unweighted averaging
-     * over all pixels in the original.
-     * 
-     * @param channel The color channel.
-     * @param w The width of the image.
-     * @param h The height of the image.
-     * @param factor The scale-down factor to apply.
-     * @return The scaled-down image.
-     */
-    private byte[] scaleDownChannel( byte channel[], int w, int h, int factor )
-    {
-        int weight = factor*factor;
-        int wt2 = weight/2;  // Used for rounding.
-        int swidth = w/factor;
-        int sheight = h/factor;
-        byte res[] = new byte[swidth*sheight];
-
-        int ix = 0;
-        for( int y=0; y<sheight; y++ ) {
-            for( int x=0; x<swidth; x++ ){
-                int values = 0; // The sum of the values we're going to average.
-
-                // Compute the offset in the channel for the first row of pixels.
-                // 
-                int offset = x*factor+y*factor*w;
-                for( int ypix=0; ypix<factor; ypix++ ) {
-                    for( int xpix=0; xpix<factor; xpix++ ) {
-                        int v = channel[offset+xpix];
-
-                        values += (0xFFFF & v); // Convert to unsigned and add to the average.
-                    }
-                    offset += w;
-                }
-                res[ix++] = (byte) ((values+wt2)/weight); // Store rounded value.
-            }
-        }
-        return res;
-    }
-
     @Override
     UncompressedImage scaleDown( int factor )
     {
@@ -133,33 +82,67 @@ class RGB24Image extends UncompressedImage {
         if( !checkFactor( height, "height", factor ) ) {
             return null;
         }
-        byte outr[] = scaleDownChannel( r, width, height, factor );
-        byte outg[] = scaleDownChannel( g, width, height, factor );
-        byte outb[] = scaleDownChannel( b, width, height, factor );
+        int weight = factor*factor;
+        int wt2 = weight/2;  // Used for rounding.
+        int swidth = width/factor;
+        int sheight = height/factor;
+        byte res[] = new byte[swidth*sheight*BANDS];
+
+        int ix = 0;
+        for( int y=0; y<sheight; y++ ) {
+            for( int x=0; x<swidth; x++ ){
+                int redValues = 0; // The sum of the red values we're going to average.
+                int greenValues = 0;
+                int blueValues = 0;
+
+                // Compute the offset in the channel for the first row of pixels.
+                // 
+                int offset = x*factor+y*factor*width*BANDS;
+                for( int ypix=0; ypix<factor; ypix++ ) {
+                    for( int xpix=0; xpix<factor; xpix += BANDS ) {
+                        int vr = data[offset+xpix];
+                        int vg = data[offset+xpix+1];
+                        int vb = data[offset+xpix+2];
+
+                        // Convert to unsigned and add to the average.
+                        redValues += (0xFFFF & vr);
+                        greenValues += (0xFFFF & vg);
+                        blueValues += (0xFFFF & vb);
+                    }
+                    offset += width*BANDS;
+                }
+                // Store rounded values.
+                res[ix++] = (byte) ((redValues+wt2)/weight);
+                res[ix++] = (byte) ((greenValues+wt2)/weight);
+                res[ix++] = (byte) ((blueValues+wt2)/weight);
+            }
+        }
         if( Settings.traceScaler ){
             System.out.println( "Scaling " + this + " by factor " + factor );
         }
-        return new RGB24Image( frameno, width/2, height/2, outr, outg, outb );
+        return new RGB24Image( frameno, width/factor, height/factor, res );
     }
 
     @Override
     Image colorCorrect( double frr, double frg, double frb, double fgr, double fgg, double fgb, double fbr, double fbg, double fbb )
     {
-        // Apply the color correction matrix 
-        // We blindly assume r,g, and b, have the same length.
-        for( int i=0; i<r.length; i++ ) {
-            double vr = frr*r[i] + frg*g[i] + frb*b[i];
-            double vg = fgr*r[i] + fgg*g[i] + fgb*b[i];
-            double vb = fbr*r[i] + fbg*g[i] + fbb*b[i];
+	byte res[] = new byte[width*height*BANDS];
 
-            r[i] = (byte) vr;
-            g[i] = (byte) vg;
-            g[i] = (byte) vb;
+	// Apply the color correction matrix 
+        // We blindly assume r,g, and b, have the same length.
+        for( int i=0; i<data.length; i += BANDS ) {
+            double vr = frr*data[i] + frg*data[i+1] + frb*data[i+2];
+            double vg = fgr*data[i] + fgg*data[i+1] + fgb*data[i+2];
+            double vb = fbr*data[i] + fbg*data[i+1] + fbb*data[i+2];
+
+            res[i] = (byte) vr;
+            res[i+1] = (byte) vg;
+            res[i+2] = (byte) vb;
         }
         if( Settings.traceActions ) {
             System.out.println( "Color-corrected " + this );
         }
-        return new RGB24Image( frameno, width, height, r, g, b );
+        return new RGB24Image( frameno, width, height, res );
     }
 
     /**
@@ -168,9 +151,9 @@ class RGB24Image extends UncompressedImage {
      */
     JpegCompressedImage toJpegImage() throws IOException
     {
-        byte buffers[][] = new byte[][] { r, g, b };
-        DataBuffer buffer = new DataBufferByte( buffers, r.length );
-        SampleModel sampleModel = new BandedSampleModel( buffer.getDataType(), width, height, CHANNELS );
+        DataBuffer buffer = new DataBufferByte( data, data.length );
+        int offsets[] = new int[] { 0, 1, 2 };
+        SampleModel sampleModel = new PixelInterleavedSampleModel( buffer.getDataType(), width, height, BANDS, BANDS*width, offsets );
         int bits[] = new int[] { 8, 8, 8 };
         ColorModel colorModel = new ComponentColorModel( ColorSpace.getInstance( ColorSpace.CS_sRGB ), bits, false, false, Transparency.OPAQUE, buffer.getDataType() );
         BufferedImage img = new BufferedImage( colorModel, Raster.createWritableRaster( sampleModel, buffer, null ), false, null );
@@ -206,18 +189,9 @@ class RGB24Image extends UncompressedImage {
         FileOutputStream stream = new FileOutputStream( f );
         String header = "P6\n" + width + ' ' + height + "\n255\n";
         stream.write( header.getBytes() );
-        int ix = 0;
-        byte buffer[] = new byte[3*width];
-        for( int h=0; h<height; h++ ) {
-            int bufix = 0;
-            for( int w=0; w<width; w++ ) {
-                buffer[bufix++] = r[ix];
-                buffer[bufix++] = g[ix];
-                buffer[bufix++] = b[ix];
-                ix++;
-            }
-            stream.write( buffer );
-        }
+        // Since the format of PPM pixels is the same, we can just write
+        // all the bytes directly.
+        stream.write( data );
         stream.close();
     }
 
@@ -233,49 +207,45 @@ class RGB24Image extends UncompressedImage {
         int ix = 0;
         for( int h=0; h<height; h++ ) {
             for( int w=0; w<width; w++ ) {
-                stream.format( "%02x %02x %02x\n", r[ix], g[ix], b[ix] );
+                stream.format( "%02x %02x %02x\n", data[ix++], data[ix++], data[ix++] );
             }
             stream.println();
         }
         stream.close();
     }
 
-    private static byte[] fillChannel( int width, int height, int val )
-    {
-        byte res[] = new byte[width*height];
-
-        Arrays.fill( res, (byte) val );
-        return res;
-    }
-
     static RGB24Image buildConstantImage( int frameno, int width, int height, int vr, int vg, int vb )
     {
-        byte r[] = fillChannel( width, height, vr );
-        byte g[] = fillChannel( width, height, vg );
-        byte b[] = fillChannel( width, height, vb );
-        return new RGB24Image( frameno, width, height, r, g, b );
+        byte data[] = new byte[width*height*BANDS];
+
+        int ix = 0;
+        for( int h=0; h<height; h++ ) {
+            for( int w=0; w<width; w++ ) {
+        	data[ix++] = (byte) vr;
+        	data[ix++] = (byte) vg;
+        	data[ix++] = (byte) vb;
+            }
+        }
+        return new RGB24Image( frameno, width, height, data );
     }
 
     static RGB24Image buildGradientImage( int frameno, int width, int height )
     {
-        byte r[] = new byte[width*height];
-        byte g[] = new byte[width*height];
-        byte b[] = new byte[width*height];
+        byte data[] = new byte[width*height*BANDS];
         int ix = 0;
         byte vg = 0;
 
         for( int h=0; h<height; h++ ) {
             byte vr = 0;
             for( int w=0; w<width; w++ ) {
-                r[ix] = vr;
-                g[ix] = vg;
-                b[ix] = 127;
-                ix++;
+                data[ix++] = vr;
+                data[ix++] = vg;
+                data[ix++] = 127;
                 vr++;
             }
             vg++;
         }
-        return new RGB24Image( frameno, width, height, r, g, b );
+        return new RGB24Image( frameno, width, height, data );
     }
 
     static RGB24Image convert( Image img )

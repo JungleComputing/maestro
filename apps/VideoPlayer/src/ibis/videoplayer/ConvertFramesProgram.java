@@ -59,7 +59,7 @@ class ConvertFramesProgram {
         final double gr, gg, gb;
         final double br, bg, bb;
         
-        public ColorCorrectAction(final double rr, final double rg, final double rb, final double gr, final double gg, final double gb, final double br, final double bg, final double bb) {
+        ColorCorrectAction(final double rr, final double rg, final double rb, final double gr, final double gg, final double gb, final double br, final double bg, final double bb) {
             super();
             this.rr = rr;
             this.rg = rg;
@@ -72,6 +72,13 @@ class ConvertFramesProgram {
             this.bb = bb;
         }
 
+        /** Color-convert one image in a Maestro flow.
+         * 
+         * @param in The input of the conversion.
+         * @param node The node this process runs on.
+         * @param context The program context.
+         * @return THe converted image.
+         */
         @Override
         public Object run( Object in, Node node, Context context ) {
             UncompressedImage img = (UncompressedImage) in;

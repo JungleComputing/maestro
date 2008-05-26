@@ -43,20 +43,20 @@ abstract class UncompressedImage extends Image {
 	int type = sm.getDataType();
 	final int width = sm.getWidth();
 	final int height = sm.getHeight();
-	WritableRaster raster = Raster.createBandedRaster( type, width, height, sm.getNumBands(), null );
+	WritableRaster raster = Raster.createInterleavedRaster( type, width, height, sm.getNumBands(), null );
 	raster = image.copyData( raster );
 	DataBuffer buffer = raster.getDataBuffer();
 	if( buffer instanceof DataBufferUShort ){
 	    DataBufferUShort sb = (DataBufferUShort) buffer;
 
 	    short banks[][] = sb.getBankData();
-	    return new RGB48Image( frameno, width, height, banks[0], banks[1], banks[2] );
+	    return new RGB48Image( frameno, width, height, banks[0] );
 	}
 	if( buffer instanceof DataBufferByte ){
 	    DataBufferByte sb = (DataBufferByte) buffer;
 
 	    byte banks[][] = sb.getBankData();
-	    return new RGB24Image( frameno, width, height, banks[0], banks[1], banks[2] );
+	    return new RGB24Image( frameno, width, height, banks[0] );
 	}
 	System.err.println( "Don't know how to handle data buffer type " + buffer.getClass() );
 	return null;
@@ -80,7 +80,7 @@ abstract class UncompressedImage extends Image {
 	    }
 	}
     }
-    
+
     /**
      * Given two byte values, build a short.
      * @param high The high value of the short.
@@ -91,7 +91,7 @@ abstract class UncompressedImage extends Image {
     {
 	return (short) ((low & 0xFF) + (high & 0xFF)*256);
     }
-    
+
     /**
      * Keep reading bytes from the given stream until the entire buffer has been filled.
      * We might have to give up, however, if end of file is reached. In that case <code>false</code>
@@ -104,19 +104,19 @@ abstract class UncompressedImage extends Image {
      */
     private static boolean readBuffer( InputStream stream, byte buffer[] ) throws IOException
     {
-        int offset = 0;
-        
-        while( true ) {
-            int n = stream.read( buffer, offset, buffer.length-offset );
-            if( n<0 ) {
-                return false;
-            }
-            offset += n;
-            if( offset>=buffer.length ) {
-                break;
-            }
-        }
-        return true;
+	int offset = 0;
+
+	while( true ) {
+	    int n = stream.read( buffer, offset, buffer.length-offset );
+	    if( n<0 ) {
+		return false;
+	    }
+	    offset += n;
+	    if( offset>=buffer.length ) {
+		break;
+	    }
+	}
+	return true;
     }
 
     /**
@@ -156,49 +156,30 @@ abstract class UncompressedImage extends Image {
 	    return null;
 	}
 	if( maxVal == 255 ) {
-	    byte r[] = new byte[width*height];
-	    byte g[] = new byte[width*height];
-	    byte b[] = new byte[width*height];
-	    byte buf[] = new byte[3*width];
+	    byte data[] = new byte[width*height*RGB24Image.BANDS];
 
-	    int ix = 0;
-	    for( int h=0; h<height; h++ ) {
-	        if( !readBuffer( stream, buf ) ) {
-	            System.err.println( "Image data ended prematurely" );
-	            break;
-	        }
-	        int bufix = 0;
-	        for( int w=0; w<width; w++ ) {
-		    r[ix] = buf[bufix++];
-		    g[ix] = buf[bufix++];
-		    b[ix] = buf[bufix++];
-		    ix++;
-		}
+	    if( !readBuffer( stream, data ) ) {
+		System.err.println( "Image data ended prematurely" );
 	    }
 	    stream.close();
-	    return new RGB24Image( frameno, width, height, r, g, b ); 
+	    return new RGB24Image( frameno, width, height, data ); 
 	}
-	short r[] = new short[width*height];
-	short g[] = new short[width*height];
-	short b[] = new short[width*height];
-	byte buf[] = new byte[2*3*width];
+	short data[] = new short[width*height*RGB48Image.BANDS];
+	byte buf[] = new byte[2*RGB48Image.BANDS*width];
 
 	int ix = 0;
 	for( int h=0; h<height; h++ ) {
-            if( !readBuffer( stream, buf ) ) {
-                System.err.println( "Image data ended prematurely" );
-                break;
-            }
-            int bufix = 0;
-	    for( int w=0; w<width; w++ ) {
-		r[ix] = buildShort( buf[bufix++], buf[bufix++] );
-		g[ix] = buildShort( buf[bufix++], buf[bufix++] );
-		b[ix] = buildShort( buf[bufix++], buf[bufix++]);
-		ix++;
+	    if( !readBuffer( stream, buf ) ) {
+		System.err.println( "Image data ended prematurely" );
+		break;
+	    }
+	    int bufix = 0;
+	    for( int w=0; w<width*RGB48Image.BANDS; w++ ) {
+		data[ix++] = buildShort( buf[bufix++], buf[bufix++] );
 	    }
 	}
 	stream.close();
-	return new RGB48Image( frameno, width, height, r, g, b ); 
+	return new RGB48Image( frameno, width, height, data ); 
     }
 
 }
