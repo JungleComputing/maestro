@@ -220,4 +220,14 @@ class RGB48Image extends UncompressedImage {
 
 	return new RGB24Image( frameno, width, height, res );
     }
+
+    static RGB48Image convert( Image img )
+    {
+        if( img instanceof RGB48Image ) {
+            // Now this is easy.
+            return (RGB48Image) img;
+        }
+        System.err.println( "Don't know how to convert a " + img.getClass() + " to a RGB48 image" );
+        return null;
+    }
 }

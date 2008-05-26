@@ -17,12 +17,9 @@ public class Tester {
      */
     public static void main(String[] args) {
         try {
-            UncompressedImage img48 = UncompressedImage.load( new File( "foto2.ppm" ), 0 );
-            System.out.println( "read image " + img48 );
-            img48 = img48.scaleDown( 2 );
-            System.out.println( "downscaled image " + img48 );
-            UncompressedImage img24 = RGB24Image.convert( img48 );
-            System.out.println( "converted to " + img24 );
+//            UncompressedImage img48 = UncompressedImage.load( new File( "foto2.ppm" ), 0 );
+            UncompressedImage img24 = RGB24Image.buildGradientImage( 0, 3000, 2000 );
+            System.out.println( "generated to " + img24 );
 //            System.out.println( "read image " + img );
 //            img.write( new File( "test-out.png" ) );
 //            UncompressedImage img24 = RGB24Image.convert( img );

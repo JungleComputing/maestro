@@ -250,6 +250,10 @@ class RGB24Image extends UncompressedImage {
 
     static RGB24Image convert( Image img )
     {
+        if( img instanceof RGB24Image ) {
+            // Now this is easy.
+            return (RGB24Image) img;
+        }
         if( img instanceof RGB48Image ){
             RGB48Image img48 = (RGB48Image) img;
 
@@ -258,5 +262,4 @@ class RGB24Image extends UncompressedImage {
         System.err.println( "Don't know how to convert a " + img.getClass() + " to a RGB24 image" );
         return null;
     }
-
 }

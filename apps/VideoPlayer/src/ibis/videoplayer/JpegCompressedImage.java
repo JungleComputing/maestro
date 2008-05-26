@@ -120,6 +120,10 @@ class JpegCompressedImage extends CompressedImage {
 
     static JpegCompressedImage convert( Image img ) throws IOException
     {
+        if( img instanceof JpegCompressedImage ) {
+            // Now this is easy.
+            return (JpegCompressedImage) img;
+        }
         if( img instanceof RGB24Image ){
             RGB24Image img24 = (RGB24Image) img;
 
