@@ -73,7 +73,7 @@ public class Config {
 
         System.out.println("Adding component " + name);
 
-        Class clazz = lookupClass(className);
+        Class<? extends Component> clazz = lookupClass(className);
 
         Class<? extends Image> input = getInputType(clazz);
         Class<? extends Image> output = getOutputType(clazz);

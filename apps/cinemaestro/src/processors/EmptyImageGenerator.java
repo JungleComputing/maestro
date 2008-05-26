@@ -5,6 +5,7 @@ import image.ImageQueue;
 import image.RGB24Image;
 import image.RGB48Image;
 import image.UncompressedImage;
+import image.VoidImage;
 
 import java.util.HashMap;
 
@@ -105,7 +106,7 @@ public class EmptyImageGenerator extends ImageProducer<UncompressedImage> {
     }    
     
     public static EmptyImageGenerator create(ComponentDescription c, 
-            ImageQueue in, ImageQueue<UncompressedImage> out,
+            ImageQueue<VoidImage> in, ImageQueue<UncompressedImage> out,
             StatisticsCallback publisher) throws Exception {
    
         HashMap<String, String> options = c.getOptions();
