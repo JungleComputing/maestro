@@ -97,6 +97,13 @@ class ConvertFramesProgram {
             this.scale = scale;
         }
 
+        /**
+         * Run a scale down Maestro job.
+         * @param in The input of this job.
+         * @param node The node this job runs on.
+         * @param context The program context of this job.
+         * @return The result of the job.
+         */
         @Override
         public Object run( Object in, Node node, Context context ) {
             UncompressedImage img = (UncompressedImage) in;
@@ -108,6 +115,14 @@ class ConvertFramesProgram {
     private final class CompressFrameAction implements Job
     {
         private static final long serialVersionUID = 5452987225377415310L;
+
+        /**
+         * Run a Jpeg conversion Maestro job.
+         * @param in The input of this job.
+         * @param node The node this job runs on.
+         * @param context The program context of this job.
+         * @return The result of the job.
+         */
         @Override
         public Object run( Object in, Node node, Context context ) {
             UncompressedImage img = (UncompressedImage) in;

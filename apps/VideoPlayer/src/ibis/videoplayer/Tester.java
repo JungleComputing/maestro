@@ -20,7 +20,14 @@ public class Tester {
 //            UncompressedImage img48 = UncompressedImage.load( new File( "foto2.ppm" ), 0 );
 //            UncompressedImage img24 = RGB24Image.buildGradientImage( 0, 3000, 2000 );
 //          System.out.println( "generated to " + img24 );
-            UncompressedImage img24 = UncompressedImage.load(  new File( "images/japan-tuin-16bit.ppm"), 0 );
+
+            String inc = RenderFrameJob.readFile( new File( "frames/context.inc" ) );
+            String scene = RenderFrameJob.readFile( new File( "frames/S01-frame000000.pov" ) );
+            System.out.println( "Loaded scene" );
+            UncompressedImage img24 = RenderFrameJob.renderImage( 1500, 1000, 0, scene, inc );
+            System.out.println( "Rendered scene" );
+
+            // UncompressedImage img24 = UncompressedImage.load(  new File( "images/japan-tuin-16bit.ppm" ), 0 );
             System.out.println( "loaded " + img24 );
 //            System.out.println( "generated to " + img24 );
 //            System.out.println( "read image " + img );
