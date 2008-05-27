@@ -19,7 +19,8 @@ import ibis.util.RunProcess;
 public class RenderFrameJob implements ibis.maestro.Job
 {
     private static final long serialVersionUID = -3938044583266505212L;
-
+    // FIXME: be more paranoid than  this.
+    private static final File tmpDir = new File( "/tmp" );
     private final String iniFileContent;
 
     /**
@@ -68,12 +69,15 @@ public class RenderFrameJob implements ibis.maestro.Job
     public Object run( Object obj, Node node, Context context )
     {
         RenderInfo info = (RenderInfo) obj;
-        final File povFile = new File( String.format( "frame-%06d.pov", info.frameno ) );
-        final File iniFile = new File( String.format( "frame-%06d.ini", info.frameno ) );
-        final File outFile = new File( String.format( "frame-%06d.ppm", info.frameno ) );
+        File povFile = null;
+        File iniFile = null;
+        File outFile = null;
         UncompressedImage img = null;
 
         try {
+            povFile = File.createTempFile( String.format( "frame-%06d", info.frameno ), ".pov", tmpDir );
+            iniFile = File.createTempFile( String.format( "frame-%06d", info.frameno ), ".ini", tmpDir );
+            outFile = File.createTempFile( String.format( "frame-%06d", info.frameno ), ".ppm", tmpDir );
             writeFile( povFile, info.scene );
             writeFile( iniFile, iniFileContent );
         }
