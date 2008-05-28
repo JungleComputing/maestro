@@ -1,15 +1,15 @@
 package ibis.videoplayer;
 
+import ibis.maestro.Context;
+import ibis.maestro.Node;
+import ibis.util.RunProcess;
+
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.Serializable;
-
-import ibis.maestro.Context;
-import ibis.maestro.Node;
-import ibis.util.RunProcess;
 
 /**
  * An action to run a PovRay scene description through povray, and load the
@@ -142,6 +142,7 @@ public class RenderFrameJob implements ibis.maestro.Job
         };
         try {
             RunProcess p = new RunProcess( command );
+            p.run();
             int exit = p.getExitStatus();
             if( exit != 0 ) {
         	String cmd = "";
