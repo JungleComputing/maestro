@@ -11,7 +11,7 @@ import ibis.maestro.Task;
  * @author Kees van Reeuwijk
  *
  */
-public class BuildVideo {
+public class BuildVideoProgram {
     private static final int OUTSTANDING_FRAGMENTS = 3*32;
 
     private static class Listener implements CompletionListener
@@ -105,7 +105,7 @@ public class BuildVideo {
         }
         System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro + "; frameCount=" + frameCount );
         try {
-            new BuildVideo().run( frameCount, goForMaestro );
+            new BuildVideoProgram().run( frameCount, goForMaestro );
         }
         catch( Exception e ) {
             e.printStackTrace( System.err );

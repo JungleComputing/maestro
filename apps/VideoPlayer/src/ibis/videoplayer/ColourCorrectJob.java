@@ -11,7 +11,7 @@ import ibis.maestro.Node;
  * @author Kees van Reeuwijk
  *
  */
-public class ColorCorrectAction implements Job
+public class ColourCorrectJob implements Job
 {
     private static final long serialVersionUID = -3938044583266505212L;
 
@@ -22,7 +22,7 @@ public class ColorCorrectAction implements Job
     public Object run(Object obj, Node node, Context context )
     {
 	RGB48Image frame = (RGB48Image) obj;
-        return frame.colorCorrect(
+        return frame.colourCorrect(
                 0.0, 0.0, 1.0,
                 0.0, 1.0, 0.0,
                 1.0, 0.0, 0.0

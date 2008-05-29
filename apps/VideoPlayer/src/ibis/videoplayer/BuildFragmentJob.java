@@ -76,10 +76,10 @@ public final class BuildFragmentJob implements Job
     {
         return node.createTask(
                 "getFrame",
-                new FetchFrameAction(),
-                new DecompressFrameAction(),
-                new ColorCorrectAction(),
-                new ScaleFrameAction()
+                new FetchFrameJob(),
+                new DecompressFrameJob(),
+                new ColourCorrectJob(),
+                new ScaleFrameJob()
         );
     }
 

@@ -27,7 +27,7 @@ abstract class UncompressedImage extends Image {
      */
     @Override
     abstract UncompressedImage scaleDown( int factor );
-    abstract Image colorCorrect( double frr, double frg, double frb, double fgr, double fgg, double fgb, double fbr, double fbg, double fbb );
+    abstract Image colourCorrect( double frr, double frg, double frb, double fgr, double fgg, double fgb, double fbr, double fbg, double fbb );
 
     /**
      * Given a file that we know is a PNG file, load it, and return

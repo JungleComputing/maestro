@@ -9,7 +9,8 @@ import java.io.IOException;
  * @author Kees van Reeuwijk
  *
  */
-public class Tester {
+public class TestProgram
+{
 
     /**
      * Simple wrapper to test methods without all the Maestro infrastructure.

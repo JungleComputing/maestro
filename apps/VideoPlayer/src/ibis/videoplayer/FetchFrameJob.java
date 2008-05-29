@@ -13,7 +13,7 @@ import java.io.IOException;
  * @author Kees van Reeuwijk
  *
  */
-public class FetchFrameAction implements Job
+public class FetchFrameJob implements Job
 {
     private static final long serialVersionUID = -3938044583266505212L;
 

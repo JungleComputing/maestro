@@ -5,7 +5,7 @@ package ibis.videoplayer;
  *
  * @author Kees van Reeuwijk.
  */
-class MakeFrames
+class MakeFramesProgram
 {
     static final int WIDTH = 3480;
     static final int HEIGHT = 2160;

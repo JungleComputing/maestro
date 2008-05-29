@@ -83,7 +83,7 @@ public class RenderMovieProgram {
         public Object run( Object in, Node node, Context context ) {
             UncompressedImage img = (UncompressedImage) in;
 
-            return img.colorCorrect(rr, rg, rb, gr, gg, gb, br, bg, bb );
+            return img.colourCorrect(rr, rg, rb, gr, gg, gb, br, bg, bb );
         }
     }
 

@@ -124,7 +124,7 @@ class RGB24Image extends UncompressedImage {
     }
 
     @Override
-    Image colorCorrect( double frr, double frg, double frb, double fgr, double fgg, double fgb, double fbr, double fbg, double fbb )
+    Image colourCorrect( double frr, double frg, double frb, double fgr, double fgg, double fgb, double fbr, double fbg, double fbb )
     {
 	byte res[] = new byte[width*height*BANDS];
 

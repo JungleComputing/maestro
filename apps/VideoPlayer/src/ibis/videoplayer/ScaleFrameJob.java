@@ -10,7 +10,7 @@ import ibis.maestro.Node;
  * @author Kees van Reeuwijk
  *
  */
-public class ScaleFrameAction implements Job
+class ScaleFrameJob implements Job
 {
     private static final long serialVersionUID = -3938044583266505212L;
 
