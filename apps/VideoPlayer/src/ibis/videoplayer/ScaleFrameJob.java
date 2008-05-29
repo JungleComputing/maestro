@@ -13,6 +13,12 @@ import ibis.maestro.Node;
 class ScaleFrameJob implements Job
 {
     private static final long serialVersionUID = -3938044583266505212L;
+    private final int factor;
+    
+    ScaleFrameJob( int factor )
+    {
+        this.factor = factor;
+    }
 
     /**
      * Scales the given input, an image, and returns a scaled version of the image.
@@ -24,6 +30,6 @@ class ScaleFrameJob implements Job
     public Object run( Object obj, Node node, Context context )
     {
 	Image frame = (Image) obj;
-        return frame.scaleDown( 2 );
+        return frame.scaleDown( factor );
     }
 }

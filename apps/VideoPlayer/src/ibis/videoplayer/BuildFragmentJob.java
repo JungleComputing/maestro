@@ -79,7 +79,7 @@ public final class BuildFragmentJob implements Job
                 new FetchFrameJob(),
                 new DecompressFrameJob(),
                 new ColourCorrectJob(),
-                new ScaleFrameJob()
+                new ScaleFrameJob( 2 )
         );
     }
 

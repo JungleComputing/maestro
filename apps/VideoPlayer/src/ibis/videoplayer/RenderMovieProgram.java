@@ -29,7 +29,7 @@ public class RenderMovieProgram {
         }
     }
     
-    private final class FetchImageAction implements Job {
+    private final class FetchImageJob implements Job {
         private static final long serialVersionUID = -7976035811697720295L;
 
         /**
@@ -52,14 +52,14 @@ public class RenderMovieProgram {
         }   
     }
 
-    private final class ColorCorrectAction implements Job
+    private final class ColorCorrectJob implements Job
     {
         private static final long serialVersionUID = 5452987225377415308L;
         final double rr, rg, rb;
         final double gr, gg, gb;
         final double br, bg, bb;
         
-        ColorCorrectAction(final double rr, final double rg, final double rb, final double gr, final double gg, final double gb, final double br, final double bg, final double bb) {
+        ColorCorrectJob(final double rr, final double rg, final double rb, final double gr, final double gg, final double gb, final double br, final double bg, final double bb) {
             super();
             this.rr = rr;
             this.rg = rg;
@@ -87,32 +87,7 @@ public class RenderMovieProgram {
         }
     }
 
-    private final class ScaleFrameAction implements Job
-    {
-        private static final long serialVersionUID = 5452987225377415309L;
-        final int scale;
-        
-        ScaleFrameAction( int scale )
-        {
-            this.scale = scale;
-        }
-
-        /**
-         * Run a scale down Maestro job.
-         * @param in The input of this job.
-         * @param node The node this job runs on.
-         * @param context The program context of this job.
-         * @return The result of the job.
-         */
-        @Override
-        public Object run( Object in, Node node, Context context ) {
-            UncompressedImage img = (UncompressedImage) in;
-            
-            return img.scaleDown( scale );
-        }
-    }
-
-    private final class CompressFrameAction implements Job
+    private final class CompressFrameJob implements Job
     {
         private static final long serialVersionUID = 5452987225377415310L;
 
@@ -144,10 +119,10 @@ public class RenderMovieProgram {
         TaskWaiter waiter = new TaskWaiter();
         Task convertTask =  node.createTask(
                 "converter",
-                new FetchImageAction(),
-                new ColorCorrectAction( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
-                new ScaleFrameAction( 3 ),
-                new CompressFrameAction()
+                new FetchImageJob(),
+                new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
+                new ScaleFrameJob( 3 ),
+                new CompressFrameJob()
         );
 
         System.out.println( "Node created" );
