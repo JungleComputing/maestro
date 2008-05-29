@@ -18,8 +18,8 @@ import java.util.LinkedList;
  */
 public class RenderMovieProgram implements CompletionListener
 {
-    static final int WIDTH = 200;
-    static final int HEIGHT = 100;
+    static final int WIDTH = 100;
+    static final int HEIGHT = 50;
     static final double RENDER_TIME = 1.0;  // Pessimistic estimated time in seconds to render a frame.
     static final double SHOW_INTERVAL = 0.5; // Time in seconds from the first frame submission until planned show. 
     static final int FRAMES_PER_SECOND = 25;
@@ -27,7 +27,7 @@ public class RenderMovieProgram implements CompletionListener
     private final LinkedList<FrameSchedule> queue = new LinkedList<FrameSchedule>();
     private int outstandingJobs = 0;
     private final File outputDir;
-    
+
     RenderMovieProgram( File outputDir )
     {
         this.outputDir = outputDir;
@@ -39,7 +39,7 @@ public class RenderMovieProgram implements CompletionListener
         synchronized( queue ) {
             while( !queue.isEmpty() ) {
                 FrameSchedule fr = queue.getFirst();
-                
+
                 if( fr.showMoment<renderDeadline ) {
                     // This one is required soon, put it in the queue.
                     System.out.println( "Submitting frame " + fr.frameno );
@@ -95,6 +95,7 @@ public class RenderMovieProgram implements CompletionListener
         public Object run( Object in, Node node, Context context ) {
             UncompressedImage img = (UncompressedImage) in;
 
+            System.out.println( "Colour-correcting frame " + img.frameno );
             return img.colourCorrect(rr, rg, rb, gr, gg, gb, br, bg, bb );
         }
     }
@@ -115,6 +116,7 @@ public class RenderMovieProgram implements CompletionListener
         public Object run( Object in, Node node, Context context ) {
             UncompressedImage img = (UncompressedImage) in;
 
+            System.out.println( "Downsampling frame " + img.frameno );
             return RGB24Image.convert( img );
         }
     }
@@ -135,6 +137,7 @@ public class RenderMovieProgram implements CompletionListener
             UncompressedImage img = (UncompressedImage) in;
 
             try {
+                System.out.println( "Compressing frame " + img.frameno );
                 return JpegCompressedImage.convert( img );
             } catch (IOException e) {
                 System.err.println( "Cannot convert image to JPEG: " + e.getLocalizedMessage() );
@@ -143,7 +146,7 @@ public class RenderMovieProgram implements CompletionListener
             }
         }
     }
-    
+
     private static class FrameSchedule {
         final String scene;
         final int frameno;
@@ -166,11 +169,6 @@ public class RenderMovieProgram implements CompletionListener
     @SuppressWarnings("synthetic-access")
     private void run( File sourceDirectory, File iniFile ) throws Exception
     {
-        String init = RenderFrameJob.readFile( iniFile );
-        if( init == null ) {
-            System.err.println( "Cannot read file " + iniFile );
-            return;
-        }
         Node node = new Node( new ConverterContext( sourceDirectory ), sourceDirectory != null );
         Task convertTask =  node.createTask(
             "converter",
@@ -184,6 +182,11 @@ public class RenderMovieProgram implements CompletionListener
         int frameno = 0;
         System.out.println( "Node created" );
         if( sourceDirectory != null ) {
+            String init = RenderFrameJob.readFile( iniFile );
+            if( init == null ) {
+                System.err.println( "Cannot read file " + iniFile );
+                return;
+            }
             File files[] = sourceDirectory.listFiles();
             System.out.println( "I am maestro; converting " + files.length + " images" );
             for( File f: files ) {
@@ -196,6 +199,8 @@ public class RenderMovieProgram implements CompletionListener
                         int n = frameno++;
                         RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo( WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, n, init + scene );
                         convertTask.submit( info, new Integer( n ), this );
+                        System.out.println( "Submitted frame " + n );
+                        outstandingJobs++;
                     }
                 }
             }
@@ -209,38 +214,44 @@ public class RenderMovieProgram implements CompletionListener
      */
     public static void main( String args[] )
     {
-        if( args.length != 3 ){
+        if( args.length != 0 && args.length != 3 ){
             System.err.println( "Usage: <input-directory> <init-file> <output-directory>" );
+            System.err.println( "Or give no parameters at all for a helper node" );
             System.exit( 1 );
         }
-        File inputDir = new File( args[0] );
-        File initFile = new File( args[1] );
-        File outputDir = new File( args[2] );
-        if( !inputDir.exists() ) {
-            System.err.println( "Input directory '" + inputDir + "' does not exist" );
-            System.exit( 1 );
-        }
-        if( !inputDir.isDirectory() ) {
-            System.err.println( "Input directory '" + inputDir + "' is not a directory" );
-            System.exit( 1 );
-        }
-        if( !initFile.exists() ) {
-            System.err.println( "Init file '" + initFile + "' does not exist" );
-            System.exit( 1 );
-        }
-        if( !initFile.isFile() ) {
-            System.err.println( "Init file '" + initFile + "' is not a file" );
-            System.exit( 1 );
-        }
-        if( !outputDir.exists() ) {
-            if( !outputDir.mkdir() ) {
-                System.err.println( "Cannot create output directory '" + outputDir + "'" );
+        File inputDir = null;
+        File initFile = null;
+        File outputDir = null;
+        if( args.length != 0 ) {
+            inputDir = new File( args[0] );
+            initFile = new File( args[1] );
+            outputDir = new File( args[2] );
+            if( !inputDir.exists() ) {
+                System.err.println( "Input directory '" + inputDir + "' does not exist" );
                 System.exit( 1 );
             }
-        }
-        if( !outputDir.isDirectory() ) {
-            System.err.println( "Output directory '" + outputDir + "' is not a directory" );
-            System.exit( 1 );
+            if( !inputDir.isDirectory() ) {
+                System.err.println( "Input directory '" + inputDir + "' is not a directory" );
+                System.exit( 1 );
+            }
+            if( !initFile.exists() ) {
+                System.err.println( "Init file '" + initFile + "' does not exist" );
+                System.exit( 1 );
+            }
+            if( !initFile.isFile() ) {
+                System.err.println( "Init file '" + initFile + "' is not a file" );
+                System.exit( 1 );
+            }
+            if( !outputDir.exists() ) {
+                if( !outputDir.mkdir() ) {
+                    System.err.println( "Cannot create output directory '" + outputDir + "'" );
+                    System.exit( 1 );
+                }
+            }
+            if( !outputDir.isDirectory() ) {
+                System.err.println( "Output directory '" + outputDir + "' is not a directory" );
+                System.exit( 1 );
+            }
         }
         System.out.println( "Running on platform " + Service.getPlatformVersion() + " input=" + inputDir + " init=" + initFile + " output=" + outputDir );
         try {
@@ -261,7 +272,7 @@ public class RenderMovieProgram implements CompletionListener
     {
         int frameno = (Integer) id;
         Image img = (Image) result;
-        
+
         File f = new File( outputDir, String.format( "f%06d.jpg", frameno ) );
         try {
             img.write( f );

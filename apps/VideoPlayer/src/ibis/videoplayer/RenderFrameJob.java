@@ -117,6 +117,7 @@ public class RenderFrameJob implements ibis.maestro.Job
         File outFile = null;
         UncompressedImage img = null;
 
+        System.out.println( "Rendering frame " + frameno );
         try {
             povFile = File.createTempFile( String.format( "fr-%06d", frameno ), ".pov", tmpDir );
             outFile = File.createTempFile( String.format( "fr-%06d", frameno ), ".ppm", tmpDir );
