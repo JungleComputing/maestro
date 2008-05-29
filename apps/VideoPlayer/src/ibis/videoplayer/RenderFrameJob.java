@@ -38,6 +38,10 @@ public class RenderFrameJob implements ibis.maestro.Job
         private static final long serialVersionUID = 1899219003828691971L;
         final int width;
         final int height;
+        final int startRow;
+        final int endRow;
+        final int startColumn;
+        final int endColumn;
         final int frameno;
         final String scene;
 
@@ -47,9 +51,13 @@ public class RenderFrameJob implements ibis.maestro.Job
          * @param frame The number of the frame to render.
          * @param scene The scene file.
          */
-        RenderInfo( int width, int height, int frame, String scene ) {
+        RenderInfo( int width, int height, int startColumn, int endColumn, int startRow, int endRow, int frame, String scene ) {
             this.width = width;
             this.height = height;
+            this.startColumn = startColumn;
+            this.endColumn = endColumn;
+            this.startRow = startRow;
+            this.endRow = endRow;
             this.frameno = frame;
             this.scene = scene;
         }
@@ -98,10 +106,10 @@ public class RenderFrameJob implements ibis.maestro.Job
         return new String( buf );
     }
 
-    RenderInfo loadScene( File f, int width, int height, int frameno )
+    RenderInfo loadScene( File f, int width, int height, int startRow, int endRow, int startColumn, int endColumn, int frameno )
     {
 	String scene = readFile( f );
-	return new RenderInfo( width, height, frameno, scene );
+	return new RenderInfo( width, height, startRow, endRow, startColumn, endColumn, frameno, scene );
     }
 
     private static boolean writeFile( File f, String s ) throws IOException
@@ -113,7 +121,7 @@ public class RenderFrameJob implements ibis.maestro.Job
         return ok;
     }
 
-    static UncompressedImage renderImage( int width, int height, int frameno, String scene, String iniFileContent )
+    static UncompressedImage renderImage( int width, int height, int startRow, int endRow, int startColumn, int endColumn, int frameno, String scene, String iniFileContent )
     {
         File povFile = null;
         File outFile = null;
@@ -132,6 +140,10 @@ public class RenderFrameJob implements ibis.maestro.Job
                 "/usr/bin/povray",
                 povFile.getAbsolutePath(),
                 "+O" + outFile.getAbsolutePath(),
+                "+SR" + startRow,
+                "+ER" + endRow,
+                "+SC" + startColumn,
+                "+EC" + endColumn,
                 "+H" + height,
                 "+W" + width,
                 "-D",  // No output display
@@ -176,6 +188,6 @@ public class RenderFrameJob implements ibis.maestro.Job
     public Object run( Object obj, Node node, Context context )
     {
 	RenderInfo info = (RenderInfo) obj;
-        return renderImage( info.width, info.height, info.frameno, info.scene, iniFileContent );
+        return renderImage( info.width, info.height, info.startRow, info.endRow, info.startColumn, info.endColumn, info.frameno, info.scene, iniFileContent );
     }
 }

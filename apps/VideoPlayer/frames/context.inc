@@ -72,14 +72,79 @@ global_settings {
     fade_distance 10
 }
 
-#declare KamerPigment = pigment { color 0.85*<1,1,1> };
+
+#declare VloerMateriaal = material {
+    texture {
+        pigment {
+            hexagon 
+                rgb <0.95, 0.94, 0.82>,
+                rgb <0.95, 0.92, 0.77>,
+                rgb <0.91, 0.91, 0.78>
+                warp { turbulence 0.8 }
+                scale 0.5
+        }
+
+        normal {
+            ripples 0.05
+            turbulence 0.3
+        }
+
+        finish { diffuse 0.6 }
+    }
+}
+
+#declare PlafondMateriaal = material {
+    texture {
+        pigment { color <1,1,1> }
+    }
+};
+
+#declare WandMateriaal = material {
+   texture {
+      pigment {
+         color rgb <0.964706, 0.909804, 0.831373>
+      }
+      
+      normal {
+         wrinkles
+         0.5
+         turbulence <0.2, 0.2, 0.2>
+         triangle_wave
+         scale 3
+      }
+      
+      finish {
+         phong_size 30
+         roughness 5
+      }
+   }
+}
 
 #declare Kamer = union {
     difference {
-        box { <-WandDikte,-WandDikte,-WandDikte> <KamerLengte+ WandDikte,KamerHoogte+WandDikte,KamerDiepte+WandDikte> }
-        box { <0, 0, 0> <KamerLengte,KamerHoogte,KamerDiepte> }
-        object { Tunnels }
-        pigment { KamerPigment }
+        union {
+            box {
+                <-WandDikte,-WandDikte,-WandDikte> <KamerLengte+ WandDikte,0,KamerDiepte+WandDikte>
+                material { VloerMateriaal }
+            }
+            box {
+                <-WandDikte,KamerHoogte,-WandDikte> <KamerLengte+ WandDikte,KamerHoogte+WandDikte,KamerDiepte+WandDikte>
+                material { PlafondMateriaal }
+            }
+            union {
+                box { <-WandDikte,-WandDikte,KamerDiepte> <KamerLengte+ WandDikte,KamerHoogte+WandDikte,KamerDiepte+WandDikte> }
+                box { <-WandDikte,-WandDikte,-WandDikte> <KamerLengte+ WandDikte,KamerHoogte+WandDikte,0> }
+                box { <-WandDikte,-WandDikte,-WandDikte> <0,KamerHoogte+WandDikte,KamerDiepte+WandDikte> }
+                box { <KamerLengte,-WandDikte,-WandDikte> <KamerLengte+WandDikte,KamerHoogte+WandDikte,KamerDiepte+WandDikte> }
+                material { WandMateriaal }
+            }
+        }
+        //box { <-WandDikte,-WandDikte,-WandDikte> <KamerLengte+ WandDikte,KamerHoogte+WandDikte,KamerDiepte+WandDikte> }
+        //box { <0, 0, 0> <KamerLengte,KamerHoogte,KamerDiepte> }
+        object {
+            Tunnels
+            material { WandMateriaal }
+        }
     }
     object {
         KamerLamp
@@ -112,6 +177,7 @@ global_settings {
                 [ 1.000000, <1.000000, 0.000000> ]
             }
             accuracy 0.01
+            scale 0.3
         }
         finish { chroomFinish }
     }
@@ -569,7 +635,8 @@ union {
     #local w = 0.1;
     box { <0,0,-laadBreedte/2>, <w,s,laadBreedte/2> translate < laadLengte/4,0,0> }
     box { <0,0,-laadBreedte/2>, <w,s,laadBreedte/2> translate <-laadLengte/4,0,0> }
-    material { witteVerf }
+    //material { witteVerf }
+    material { Chroom }
 }
 
 #declare whaleStraal = 6;
@@ -643,7 +710,7 @@ union {
             cylinder { <-whaleLengte/2,whaleStraal,0> <whaleLengte/2,whaleStraal,0>, whaleStraal }
             texture {
                 pigment { color rgb <1,0.85,0.72> }
-                normal { wrinkles 0.12 scale 0.1 }
+                normal { wrinkles 3*0.12 scale 1 }
                 finish { specular 0.2 }
             }
         }
@@ -760,11 +827,16 @@ union {
 #declare cylinderFrame = union {
     object { kratFrame }
     union {
-        object{ Tank( laadLengte-2*kratSpeling, (laadBreedte/2)-kratSpeling ) translate <kratSpeling-laadLengte/2,laadBreedte/2,0> }
+        object{
+            Tank( laadLengte-2*kratSpeling, (laadBreedte/2)-kratSpeling ) translate <kratSpeling-laadLengte/2,laadBreedte/2,0>
+            material { Chroom }
+        }
         #local w = 0.1;
-        box { <0,frameDikte,frameDikte-laadBreedte/2>, <w,laadBreedte-frameDikte,laadBreedte/2-frameDikte> translate x*laadLengte/4 }
-        box { <0,frameDikte,frameDikte-laadBreedte/2>, <w,laadBreedte-frameDikte,laadBreedte/2-frameDikte> translate -x*laadLengte/4 }
-        material { witteVerf }
+        union {
+            box { <0,frameDikte,frameDikte-laadBreedte/2>, <w,laadBreedte-frameDikte,laadBreedte/2-frameDikte> translate x*laadLengte/4 }
+            box { <0,frameDikte,frameDikte-laadBreedte/2>, <w,laadBreedte-frameDikte,laadBreedte/2-frameDikte> translate -x*laadLengte/4 }
+            material { witteVerf }
+        }
     }
 }
 
@@ -773,14 +845,18 @@ union {
     union {
         sphere {
             <( laadLengte/4)+kratSpeling,laadBreedte/2,0> (laadBreedte/2)-kratSpeling 
+            material { Chroom }
         }
         sphere {
             <(-laadLengte/4)-kratSpeling,laadBreedte/2,0> (laadBreedte/2)-kratSpeling 
+            material { Chroom }
         }
         #local w = 0.1;
-        box { <0,frameDikte,frameDikte-laadBreedte/2>, <w,laadBreedte-frameDikte,laadBreedte/2-frameDikte> translate  x*laadLengte/4 }
-        box { <0,frameDikte,frameDikte-laadBreedte/2>, <w,laadBreedte-frameDikte,laadBreedte/2-frameDikte> translate -x*laadLengte/4 }
-        material { witteVerf }
+        union {
+            box { <0,frameDikte,frameDikte-laadBreedte/2>, <w,laadBreedte-frameDikte,laadBreedte/2-frameDikte> translate  x*laadLengte/4 }
+            box { <0,frameDikte,frameDikte-laadBreedte/2>, <w,laadBreedte-frameDikte,laadBreedte/2-frameDikte> translate -x*laadLengte/4 }
+            material { witteVerf }
+        }
     }
 }
 
@@ -798,7 +874,8 @@ union {
             (laadBreedte/2)-(kratSpeling+frameDikte)
         }
         box { <-laadLengte/2+kratSpeling,kratSpeling,kratSpeling-laadBreedte/2> <laadLengte/2-kratSpeling,kratSpeling+0.01,laadBreedte/2-kratSpeling> }
-        material { witteVerf }
+        //material { witteVerf }
+        material { Chroom }
     }
 }
 
@@ -1072,14 +1149,12 @@ union
         object { LiftKlauw rotate y*270  translate <(liftPaalStraal+liftPaalSpeling)-LiftSchachtBreedte/2,0,LiftSchachtBreedte/2-(liftPaalStraal+liftPaalSpeling)> }
         object { LiftKlauw rotate y* 90 translate <LiftSchachtBreedte/2-(liftPaalStraal+liftPaalSpeling),0,(liftPaalStraal+liftPaalSpeling)-LiftSchachtBreedte/2> }
         object { LiftKlauw rotate y*180 translate <(liftPaalStraal+liftPaalSpeling)-LiftSchachtBreedte/2,0,(liftPaalStraal+liftPaalSpeling)-LiftSchachtBreedte/2> }
-        texture {
-            pigment { KamerPigment }
-        }
+        material { VloerMateriaal }
     }
 }
 
-object { liftPalen translate <KamerLengte/2,0,KamerDiepte/2> }
-object { lift translate <KamerLengte/2,0.0*LiftDikte,KamerDiepte/2> }
+//object { liftPalen translate <KamerLengte/2,0,KamerDiepte/2> }
+//object { lift translate <KamerLengte/2,0.0*LiftDikte,KamerDiepte/2> }
 
 #macro kratStapel1( n1 )
 object { n1 }

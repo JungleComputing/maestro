@@ -24,19 +24,19 @@ public class Tester {
             String inc = RenderFrameJob.readFile( new File( "frames/context.inc" ) );
             String scene = RenderFrameJob.readFile( new File( "frames/S01-frame000000.pov" ) );
             System.out.println( "Loaded scene" );
-            UncompressedImage img24 = RenderFrameJob.renderImage( 1500, 1000, 0, scene, inc );
+            UncompressedImage img24 = RenderFrameJob.renderImage( 1500, 500, 0, 1000, 0, 500, 0, scene, inc );
             System.out.println( "Rendered scene" );
 
             // UncompressedImage img24 = UncompressedImage.load(  new File( "images/japan-tuin-16bit.ppm" ), 0 );
             System.out.println( "loaded " + img24 );
 //            System.out.println( "generated to " + img24 );
 //            System.out.println( "read image " + img );
-//            img.write( new File( "test-out.png" ) );
-             img24 = RGB24Image.convert( img24 );
-            System.out.println( "downsampled to image " + img24 );
-            CompressedImage cimg = JpegCompressedImage.convert( img24 );
-            System.out.println( "compressed to " + cimg );
-            cimg.write( new File( "test.jpg" ) );
+            img24.write( new File( "test-out.ppm" ) );
+//             img24 = RGB24Image.convert( img24 );
+//            System.out.println( "downsampled to image " + img24 );
+//            CompressedImage cimg = JpegCompressedImage.convert( img24 );
+//            System.out.println( "compressed to " + cimg );
+//            cimg.write( new File( "test.jpg" ) );
             System.out.println( "Finished" );
         } catch (IOException e) {
             e.printStackTrace();
