@@ -24,7 +24,7 @@ public class Tester {
             String inc = RenderFrameJob.readFile( new File( "frames/context.inc" ) );
             String scene = RenderFrameJob.readFile( new File( "frames/S01-frame000000.pov" ) );
             System.out.println( "Loaded scene" );
-            UncompressedImage img24 = RenderFrameJob.renderImage( 1500, 500, 0, 1000, 0, 500, 0, scene, inc );
+            UncompressedImage img24 = RenderFrameJob.renderImage( 1500, 500, 0, 1000, 0, 500, 0, inc + scene );
             System.out.println( "Rendered scene" );
 
             // UncompressedImage img24 = UncompressedImage.load(  new File( "images/japan-tuin-16bit.ppm" ), 0 );

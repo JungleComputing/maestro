@@ -10,12 +10,12 @@ import java.io.File;
 import java.io.IOException;
 
 /**
- * Run some conversions on a directory full of images.
+ * Construct a movie from a directory full of povray scripts.
  * 
  * @author Kees van Reeuwijk
  *
  */
-class ConvertFramesProgram {
+public class RenderMovieProgram {
     private class ConverterContext implements Context {
         final File sourceDirectory;
 
@@ -138,21 +138,21 @@ class ConvertFramesProgram {
     }
 
     @SuppressWarnings("synthetic-access")
-    private void run( File framesDirectory, File destinationDirectory ) throws Exception
+    private void run( File sourceDirectory, File destinationDirectory ) throws Exception
     {
-        Node node = new Node( new ConverterContext( framesDirectory ), framesDirectory != null );
+        Node node = new Node( new ConverterContext( sourceDirectory ), sourceDirectory != null );
         TaskWaiter waiter = new TaskWaiter();
         Task convertTask =  node.createTask(
                 "converter",
-                new RenderFrameJob(),
+                new FetchImageAction(),
                 new ColorCorrectAction( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
-                new ScaleFrameAction( 2 ),
+                new ScaleFrameAction( 3 ),
                 new CompressFrameAction()
         );
 
         System.out.println( "Node created" );
-        if( framesDirectory != null ) {
-            File files[] = framesDirectory.listFiles();
+        if( sourceDirectory != null ) {
+            File files[] = sourceDirectory.listFiles();
             System.out.println( "I am maestro; converting " + files.length + " images" );
             for( File f: files ) {
                 waiter.submit( convertTask, f );
@@ -198,7 +198,7 @@ class ConvertFramesProgram {
         }
         System.out.println( "Running on platform " + Service.getPlatformVersion() + " input=" + inputDir + " output=" + outputDir );
         try {
-            new ConvertFramesProgram().run( inputDir, outputDir );
+            new RenderMovieProgram().run( inputDir, outputDir );
         }
         catch( Exception e ) {
             e.printStackTrace( System.err );

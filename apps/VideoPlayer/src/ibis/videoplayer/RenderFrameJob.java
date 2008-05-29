@@ -22,16 +22,6 @@ public class RenderFrameJob implements ibis.maestro.Job
 {
     private static final long serialVersionUID = -3938044583266505212L;
     private static final File tmpDir = new File( "/tmp" );  // FIXME: be more paranoid than this.
-    private final String iniFileContent;
-
-    /**
-     * @param iniFile The file containing the init info.
-     */
-    RenderFrameJob( File iniFile )
-    {
-	String iniFileContent = readFile( iniFile );
-        this.iniFileContent = iniFileContent;
-    }
 
     class RenderInfo implements Serializable
     {
@@ -121,7 +111,7 @@ public class RenderFrameJob implements ibis.maestro.Job
         return ok;
     }
 
-    static UncompressedImage renderImage( int width, int height, int startRow, int endRow, int startColumn, int endColumn, int frameno, String scene, String iniFileContent )
+    static UncompressedImage renderImage( int width, int height, int startRow, int endRow, int startColumn, int endColumn, int frameno, String scene )
     {
         File povFile = null;
         File outFile = null;
@@ -130,7 +120,7 @@ public class RenderFrameJob implements ibis.maestro.Job
         try {
             povFile = File.createTempFile( String.format( "fr-%06d", frameno ), ".pov", tmpDir );
             outFile = File.createTempFile( String.format( "fr-%06d", frameno ), ".ppm", tmpDir );
-            writeFile( povFile, iniFileContent + scene );
+            writeFile( povFile, scene );
         }
         catch( IOException e ) {
             System.err.println( "Cannot write render input file: " + e.getLocalizedMessage() );
@@ -188,6 +178,6 @@ public class RenderFrameJob implements ibis.maestro.Job
     public Object run( Object obj, Node node, Context context )
     {
 	RenderInfo info = (RenderInfo) obj;
-        return renderImage( info.width, info.height, info.startRow, info.endRow, info.startColumn, info.endColumn, info.frameno, info.scene, iniFileContent );
+        return renderImage( info.width, info.height, info.startRow, info.endRow, info.startColumn, info.endColumn, info.frameno, info.scene );
     }
 }
