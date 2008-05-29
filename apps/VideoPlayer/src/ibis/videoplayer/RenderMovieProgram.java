@@ -18,8 +18,9 @@ import java.util.LinkedList;
  */
 public class RenderMovieProgram implements CompletionListener
 {
-    static final int WIDTH = 100;
-    static final int HEIGHT = 50;
+    static final int WIDTH = 400;
+    static final int HEIGHT = 200;
+    static final int REPEATS = 2;
     static final double RENDER_TIME = 1.0;  // Pessimistic estimated time in seconds to render a frame.
     static final double SHOW_INTERVAL = 0.5; // Time in seconds from the first frame submission until planned show. 
     static final int FRAMES_PER_SECOND = 25;
@@ -174,7 +175,7 @@ public class RenderMovieProgram implements CompletionListener
             "converter",
             new RenderFrameJob(),
             new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
-            //new ScaleFrameJob( 2 ),
+            new ScaleFrameJob( 2 ),
             new DownsampleJob(),
             new CompressFrameJob()
         );
@@ -189,18 +190,20 @@ public class RenderMovieProgram implements CompletionListener
             }
             File files[] = sourceDirectory.listFiles();
             System.out.println( "I am maestro; converting " + files.length + " images" );
-            for( File f: files ) {
-                if( !f.getName().equals( ".svn" ) ) {
-                    String scene = RenderFrameJob.readFile( f );
-                    if( scene == null ) {
-                        System.err.println( "Cannot read scene file " + f );
-                    }
-                    else {
-                        int n = frameno++;
-                        RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo( WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, n, init + scene );
-                        convertTask.submit( info, new Integer( n ), this );
-                        System.out.println( "Submitted frame " + n );
-                        outstandingJobs++;
+            for( int iter=0; iter<REPEATS; iter++ ) {
+                for( File f: files ) {
+                    if( !f.getName().equals( ".svn" ) ) {
+                        String scene = RenderFrameJob.readFile( f );
+                        if( scene == null ) {
+                            System.err.println( "Cannot read scene file " + f );
+                        }
+                        else {
+                            int n = frameno++;
+                            RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo( WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, n, init + scene );
+                            convertTask.submit( info, new Integer( n ), this );
+                            System.out.println( "Submitted frame " + n );
+                            outstandingJobs++;
+                        }
                     }
                 }
             }
