@@ -1,13 +1,14 @@
 package ibis.videoplayer;
 
+import ibis.maestro.CompletionListener;
 import ibis.maestro.Context;
 import ibis.maestro.Job;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
-import ibis.maestro.TaskWaiter;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.LinkedList;
 
 /**
  * Construct a movie from a directory full of povray scripts.
@@ -15,7 +16,41 @@ import java.io.IOException;
  * @author Kees van Reeuwijk
  *
  */
-public class RenderMovieProgram {
+public class RenderMovieProgram implements CompletionListener
+{
+    static final int WIDTH = 200;
+    static final int HEIGHT = 100;
+    static final double RENDER_TIME = 1.0;  // Pessimistic estimated time in seconds to render a frame.
+    static final double SHOW_INTERVAL = 0.5; // Time in seconds from the first frame submission until planned show. 
+    static final int FRAMES_PER_SECOND = 25;
+
+    private final LinkedList<FrameSchedule> queue = new LinkedList<FrameSchedule>();
+    private int outstandingJobs = 0;
+    private final File outputDir;
+    
+    RenderMovieProgram( File outputDir )
+    {
+        this.outputDir = outputDir;
+    }
+
+    private void submitNeededFrames( long now, Task task )
+    {
+        long renderDeadline = now+(long) (RENDER_TIME*1e9);
+        synchronized( queue ) {
+            while( !queue.isEmpty() ) {
+                FrameSchedule fr = queue.getFirst();
+                
+                if( fr.showMoment<renderDeadline ) {
+                    // This one is required soon, put it in the queue.
+                    System.out.println( "Submitting frame " + fr.frameno );
+                    RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo( WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, fr.frameno, fr.scene );
+                    task.submit( info, new Integer( fr.frameno ), this );
+                    outstandingJobs++;
+                }
+            }
+        }
+    }
+
     private class ConverterContext implements Context {
         final File sourceDirectory;
 
@@ -108,9 +143,28 @@ public class RenderMovieProgram {
             }
         }
     }
+    
+    private static class FrameSchedule {
+        final String scene;
+        final int frameno;
+        final long showMoment;
+
+        /**
+         * Given a scene and show moment, constructs a new FrameSchedule.
+         * @param scene The scene to render
+         * @param frameno The frame number of the frame.
+         * @param showMoment The moment to show the rendered scene.
+         */
+        public FrameSchedule( String scene, int frameno, long showMoment )
+        {
+            this.scene = scene;
+            this.frameno = frameno;
+            this.showMoment = showMoment;
+        }
+    }
 
     @SuppressWarnings("synthetic-access")
-    private void run( File sourceDirectory, File iniFile, File destinationDirectory ) throws Exception
+    private void run( File sourceDirectory, File iniFile ) throws Exception
     {
         String init = RenderFrameJob.readFile( iniFile );
         if( init == null ) {
@@ -118,19 +172,16 @@ public class RenderMovieProgram {
             return;
         }
         Node node = new Node( new ConverterContext( sourceDirectory ), sourceDirectory != null );
-        TaskWaiter waiter = new TaskWaiter();
         Task convertTask =  node.createTask(
             "converter",
             new RenderFrameJob(),
-            new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
-            new ScaleFrameJob( 2 ),
+            //new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
+            //new ScaleFrameJob( 2 ),
             new DownsampleJob(),
             new CompressFrameJob()
         );
 
         int frameno = 0;
-        final int width = 200;
-        final int height = 100;
         System.out.println( "Node created" );
         if( sourceDirectory != null ) {
             File files[] = sourceDirectory.listFiles();
@@ -142,8 +193,9 @@ public class RenderMovieProgram {
                         System.err.println( "Cannot read scene file " + f );
                     }
                     else {
-                        RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo( width, height, 0, width, 0, height, frameno++, init + scene );
-                        waiter.submit( convertTask, info );
+                        int n = frameno++;
+                        RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo( WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, n, init + scene );
+                        convertTask.submit( info, new Integer( n ), this );
                     }
                 }
             }
@@ -192,10 +244,34 @@ public class RenderMovieProgram {
         }
         System.out.println( "Running on platform " + Service.getPlatformVersion() + " input=" + inputDir + " init=" + initFile + " output=" + outputDir );
         try {
-            new RenderMovieProgram().run( inputDir, initFile, outputDir );
+            new RenderMovieProgram( outputDir ).run( inputDir, initFile );
         }
         catch( Exception e ) {
             e.printStackTrace( System.err );
+        }
+    }
+
+    /**
+     * Handles the completion of a task. (Overrides method in superclass.)
+     * @param node The node we're running on.
+     * @param id The id of the completed task.
+     * @param result The result of the task.
+     */
+    public void jobCompleted( Node node, Object id, Object result )
+    {
+        int frameno = (Integer) id;
+        Image img = (Image) result;
+        
+        File f = new File( outputDir, String.format( "f%06d.jpg", frameno ) );
+        try {
+            img.write( f );
+        }
+        catch( IOException e ) {
+            System.out.println( "Cannot write result file " + f + ": " + e.getLocalizedMessage() );
+        }
+        outstandingJobs--;
+        if( outstandingJobs == 0 ) {
+            node.setStopped();
         }
     }
 }

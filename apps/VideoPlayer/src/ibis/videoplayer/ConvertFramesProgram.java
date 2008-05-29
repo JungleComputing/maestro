@@ -113,7 +113,7 @@ class ConvertFramesProgram {
     }
 
     @SuppressWarnings("synthetic-access")
-    private void run( File framesDirectory, File destinationDirectory ) throws Exception
+    private void run( File framesDirectory ) throws Exception
     {
         Node node = new Node( new ConverterContext( framesDirectory ), framesDirectory != null );
         TaskWaiter waiter = new TaskWaiter();
@@ -173,7 +173,7 @@ class ConvertFramesProgram {
         }
         System.out.println( "Running on platform " + Service.getPlatformVersion() + " input=" + inputDir + " output=" + outputDir );
         try {
-            new ConvertFramesProgram().run( inputDir, outputDir );
+            new ConvertFramesProgram().run( inputDir );
         }
         catch( Exception e ) {
             e.printStackTrace( System.err );
