@@ -28,29 +28,6 @@ public class RenderMovieProgram {
             return sourceDirectory;
         }
     }
-    
-    private final class FetchImageJob implements Job {
-        private static final long serialVersionUID = -7976035811697720295L;
-
-        /**
-         *
-         * @param in The input of this job.
-         * @param node The node we're running on.
-         * @param context The program context of this job.
-         * @return The fetched image.
-         */
-        
-        public Object run( Object in, Node node, Context context ) {
-            File f = (File) in;
-            try {
-            return UncompressedImage.load( f, 0 );
-            }
-            catch( IOException e ) {
-                System.err.println( "Cannot read image file: " + e.getLocalizedMessage() );
-                return null;
-            }
-        }   
-    }
 
     private final class ColorCorrectJob implements Job
     {
@@ -58,7 +35,7 @@ public class RenderMovieProgram {
         final double rr, rg, rb;
         final double gr, gg, gb;
         final double br, bg, bb;
-        
+
         ColorCorrectJob(final double rr, final double rg, final double rb, final double gr, final double gg, final double gb, final double br, final double bg, final double bb) {
             super();
             this.rr = rr;
@@ -84,6 +61,26 @@ public class RenderMovieProgram {
             UncompressedImage img = (UncompressedImage) in;
 
             return img.colourCorrect(rr, rg, rb, gr, gg, gb, br, bg, bb );
+        }
+    }
+
+
+    private final class DownsampleJob implements Job
+    {
+        private static final long serialVersionUID = 5452987225377415308L;
+
+        /** Downsample one image in a Maestro flow.
+         * 
+         * @param in The input of the conversion.
+         * @param node The node this process runs on.
+         * @param context The program context.
+         * @return THe converted image.
+         */
+        @Override
+        public Object run( Object in, Node node, Context context ) {
+            UncompressedImage img = (UncompressedImage) in;
+
+            return RGB24Image.convert( img );
         }
     }
 
@@ -113,24 +110,42 @@ public class RenderMovieProgram {
     }
 
     @SuppressWarnings("synthetic-access")
-    private void run( File sourceDirectory, File destinationDirectory ) throws Exception
+    private void run( File sourceDirectory, File iniFile, File destinationDirectory ) throws Exception
     {
+        String init = RenderFrameJob.readFile( iniFile );
+        if( init == null ) {
+            System.err.println( "Cannot read file " + iniFile );
+            return;
+        }
         Node node = new Node( new ConverterContext( sourceDirectory ), sourceDirectory != null );
         TaskWaiter waiter = new TaskWaiter();
         Task convertTask =  node.createTask(
-                "converter",
-                new FetchImageJob(),
-                new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
-                new ScaleFrameJob( 3 ),
-                new CompressFrameJob()
+            "converter",
+            new RenderFrameJob(),
+            new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
+            new ScaleFrameJob( 2 ),
+            new DownsampleJob(),
+            new CompressFrameJob()
         );
 
+        int frameno = 0;
+        final int width = 200;
+        final int height = 100;
         System.out.println( "Node created" );
         if( sourceDirectory != null ) {
             File files[] = sourceDirectory.listFiles();
             System.out.println( "I am maestro; converting " + files.length + " images" );
             for( File f: files ) {
-                waiter.submit( convertTask, f );
+                if( !f.getName().equals( ".svn" ) ) {
+                    String scene = RenderFrameJob.readFile( f );
+                    if( scene == null ) {
+                        System.err.println( "Cannot read scene file " + f );
+                    }
+                    else {
+                        RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo( width, height, 0, width, 0, height, frameno++, init + scene );
+                        waiter.submit( convertTask, info );
+                    }
+                }
             }
         }
         node.waitToTerminate();
@@ -142,38 +157,42 @@ public class RenderMovieProgram {
      */
     public static void main( String args[] )
     {
-        File inputDir = null;
-        File outputDir = null;
-
-        if( args.length == 1 ){
-            System.err.println( "Missing parameter: I need an input AND an output directory, or nothing'" );
+        if( args.length != 3 ){
+            System.err.println( "Usage: <input-directory> <init-file> <output-directory>" );
             System.exit( 1 );
         }
-        if( args.length>1 ) {
-            inputDir = new File( args[0] );
-            outputDir = new File( args[1] );
-            if( !inputDir.exists() ) {
-                System.err.println( "Input directory '" + inputDir + "' does not exist" );
-                System.exit( 1 );
-            }
-            if( !inputDir.isDirectory() ) {
-                System.err.println( "Input directory '" + inputDir + "' is not a directory" );
-                System.exit( 1 );
-            }
-            if( !outputDir.exists() ) {
-                if( !outputDir.mkdir() ) {
-                    System.err.println( "Cannot create output directory '" + outputDir + "'" );
-                    System.exit( 1 );
-                }
-            }
-            if( !outputDir.isDirectory() ) {
-                System.err.println( "Output directory '" + outputDir + "' is not a directory" );
+        File inputDir = new File( args[0] );
+        File initFile = new File( args[1] );
+        File outputDir = new File( args[2] );
+        if( !inputDir.exists() ) {
+            System.err.println( "Input directory '" + inputDir + "' does not exist" );
+            System.exit( 1 );
+        }
+        if( !inputDir.isDirectory() ) {
+            System.err.println( "Input directory '" + inputDir + "' is not a directory" );
+            System.exit( 1 );
+        }
+        if( !initFile.exists() ) {
+            System.err.println( "Init file '" + initFile + "' does not exist" );
+            System.exit( 1 );
+        }
+        if( !initFile.isFile() ) {
+            System.err.println( "Init file '" + initFile + "' is not a file" );
+            System.exit( 1 );
+        }
+        if( !outputDir.exists() ) {
+            if( !outputDir.mkdir() ) {
+                System.err.println( "Cannot create output directory '" + outputDir + "'" );
                 System.exit( 1 );
             }
         }
-        System.out.println( "Running on platform " + Service.getPlatformVersion() + " input=" + inputDir + " output=" + outputDir );
+        if( !outputDir.isDirectory() ) {
+            System.err.println( "Output directory '" + outputDir + "' is not a directory" );
+            System.exit( 1 );
+        }
+        System.out.println( "Running on platform " + Service.getPlatformVersion() + " input=" + inputDir + " init=" + initFile + " output=" + outputDir );
         try {
-            new RenderMovieProgram().run( inputDir, outputDir );
+            new RenderMovieProgram().run( inputDir, initFile, outputDir );
         }
         catch( Exception e ) {
             e.printStackTrace( System.err );

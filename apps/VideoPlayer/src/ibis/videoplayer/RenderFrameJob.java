@@ -23,7 +23,7 @@ public class RenderFrameJob implements ibis.maestro.Job
     private static final long serialVersionUID = -3938044583266505212L;
     private static final File tmpDir = new File( "/tmp" );  // FIXME: be more paranoid than this.
 
-    class RenderInfo implements Serializable
+    static class RenderInfo implements Serializable
     {
         private static final long serialVersionUID = 1899219003828691971L;
         final int width;

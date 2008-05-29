@@ -3,9 +3,9 @@
 #SERVERHOST=babylon.cs.vu.nl
 SERVERHOST=fs0.das3.cs.vu.nl
 
-# Check setting of MAESTRO_HOME
-if [ -z "$MAESTRO_HOME" ];  then
-    echo "please set MAESTRO_HOME to the location of your Maestro installation" 1>&2
+# Check setting of VIDEOPLAYER_HOME
+if [ -z "$VIDEOPLAYER_HOME" ];  then
+    echo "please set VIDEOPLAYER_HOME to the location of your Maestro installation" 1>&2
     exit 1
 fi
 
@@ -23,10 +23,10 @@ add_to_libclasspath () {
 }
 
 # Add the jar files in the Tweaker lib dir to the classpath.
-add_to_libclasspath "${MAESTRO_HOME}"/support-libs
+add_to_libclasspath "${VIDEOPLAYER_HOME}"/support-libs
 
 # And finally, run ...
 exec java \
     -classpath "$CLASSPATH:$LIBCLASSPATH" \
-    -Dlog4j.configuration=file:"$MAESTRO_HOME"/log4j.properties \
+    -Dlog4j.configuration=file:"$VIDEOPLAYER_HOME"/log4j.properties \
      ibis.server.Server --stats --events --port 5437

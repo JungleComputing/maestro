@@ -128,12 +128,16 @@ abstract class UncompressedImage extends Image {
      */
     static UncompressedImage loadPPM( File f, int frameno ) throws IOException
     {
+        if( f.length()<11 ) {
+            System.err.println( "File is too short for a PPM file: " + f + " (" + f.length() + " bytes)" );
+            return null;
+        }
 	FileInputStream stream = new FileInputStream( f );
 	int c1 = stream.read();
 	int c2 = stream.read();
 	int c3 = stream.read();
 	if( c1 != 'P' || c2 != '6' || c3 != '\n' ) {
-	    System.err.println( "Bad magic for a PPM file" );
+	    System.err.println( "Bad magic for PPM file " + f );
 	    stream.close();
 	    return null;
 	}
