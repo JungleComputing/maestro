@@ -173,7 +173,7 @@ public class RenderMovieProgram implements CompletionListener
         Task convertTask =  node.createTask(
             "converter",
             new RenderFrameJob(),
-            //new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
+            new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
             //new ScaleFrameJob( 2 ),
             new DownsampleJob(),
             new CompressFrameJob()
