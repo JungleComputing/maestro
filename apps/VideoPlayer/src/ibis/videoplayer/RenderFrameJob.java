@@ -117,6 +117,10 @@ public class RenderFrameJob implements ibis.maestro.Job
         File outFile = null;
         UncompressedImage img = null;
 
+        String povrayExecutable = System.getenv( "POVRAY" );
+        if( povrayExecutable == null ) {
+            povrayExecutable = "/usr/bin/povray";
+        }
         System.out.println( "Rendering frame " + frameno );
         try {
             povFile = File.createTempFile( String.format( "fr-%06d", frameno ), ".pov", tmpDir );
@@ -128,7 +132,7 @@ public class RenderFrameJob implements ibis.maestro.Job
             return null;
         }
         String command[] = {
-                "/usr/bin/povray",
+                povrayExecutable,
                 povFile.getAbsolutePath(),
                 "+O" + outFile.getAbsolutePath(),
                 "+SR" + startRow,
