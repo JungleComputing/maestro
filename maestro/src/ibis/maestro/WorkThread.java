@@ -7,7 +7,7 @@ package ibis.maestro;
  */
 final class WorkThread extends Thread
 {
-    private final WorkSource source;
+    private final JobSource source;
     private final Node localNode;
     private boolean stopped = false;
 
@@ -16,7 +16,7 @@ final class WorkThread extends Thread
      * @param source The work source.
      * @param localMaster The local master.
      */
-    WorkThread( WorkSource source, Node localMaster )
+    WorkThread( JobSource source, Node localMaster )
     {
         super( "Work thread" );
         // Unfortunately, bureaucracy has to go before work,

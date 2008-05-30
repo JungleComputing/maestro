@@ -19,7 +19,7 @@ import java.util.Set;
  * @author Kees van Reeuwijk
  */
 @SuppressWarnings("synthetic-access")
-public final class Worker extends Thread implements WorkSource, PacketReceiveListener<MasterMessage> {
+public final class Worker extends Thread implements JobSource, PacketReceiveListener<MasterMessage> {
 
     /** The list of all known masters, in the order that they were handed their
      * id. Thus, element <code>i</code> of the list is guaranteed to have
@@ -44,7 +44,7 @@ public final class Worker extends Thread implements WorkSource, PacketReceiveLis
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
     private long queueEmptyMoment = 0L;
-    private final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
+    private final WorkerQueue queue = new WorkerQueue();
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private final WorkThread workThreads[] = new WorkThread[numberOfProcessors];
     private boolean stopped = false;
