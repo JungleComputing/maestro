@@ -30,7 +30,7 @@ public class BuildVideoProgram {
          * @param result The result of the job.
          */
         @Override
-        public synchronized void jobCompleted( Node node, Object id, Object result ) {
+        public synchronized void taskCompleted( Node node, Object id, Object result ) {
             //System.out.println( "result is " + result );
             jobsCompleted++;
             runningJobs--;

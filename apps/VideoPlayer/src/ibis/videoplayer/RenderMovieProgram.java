@@ -271,7 +271,8 @@ public class RenderMovieProgram implements CompletionListener
      * @param id The id of the completed task.
      * @param result The result of the task.
      */
-    public void jobCompleted( Node node, Object id, Object result )
+    @Override
+    public void taskCompleted( Node node, Object id, Object result )
     {
         int frameno = (Integer) id;
         Image img = (Image) result;
