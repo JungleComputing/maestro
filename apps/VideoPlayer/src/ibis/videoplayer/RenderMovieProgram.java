@@ -18,9 +18,9 @@ import java.util.LinkedList;
  */
 public class RenderMovieProgram implements CompletionListener
 {
-    static final int WIDTH = 348;
-    static final int HEIGHT = 216;
-    static final int REPEATS = 2;
+    static final int WIDTH = 348*2;
+    static final int HEIGHT = 216*2;
+    static final int REPEATS = 1;
     static final double RENDER_TIME = 1.0;  // Pessimistic estimated time in seconds to render a frame.
     static final double SHOW_INTERVAL = 0.5; // Time in seconds from the first frame submission until planned show. 
     static final int FRAMES_PER_SECOND = 25;
@@ -96,7 +96,7 @@ public class RenderMovieProgram implements CompletionListener
         public Object run( Object in, Node node, Context context ) {
             UncompressedImage img = (UncompressedImage) in;
 
-            System.out.println( "Colour-correcting frame " + img );
+            System.out.println( "Colour-correcting " + img );
             return img.colourCorrect(rr, rg, rb, gr, gg, gb, br, bg, bb );
         }
     }
@@ -117,7 +117,7 @@ public class RenderMovieProgram implements CompletionListener
         public Object run( Object in, Node node, Context context ) {
             UncompressedImage img = (UncompressedImage) in;
 
-            System.out.println( "Downsampling frame " + img );
+            System.out.println( "Downsampling " + img );
             return RGB24Image.convert( img );
         }
     }
@@ -138,7 +138,7 @@ public class RenderMovieProgram implements CompletionListener
             UncompressedImage img = (UncompressedImage) in;
 
             try {
-                System.out.println( "Compressing frame " + img );
+                System.out.println( "Compressing " + img );
                 return JpegCompressedImage.convert( img );
             } catch (IOException e) {
                 System.err.println( "Cannot convert image to JPEG: " + e.getLocalizedMessage() );
@@ -175,7 +175,7 @@ public class RenderMovieProgram implements CompletionListener
             "converter",
             new RenderFrameJob(),
             new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
-            new ScaleFrameJob( 2 ),
+            //new ScaleFrameJob( 2 ),
             new DownsampleJob(),
             new CompressFrameJob()
         );

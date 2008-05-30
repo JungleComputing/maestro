@@ -90,14 +90,15 @@ class RGB24Image extends UncompressedImage {
 
         int ix = 0;
         for( int y=0; y<sheight; y++ ) {
+            int oldY = y*factor;
             for( int x=0; x<swidth; x++ ){
+                int oldX = x*factor;
+                int offset = (oldX+oldY*width)*BANDS;
                 int redValues = 0; // The sum of the red values we're going to average.
                 int greenValues = 0;
                 int blueValues = 0;
 
                 // Compute the offset in the channel for the first row of pixels.
-                // 
-                int offset = x*factor+y*factor*width*BANDS;
                 for( int ypix=0; ypix<factor; ypix++ ) {
                     for( int xpix=0; xpix<factor; xpix += BANDS ) {
                         int vr = data[offset+xpix];

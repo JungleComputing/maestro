@@ -65,21 +65,23 @@ class RGB48Image extends UncompressedImage {
 	if( !checkFactor( height, "height", factor ) ) {
 	    return null;
 	}
-	short res[] = new short[width*height*BANDS];
 	int weight = factor*factor;
 	int swidth = width/factor;
 	int sheight = height/factor;
+        short res[] = new short[swidth*sheight*BANDS];
 
 	int ix = 0;
 	for( int y=0; y<sheight; y++ ) {
+            int oldY = y*factor;
 	    for( int x=0; x<swidth; x++ ){
+                int oldX = x*factor;
 		// The sum of the values we're going to average.
 		int redValues = 0;
 		int greenValues = 0;
 		int blueValues = 0;
 
 		// Compute the offset for the first row of pixels.
-		int offset = x*factor+y*factor*width*BANDS;
+		int offset = (oldX+oldY*width)*BANDS;
 		for( int ypix=0; ypix<factor; ypix++ ) {
 		    for( int xpix=0; xpix<factor; xpix += BANDS ) {
 			// Convert to unsigned and add to the average.
