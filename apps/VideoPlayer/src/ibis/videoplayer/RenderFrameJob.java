@@ -141,7 +141,7 @@ public class RenderFrameJob implements ibis.maestro.Job
                 "-GA", // No output (ignored by some povray versions)
                 "+FP16",
                 "+Q9",
-                "+A0.3"
+                //"+A0.3"
         };
         try {
             RunProcess p = new RunProcess( command );

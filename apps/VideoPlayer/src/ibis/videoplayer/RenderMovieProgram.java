@@ -18,8 +18,8 @@ import java.util.LinkedList;
  */
 public class RenderMovieProgram implements CompletionListener
 {
-    static final int WIDTH = 400;
-    static final int HEIGHT = 200;
+    static final int WIDTH = 348;
+    static final int HEIGHT = 216;
     static final int REPEATS = 2;
     static final double RENDER_TIME = 1.0;  // Pessimistic estimated time in seconds to render a frame.
     static final double SHOW_INTERVAL = 0.5; // Time in seconds from the first frame submission until planned show. 
