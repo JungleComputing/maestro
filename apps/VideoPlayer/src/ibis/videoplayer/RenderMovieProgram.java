@@ -96,7 +96,7 @@ public class RenderMovieProgram implements CompletionListener
         public Object run( Object in, Node node, Context context ) {
             UncompressedImage img = (UncompressedImage) in;
 
-            System.out.println( "Colour-correcting frame " + img.frameno );
+            System.out.println( "Colour-correcting frame " + img );
             return img.colourCorrect(rr, rg, rb, gr, gg, gb, br, bg, bb );
         }
     }
@@ -117,7 +117,7 @@ public class RenderMovieProgram implements CompletionListener
         public Object run( Object in, Node node, Context context ) {
             UncompressedImage img = (UncompressedImage) in;
 
-            System.out.println( "Downsampling frame " + img.frameno );
+            System.out.println( "Downsampling frame " + img );
             return RGB24Image.convert( img );
         }
     }
@@ -138,7 +138,7 @@ public class RenderMovieProgram implements CompletionListener
             UncompressedImage img = (UncompressedImage) in;
 
             try {
-                System.out.println( "Compressing frame " + img.frameno );
+                System.out.println( "Compressing frame " + img );
                 return JpegCompressedImage.convert( img );
             } catch (IOException e) {
                 System.err.println( "Cannot convert image to JPEG: " + e.getLocalizedMessage() );

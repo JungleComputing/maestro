@@ -30,6 +30,7 @@ class ScaleFrameJob implements Job
     public Object run( Object obj, Node node, Context context )
     {
 	Image frame = (Image) obj;
+        System.out.println( "Scaling frame " + frame );
         return frame.scaleDown( factor );
     }
 }
