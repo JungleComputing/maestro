@@ -5,9 +5,10 @@ import ibis.ipl.ReceivePortIdentifier;
 import java.io.Serializable;
 
 /**
- * @author Kees van Reeuwijk
- *
  * The interface of a listener to a packet receive port.
+ * 
+ * @author Kees van Reeuwijk
+ * 
  * @param <T> The type of packets that are transmitted over the receive port.
  */
 interface PacketReceiveListener<T extends Serializable> {

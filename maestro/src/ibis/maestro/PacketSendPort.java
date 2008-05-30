@@ -15,9 +15,9 @@ import java.util.Comparator;
 import java.util.HashMap;
 
 /**
- * @author Kees van Reeuwijk
+ * A port that communicates in entire objects.
  *
- * A port that communicates in whole objects.
+ * @author Kees van Reeuwijk
  *
  * @param <T> The type of data that will be sent over this port.
  */

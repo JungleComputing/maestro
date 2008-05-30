@@ -1,6 +1,3 @@
-/**
- * Information about a worker in the list of a master.
- */
 package ibis.maestro;
 
 import ibis.ipl.ReceivePortIdentifier;
@@ -12,6 +9,9 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.Hashtable;
 
+/**
+ * Information about a worker in the list of a master.
+ */
 final class WorkerInfo {
     /** Our identifier with this worker. */
     final MasterIdentifier identifierWithWorker;
@@ -101,24 +101,27 @@ final class WorkerInfo {
 	final long id = result.jobId;    // The identifier of the job, as handed out by us.
 
 	long now = System.nanoTime();
-	ActiveJob e = searchQueueEntry( id );
-	if( e == null ) {
+	ActiveJob job = searchQueueEntry( id );
+	if( job == null ) {
 	    Globals.log.reportInternalError( "Master: ignoring reported result from job with unknown id " + id );
 	    return;
 	}
-	activeJobs.remove( e );
-	long newRoundTripInterval = now-e.startTime; // The time to send the job, compute, and report the result.
+	activeJobs.remove( job );
+	long newRoundTripInterval = now-job.startTime; // The time interval to send the job, compute, and report the result.
 	long queueInterval = result.queueInterval;
 
 	if( knownDelayedJobs>0 ) {
 	    knownDelayedJobs--;
 	}
-	e.workerJobInfo.registerJobCompleted( newRoundTripInterval, result.taskCompletionInterval );
+	job.workerJobInfo.registerJobCompleted( newRoundTripInterval, result.taskCompletionInterval );
 	if( queueInterval>(2*newRoundTripInterval)/3 ) {
-	    reduceLongQueueTime( e.workerJobInfo );
+	    // If the time this job spent in the worker queue was more
+	    // than 2/3 of the total turnaround time, reduce the allowance
+	    // of this worker.
+	    reduceLongQueueTime( job.workerJobInfo );
 	}
 	if( Settings.traceMasterProgress ){
-	    System.out.println( "Master: retired job " + e + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );
+	    System.out.println( "Master: retired job " + job + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );
 	}
     }
 
@@ -161,8 +164,7 @@ final class WorkerInfo {
 	    return;
 	}
 	activeJobs.remove( e );
-	System.out.println( "Master: retired job " + e );		
-
+	System.out.println( "Master: retracted job " + e );
     }
 
     /**
@@ -170,8 +172,6 @@ final class WorkerInfo {
      */
     private void registerJobType( JobType type )
     {
-	// We start with a very optimistic roundtrip time.
-	// Since we only commit one job to the new worker, that's fairly safe.
         if( Settings.traceTypeHandling ){
             System.out.println( "worker " + identifier + " (" + port + ") can handle " + type );
         }

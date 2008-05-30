@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-
 /**
  * A message from the worker to the master, telling the master that the
  * worker has completed the given job.
@@ -11,16 +10,24 @@ package ibis.maestro;
 final class JobCompletedMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
-    final long jobId;   // The identifier of the job
+    
+    /** The identifier of the job. */
+    final long jobId;
+    
+    /** The time interval this job spent in the worker queue. */
     final long queueInterval;
-    final long taskCompletionInterval;   // The estimated time it will take to complete this job entirely.
+    
+    /** The estimated time it will take to complete the remaining jobs
+     * of this task.
+     */
+    final long taskCompletionInterval;
 
     /**
-     * Constructs a job completed message for the master of a job.
-     * @param src The worker that handled the job (i.e. this worker)
+     * Constructs a job-completed message for the master of a job.
+     * @param src The worker that handled the job.
      * @param jobId The identifier of the job, as handed out by the master.
-     * @param queueInterval The time the job spent in the worker queue.
-     * @param taskCompletionInterval The average time it takes on this
+     * @param queueInterval The time interval the job spent in the worker queue.
+     * @param taskCompletionInterval The estimated time it will take on this
      *     worker to complete the remaining jobs of this task.
      */
     JobCompletedMessage( Master.WorkerIdentifier src, long jobId, long queueInterval, long taskCompletionInterval )
@@ -30,7 +37,7 @@ final class JobCompletedMessage extends WorkerMessage {
         this.queueInterval = queueInterval;
         this.taskCompletionInterval = taskCompletionInterval;
     }
-    
+
     /**
      * Returns a string representation of this status message.
      * @return The string representation.

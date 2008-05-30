@@ -1,6 +1,3 @@
-/**
- * Information that the worker maintains for a master.
- */
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
@@ -8,6 +5,8 @@ import ibis.maestro.Master.WorkerIdentifier;
 import ibis.maestro.Worker.MasterIdentifier;
 
 /**
+ * Information that the worker maintains for a master.
+ * 
  * @author Kees van Reeuwijk
  *
  */

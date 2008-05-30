@@ -10,11 +10,12 @@ import java.io.IOException;
 import java.io.Serializable;
 
 /**
- * @author Kees van Reeuwijk
- *
  * A packet receiving port with an explicit receive() method.
  *
  * @param <T> The type of packets that are received over this port.
+ *
+ * @author Kees van Reeuwijk
+ *
  */
 class PacketBlockingReceivePort<T extends Serializable> {
     static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );

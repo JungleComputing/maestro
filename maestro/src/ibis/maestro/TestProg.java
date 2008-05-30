@@ -28,7 +28,7 @@ public class TestProg {
          * @param result The result of the job.
          */
         @Override
-        public void jobCompleted( Node node, Object id, Object result ) {
+        public void taskCompleted( Node node, Object id, Object result ) {
             //System.out.println( "result is " + result );
             jobsCompleted++;
             //System.out.println( "I now have " + jobsCompleted + "/" + jobCount + " jobs" );

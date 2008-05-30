@@ -329,7 +329,7 @@ public final class Node {
 	    }
 	}
 	if( task != null ){
-	    task.listener.jobCompleted( this, id.userId, result );
+	    task.listener.taskCompleted( this, id.userId, result );
 	}
     }
 

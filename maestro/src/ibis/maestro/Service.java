@@ -9,10 +9,10 @@ import java.util.AbstractList;
 import java.util.ArrayList;
 
 /**
- * 
- * @author Kees van Reeuwijk.
  *
  * Global helper functions.
+ * 
+ * @author Kees van Reeuwijk.
  */
 public class Service
 {

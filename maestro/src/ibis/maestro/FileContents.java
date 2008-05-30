@@ -6,9 +6,10 @@ import java.io.IOException;
 import java.io.Serializable;
 
 /**
+ * The name of a file with its contents.
+ *
  * @author Kees van Reeuwijk
  *
- * The name of a file with its contents.
  */
 public class FileContents implements Serializable {
     /** Contractual obligation. */

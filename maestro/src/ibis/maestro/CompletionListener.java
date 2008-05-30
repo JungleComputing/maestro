@@ -8,10 +8,13 @@ package ibis.maestro;
  */
 public interface CompletionListener {
     /**
-     * Registers that a job is completed.
+     * Registers that a task has completed, and handles the
+     * final result of the task.
      * @param node The node we're running on.
-     * @param id The id of the task that was completed.
+     * @param id The identifier of the task that was completed.
+     *      This identifier was provided by the user program at the moment
+     *      the task instance was submitted.
      * @param result The result of the task.
      */
-    void jobCompleted( Node node, Object id, Object result );
+    void taskCompleted( Node node, Object id, Object result );
 }
