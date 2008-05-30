@@ -182,7 +182,7 @@ public class RenderMovieProgram implements CompletionListener
 
         int frameno = 0;
         System.out.println( "Node created" );
-        if( sourceDirectory != null ) {
+        if( sourceDirectory != null && node.isMaestro() ) {
             String init = RenderFrameJob.readFile( iniFile );
             if( init == null ) {
                 System.err.println( "Cannot read file " + iniFile );
