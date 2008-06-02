@@ -58,34 +58,37 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     private final Random rng = new Random();
 
     private static class JobStats {
-        private int jobCount = 0;
-        private long workDuration = 0;        
-        private long queueDuration = 0;     // Cumulative queue time of all jobs.
+	private int jobCount = 0;
+	private long workDuration = 0;        
+	private long queueDuration = 0;     // Cumulative queue time of all jobs.
 
-        /**
-         * Registers the completion of a job of this particular type, with the
-         * given queue interval and the given work interval.
-         * @param queueInterval The time this job spent in the queue.
-         * @param workInterval The time it took to execute this job.
-         */
-        private void countJob(long queueInterval, long workInterval )
-        {
-            jobCount++;
-            queueDuration += queueInterval;
-            workDuration += workInterval;
-        }
+	/**
+	 * Registers the completion of a job of this particular type, with the
+	 * given queue interval and the given work interval.
+	 * @param queueInterval The time this job spent in the queue.
+	 * @param workInterval The time it took to execute this job.
+	 */
+	private void countJob(long queueInterval, long workInterval )
+	{
+	    jobCount++;
+	    queueDuration += queueInterval;
+	    workDuration += workInterval;
+	}
 
-        private void reportStats( PrintStream out, JobType t, double workInterval )
-        {
-            double workPercentage = 100.0*(workDuration/workInterval);
-            out.println( "Worker: " + t + ":" );
-            out.printf( "    # jobs           = %5d\n", jobCount );
-            out.println( "    total work time  = " + Service.formatNanoseconds( workDuration ) + String.format( " (%.1f%%)", workPercentage )  );
-            if( jobCount>0 ) {
-                System.out.println( "    queue time/job   = " + Service.formatNanoseconds( queueDuration/jobCount ) );
-                System.out.println( "    compute time/job = " + Service.formatNanoseconds( workDuration/jobCount ) );
-            }
-        }
+	private void reportStats( PrintStream out, JobType t, double workInterval )
+	{
+	    double workPercentage = 100.0*(workDuration/workInterval);
+	    if( jobCount>0 ) {
+		out.println( "Worker: " + t + ":" );
+		out.printf( "    # jobs           = %5d\n", jobCount );
+		out.println( "    total work time  = " + Service.formatNanoseconds( workDuration ) + String.format( " (%.1f%%)", workPercentage )  );
+		System.out.println( "    queue time/job   = " + Service.formatNanoseconds( queueDuration/jobCount ) );
+		System.out.println( "    compute time/job = " + Service.formatNanoseconds( workDuration/jobCount ) );
+	    }
+	    else {
+		out.println( "Worker: " + t + " is unused" );
+	    }
+	}
     }
 
     private HashMap<JobType, JobStats> jobStats = new HashMap<JobType, JobStats>();
@@ -440,7 +443,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 		// The queue was empty before we entered this
 		// job in it. Register this with this job,
 		// so that we can give feedback to the master.
-                long queueEmptyInterval = now - queueEmptyMoment;
+		long queueEmptyInterval = now - queueEmptyMoment;
 		idleDuration += queueEmptyInterval;
 		queueEmptyMoment = 0L;
 	    }
@@ -564,11 +567,11 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 		    jobSources.add( mi );
 		}
 	    }
-            if( !jobStats.containsKey(jobType) ){
-                jobStats.put( jobType, new JobStats() );
-            }
-            JobStats stats = jobStats.get( jobType );
-            stats.countJob( queueInterval, now-jobMessage.getRunTime() );
+	    if( !jobStats.containsKey(jobType) ){
+		jobStats.put( jobType, new JobStats() );
+	    }
+	    JobStats stats = jobStats.get( jobType );
+	    stats.countJob( queueInterval, now-jobMessage.getRunTime() );
 	    runningJobs--;
 	    queue.notifyAll();
 	}
@@ -617,11 +620,11 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	}
 	long workInterval = stopTime-activeTime;
 	double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
-        Set<JobType> tl = jobStats.keySet();
-        for( JobType t: tl ){
-            JobStats stats = jobStats.get( t );
-            stats.reportStats( System.out, t, workInterval );
-        }
+	Set<JobType> tl = jobStats.keySet();
+	for( JobType t: tl ){
+	    JobStats stats = jobStats.get( t );
+	    stats.reportStats( System.out, t, workInterval );
+	}
 	System.out.printf( "Worker: # threads        = %5d\n", workThreads.length );
 	System.out.println( "Worker: run time         = " + Service.formatNanoseconds( workInterval ) );
 	System.out.println( "Worker: activated after  = " + Service.formatNanoseconds( activeTime-startTime ) );
@@ -650,12 +653,12 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
      */
     void registerTask( Task task )
     {
-        TaskIdentifier id = task.id;
-        Job jobs[] = task.jobs;
-        
-        for( int i=0; i<jobs.length; i++ ){
-            // FIXME: ask the job itself it it wants to run on this platform.
-            allowJobType( new JobType( id, i ) );
-        }
+	TaskIdentifier id = task.id;
+	Job jobs[] = task.jobs;
+
+	for( int i=0; i<jobs.length; i++ ){
+	    // FIXME: ask the job itself it it wants to run on this platform.
+	    allowJobType( new JobType( id, i ) );
+	}
     }
 }

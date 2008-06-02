@@ -36,7 +36,7 @@ public final class Node {
     private final ArrayList<MaestroInfo> maestros = new ArrayList<MaestroInfo>();
 
     /** The list of running tasks with their completion listeners. */
-    private final ArrayList<TaskInfo> runningTasks = new ArrayList<TaskInfo>();
+    private final ArrayList<TaskInstanceInfo> runningTasks = new ArrayList<TaskInstanceInfo>();
 
     private boolean isMaestro;
 
@@ -108,7 +108,7 @@ public final class Node {
 
     }
 
-    private static class TaskInfo {
+    private static class TaskInstanceInfo {
 	final TaskInstanceIdentifier identifier;
 	final Task task;
 	final CompletionListener listener;
@@ -121,7 +121,7 @@ public final class Node {
 	 * @param task The task this belongs to.
 	 * @param listener The completion listener associated with the task.
 	 */
-	private TaskInfo( final TaskInstanceIdentifier identifier, Task task, final CompletionListener listener )
+	private TaskInstanceInfo( final TaskInstanceIdentifier identifier, Task task, final CompletionListener listener )
 	{
 	    this.identifier = identifier;
 	    this.task = task;
@@ -315,7 +315,7 @@ public final class Node {
     @SuppressWarnings("synthetic-access")
     void reportCompletion( TaskInstanceIdentifier id, Object result )
     {
-	TaskInfo task = null;
+	TaskInstanceInfo task = null;
 
 	synchronized( runningTasks ){
 	    for( int i=0; i<runningTasks.size(); i++ ){
@@ -337,7 +337,7 @@ public final class Node {
     void addRunningTask( TaskInstanceIdentifier id, Task task, CompletionListener listener )
     {
 	synchronized( runningTasks ){
-	    runningTasks.add( new TaskInfo( id, task, listener ) );
+	    runningTasks.add( new TaskInstanceInfo( id, task, listener ) );
 	}
     }
 
@@ -461,14 +461,27 @@ public final class Node {
 	    return;
 	}
 	Task t = tasks.get( ix );
-	Job j = t.jobs[type.jobNo];
 
+	run( job, type, t );
+    }
+
+    /**
+     * @param job The job instance to run.
+     * @param type
+     * @param t The task this job belongs to. 
+     */
+    private void run( JobInstance job, JobType type, Task t )
+    {
+	Job j = t.jobs[type.jobNo];
 	Object result = j.run( job.input, this, context );
 	int nextJobNo = type.jobNo+1;
+
 	if( nextJobNo<t.jobs.length ){
 	    // There is a next step to take.
 	    JobInstance nextJob = new JobInstance( job.taskInstance, new JobType( type.task, nextJobNo ), result );
-	    submit( nextJob );
+	    // TODO: in some circumstances, it may be better to immediately
+	    // execute the next job instead of going through the machinery.
+	    master.submit( nextJob );
 	}
 	else {
 	    // This was the final step. Report back the result.

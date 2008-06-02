@@ -11,7 +11,8 @@ public interface JobSplitter {
     /**
      * 
      * @param in The input parameter for this splitter.
-     * @param sink The job sink.
+     * @param context The program context of this job.
+     * 
      */
     void split( Object in, Context context, TaskInput task );
 }
