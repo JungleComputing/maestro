@@ -107,10 +107,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	 */
 	@Override
 	public int hashCode() {
-	    final int prime = 31;
-	    int result = 1;
-	    result = prime * result + value;
-	    return result;
+	    return value;
 	}
 
 	/**
@@ -651,14 +648,16 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
      * 
      * @param task The task to register.
      */
-    void registerTask( Task task )
+    void registerTask( Task task, Context context )
     {
 	TaskIdentifier id = task.id;
 	Job jobs[] = task.jobs;
 
 	for( int i=0; i<jobs.length; i++ ){
-	    // FIXME: ask the job itself it it wants to run on this platform.
-	    allowJobType( new JobType( id, i ) );
+	    Job j = jobs[i];
+	    if( j.isSupported( context ) ) {
+		allowJobType( new JobType( id, i ) );
+	    }
 	}
     }
 }

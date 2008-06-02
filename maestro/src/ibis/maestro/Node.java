@@ -420,7 +420,7 @@ public final class Node {
 	Task task = new Task( this, taskId, name, jobs );
 
 	tasks.add( task );
-	worker.registerTask( task );
+	worker.registerTask( task, context );
 	return task;
     }
 

@@ -84,6 +84,17 @@ public class TestProg {
             }
             return new AdditionData( a );
         }
+
+        /**
+         * Returns true iff this job is supported in this context.
+         * @param context The program context.
+         * @return True iff this job is supported.
+         */
+        @Override
+        public boolean isSupported( Context context )
+        {
+            return true;
+        }
     }
 
     private static class AdditionJob implements Job
@@ -107,6 +118,17 @@ public class TestProg {
                 }
             }
             return data;
+        }
+
+        /**
+         * Returns true iff this job is supported in this context.
+         * @param context The program context.
+         * @return True iff this job is supported.
+         */
+        @Override
+        public boolean isSupported( Context context )
+        {
+            return true;
         }
     }
 
