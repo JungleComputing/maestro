@@ -185,4 +185,15 @@ public class RenderFrameJob implements ibis.maestro.Job
 	RenderInfo info = (RenderInfo) obj;
         return renderImage( info.width, info.height, info.startRow, info.endRow, info.startColumn, info.endColumn, info.frameno, info.scene );
     }
+
+    /**
+     * @param context The program context.
+     * @return True, because this job can run anywhere.
+     */
+    @Override
+    public boolean isSupported(Context context )
+    {
+	// FIXME: test whether PovRay works.
+	return true;
+    }
 }

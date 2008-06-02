@@ -99,6 +99,16 @@ public class RenderMovieProgram implements CompletionListener
             System.out.println( "Colour-correcting " + img );
             return img.colourCorrect(rr, rg, rb, gr, gg, gb, br, bg, bb );
         }
+
+        /**
+         * @param context The program context.
+         * @return True, because this job can run anywhere.
+         */
+        @Override
+        public boolean isSupported(Context context )
+        {
+            return true;
+        }
     }
 
 
@@ -119,6 +129,16 @@ public class RenderMovieProgram implements CompletionListener
 
             System.out.println( "Downsampling " + img );
             return RGB24Image.convert( img );
+        }
+
+        /**
+         * @param context The program context.
+         * @return True, because this job can run anywhere.
+         */
+        @Override
+        public boolean isSupported(Context context )
+        {
+            return true;
         }
     }
 
@@ -145,6 +165,16 @@ public class RenderMovieProgram implements CompletionListener
                 e.printStackTrace();
                 return null;
             }
+        }
+
+        /**
+         * @param context The program context.
+         * @return True, because this job can run anywhere.
+         */
+        @Override
+        public boolean isSupported(Context context )
+        {
+            return true;
         }
     }
 

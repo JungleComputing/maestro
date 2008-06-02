@@ -15,7 +15,6 @@ import ibis.maestro.TaskWaiter;
  */
 public final class BuildFragmentJob implements Job
 {
-    /** */
     private static final long serialVersionUID = 6769001575637882594L;
     private Task fetchTask;
 
@@ -81,6 +80,16 @@ public final class BuildFragmentJob implements Job
                 new ColourCorrectJob(),
                 new ScaleFrameJob( 2 )
         );
+    }
+
+    /**
+     * @param context The program context.
+     * @return True, because this job can run anywhere.
+     */
+    @Override
+    public boolean isSupported(Context context )
+    {
+	return true;
     }
 
 }

@@ -1,7 +1,7 @@
 #!/bin/sh
 
-SERVERHOST=babylon.few.vu.nl
-#SERVERHOST=lily.local
+#SERVERHOST=babylon.few.vu.nl
+SERVERHOST=lily.local
 #SERVERHOST=fs0.das3.cs.vu.nl
 
 # Check setting of VIDEOPLAYER_HOME

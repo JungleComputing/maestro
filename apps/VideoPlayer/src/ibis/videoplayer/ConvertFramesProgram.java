@@ -49,7 +49,17 @@ class ConvertFramesProgram {
                 System.err.println( "Cannot read image file: " + e.getLocalizedMessage() );
                 return null;
             }
-        }   
+        }
+
+        /**
+         * @param context The program context.
+         * @return True, because this job can run anywhere.
+         */
+        @Override
+        public boolean isSupported(Context context )
+        {
+            return true;
+        }
     }
 
     private final class ColorCorrectJob implements Job
@@ -85,6 +95,16 @@ class ConvertFramesProgram {
 
             return img.colourCorrect(rr, rg, rb, gr, gg, gb, br, bg, bb );
         }
+
+        /**
+         * @param context The program context.
+         * @return True, because this job can run anywhere.
+         */
+        @Override
+        public boolean isSupported(Context context )
+        {
+    	return true;
+        }
     }
 
     private final class CompressFrameJob implements Job
@@ -109,6 +129,16 @@ class ConvertFramesProgram {
                 e.printStackTrace();
                 return null;
             }
+        }
+
+        /**
+         * @param context The program context.
+         * @return True, because this job can run anywhere.
+         */
+        @Override
+        public boolean isSupported(Context context )
+        {
+            return true;
         }
     }
 

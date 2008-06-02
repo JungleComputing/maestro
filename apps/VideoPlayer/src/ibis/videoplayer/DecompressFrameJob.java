@@ -48,4 +48,14 @@ public class DecompressFrameJob implements ibis.maestro.Job
         }
 	return new RGB48Image( frame.frameno, frame.width*REPEAT, frame.height*REPEAT, data );
     }
+
+    /**
+     * @param context The program context.
+     * @return True, because this job can run anywhere.
+     */
+    @Override
+    public boolean isSupported(Context context )
+    {
+	return true;
+    }
 }

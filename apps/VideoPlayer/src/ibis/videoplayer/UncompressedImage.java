@@ -15,10 +15,24 @@ import java.io.InputStream;
 import javax.imageio.ImageIO;
 
 abstract class UncompressedImage extends Image {
-
-    UncompressedImage(int width, int height, int frameno) {
-	super(width, height, frameno);
+    UncompressedImage( int width, int height, int frameno )
+    {
+	super( width, height, frameno );
     }
+
+    /**
+     * Returns the hash code of this uncompressed image.
+     * @return The hash code.
+     */
+    public abstract int hashCode();
+
+    /**
+     * Compares two images.
+     * @param obj The image to compare to.
+     * @return True iff the two iamges are equal.
+     */
+    public abstract boolean equals( Object obj );
+
     /**
      * Returns a new image with each of the dimensions reduced by the
      * given factor.

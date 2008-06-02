@@ -30,4 +30,14 @@ public class ColourCorrectJob implements Job
 
     }
 
+
+    /**
+     * @param context The program context.
+     * @return True, because this job can run anywhere.
+     */
+    @Override
+    public boolean isSupported(Context context )
+    {
+	return true;
+    }
 }

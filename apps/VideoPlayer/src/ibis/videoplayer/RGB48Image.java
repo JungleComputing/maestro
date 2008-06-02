@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.Arrays;
 
 /**
  * A video frame.
@@ -34,6 +35,31 @@ class RGB48Image extends UncompressedImage {
     public String toString()
     {
 	return "frame " + frameno + " RGB48 " + width + "x" + height + "; " + BANDS + " channels";
+    }
+
+    /**
+     * @return The hash code of this image.
+     */
+    @Override
+    public int hashCode() {
+	return Arrays.hashCode(data);
+    }
+
+    /**
+     * Compare two images.
+     * @param obj The image to compare to.
+     * @return True iff the two images are equal.
+     */
+    @Override
+    public boolean equals(Object obj) {
+	if (this == obj)
+	    return true;
+	if (obj == null)
+	    return false;
+	if (getClass() != obj.getClass())
+	    return false;
+	final RGB48Image other = (RGB48Image) obj;
+	return Arrays.equals( data, other.data );
     }
 
     /**

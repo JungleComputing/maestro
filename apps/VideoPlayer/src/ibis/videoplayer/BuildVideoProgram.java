@@ -57,7 +57,6 @@ public class BuildVideoProgram {
     }
     
     private class VideoContext implements Context {
-        
     }
 
     @SuppressWarnings("synthetic-access")

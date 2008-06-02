@@ -33,4 +33,14 @@ class ScaleFrameJob implements Job
         System.out.println( "Scaling " + frame );
         return frame.scaleDown( factor );
     }
+
+    /**
+     * @param context The program context.
+     * @return True, because this job can run anywhere.
+     */
+    @Override
+    public boolean isSupported(Context context )
+    {
+	return true;
+    }
 }
