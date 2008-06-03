@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.List;
 
 import ibis.maestro.Job;
 import ibis.maestro.Node;
@@ -24,17 +23,34 @@ class CompareImageJob implements Job {
 	this.imageDirectory = dir;
     }
 
-    class ImageMatches implements Serializable
+    static class ImageMatches implements Serializable
     {
 	private static final long serialVersionUID = -6824625393338177074L;
 	final UncompressedImage img;
+        final File file;
 	final ArrayList<File> matches = new ArrayList<File>();
 	
-	ImageMatches( UncompressedImage img )
+	ImageMatches( UncompressedImage img, File file )
 	{
 	    this.img = img;
+            this.file = file;
 	}
 	
+        @Override
+        public String toString()
+        {
+            String res = "File " + file + " matches";
+
+            if( matches.size() == 0 ) {
+                res += " nothing";
+            }
+            else {
+                for( File m: matches ) {
+                    res += " " + m;
+                }
+            }
+            return res;
+        }
     }
     
     private static boolean matchesImage( Image img, File f )
@@ -58,6 +74,7 @@ class CompareImageJob implements Job {
             }
         }
         else {
+            System.err.println( "Comparing images " + img.file + " and " + file );
             if( matchesImage( img.img, file ) ) {
                 img.matches.add( file );
             }

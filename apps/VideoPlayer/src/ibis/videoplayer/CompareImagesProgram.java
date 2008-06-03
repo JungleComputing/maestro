@@ -6,6 +6,7 @@ import ibis.maestro.Task;
 import ibis.maestro.TaskWaiter;
 
 import java.io.File;
+import java.io.IOException;
 
 /**
  * Compare a directory full of images against distributed databases of images.
@@ -31,6 +32,10 @@ class CompareImagesProgram
         if( subjectDirectory != null ) {
             submitAll( subjectDirectory, waiter, searchTask );
         }
+        Object res[] = waiter.sync( node );
+        for( Object o: res ) {
+            System.out.println( o.toString() );
+        }
         node.waitToTerminate();
     }
 
@@ -39,7 +44,7 @@ class CompareImagesProgram
      * @param waiter The waiter thread that will wait for the return of the results.
      * @param searchTask The task to submit the files to.
      */
-    private void submitAll(File file, TaskWaiter waiter, Task searchTask)
+    private void submitAll( File file, TaskWaiter waiter, Task searchTask )
     {
         if( file.isDirectory() ) {
             File files[] = file.listFiles();
@@ -48,7 +53,14 @@ class CompareImagesProgram
             }
         }
         else {
-            waiter.submit( searchTask, file );
+            try {
+                UncompressedImage img = UncompressedImage.load( file, 0 );
+                CompareImageJob.ImageMatches im = new CompareImageJob.ImageMatches( img, file );
+                waiter.submit( searchTask, im );
+            }
+            catch( IOException e ) {
+                System.err.println( "Cannot load image '" + file + "': " + e.getLocalizedMessage() );
+            }
         }
     }
 
@@ -69,6 +81,7 @@ class CompareImagesProgram
         imageDir = new File( args[0] );
         System.arraycopy( args, 1, databases, 0, args.length-1 );
         if( !imageDir.isDirectory() ) {
+            System.out.println( "Image directory " + imageDir + " does not exist" );
             imageDir = null;
         }
         System.out.println( "Running on platform " + Service.getPlatformVersion() + " input=" + imageDir + "; " + databases.length + " databases" );

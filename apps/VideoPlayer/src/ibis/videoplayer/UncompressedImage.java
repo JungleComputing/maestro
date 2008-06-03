@@ -24,6 +24,7 @@ abstract class UncompressedImage extends Image {
      * Returns the hash code of this uncompressed image.
      * @return The hash code.
      */
+    @Override
     public abstract int hashCode();
 
     /**
@@ -31,6 +32,7 @@ abstract class UncompressedImage extends Image {
      * @param obj The image to compare to.
      * @return True iff the two iamges are equal.
      */
+    @Override
     public abstract boolean equals( Object obj );
 
     /**
