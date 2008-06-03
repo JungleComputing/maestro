@@ -55,7 +55,7 @@ class CompareImagesProgram
         }
         Task searchTask =  node.createTask( "databaseSearch", jobs );
         System.out.println( "Node created" );
-        if( subjectDirectory != null ) {
+        if( subjectDirectory != null && node.isMaestro() ) {
             submitAll( subjectDirectory, waiter, searchTask );
             Object res[] = waiter.sync();
             node.setStopped();
