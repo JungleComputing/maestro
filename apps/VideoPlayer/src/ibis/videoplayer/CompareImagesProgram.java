@@ -17,25 +17,39 @@ class CompareImagesProgram
 {
     private void run( File subjectDirectory, String databaseList[] ) throws Exception
     {
-	Node node = new Node( subjectDirectory != null );
-	TaskWaiter waiter = new TaskWaiter();
+        Node node = new Node( subjectDirectory != null );
+        TaskWaiter waiter = new TaskWaiter();
 
-	Job jobs[] = new Job[databaseList.length];
-	int ix = 0;
-	for( String db: databaseList ) {
-	    File dbf = new File( db );
-	    jobs[ix++] = new CompareImageJob( dbf );
-	}
-	Task searchTask =  node.createTask( "databaseSearch", jobs );
-	System.out.println( "Node created" );
-	if( subjectDirectory != null ) {
-	    File files[] = subjectDirectory.listFiles();
-	    System.out.println( "I am maestro; converting " + files.length + " images" );
-	    for( File f: files ) {
-		waiter.submit( searchTask, f );
-	    }
-	}
-	node.waitToTerminate();
+        Job jobs[] = new Job[databaseList.length];
+        int ix = 0;
+        for( String db: databaseList ) {
+            File dbf = new File( db );
+            jobs[ix++] = new CompareImageJob( dbf );
+        }
+        Task searchTask =  node.createTask( "databaseSearch", jobs );
+        System.out.println( "Node created" );
+        if( subjectDirectory != null ) {
+            submitAll( subjectDirectory, waiter, searchTask );
+        }
+        node.waitToTerminate();
+    }
+
+    /**
+     * @param file The file or directory to submit.
+     * @param waiter The waiter thread that will wait for the return of the results.
+     * @param searchTask The task to submit the files to.
+     */
+    private void submitAll(File file, TaskWaiter waiter, Task searchTask)
+    {
+        if( file.isDirectory() ) {
+            File files[] = file.listFiles();
+            for( File f: files ) {
+                submitAll( f, waiter, searchTask );
+            }
+        }
+        else {
+            waiter.submit( searchTask, file );
+        }
     }
 
     /** The command-line interface of this program.
@@ -44,25 +58,25 @@ class CompareImagesProgram
      */
     public static void main( String args[] )
     {
-	File imageDir = null;
-	String databases[] = new String[args.length-1];
+        File imageDir = null;
+        String databases[] = new String[args.length-1];
 
-	if( args.length<=1 ){
-	    System.err.println( "Usage: <image-directory> <database-directory>  ... <database-directory>" );
-	    System.err.println( "  Give a non-existent <image-directory> for a worker" );
-	    System.exit( 1 );
-	}
-	imageDir = new File( args[0] );
-	System.arraycopy( args, 1, databases, 0, args.length-1 );
-	if( !imageDir.isDirectory() ) {
-	    imageDir = null;
-	}
-	System.out.println( "Running on platform " + Service.getPlatformVersion() + " input=" + imageDir + "; " + databases.length + " databases" );
-	try {
-	    new CompareImagesProgram().run( imageDir, databases );
-	}
-	catch( Exception e ) {
-	    e.printStackTrace( System.err );
-	}
+        if( args.length<=1 ){
+            System.err.println( "Usage: <image-directory> <database-directory>  ... <database-directory>" );
+            System.err.println( "  Give a non-existent <image-directory> for a worker" );
+            System.exit( 1 );
+        }
+        imageDir = new File( args[0] );
+        System.arraycopy( args, 1, databases, 0, args.length-1 );
+        if( !imageDir.isDirectory() ) {
+            imageDir = null;
+        }
+        System.out.println( "Running on platform " + Service.getPlatformVersion() + " input=" + imageDir + "; " + databases.length + " databases" );
+        try {
+            new CompareImagesProgram().run( imageDir, databases );
+        }
+        catch( Exception e ) {
+            e.printStackTrace( System.err );
+        }
     }
 }

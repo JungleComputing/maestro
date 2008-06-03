@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.List;
 
 import ibis.maestro.Job;
 import ibis.maestro.Node;
@@ -47,6 +48,21 @@ class CompareImageJob implements Job {
 	}
 	return false;
     }
+    
+    private void matchImages( File file, ImageMatches img )
+    {
+        if( file.isDirectory() ) {
+            File files[] = file.listFiles();
+            for( File f: files ) {
+                matchImages( f, img );
+            }
+        }
+        else {
+            if( matchesImage( img.img, file ) ) {
+                img.matches.add( file );
+            }
+        }
+    }
 
     /**
      * Run the matching process on a given image, and add any matches to its list.
@@ -59,17 +75,13 @@ class CompareImageJob implements Job {
     {
 	ImageMatches img = (ImageMatches) input;
 
-	File files[] = imageDirectory.listFiles();
-	for( File f: files ) {
-	    if( matchesImage( img.img, f ) ) {
-		img.matches.add( f );
-	    }
-	}
+        matchImages( imageDirectory, img );
 	return img;
     }
 
     /**
-     * @return True, because this job can run anywhere.
+     * Returns true iff this job can be run on this node.
+     * @return True iff we can access the image directory of this job.
      */
     @Override
     public boolean isSupported()
