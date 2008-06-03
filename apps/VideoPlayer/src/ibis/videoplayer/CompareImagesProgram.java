@@ -16,32 +16,6 @@ import java.io.IOException;
  */
 class CompareImagesProgram
 {
-    private void run( File subjectDirectory, String databaseList[] ) throws Exception
-    {
-        Node node = new Node( subjectDirectory != null );
-        TaskWaiter waiter = new TaskWaiter();
-
-        Job jobs[] = new Job[databaseList.length];
-        int ix = 0;
-        for( String db: databaseList ) {
-            File dbf = new File( db );
-            jobs[ix++] = new CompareImageJob( dbf );
-        }
-        Task searchTask =  node.createTask( "databaseSearch", jobs );
-        System.out.println( "Node created" );
-        if( subjectDirectory != null ) {
-            submitAll( subjectDirectory, waiter, searchTask );
-        }
-        Object res[] = waiter.sync();
-        for( Object o: res ) {
-            CompareImageJob.ImageMatches im = (CompareImageJob.ImageMatches) o;
-            if( im.matches.size()>1 ) {
-                System.out.println( o.toString() );
-            }
-        }
-        node.setStopped();
-        node.waitToTerminate();
-    }
 
     /**
      * @param file The file or directory to submit.
@@ -66,6 +40,33 @@ class CompareImagesProgram
                 System.err.println( "Cannot load image '" + file + "': " + e.getLocalizedMessage() );
             }
         }
+    }
+
+    private void run( File subjectDirectory, String databaseList[] ) throws Exception
+    {
+        Node node = new Node( subjectDirectory != null );
+        TaskWaiter waiter = new TaskWaiter();
+
+        Job jobs[] = new Job[databaseList.length];
+        int ix = 0;
+        for( String db: databaseList ) {
+            File dbf = new File( db );
+            jobs[ix++] = new CompareImageJob( dbf );
+        }
+        Task searchTask =  node.createTask( "databaseSearch", jobs );
+        System.out.println( "Node created" );
+        if( subjectDirectory != null ) {
+            submitAll( subjectDirectory, waiter, searchTask );
+            Object res[] = waiter.sync();
+            node.setStopped();
+            for( Object o: res ) {
+                CompareImageJob.ImageMatches im = (CompareImageJob.ImageMatches) o;
+                if( im.matches.size()>1 ) {
+                    System.out.println( o.toString() );
+                }
+            }
+        }
+        node.waitToTerminate();
     }
 
     /** The command-line interface of this program.
