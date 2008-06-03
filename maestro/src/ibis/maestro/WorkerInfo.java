@@ -203,7 +203,7 @@ final class WorkerInfo {
 
 	if( workerJobInfo == null ) {
 	    if( Settings.traceTypeHandling ){
-		Globals.log.reportInternalError( "Internal error: getRemainingTaskTime(): worker " + identifier + " does not support type " + jobType );
+		Globals.log.reportProgress( "getRemainingTaskTime(): worker " + identifier + " does not support type " + jobType );
 	    }
 	    return Long.MAX_VALUE;
 	}
