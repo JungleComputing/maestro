@@ -32,10 +32,14 @@ class CompareImagesProgram
         if( subjectDirectory != null ) {
             submitAll( subjectDirectory, waiter, searchTask );
         }
-        Object res[] = waiter.sync( node );
+        Object res[] = waiter.sync();
         for( Object o: res ) {
-            System.out.println( o.toString() );
+            CompareImageJob.ImageMatches im = (CompareImageJob.ImageMatches) o;
+            if( im.matches.size()>1 ) {
+                System.out.println( o.toString() );
+            }
         }
+        node.setStopped();
         node.waitToTerminate();
     }
 

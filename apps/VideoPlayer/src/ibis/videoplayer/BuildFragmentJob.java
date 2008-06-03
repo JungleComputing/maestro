@@ -43,7 +43,8 @@ public final class BuildFragmentJob implements Job
             Integer frameno = new Integer( frame );
             waiter.submit( fetchTask, frameno );
         }
-        Object res[] = waiter.sync( node );
+        // FIXME: run another tread during the sync.
+        Object res[] = waiter.sync();
         if( Settings.traceFragmentBuilder ){
             System.out.println( "Building fragment [" + startFrame + "..." + endFrame + "]" );
         }

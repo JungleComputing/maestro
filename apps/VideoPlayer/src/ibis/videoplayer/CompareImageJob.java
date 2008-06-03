@@ -74,7 +74,6 @@ class CompareImageJob implements Job {
             }
         }
         else {
-            System.err.println( "Comparing images " + img.file + " and " + file );
             if( matchesImage( img.img, file ) ) {
                 img.matches.add( file );
             }
