@@ -279,7 +279,7 @@ final class WorkerList {
 	    }
 	}
         if( res == Long.MAX_VALUE ){
-            System.out.println( "Zero workers??" );
+            System.out.println( "Warning: zero workers for " + jobType );
         }
 	return res;
     }

@@ -187,7 +187,6 @@ public final class Node {
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
-     * @param context The program-specific context of this node.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */

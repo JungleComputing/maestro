@@ -21,7 +21,7 @@ class Settings {
     // Debugging flags.
     
     /** Trace type handling? */
-    static final boolean traceTypeHandling = false;
+    static final boolean traceTypeHandling = true;
 
     /** Trace the progress of workers? */
     static final boolean traceWorkerProgress = false;
