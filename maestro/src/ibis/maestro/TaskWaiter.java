@@ -66,13 +66,11 @@ public class TaskWaiter implements CompletionListener
 
     /**
      * Wait for all jobs to be completed.
-     * @param node The node this waiter runs on.
      * @return The array of all reported job results.
      */
-    public Object[] sync( Node node )
+    public Object[] sync()
     {
         Object res[];
-        WorkThread thread = node.startExtraWorker();
         while( true ) {
             synchronized( this ){
                 if( outstandingJobs == 0 ){
@@ -92,7 +90,6 @@ public class TaskWaiter implements CompletionListener
                 }
             }
         }
-        thread.shutdown();
         return res;
     }
 }
