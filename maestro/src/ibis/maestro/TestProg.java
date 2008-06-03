@@ -75,7 +75,7 @@ public class TestProg {
          */
         @Override
         @SuppressWarnings("synthetic-access")
-        public AdditionData run( Object obj, Node node, Context context )
+        public AdditionData run( Object obj, Node node )
         {
             Integer val = (Integer) obj;
             double a[] = new double [ARRAY_SIZE];
@@ -91,7 +91,7 @@ public class TestProg {
          * @return True iff this job is supported.
          */
         @Override
-        public boolean isSupported( Context context )
+        public boolean isSupported()
         {
             return true;
         }
@@ -108,7 +108,7 @@ public class TestProg {
          * @return The result of the job.
          */
         @Override
-        public AdditionData run( Object obj, Node node, Context context )
+        public AdditionData run( Object obj, Node node )
         {
             AdditionData data = (AdditionData) obj;
             double sum = 0.0;
@@ -126,7 +126,7 @@ public class TestProg {
          * @return True iff this job is supported.
          */
         @Override
-        public boolean isSupported( Context context )
+        public boolean isSupported()
         {
             return true;
         }
@@ -135,7 +135,7 @@ public class TestProg {
     @SuppressWarnings("synthetic-access")
     private void run( int jobCount, boolean goForMaestro ) throws Exception
     {
-        Node node = new Node( null, goForMaestro );
+        Node node = new Node( goForMaestro );
         Listener listener = new Listener( jobCount );
 
         Task task = node.createTask( "testprog", new CreateArrayJob(), new AdditionJob(), new AdditionJob(), new AdditionJob(), new AdditionJob() );

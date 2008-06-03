@@ -648,14 +648,14 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
      * 
      * @param task The task to register.
      */
-    void registerTask( Task task, Context context )
+    void registerTask( Task task )
     {
 	TaskIdentifier id = task.id;
 	Job jobs[] = task.jobs;
 
 	for( int i=0; i<jobs.length; i++ ){
 	    Job j = jobs[i];
-	    if( j.isSupported( context ) ) {
+	    if( j.isSupported() ) {
 		allowJobType( new JobType( id, i ) );
 	    }
 	}

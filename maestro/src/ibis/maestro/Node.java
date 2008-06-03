@@ -26,7 +26,6 @@ public final class Node {
     private final Ibis ibis;
     private final Master master;
     private final Worker worker;
-    private final Context context;
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
     RegistryEventHandler registryEventHandler;
     private ArrayList<Task> tasks = new ArrayList<Task>();
@@ -192,25 +191,23 @@ public final class Node {
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public Node( Context context ) throws IbisCreationFailedException, IOException
+    public Node() throws IbisCreationFailedException, IOException
     {
-	this( context, true );
+	this( true );
     }
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
-     * @param context The program context of this node.
      * @param runForMaestro If true, try to get elected as maestro.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
     @SuppressWarnings("synthetic-access")
-    public Node( Context context, boolean runForMaestro ) throws IbisCreationFailedException, IOException
+    public Node( boolean runForMaestro ) throws IbisCreationFailedException, IOException
     {
 	Properties ibisProperties = new Properties();
 	IbisIdentifier maestro;
 
-        this.context = context;
 	ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
 	registryEventHandler = new NodeRegistryEventHandler();
 	ibis = IbisFactory.createIbis(
@@ -420,7 +417,7 @@ public final class Node {
 	Task task = new Task( this, taskId, name, jobs );
 
 	tasks.add( task );
-	worker.registerTask( task, context );
+	worker.registerTask( task );
 	return task;
     }
 
@@ -473,7 +470,7 @@ public final class Node {
     private void run( JobInstance job, JobType type, Task t )
     {
 	Job j = t.jobs[type.jobNo];
-	Object result = j.run( job.input, this, context );
+	Object result = j.run( job.input, this );
 	int nextJobNo = type.jobNo+1;
 
 	if( nextJobNo<t.jobs.length ){
