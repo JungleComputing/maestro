@@ -1,6 +1,5 @@
 package ibis.videoplayer;
 
-import ibis.maestro.Context;
 import ibis.maestro.Job;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
@@ -15,20 +14,7 @@ import java.io.IOException;
  * @author Kees van Reeuwijk
  *
  */
-class ConvertFramesProgram {
-    private class ConverterContext implements Context {
-        final File sourceDirectory;
-
-        ConverterContext(final File sourceDirectory) {
-            this.sourceDirectory = sourceDirectory;
-        }
-
-        File getSourceDirectory()
-        {
-            return sourceDirectory;
-        }
-    }
-    
+class ConvertFramesProgram {    
     private final class FetchImageAction implements Job {
         private static final long serialVersionUID = -7976035811697720295L;
 
@@ -36,11 +22,10 @@ class ConvertFramesProgram {
          *
          * @param in The input of this job.
          * @param node The node we're running on.
-         * @param context The program context of this job.
          * @return The fetched image.
          */
         
-        public Object run( Object in, Node node, Context context ) {
+        public Object run( Object in, Node node ) {
             File f = (File) in;
             try {
             return UncompressedImage.load( f, 0 );
@@ -56,7 +41,7 @@ class ConvertFramesProgram {
          * @return True, because this job can run anywhere.
          */
         @Override
-        public boolean isSupported(Context context )
+        public boolean isSupported()
         {
             return true;
         }
@@ -86,24 +71,22 @@ class ConvertFramesProgram {
          * 
          * @param in The input of the conversion.
          * @param node The node this process runs on.
-         * @param context The program context.
          * @return THe converted image.
          */
         @Override
-        public Object run( Object in, Node node, Context context ) {
+        public Object run( Object in, Node node ) {
             UncompressedImage img = (UncompressedImage) in;
 
             return img.colourCorrect(rr, rg, rb, gr, gg, gb, br, bg, bb );
         }
 
         /**
-         * @param context The program context.
          * @return True, because this job can run anywhere.
          */
         @Override
-        public boolean isSupported(Context context )
+        public boolean isSupported()
         {
-    	return true;
+            return true;
         }
     }
 
@@ -115,11 +98,10 @@ class ConvertFramesProgram {
          * Run a Jpeg conversion Maestro job.
          * @param in The input of this job.
          * @param node The node this job runs on.
-         * @param context The program context of this job.
          * @return The result of the job.
          */
         @Override
-        public Object run( Object in, Node node, Context context ) {
+        public Object run( Object in, Node node ) {
             UncompressedImage img = (UncompressedImage) in;
 
             try {
@@ -132,11 +114,10 @@ class ConvertFramesProgram {
         }
 
         /**
-         * @param context The program context.
          * @return True, because this job can run anywhere.
          */
         @Override
-        public boolean isSupported(Context context )
+        public boolean isSupported()
         {
             return true;
         }
@@ -145,7 +126,7 @@ class ConvertFramesProgram {
     @SuppressWarnings("synthetic-access")
     private void run( File framesDirectory ) throws Exception
     {
-        Node node = new Node( new ConverterContext( framesDirectory ), framesDirectory != null );
+        Node node = new Node( framesDirectory != null );
         TaskWaiter waiter = new TaskWaiter();
         Task convertTask =  node.createTask(
                 "converter",

@@ -1,6 +1,5 @@
 package ibis.videoplayer;
 
-import ibis.maestro.Context;
 import ibis.maestro.Job;
 import ibis.maestro.Node;
 
@@ -27,7 +26,7 @@ class ScaleFrameJob implements Job
      * @return The scaled image.
      */
     @Override
-    public Object run( Object obj, Node node, Context context )
+    public Object run( Object obj, Node node )
     {
 	Image frame = (Image) obj;
         System.out.println( "Scaling " + frame );
@@ -35,11 +34,10 @@ class ScaleFrameJob implements Job
     }
 
     /**
-     * @param context The program context.
      * @return True, because this job can run anywhere.
      */
     @Override
-    public boolean isSupported(Context context )
+    public boolean isSupported()
     {
 	return true;
     }

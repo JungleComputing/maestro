@@ -1,6 +1,5 @@
 package ibis.videoplayer;
 
-import ibis.maestro.Context;
 import ibis.maestro.Job;
 import ibis.maestro.Node;
 
@@ -21,7 +20,7 @@ public class FetchFrameJob implements Job
      * @return The frame we have fetched.
      */
     @Override
-    public Object run( Object obj, Node node, Context context )
+    public Object run( Object obj, Node node )
     {
 	Integer frameno = (Integer) obj;
         File frameFile = new File( String.format( "frame-%04d.ppm" ) );
@@ -40,11 +39,10 @@ public class FetchFrameJob implements Job
     }
 
     /**
-     * @param context The program context.
      * @return True, because this job can run anywhere.
      */
     @Override
-    public boolean isSupported(Context context )
+    public boolean isSupported()
     {
 	return true;
     }

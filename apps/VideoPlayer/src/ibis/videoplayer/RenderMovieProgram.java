@@ -1,7 +1,6 @@
 package ibis.videoplayer;
 
 import ibis.maestro.CompletionListener;
-import ibis.maestro.Context;
 import ibis.maestro.Job;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
@@ -52,19 +51,6 @@ public class RenderMovieProgram implements CompletionListener
         }
     }
 
-    private class ConverterContext implements Context {
-        final File sourceDirectory;
-
-        ConverterContext(final File sourceDirectory) {
-            this.sourceDirectory = sourceDirectory;
-        }
-
-        File getSourceDirectory()
-        {
-            return sourceDirectory;
-        }
-    }
-
     private final class ColorCorrectJob implements Job
     {
         private static final long serialVersionUID = 5452987225377415308L;
@@ -89,11 +75,10 @@ public class RenderMovieProgram implements CompletionListener
          * 
          * @param in The input of the conversion.
          * @param node The node this process runs on.
-         * @param context The program context.
          * @return THe converted image.
          */
         @Override
-        public Object run( Object in, Node node, Context context ) {
+        public Object run( Object in, Node node ) {
             UncompressedImage img = (UncompressedImage) in;
 
             System.out.println( "Colour-correcting " + img );
@@ -101,11 +86,10 @@ public class RenderMovieProgram implements CompletionListener
         }
 
         /**
-         * @param context The program context.
          * @return True, because this job can run anywhere.
          */
         @Override
-        public boolean isSupported(Context context )
+        public boolean isSupported()
         {
             return true;
         }
@@ -120,11 +104,10 @@ public class RenderMovieProgram implements CompletionListener
          * 
          * @param in The input of the conversion.
          * @param node The node this process runs on.
-         * @param context The program context.
          * @return THe converted image.
          */
         @Override
-        public Object run( Object in, Node node, Context context ) {
+        public Object run( Object in, Node node ) {
             UncompressedImage img = (UncompressedImage) in;
 
             System.out.println( "Downsampling " + img );
@@ -132,11 +115,10 @@ public class RenderMovieProgram implements CompletionListener
         }
 
         /**
-         * @param context The program context.
          * @return True, because this job can run anywhere.
          */
         @Override
-        public boolean isSupported(Context context )
+        public boolean isSupported()
         {
             return true;
         }
@@ -150,11 +132,10 @@ public class RenderMovieProgram implements CompletionListener
          * Run a Jpeg conversion Maestro job.
          * @param in The input of this job.
          * @param node The node this job runs on.
-         * @param context The program context of this job.
          * @return The result of the job.
          */
         @Override
-        public Object run( Object in, Node node, Context context ) {
+        public Object run( Object in, Node node ) {
             UncompressedImage img = (UncompressedImage) in;
 
             try {
@@ -172,7 +153,7 @@ public class RenderMovieProgram implements CompletionListener
          * @return True, because this job can run anywhere.
          */
         @Override
-        public boolean isSupported(Context context )
+        public boolean isSupported()
         {
             return true;
         }
@@ -200,7 +181,7 @@ public class RenderMovieProgram implements CompletionListener
     @SuppressWarnings("synthetic-access")
     private void run( File sourceDirectory, File iniFile ) throws Exception
     {
-        Node node = new Node( new ConverterContext( sourceDirectory ), sourceDirectory != null );
+        Node node = new Node( sourceDirectory != null );
         Task convertTask =  node.createTask(
             "converter",
             new RenderFrameJob(),

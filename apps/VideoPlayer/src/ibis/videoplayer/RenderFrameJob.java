@@ -1,6 +1,5 @@
 package ibis.videoplayer;
 
-import ibis.maestro.Context;
 import ibis.maestro.Node;
 import ibis.util.RunProcess;
 
@@ -180,18 +179,17 @@ public class RenderFrameJob implements ibis.maestro.Job
      * @return The rendered frame.
      */
     @Override
-    public Object run( Object obj, Node node, Context context )
+    public Object run( Object obj, Node node )
     {
 	RenderInfo info = (RenderInfo) obj;
         return renderImage( info.width, info.height, info.startRow, info.endRow, info.startColumn, info.endColumn, info.frameno, info.scene );
     }
 
     /**
-     * @param context The program context.
      * @return True, because this job can run anywhere.
      */
     @Override
-    public boolean isSupported(Context context )
+    public boolean isSupported()
     {
 	// FIXME: test whether PovRay works.
 	return true;

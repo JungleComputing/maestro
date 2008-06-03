@@ -1,6 +1,5 @@
 package ibis.videoplayer;
 
-import ibis.maestro.Context;
 import ibis.maestro.Node;
 
 /**
@@ -23,7 +22,7 @@ public class DecompressFrameJob implements ibis.maestro.Job
      * @return The decompressed frame.
      */
     @Override
-    public Object run(Object obj, Node node, Context context )
+    public Object run(Object obj, Node node )
     {
 	RGB48Image frame = (RGB48Image) obj;
         short in[] = frame.data;
@@ -54,7 +53,7 @@ public class DecompressFrameJob implements ibis.maestro.Job
      * @return True, because this job can run anywhere.
      */
     @Override
-    public boolean isSupported(Context context )
+    public boolean isSupported()
     {
 	return true;
     }
