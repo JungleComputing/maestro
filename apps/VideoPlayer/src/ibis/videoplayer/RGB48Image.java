@@ -34,7 +34,7 @@ class RGB48Image extends UncompressedImage {
     @Override
     public String toString()
     {
-	return "frame " + frameno + " RGB48 " + width + "x" + height + "; " + BANDS + " channels";
+	return "frame " + frameno + " RGB48 " + width + "x" + height + "; " + BANDS + " bands";
     }
 
     /**
@@ -135,7 +135,6 @@ class RGB48Image extends UncompressedImage {
 	short res[] = new short[width*height*BANDS];
 
 	// Apply the color correction matrix 
-        // We blindly assume r,g, and b, have the same length.
         for( int i=0; i<data.length; i += BANDS ) {
             double vr = frr*data[i] + frg*data[i+1] + frb*data[i+2];
             double vg = fgr*data[i] + fgg*data[i+1] + fgb*data[i+2];
