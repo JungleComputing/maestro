@@ -83,7 +83,7 @@ class RGB48Image extends UncompressedImage {
     UncompressedImage scaleDown( int factor )
     {
 	if( Settings.traceScaler ){
-	    System.out.println( "Scaling frame " + frameno );
+	    System.out.println( "Scaling down " + this );
 	}
 	if( !checkFactor( width, "width", factor ) ) {
 	    return null;
@@ -126,10 +126,7 @@ class RGB48Image extends UncompressedImage {
 		res[ix++] = (short) (blueValues/weight);
 	    }
 	}
-	if( Settings.traceScaler ){
-	    System.out.println( "Scaling " + this + " by factor " + factor );
-	}
-	return new RGB48Image( frameno, width/factor, height/factor, res );
+	return new RGB48Image( frameno, swidth, sheight, res );
     }
 
     @Override
