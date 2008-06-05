@@ -287,17 +287,18 @@ class RGB24Image extends UncompressedImage {
         return new RGB24Image(frameno, width, height, res );
     }
 
-    RGB24Image sharpenImage()
+    @Override
+    RGB24Image sharpen()
     {
         return convolution3x3(
-                1,  1, 1,
-                1, -8, 1,
-                1,  1, 1,
+                -1,  -1, -1,
+                -1,   9, -1,
+                -1,  -1, -1,
                 1
         );
     }
 
-    RGB24Image blurImage()
+    RGB24Image blur()
     {
         return convolution3x3(
                 1, 1, 1,
@@ -332,6 +333,7 @@ class RGB24Image extends UncompressedImage {
      * will have <code>factor*factor</code> times as many pixels.
      * @return The scaled up image.
      */
+    @Override
     RGB24Image scaleUp( int factor )
     {
         if( Settings.traceScaler ){
