@@ -430,9 +430,9 @@ class RGB24Image extends UncompressedImage {
             double vg = fgr*data[i] + fgg*data[i+1] + fgb*data[i+2];
             double vb = fbr*data[i] + fbg*data[i+1] + fbb*data[i+2];
 
-            res[i] = (byte) vr;
-            res[i+1] = (byte) vg;
-            res[i+2] = (byte) vb;
+            res[i] = round( vr );
+            res[i+1] = round( vg );
+            res[i+2] = round( vb );
         }
         if( Settings.traceActions ) {
             System.out.println( "Color-corrected " + this );
@@ -524,18 +524,18 @@ class RGB24Image extends UncompressedImage {
         return new RGB24Image( frameno, width, height, data );
     }
 
-    static RGB24Image buildGradientImage( int frameno, int width, int height )
+    static RGB24Image buildGradientImage( int frameno, int width, int height, byte startr, byte startg, byte startb )
     {
         byte data[] = new byte[width*height*BANDS];
         int ix = 0;
-        byte vg = 0;
+        byte vg = startg;
 
         for( int h=0; h<height; h++ ) {
-            byte vr = 0;
+            byte vr = startr;
             for( int w=0; w<width; w++ ) {
                 data[ix++] = vr;
                 data[ix++] = vg;
-                data[ix++] = 127;
+                data[ix++] = startb;
                 vr++;
             }
             vg++;

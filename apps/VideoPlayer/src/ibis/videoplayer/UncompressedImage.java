@@ -43,6 +43,21 @@ abstract class UncompressedImage extends Image {
      */
     @Override
     abstract UncompressedImage scaleDown( int factor );
+
+    /**
+     * Returns a new image with both the width and the height multiplied by the
+     * given factor.
+     * @param factor The scale factor.
+     * @return The scaled image.
+     */
+    abstract UncompressedImage scaleUp( int factor );
+
+    /**
+     * Returns a new image that is a sharpened version of this iamge.
+     * @return The sharpened image.
+     */
+    abstract UncompressedImage sharpen();
+
     abstract Image colourCorrect( double frr, double frg, double frb, double fgr, double fgg, double fgb, double fbr, double fbg, double fbb );
 
     /**

@@ -18,10 +18,10 @@ public class TestProgram
      */
     public static void main( String[] args ) {
         try {
-//          UncompressedImage img48 = UncompressedImage.load( new File( "foto2.ppm" ), 0 );
-            RGB24Image img24 = RGB24Image.buildGradientImage( 0, 300, 200 );
-            System.out.println( "generated " + img24 );
-            img24 = img24.scaleUp( 3 );
+            UncompressedImage img = UncompressedImage.load( new File( "images/japan-tuin-8bit.ppm" ), 0 );
+            System.out.println( "Loaded " + img );
+            //img = img.scaleUp( 3 );
+            img = img.sharpen();
 
 //          String inc = RenderFrameJob.readFile( new File( "frames/context.inc" ) );
 //          String scene = RenderFrameJob.readFile( new File( "frames/S01-frame000000.pov" ) );
@@ -29,11 +29,10 @@ public class TestProgram
 //          UncompressedImage img24 = RenderFrameJob.renderImage( 1500, 500, 0, 1000, 0, 500, 0, inc + scene );
 //          System.out.println( "Rendered scene" );
 
-            // UncompressedImage img24 = UncompressedImage.load(  new File( "images/japan-tuin-16bit.ppm" ), 0 );
-            System.out.println( "scaled to " + img24 );
-//          System.out.println( "generated to " + img24 );
+            // UncompressedImage img = UncompressedImage.load(  new File( "images/japan-tuin-16bit.ppm" ), 0 );
+            System.out.println( "scaled to " + img );
 //          System.out.println( "read image " + img );
-            img24.write( new File( "test-out.ppm" ) );
+            img.write( new File( "test-out.ppm" ) );
 //          img24 = RGB24Image.convert( img24 );
 //          System.out.println( "downsampled to image " + img24 );
 //          CompressedImage cimg = JpegCompressedImage.convert( img24 );

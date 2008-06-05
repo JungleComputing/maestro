@@ -254,4 +254,27 @@ class RGB48Image extends UncompressedImage {
         System.err.println( "Don't know how to convert a " + img.getClass() + " to a RGB48 image" );
         return null;
     }
+
+    /**
+     *
+     * @param factor
+     * @return
+     */
+    
+    @Override
+    UncompressedImage scaleUp(int factor) {
+        // FIXME Auto-generated method stub
+        return null;
+    }
+
+    /**
+     *
+     * @return
+     */
+    
+    @Override
+    UncompressedImage sharpen() {
+        // FIXME Auto-generated method stub
+        return null;
+    }
 }
