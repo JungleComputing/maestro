@@ -162,6 +162,16 @@ class RGB24Image extends UncompressedImage {
     {
         return f*v1 + (1-f)*v0;
     }
+    
+    /** Given a byte
+     * returns an unsigned int.
+     * @param v
+     * @return
+     */
+    private static int byteToInt( byte v )
+    {
+        return ((int) v) & 0xFF;
+    }
 
     /**
      * Given an interpolation factor and a start and end value, returns
@@ -176,8 +186,8 @@ class RGB24Image extends UncompressedImage {
     {
         double res = interpolate(
                 fx,
-                interpolate( fy, v00, v01 ),
-                interpolate( fy, v10, v11 )
+                interpolate( fy, byteToInt( v00 ), byteToInt( v01 ) ),
+                interpolate( fy, byteToInt( v10 ), byteToInt( v11 ) )
         );
         return round( res );
     }
@@ -188,7 +198,7 @@ class RGB24Image extends UncompressedImage {
      * will have <code>factor*factor</code> times as many pixels.
      * @return The scaled up image.
      */
-    UncompressedImage scaleUp( int factor )
+    RGB24Image scaleUp( int factor )
     {
         if( Settings.traceScaler ){
             System.out.println( "Scaling up " + this );
@@ -206,61 +216,62 @@ class RGB24Image extends UncompressedImage {
                 double intery = ((double) iy)/((double) factor);
 
                 for( int x=0; x<width; x++ ){
-                    for( int ix=0; ix<factor; ix++ ) {
-                        double interx = ((double) ix)/((double) factor);
-                        int readIx = rowstart + x*BANDS;
-                        byte red10, green10, blue10;
-                        byte red01, green01, blue01;
-                        byte red11, green11, blue11;
+                    int readIx = rowstart + x*BANDS;
+                    byte red10, green10, blue10;
+                    byte red01, green01, blue01;
+                    byte red11, green11, blue11;
 
-                        // Top left pixel
-                        byte red00 = data[readIx++];
-                        byte green00 = data[readIx++];
-                        byte blue00 = data[readIx++];
+                    // Top left pixel
+                    byte red00 = data[readIx++];
+                    byte green00 = data[readIx++];
+                    byte blue00 = data[readIx++];
 
-                        // Top right pixel
+                    // Top right pixel
+                    if( (x+1)<width ) {
+                        red10 = data[readIx++];
+                        green10 = data[readIx++];
+                        blue10 = data[readIx++];
+                    }
+                    else {
+                        // That's beyond the width of the image; use the border pixel.
+                        red10 = red00;
+                        green10 = green00;
+                        blue10 = blue00;
+                    }
+
+                    if( (y+1)<height ) {
+                        readIx = nextrow + x*BANDS;
+
+                        // Bottom left pixel
+                        red01 = data[readIx++];
+                        green01 = data[readIx++];
+                        blue01 = data[readIx++];
+
                         if( (x+1)<width ) {
-                            red10 = data[readIx++];
-                            green10 = data[readIx++];
-                            blue10 = data[readIx++];
+                            // Bottom right pixel
+                            red11 = data[readIx++];
+                            green11 = data[readIx++];
+                            blue11 = data[readIx++];
                         }
                         else {
                             // That's beyond the width of the image; use the border pixel.
-                            red10 = red00;
-                            green10 = green00;
-                            blue10 = blue00;
+                            red11 = red01;
+                            green11 = green01;
+                            blue11 = blue01;
                         }
+                    }
+                    else {
+                        // That's beyond the height of the image; use the border pixels.
+                        red01 = red00;
+                        green01 = green00;
+                        blue01 = blue00;
+                        red11 = red10;
+                        green11 = green10;
+                        blue11 = blue10;
+                    }
+                    for( int ix=0; ix<factor; ix++ ) {
+                        double interx = ((double) ix)/((double) factor);
 
-                        if( (y+1)<height ) {
-                            readIx = nextrow + x*BANDS;
-
-                            // Bottom left pixel
-                            red01 = data[readIx++];
-                            green01 = data[readIx++];
-                            blue01 = data[readIx++];
-
-                            if( (x+1)<width ) {
-                                // Bottom right pixel
-                                red11 = data[readIx++];
-                                green11 = data[readIx++];
-                                blue11 = data[readIx++];
-                            }
-                            else {
-                                // That's beyond the width of the image; use the border pixel.
-                                red11 = red01;
-                                green11 = green01;
-                                blue11 = blue01;
-                            }
-                        }
-                        else {
-                            // That's beyond the height of the image; use the border pixels.
-                            red01 = red00;
-                            green01 = green00;
-                            blue01 = blue00;
-                            red11 = red10;
-                            green11 = green10;
-                            blue11 = blue10;
-                        }
                         res[fillix++] = interpolate( interx, intery, red00, red10, red01, red11 );
                         res[fillix++] = interpolate( interx, intery, green00, green10, green01, green11 );
                         res[fillix++] = interpolate( interx, intery, blue00, blue10, blue01, blue11 );
