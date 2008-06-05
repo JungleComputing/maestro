@@ -36,6 +36,10 @@ class CompareImageJob implements Job {
             this.file = file;
 	}
 	
+	/**
+	 * Returns a string representation of this match request.
+	 * @return The string representation.
+	 */
         @Override
         public String toString()
         {

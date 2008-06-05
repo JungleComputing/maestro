@@ -143,6 +143,7 @@ class ConvertFramesProgram {
             for( File f: files ) {
                 waiter.submit( convertTask, f );
             }
+	    node.setStopped();
         }
         node.waitToTerminate();
     }

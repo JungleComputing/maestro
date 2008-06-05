@@ -34,6 +34,10 @@ class FindNovaJob implements Job {
 	    this.place = place;
 	}
 
+	/**
+	 * Returns a string representation of this image identifier.
+	 * @return The string representation.
+	 */
 	@Override
 	public String toString()
 	{
@@ -73,6 +77,10 @@ class FindNovaJob implements Job {
 	    this.after = after;
 	}
 
+	/**
+	 * Returns a string representation of this match request.
+	 * @return The string representation.
+	 */
 	@Override
 	public String toString()
 	{
