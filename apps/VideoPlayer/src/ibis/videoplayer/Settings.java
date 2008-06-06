@@ -18,7 +18,7 @@ public class Settings {
     static final boolean traceScaler = false;
     static final boolean traceDecompressor = false;
 
-    static boolean traceActions = false;
+    static boolean traceJobs = false;
 
     static final int FRAME_HEIGHT = 2160;
     static final int FRAME_WIDTH = 3480;

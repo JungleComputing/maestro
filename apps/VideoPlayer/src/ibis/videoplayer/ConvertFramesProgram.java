@@ -15,7 +15,7 @@ import java.io.IOException;
  *
  */
 class ConvertFramesProgram {    
-    private final class FetchImageAction implements Job {
+    private final class FetchImageJob implements Job {
         private static final long serialVersionUID = -7976035811697720295L;
 
         /**
@@ -130,7 +130,7 @@ class ConvertFramesProgram {
         TaskWaiter waiter = new TaskWaiter();
         Task convertTask =  node.createTask(
                 "converter",
-                new FetchImageAction(),
+                new FetchImageJob(),
                 new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
                 new ScaleFrameJob( 2 ),
                 new CompressFrameJob()

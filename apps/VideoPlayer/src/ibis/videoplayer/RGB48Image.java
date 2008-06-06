@@ -144,7 +144,7 @@ class RGB48Image extends UncompressedImage {
             res[i+1] = (short) vg;
             res[i+2] = (short) vb;
         }
-        if( Settings.traceActions ) {
+        if( Settings.traceJobs ) {
             System.out.println( "Color-corrected " + this );
         }
         return new RGB48Image( frameno, width, height, res );

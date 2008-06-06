@@ -434,7 +434,7 @@ class RGB24Image extends UncompressedImage {
             res[i+1] = round( vg );
             res[i+2] = round( vb );
         }
-        if( Settings.traceActions ) {
+        if( Settings.traceJobs ) {
             System.out.println( "Color-corrected " + this );
         }
         return new RGB24Image( frameno, width, height, res );

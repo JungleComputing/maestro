@@ -32,7 +32,7 @@ public class FetchFrameJob implements Job
             e.printStackTrace();
             frame = null;
         }
-        if( Settings.traceActions ) {
+        if( Settings.traceJobs ) {
             System.out.println( "Fetched " + frame );
         }
 	return frame;
