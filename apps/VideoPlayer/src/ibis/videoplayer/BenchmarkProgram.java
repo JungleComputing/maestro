@@ -276,7 +276,7 @@ class BenchmarkProgram {
 	    if( arg.equalsIgnoreCase( "-save" ) ) {
 		saveFrames = true;
 	    }
-	    else if( arg.equalsIgnoreCase( "--onejob" ) ) {
+	    else if( arg.equalsIgnoreCase( "-onejob" ) ) {
 		oneJob = true;
 	    }
 	    else if( arg.equalsIgnoreCase( "-slowsharpen" ) ) {
@@ -286,6 +286,10 @@ class BenchmarkProgram {
 		slowScale = true;
 	    }
 	    else {
+                if( frameCount != null ){
+                    System.err.println( "Duplicate frame count. Was: [" + frameCount + "] new: [" + arg + "]" );
+                    return false;
+                }
 		frameCount = arg;
 	    }
 	}
@@ -315,13 +319,17 @@ class BenchmarkProgram {
     @SuppressWarnings("synthetic-access")
     private void run( String args[] ) throws Exception
     {
-	parseArgs( args );
-	//System.out.println( "Running on platform " + Service.getPlatformVersion() + " frames=" + frames + " goForMaestro=" + goForMaestro );
+	if( !parseArgs( args ) ){
+            System.err.println( "Parsing command line failed. Goodbye!" );
+            System.exit( 1 );
+        }
+	System.out.println( "frames=" + frames + " goForMaestro=" + goForMaestro + " saveFrames=" + saveFrames + " oneJob=" + oneJob + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale  );
 	Node node = new Node( goForMaestro );
 	TaskWaiter waiter = new TaskWaiter();
 	Task convertTask;
 	File dir = saveFrames?outputDir:null;
 	if( oneJob ) {
+            System.out.println( "One-job benchmark" );
 	    convertTask = node.createTask(
 		    "benchmark",
 		    new ProcessFrameJob(),
