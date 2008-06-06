@@ -49,7 +49,6 @@ public class OneTestProg {
 	 * Runs this job.
 	 * @param obj The input parameter of this job.
 	 * @param node The node the job is running on.
-	 * @param context The program-specific context of this node.
 	 * @return The result value of this job.
 	 */
 	@Override
@@ -68,7 +67,6 @@ public class OneTestProg {
 
 	/**
 	 * Returns true iff this job is supported in this context.
-	 * @param context The program context.
 	 * @return True iff this job is supported.
 	 */
 	@Override

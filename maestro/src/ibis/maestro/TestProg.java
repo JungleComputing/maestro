@@ -70,7 +70,6 @@ public class TestProg {
          * Runs this job.
          * @param obj The input parameter of this job.
          * @param node The node the job is running on.
-         * @param context The program-specific context of this node.
          * @return The result value of this job.
          */
         @Override
@@ -87,7 +86,6 @@ public class TestProg {
 
         /**
          * Returns true iff this job is supported in this context.
-         * @param context The program context.
          * @return True iff this job is supported.
          */
         @Override
@@ -104,7 +102,6 @@ public class TestProg {
         /**
          * @param obj The input parameter of the job.
          * @param node The node the job is running on.
-         * @param context The task-specific context of this job (for this program it is null).
          * @return The result of the job.
          */
         @Override
@@ -122,7 +119,6 @@ public class TestProg {
 
         /**
          * Returns true iff this job is supported in this context.
-         * @param context The program context.
          * @return True iff this job is supported.
          */
         @Override
