@@ -148,6 +148,6 @@ final class WorkerJobInfo {
     
     String buildStatisticsString()
     {
-	return "(" + label + ") executed " + executedJobs + " jobs; maximal ever allowance: " + maximalEverAllowance + " estimated round-trip interval: " + roundTripEstimate + " remaining tasks time " + Service.formatNanoseconds( remainingTasksTime );
+	return "(" + label + ") executed " + executedJobs + " jobs; maximal allowance " + maximalEverAllowance + ", estimated round-trip interval " + roundTripEstimate + ", remaining tasks time " + Service.formatNanoseconds( remainingTasksTime );
     }
 }
