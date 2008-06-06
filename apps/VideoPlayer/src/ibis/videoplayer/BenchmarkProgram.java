@@ -22,235 +22,258 @@ class BenchmarkProgram {
     static final File outputDir = new File( "output" );
 
     /** Empty class to send around when there is nothing to say. */
-    private static final class Empty implements Serializable {
-	private static final long serialVersionUID = 2;
+    static final class Empty implements Serializable {
+        private static final long serialVersionUID = 2;
     }
 
     // Do all the image processing steps in one go. Used as baseline.
     private static final class ProcessFrameJob implements Job {
-	private static final long serialVersionUID = -7976035811697720295L;
+        private static final long serialVersionUID = -7976035811697720295L;
+        final boolean slowScale;
+        final boolean slowSharpen;
+        final File saveDir;
 
-	/**
-	 *
-	 * @param in The input of this job.
-	 * @param node The node we're running on.
-	 * @return The fetched image.
-	 */
-	public Object run( Object in, Node node ) {
-	    int frame = (Integer) in;
+        ProcessFrameJob( final boolean slowScale, final boolean slowSharpen, final File saveDir )
+        {
+            this.slowScale = slowScale;
+            this.slowSharpen = slowSharpen;
+            this.saveDir = saveDir;
+        }
 
-	    UncompressedImage img = RGB24Image.buildGradientImage( frame, DVD_WIDTH, DVD_HEIGHT, (byte) frame, (byte) (frame/10), (byte) (frame/100) );
-	    img = img.scaleUp( 2 );
-	    img = img.sharpen();
-	    try {
-		CompressedImage cimg = JpegCompressedImage.convert( img );
-		return cimg;
-	    }
-	    catch( IOException e ) {
-		System.err.println( "Cannot compress image: " + e.getLocalizedMessage() );
-	    }
-	    return null;
-	}
+        /**
+         *
+         * @param in The input of this job.
+         * @param node The node we're running on.
+         * @return The fetched image.
+         */
+        public Object run( Object in, Node node ) {
+            int frame = (Integer) in;
 
-	/**
-	 * @param context The program context.
-	 * @return True, because this job can run anywhere.
-	 */
-	@Override
-	public boolean isSupported()
-	{
-	    return true;
-	}
+            UncompressedImage img = RGB24Image.buildGradientImage( frame, DVD_WIDTH, DVD_HEIGHT, (byte) frame, (byte) (frame/10), (byte) (frame/100) );
+            if( slowScale ) {
+                img.scaleUp(  2 );
+            }
+            img = img.scaleUp( 2 );
+            if( slowSharpen ) {
+                img.sharpen();
+            }
+            img = img.sharpen();
+            try {
+                CompressedImage cimg = JpegCompressedImage.convert( img );
+                if( saveDir != null ) {
+                    if( !saveDir.isDirectory() ) {
+                        saveDir.mkdir();
+                    }
+                    File f = new File( saveDir, String.format( "frame%05d.jpg", img.frameno ) );
+                    cimg.write( f );
+                }
+                return new Empty();
+            }
+            catch( IOException e ) {
+                System.err.println( "Cannot compress image: " + e.getLocalizedMessage() );
+            }
+            return null;
+        }
+
+        /**
+         * @param context The program context.
+         * @return True, because this job can run anywhere.
+         */
+        @Override
+        public boolean isSupported()
+        {
+            return true;
+        }
 
     }
 
     private static final class GenerateFrameJob implements Job {
-	private static final long serialVersionUID = -7976035811697720295L;
+        private static final long serialVersionUID = -7976035811697720295L;
 
-	/**
-	 * @param in The input of this job.
-	 * @param node The node we're running on.
-	 * @return The fetched image.
-	 */
-	public Object run( Object in, Node node ) {
-	    int frame = (Integer) in;
-	    return RGB24Image.buildGradientImage( frame, DVD_WIDTH, DVD_HEIGHT, (byte) frame, (byte) (frame/10), (byte) (frame/100) );
-	}
+        /**
+         * @param in The input of this job.
+         * @param node The node we're running on.
+         * @return The fetched image.
+         */
+        public Object run( Object in, Node node ) {
+            int frame = (Integer) in;
+            return RGB24Image.buildGradientImage( frame, DVD_WIDTH, DVD_HEIGHT, (byte) frame, (byte) (frame/10), (byte) (frame/100) );
+        }
 
-	/**
-	 * @param context The program context.
-	 * @return True, because this job can run anywhere.
-	 */
-	@Override
-	public boolean isSupported()
-	{
-	    return true;
-	}
+        /**
+         * @param context The program context.
+         * @return True, because this job can run anywhere.
+         */
+        @Override
+        public boolean isSupported()
+        {
+            return true;
+        }
     }
 
     private static final class ScaleUpFrameJob implements Job
     {
-	private static final long serialVersionUID = 5452987225377415308L;
-	private final int factor;
-	private final boolean slow;
+        private static final long serialVersionUID = 5452987225377415308L;
+        private final int factor;
+        private final boolean slow;
 
-	ScaleUpFrameJob( int factor, boolean slow )
-	{
-	    this.factor = factor;
+        ScaleUpFrameJob( int factor, boolean slow )
+        {
+            this.factor = factor;
 
-	    this.slow = slow && hasEnvironmentVariable( "SLOW_SCALE" );
-	}
+            this.slow = slow && hasEnvironmentVariable( "SLOW_SCALE" );
+        }
 
-	/**Scale up one frame in a Maestro flow.
-	 * 
-	 * @param in The input of the conversion.
-	 * @param node The node this process runs on.
-	 * @return The scaled frame.
-	 */
-	@Override
-	public Object run( Object in, Node node ) {
-	    UncompressedImage img = (UncompressedImage) in;
+        /**Scale up one frame in a Maestro flow.
+         * 
+         * @param in The input of the conversion.
+         * @param node The node this process runs on.
+         * @return The scaled frame.
+         */
+        @Override
+        public Object run( Object in, Node node ) {
+            UncompressedImage img = (UncompressedImage) in;
 
-	    if( slow ) {
-		img.scaleUp( factor );
-	    }
-	    return img.scaleUp( factor );
-	}
+            if( slow ) {
+                img.scaleUp( factor );
+            }
+            return img.scaleUp( factor );
+        }
 
-	/**
-	 * @return True, because this job can run anywhere.
-	 */
-	@Override
-	public boolean isSupported()
-	{
-	    return true;
-	}
+        /**
+         * @return True, because this job can run anywhere.
+         */
+        @Override
+        public boolean isSupported()
+        {
+            return true;
+        }
     }
-    
-    private static boolean hasEnvironmentVariable( String s )
+
+    static boolean hasEnvironmentVariable( String s )
     {
-	String e = System.getenv( s );
-	System.out.println( "Environment variable '" + s + "' set" );
-	return e != null;
+        String e = System.getenv( s );
+        System.out.println( "Environment variable '" + s + "' set" );
+        return e != null;
     }
 
     private static final class SharpenFrameJob implements Job
     {
-	private static final long serialVersionUID = 54529872253774153L;
-	private boolean slow;
+        private static final long serialVersionUID = 54529872253774153L;
+        private boolean slow;
 
-	SharpenFrameJob( boolean slow )
-	{
-	    this.slow = slow && hasEnvironmentVariable( "SLOW_SHARPEN" );
-	}
+        SharpenFrameJob( boolean slow )
+        {
+            this.slow = slow && hasEnvironmentVariable( "SLOW_SHARPEN" );
+        }
 
-	/** Sharpen one frame in a Maestro flow.
-	 * 
-	 * @param in The input of the conversion.
-	 * @param node The node this process runs on.
-	 * @return The scaled frame.
-	 */
-	@Override
-	public Object run( Object in, Node node ) {
-	    UncompressedImage img = (UncompressedImage) in;
+        /** Sharpen one frame in a Maestro flow.
+         * 
+         * @param in The input of the conversion.
+         * @param node The node this process runs on.
+         * @return The scaled frame.
+         */
+        @Override
+        public Object run( Object in, Node node ) {
+            UncompressedImage img = (UncompressedImage) in;
 
-	    if( slow ) {
-		img.sharpen();
-	    }
-	    return img.sharpen();
-	}
+            if( slow ) {
+                img.sharpen();
+            }
+            return img.sharpen();
+        }
 
-	/**
-	 * @return True, because this job can run anywhere.
-	 */
-	@Override
-	public boolean isSupported()
-	{
-	    return true;
-	}
+        /**
+         * @return True, because this job can run anywhere.
+         */
+        @Override
+        public boolean isSupported()
+        {
+            return true;
+        }
     }
 
     private static final class CompressFrameJob implements Job
     {
-	private static final long serialVersionUID = 5452987225377415310L;
+        private static final long serialVersionUID = 5452987225377415310L;
 
-	/**
-	 * Run a Jpeg conversion Maestro job.
-	 * @param in The input of this job.
-	 * @param node The node this job runs on.
-	 * @return The result of the job.
-	 */
-	@Override
-	public Object run( Object in, Node node ) {
-	    UncompressedImage img = (UncompressedImage) in;
+        /**
+         * Run a Jpeg conversion Maestro job.
+         * @param in The input of this job.
+         * @param node The node this job runs on.
+         * @return The result of the job.
+         */
+        @Override
+        public Object run( Object in, Node node ) {
+            UncompressedImage img = (UncompressedImage) in;
 
-	    try {
-		return JpegCompressedImage.convert( img );
-	    } catch (IOException e) {
-		System.err.println( "Cannot convert image to JPEG: " + e.getLocalizedMessage() );
-		e.printStackTrace();
-		return null;
-	    }
-	}
+            try {
+                return JpegCompressedImage.convert( img );
+            } catch (IOException e) {
+                System.err.println( "Cannot convert image to JPEG: " + e.getLocalizedMessage() );
+                e.printStackTrace();
+                return null;
+            }
+        }
 
-	/**
-	 * @return True, because this job can run anywhere.
-	 */
-	@Override
-	public boolean isSupported()
-	{
-	    return true;
-	}
+        /**
+         * @return True, because this job can run anywhere.
+         */
+        @Override
+        public boolean isSupported()
+        {
+            return true;
+        }
     }
 
     private static final class SaveFrameJob implements Job
     {
-	private static final long serialVersionUID = 54529872253774153L;
-	private final File saveDir;
+        private static final long serialVersionUID = 54529872253774153L;
+        private final File saveDir;
 
-	SaveFrameJob( File saveDir )
-	{
-	    this.saveDir = saveDir;
-	}
+        SaveFrameJob( File saveDir )
+        {
+            this.saveDir = saveDir;
+        }
 
-	/** Optionally save one frame in a Maestro flow.
-	 * This job is placed at the end of a benchmark flow, and normally
-	 * just ignores the received image. Optionally it can store the
-	 * image for debugging purposes.
-	 * 
-	 * @param in The input of the conversion.
-	 * @param node The node this process runs on.
-	 * @return The scaled frame.
-	 */
-	@Override
-	public Object run( Object in, Node node ) {
-	    Image img = (Image) in;
+        /** Optionally save one frame in a Maestro flow.
+         * This job is placed at the end of a benchmark flow, and normally
+         * just ignores the received image. Optionally it can store the
+         * image for debugging purposes.
+         * 
+         * @param in The input of the conversion.
+         * @param node The node this process runs on.
+         * @return The scaled frame.
+         */
+        @Override
+        public Object run( Object in, Node node ) {
+            Image img = (Image) in;
 
-	    if( saveDir != null ) {
-		if( !saveDir.isDirectory() ) {
-		    saveDir.mkdir();
-		}
-		File f = new File( saveDir, String.format( "frame%05d.jpg", img.frameno ) );
-		try {
-		    img.write( f );
-		} catch (IOException e) {
-		    // TODO: Auto-generated catch block
-		    e.printStackTrace();
-		}
-	    }
-	    return new Empty();
-	}
+            if( saveDir != null ) {
+                if( !saveDir.isDirectory() ) {
+                    saveDir.mkdir();
+                }
+                File f = new File( saveDir, String.format( "frame%05d.jpg", img.frameno ) );
+                try {
+                    img.write( f );
+                } catch (IOException e) {
+                    // TODO: Auto-generated catch block
+                    e.printStackTrace();
+                }
+            }
+            return new Empty();
+        }
 
-	/**
-	 * @return True, because this job can run anywhere.
-	 */
-	@Override
-	public boolean isSupported()
-	{
-	    return true;
-	}
+        /**
+         * @return True, because this job can run anywhere.
+         */
+        @Override
+        public boolean isSupported()
+        {
+            return true;
+        }
     }
-    
+
     private boolean goForMaestro = false;
     private int frames = 0;
     private boolean saveFrames = false;
@@ -260,109 +283,108 @@ class BenchmarkProgram {
 
     private static void printUsage()
     {
-	
-	System.out.println( "Usage: [<flags>] <frame-count>" );
+
+        System.out.println( "Usage: [<flags>] <frame-count>" );
     }
 
     private boolean parseArgs( String args[] )
     {
-	String frameCount = null;
+        String frameCount = null;
 
-	for( String arg: args ) {
-	    if( arg.equalsIgnoreCase( "-h") || arg.equalsIgnoreCase( "-help" ) ){
-		printUsage();
-		return false;
-	    }
-	    if( arg.equalsIgnoreCase( "-save" ) ) {
-		saveFrames = true;
-	    }
-	    else if( arg.equalsIgnoreCase( "-onejob" ) ) {
-		oneJob = true;
-	    }
-	    else if( arg.equalsIgnoreCase( "-slowsharpen" ) ) {
-		slowSharpen = true;
-	    }
-	    else if( arg.equalsIgnoreCase( "-slowscale" ) ) {
-		slowScale = true;
-	    }
-	    else {
+        for( String arg: args ) {
+            if( arg.equalsIgnoreCase( "-h") || arg.equalsIgnoreCase( "-help" ) ){
+                printUsage();
+                return false;
+            }
+            if( arg.equalsIgnoreCase( "-save" ) ) {
+                saveFrames = true;
+            }
+            else if( arg.equalsIgnoreCase( "-onejob" ) ) {
+                oneJob = true;
+            }
+            else if( arg.equalsIgnoreCase( "-slowsharpen" ) ) {
+                slowSharpen = true;
+            }
+            else if( arg.equalsIgnoreCase( "-slowscale" ) ) {
+                slowScale = true;
+            }
+            else {
                 if( frameCount != null ){
                     System.err.println( "Duplicate frame count. Was: [" + frameCount + "] new: [" + arg + "]" );
                     return false;
                 }
-		frameCount = arg;
-	    }
-	}
-	if( frameCount != null ){
-	    frames = Integer.parseInt( frameCount );
-	    goForMaestro = true;
-	}
-	return true;
+                frameCount = arg;
+            }
+        }
+        if( frameCount != null ){
+            frames = Integer.parseInt( frameCount );
+            goForMaestro = true;
+        }
+        return true;
     }
-    
+
     private static void removeDirectory( File f )
     {
-	if( f == null ) {
-	    return;
-	}
-	if( f.isFile() ) {
-	    f.delete();
-	}
-	else if( f.isDirectory() ) {
-	    for( File e: f.listFiles() ) {
-		removeDirectory( e );
-	    }
-	    f.delete();
-	}
+        if( f == null ) {
+            return;
+        }
+        if( f.isFile() ) {
+            f.delete();
+        }
+        else if( f.isDirectory() ) {
+            for( File e: f.listFiles() ) {
+                removeDirectory( e );
+            }
+            f.delete();
+        }
     }
 
     @SuppressWarnings("synthetic-access")
     private void run( String args[] ) throws Exception
     {
-	if( !parseArgs( args ) ){
+        if( !parseArgs( args ) ){
             System.err.println( "Parsing command line failed. Goodbye!" );
             System.exit( 1 );
         }
-	System.out.println( "frames=" + frames + " goForMaestro=" + goForMaestro + " saveFrames=" + saveFrames + " oneJob=" + oneJob + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale  );
-	Node node = new Node( goForMaestro );
-	TaskWaiter waiter = new TaskWaiter();
-	Task convertTask;
-	File dir = saveFrames?outputDir:null;
-	if( oneJob ) {
+        System.out.println( "frames=" + frames + " goForMaestro=" + goForMaestro + " saveFrames=" + saveFrames + " oneJob=" + oneJob + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale  );
+        Node node = new Node( goForMaestro );
+        TaskWaiter waiter = new TaskWaiter();
+        Task convertTask;
+        File dir = saveFrames?outputDir:null;
+        if( oneJob ) {
             System.out.println( "One-job benchmark" );
-	    convertTask = node.createTask(
-		    "benchmark",
-		    new ProcessFrameJob(),
-		    new SaveFrameJob( dir )
-	    );
-	}
-	else {
-	    convertTask = node.createTask(
-		    "benchmark",
-		    new GenerateFrameJob(),
-		    new ScaleUpFrameJob( 2, slowScale ),
-		    new SharpenFrameJob( slowSharpen ),
-		    new CompressFrameJob(),
-		    new SaveFrameJob( dir )
-	    );
-	}
-	
-	removeDirectory( dir );
+            convertTask = node.createTask(
+                    "benchmark",
+                    new ProcessFrameJob( slowScale, slowSharpen, dir )
+            );
+        }
+        else {
+            convertTask = node.createTask(
+                    "benchmark",
+                    new GenerateFrameJob(),
+                    new ScaleUpFrameJob( 2, slowScale ),
+                    new SharpenFrameJob( slowSharpen ),
+                    new CompressFrameJob(),
+                    new SaveFrameJob( dir )
+            );
+        }
 
-	System.out.println( "Node created" );
-	long startTime = System.nanoTime();
-	if( node.isMaestro() ) {
-	    for( int frame=0; frame<frames; frame++ ){
-		waiter.submit( convertTask, frame );
-	    }
-	    System.out.println( "Jobs submitted" );
-	    waiter.sync();
-	    System.out.println( "Jobs finished" );
-	    node.setStopped();
-	}
-	node.waitToTerminate();
-	long stopTime = System.nanoTime();
-	System.out.println( "Duration of this run: " + Service.formatNanoseconds( stopTime-startTime ) );
+        removeDirectory( dir );
+
+        System.out.println( "Node created" );
+        long startTime = System.nanoTime();
+        if( node.isMaestro() ) {
+            for( int frame=0; frame<frames; frame++ ){
+                waiter.submit( convertTask, frame );
+            }
+            System.out.println( "Jobs submitted" );
+            waiter.sync();
+            System.out.println( "Jobs finished" );
+            node.setStopped();
+        }
+        node.waitToTerminate();
+        long stopTime = System.nanoTime();
+        System.out.println( "Duration of this run: " + Service.formatNanoseconds( stopTime-startTime ) );
     }
 
     /** The command-line interface of this program.
@@ -371,12 +393,12 @@ class BenchmarkProgram {
      */
     public static void main( String args[] )
     {
-	try {
-	    new BenchmarkProgram().run( args );
-	}
-	catch( Exception e ) {
-	    System.err.println( "main() caught an exception" );
-	    e.printStackTrace( System.err );
-	}
+        try {
+            new BenchmarkProgram().run( args );
+        }
+        catch( Exception e ) {
+            System.err.println( "main() caught an exception" );
+            e.printStackTrace( System.err );
+        }
     }
 }
