@@ -53,7 +53,6 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     private long stopTime = 0;
     private long idleDuration = 0;      // Cumulative idle time during the run.
     private int runningJobs = 0;
-    private int jobSettleCount = 0;
     private boolean askMastersForWork = true;
     private final Random rng = new Random();
 
@@ -250,11 +249,14 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
      * 
      * @return The job source, or null if there isn't one.
      */
-    private MasterInfo getRandomJobSource()
+    private MasterInfo getRandomWorkSource()
     {
 	MasterInfo res;
 
 	synchronized( queue ){
+            if( !askMastersForWork ){
+                return null;
+            }
 	    while( true ){
 		final int size = jobSources.size();
 		if( size == 0 ){
@@ -384,18 +386,8 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    return;
 	}
 
-	synchronized( queue ){
-	    if( !askMastersForWork ){
-		return;
-	    }
-	    jobSettleCount--;
-	    if( jobSettleCount>0 ) {
-		return;
-	    }
-	}
-
 	// Finally, try to tell a master we want more jobs.
-	MasterInfo jobSource = getRandomJobSource();
+	MasterInfo jobSource = getRandomWorkSource();
 	if( jobSource != null ){
 	    if( Settings.traceWorkerProgress ){
 		Globals.log.reportProgress( "Worker: asking master " + jobSource.localIdentifier + " for work" );
@@ -520,9 +512,6 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 			job.setRunTime( now );
 			if( Settings.traceWorkerProgress ) {
 			    System.out.println( "Worker: handed out job " + job + " of type " + job.job.type + "; it was queued for " + Service.formatNanoseconds( now-job.getQueueTime() ) + "; there are now " + runningJobs + " running jobs" );
-			}
-			if( jobSettleCount>0 ) {
-			    jobSettleCount--;
 			}
 			return job;
 		    }
