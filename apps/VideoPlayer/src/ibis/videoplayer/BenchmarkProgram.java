@@ -227,7 +227,10 @@ class BenchmarkProgram {
 	    Image img = (Image) in;
 
 	    if( saveDir != null ) {
-		File f = new File( saveDir, String.format( "frame%5d.ppm", img.frameno ) );
+		if( !saveDir.isDirectory() ) {
+		    saveDir.mkdir();
+		}
+		File f = new File( saveDir, String.format( "frame%05d.jpg", img.frameno ) );
 		try {
 		    img.write( f );
 		} catch (IOException e) {
@@ -292,6 +295,22 @@ class BenchmarkProgram {
 	}
 	return true;
     }
+    
+    private static void removeDirectory( File f )
+    {
+	if( f == null ) {
+	    return;
+	}
+	if( f.isFile() ) {
+	    f.delete();
+	}
+	else if( f.isDirectory() ) {
+	    for( File e: f.listFiles() ) {
+		removeDirectory( e );
+	    }
+	    f.delete();
+	}
+    }
 
     @SuppressWarnings("synthetic-access")
     private void run( String args[] ) throws Exception
@@ -319,6 +338,8 @@ class BenchmarkProgram {
 		    new SaveFrameJob( dir )
 	    );
 	}
+	
+	removeDirectory( dir );
 
 	System.out.println( "Node created" );
 	long startTime = System.nanoTime();
