@@ -172,7 +172,7 @@ class RGB24Image extends UncompressedImage {
     {
         return f*v1 + (1-f)*v0;
     }
-    
+
     private static byte applyConvolution(
             byte v00, byte v01, byte v02,
             byte v10, byte v11, byte v12,
@@ -204,11 +204,11 @@ class RGB24Image extends UncompressedImage {
     {
         byte res[] = new byte[width*height*BANDS];
         final int rowBytes = width*BANDS;
-    
+
         // Copy the top and bottom line into the result image.
         System.arraycopy( data, 0, res, 0, rowBytes );
         System.arraycopy( data, (height-1)*rowBytes, res, (height-1)*rowBytes, rowBytes );
-    
+
         /** Apply kernal to the remaining rows. */
         int wix = rowBytes;   // Skip first row.
         byte r00, r01, r02, r10, r11, r12, r20, r21, r22;
@@ -326,7 +326,7 @@ class RGB24Image extends UncompressedImage {
         );
         return round( res );
     }
-    
+
     /**
      * Scales up the image by the given multiplication factor. This
      * factor is applied in both directions, so the new image
@@ -343,68 +343,69 @@ class RGB24Image extends UncompressedImage {
         int sheight = height*factor;
         byte res[] = new byte[swidth*sheight*BANDS];
 
-        int fillix = 0;
+        int fillix;
         int rowstart = 0;
         for( int y=0; y<height; y++ ) {
             int nextrow = rowstart + BANDS*width; 
 
-            for( int iy=0; iy<factor; iy++ ) {
-                double intery = ((double) iy)/((double) factor);
+            for( int x=0; x<width; x++ ){
+                int readIx = rowstart + x*BANDS;
+                byte red10, green10, blue10;
+                byte red01, green01, blue01;
+                byte red11, green11, blue11;
 
-                for( int x=0; x<width; x++ ){
-                    int readIx = rowstart + x*BANDS;
-                    byte red10, green10, blue10;
-                    byte red01, green01, blue01;
-                    byte red11, green11, blue11;
+                // Top left pixel
+                byte red00 = data[readIx++];
+                byte green00 = data[readIx++];
+                byte blue00 = data[readIx++];
 
-                    // Top left pixel
-                    byte red00 = data[readIx++];
-                    byte green00 = data[readIx++];
-                    byte blue00 = data[readIx++];
+                // Top right pixel
+                if( (x+1)<width ) {
+                    red10 = data[readIx++];
+                    green10 = data[readIx++];
+                    blue10 = data[readIx++];
+                }
+                else {
+                    // That's beyond the width of the image; use the border pixel.
+                    red10 = red00;
+                    green10 = green00;
+                    blue10 = blue00;
+                }
 
-                    // Top right pixel
+                if( (y+1)<height ) {
+                    readIx = nextrow + x*BANDS;
+
+                    // Bottom left pixel
+                    red01 = data[readIx++];
+                    green01 = data[readIx++];
+                    blue01 = data[readIx++];
+
                     if( (x+1)<width ) {
-                        red10 = data[readIx++];
-                        green10 = data[readIx++];
-                        blue10 = data[readIx++];
+                        // Bottom right pixel
+                        red11 = data[readIx++];
+                        green11 = data[readIx++];
+                        blue11 = data[readIx++];
                     }
                     else {
                         // That's beyond the width of the image; use the border pixel.
-                        red10 = red00;
-                        green10 = green00;
-                        blue10 = blue00;
+                        red11 = red01;
+                        green11 = green01;
+                        blue11 = blue01;
                     }
+                }
+                else {
+                    // That's beyond the height of the image; use the border pixels.
+                    red01 = red00;
+                    green01 = green00;
+                    blue01 = blue00;
+                    red11 = red10;
+                    green11 = green10;
+                    blue11 = blue10;
+                }
+                for( int iy=0; iy<factor; iy++ ) {
+                    double intery = ((double) iy)/((double) factor);
 
-                    if( (y+1)<height ) {
-                        readIx = nextrow + x*BANDS;
-
-                        // Bottom left pixel
-                        red01 = data[readIx++];
-                        green01 = data[readIx++];
-                        blue01 = data[readIx++];
-
-                        if( (x+1)<width ) {
-                            // Bottom right pixel
-                            red11 = data[readIx++];
-                            green11 = data[readIx++];
-                            blue11 = data[readIx++];
-                        }
-                        else {
-                            // That's beyond the width of the image; use the border pixel.
-                            red11 = red01;
-                            green11 = green01;
-                            blue11 = blue01;
-                        }
-                    }
-                    else {
-                        // That's beyond the height of the image; use the border pixels.
-                        red01 = red00;
-                        green01 = green00;
-                        blue01 = blue00;
-                        red11 = red10;
-                        green11 = green10;
-                        blue11 = blue10;
-                    }
+                    fillix = BANDS*(x*factor+(y*factor+iy)*swidth);
                     for( int ix=0; ix<factor; ix++ ) {
                         double interx = ((double) ix)/((double) factor);
 
