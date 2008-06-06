@@ -49,7 +49,6 @@ public class DecompressFrameJob implements ibis.maestro.Job
     }
 
     /**
-     * @param context The program context.
      * @return True, because this job can run anywhere.
      */
     @Override
