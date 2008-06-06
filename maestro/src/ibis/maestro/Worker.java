@@ -79,10 +79,11 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    double workPercentage = 100.0*(workDuration/workInterval);
 	    if( jobCount>0 ) {
 		out.println( "Worker: " + t + ":" );
-		out.printf( "    # jobs           = %5d\n", jobCount );
-		out.println( "    total work time  = " + Service.formatNanoseconds( workDuration ) + String.format( " (%.1f%%)", workPercentage )  );
-		System.out.println( "    queue time/job   = " + Service.formatNanoseconds( queueDuration/jobCount ) );
-		System.out.println( "    compute time/job = " + Service.formatNanoseconds( workDuration/jobCount ) );
+		out.printf( "    # jobs          = %5d\n", jobCount );
+		out.println( "    total work time = " + Service.formatNanoseconds( workDuration ) + String.format( " (%.1f%%)", workPercentage )  );
+		System.out.println( "    queue time/job  = " + Service.formatNanoseconds( queueDuration/jobCount ) );
+		System.out.println( "    work time/job   = " + Service.formatNanoseconds( workDuration/jobCount ) );
+		System.out.println( "    average latency = " + Service.formatNanoseconds( (workDuration+queueDuration)/jobCount ) );
 	    }
 	    else {
 		out.println( "Worker: " + t + " is unused" );

@@ -481,8 +481,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     long getAverageCompletionTime( JobType jobType )
     {
-        synchronized( queue ){
-            return workers.getAverageCompletionTime( jobType );
-        }
+	// FIXME: removed synchronization on queue. Can we get away with that?
+	return workers.getAverageCompletionTime( jobType );
     }
 }
