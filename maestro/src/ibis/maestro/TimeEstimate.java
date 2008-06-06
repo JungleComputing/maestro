@@ -36,7 +36,7 @@ class TimeEstimate
      */
     long getEstimate()
     {
-        long res = (long) (value + stdDev*((2*rng.nextFloat())-1.0));
+        long res = (long) (value + stdDev*((2*rng.nextGaussian())-1.0));
         return Math.max( 0L, res );
     }
 
