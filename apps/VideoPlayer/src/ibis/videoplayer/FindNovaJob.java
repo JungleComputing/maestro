@@ -54,10 +54,6 @@ class FindNovaJob implements Job {
 	}
     }
 
-    FindNovaJob()
-    {
-    }
-
     static class ImageMatches implements Serializable
     {
 	private static final long serialVersionUID = -6824625393338177074L;
