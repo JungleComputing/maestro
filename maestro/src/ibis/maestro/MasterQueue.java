@@ -160,7 +160,7 @@ final class MasterQueue {
                 }
             }
             else {
-                WorkerInfo worker = workers.selectBestWorker( t.type );
+                WorkerInfo worker = workers.selectBestWorker( t.type, t.queue.size() );
 
                 noWork = false; // There is at least one queue with work.
                 if( worker == null ) {

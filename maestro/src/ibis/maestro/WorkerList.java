@@ -134,10 +134,11 @@ final class WorkerList {
      * a job to a slower processor that can execute the job right now.
      *  
      * @param jobType The type of job we want to execute.
+     * @param queueSize How many jobs of this type are waiting.
      * @return The info of the best worker for this job, or <code>null</code>
      *         if there currently aren't any workers for this job type.
      */
-    WorkerInfo selectBestWorker( JobType jobType )
+    WorkerInfo selectBestWorker( JobType jobType, int queueSize )
     {
         WorkerInfo best = null;
         long bestInterval = Long.MAX_VALUE;
@@ -148,6 +149,8 @@ final class WorkerList {
             if( !wi.isDead() ) {
         	long val = wi.estimateTaskCompletion( jobType );
 
+        	// FIXME: consider delaying a job to submit it later to a fast worker.
+        	// We will need the queue size to do this right.
         	if( Settings.traceRemainingTaskTime ) {
         	    System.out.println( "Worker " + wi + ": job type " + jobType + ": estimated completion time " + Service.formatNanoseconds( val ) );
         	}
