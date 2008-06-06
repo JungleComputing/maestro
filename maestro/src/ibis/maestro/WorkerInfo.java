@@ -109,7 +109,8 @@ final class WorkerInfo {
 	activeJobs.remove( job );
         long queueInterval = result.queueInterval;
         // FIXME: remove this terrible hack again. 
-	long newRoundTripInterval = (now-job.startTime)-queueInterval/2; // The time interval to send the job, compute, and report the result.
+	long newRoundTripInterval = (now-job.startTime)-queueInterval; // The time interval to send the job, compute, and report the result.
+	//long newRoundTripInterval = (now-job.startTime); // The time interval to send the job, compute, and report the result.
 
 	if( knownDelayedJobs>0 ) {
 	    knownDelayedJobs--;

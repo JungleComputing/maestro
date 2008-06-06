@@ -9,13 +9,13 @@ import java.util.Random;
  */
 class TimeEstimate
 {
-    private long value;
+    private long average;
     private long stdDev;
     private final Random rng = new Random();
 
     TimeEstimate()
     {
-        value = 0l;
+        average = 0l;
         stdDev = 0l;
     }
 
@@ -25,18 +25,18 @@ class TimeEstimate
     @Override
     public String toString()
     {
-        return "average=" + Service.formatNanoseconds( value ) + " stdDev=" + Service.formatNanoseconds( stdDev );
+        return "average=" + Service.formatNanoseconds( average ) + " stdDev=" + Service.formatNanoseconds( stdDev );
     }
 
     /**
      * Returns a time estimate based on the current samples.
      * This method returns random number with uniform distribution between
-     * the current minimum and maximum value in this list of samples.
+     * the current minimum and maximum average in this list of samples.
      * @return The time estimate.
      */
     long getEstimate()
     {
-        long res = (long) (value + stdDev*((2*rng.nextGaussian())-1.0));
+        long res = (long) (average + stdDev*((2*rng.nextGaussian())-1.0));
         return Math.max( 0L, res );
     }
 
@@ -46,17 +46,17 @@ class TimeEstimate
      */
     long getAverage()
     {
-        return value;
+        return average;
     }
 
     /**
-     * Adds a new sample value to the estimate.
-     * @param val The new sample value to add.
+     * Adds a new sample average to the estimate.
+     * @param val The new sample average to add.
      */
     void addSample( long val )
     {
-        value = (value+val)/2;
-        long diff = Math.abs( value-val );
-        stdDev = (stdDev+diff)/2;
+        average = (2*average+val)/3;
+        long diff = Math.abs( average-val );
+        stdDev = (3*stdDev+diff)/4;
     }
 }
