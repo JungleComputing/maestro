@@ -85,7 +85,7 @@ class PacketSendPort<T extends Serializable> {
 
         CacheInfo cacheSlot;
         int sentCount = 0;
-        int sentBytes = 0;
+        long sentBytes = 0;
         private final ReceivePortIdentifier portIdentifier;
         boolean local;
 
