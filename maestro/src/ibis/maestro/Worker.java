@@ -280,10 +280,9 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     void addJobSource( IbisIdentifier theIbis )
     {
 	synchronized( queue ){
-	    unregisteredMasters.addLast( theIbis );
+            unregisteredMasters.addLast( theIbis );
 	    if( activeTime == 0 || queueEmptyMoment != 0 ) {
-	        // We haven't done work yet, or we're idle;
-	        // this is a good reason to wake up the queue.
+	        // We haven't done any work yet, or we are idle.
 	        queue.notifyAll();
 	    }
 	}
@@ -428,10 +427,10 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	long now = System.nanoTime();
 
 	msg.setQueueTime( now );
-	if( activeTime == 0 ) {
-	    activeTime = now;
-	}
 	synchronized( queue ) {
+            if( activeTime == 0 ) {
+                activeTime = now;
+            }
 	    if( queueEmptyMoment>0 ){
 		// The queue was empty before we entered this
 		// job in it. Register this with this job,
