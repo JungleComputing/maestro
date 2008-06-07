@@ -281,8 +281,11 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     {
 	synchronized( queue ){
 	    unregisteredMasters.addLast( theIbis );
-	    // This is a good reason to wake up the queue.
-	    queue.notifyAll();
+	    if( activeTime == 0 || queueEmptyMoment != 0 ) {
+	        // We haven't done work yet, or we're idle;
+	        // this is a good reason to wake up the queue.
+	        queue.notifyAll();
+	    }
 	}
     }
 
