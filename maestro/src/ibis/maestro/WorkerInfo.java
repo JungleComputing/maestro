@@ -54,19 +54,20 @@ final class WorkerInfo {
     /**
      * Given a job identifier, returns the job queue entry with that id, or null.
      * @param id The job identifier to search for.
-     * @return The JobQueueEntry of the job with this id, or null if there isn't one.
+     * @return The index of the ActiveJob with this id, or -1 if there isn't one.
      */
-    private ActiveJob searchQueueEntry( long id )
+    private int searchActiveJob( long id )
     {
-	// Note that we blindly assume that there is only one entry with
-	// the given id. Reasonable because we hand out the ids ourselves,
-	// and we never make mistakes...
-	for( ActiveJob e: activeJobs ) {
+        // Note that we blindly assume that there is only one entry with
+        // the given id. Reasonable because we hand out the ids ourselves,
+        // and we never make mistakes...
+        for( int ix=0; ix<activeJobs.size(); ix++ ) {
+            ActiveJob e = activeJobs.get( ix );
 	    if( e.id == id ) {
-		return e;
+		return ix;
 	    }
 	}
-	return null;
+	return -1;
     }
 
     /** The most recently returned job spent most of its time in the queue.
@@ -101,12 +102,12 @@ final class WorkerInfo {
 	final long id = result.jobId;    // The identifier of the job, as handed out by us.
 
 	long now = System.nanoTime();
-	ActiveJob job = searchQueueEntry( id );
-	if( job == null ) {
+	int ix = searchActiveJob( id );
+	if( ix<0 ) {
 	    Globals.log.reportInternalError( "Master: ignoring reported result from job with unknown id " + id );
 	    return;
 	}
-	activeJobs.remove( job );
+	ActiveJob job = activeJobs.remove( ix );
         long queueInterval = result.queueInterval;
         // FIXME: remove this terrible hack again. 
 	//long newRoundTripInterval = (now-job.startTime)-queueInterval; // The time interval to send the job, compute, and report the result.
@@ -160,13 +161,13 @@ final class WorkerInfo {
      */
     void retractJob( long id )
     {
-	ActiveJob e = searchQueueEntry( id );
-	if( e == null ) {
-	    Globals.log.reportInternalError( "ignoring job retraction for unknown id " + id );
-	    return;
-	}
-	activeJobs.remove( e );
-	System.out.println( "Master: retracted job " + e );
+        int ix = searchActiveJob( id );
+        if( ix<0 ) {
+            Globals.log.reportInternalError( "Master: ignoring job retraction for unknown id " + id );
+            return;
+        }
+        ActiveJob job = activeJobs.remove( ix );
+	System.out.println( "Master: retracted job " + job );
     }
 
     /**
