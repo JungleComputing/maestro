@@ -357,7 +357,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
         RunJobMessage msg = new RunJobMessage( sub.worker.identifierWithWorker, sub.worker.identifier, sub.job, jobId );
         long sz = sendPort.tryToSend( sub.worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-        if( sz<0 ){
+        if( sz<=0 ){
             // Try to put the paste back in the tube.
             synchronized( queue ){
         	queue.submit( msg.job );
@@ -481,7 +481,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     long getAverageCompletionTime( JobType jobType )
     {
-	// FIXME: removed synchronization on queue. Can we get away with that?
-	return workers.getAverageCompletionTime( jobType );
+        synchronized( queue ){
+            return workers.getAverageCompletionTime( jobType );
+        }
     }
 }

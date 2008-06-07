@@ -364,7 +364,7 @@ class PacketSendPort<T extends Serializable> {
      * @return The length of the transmitted data, or 0 if nothing could be transmitted.
      */
     long tryToSend( int destination, T msg, int timeout ) {
-        long sz = -1;
+        long sz = 0;
         try {
             sz = send( destination, msg, timeout );
         } catch (IOException e) {
