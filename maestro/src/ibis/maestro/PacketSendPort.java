@@ -343,11 +343,11 @@ class PacketSendPort<T extends Serializable> {
      * @param portName The port to send  the message to.
      * @param msg The message to send.
      * @param timeout The timeout on the message.
-     * @return The number of transmitted bytes, or 0 if the message could not be sent.
+     * @return The number of transmitted bytes, or -1 if the message could not be sent.
      */
     long tryToSend( IbisIdentifier theIbis, String portName, T msg, int timeout )
     {
-        long sz = 0;
+        long sz = -1;
         try {
             sz = send( theIbis, portName, msg, timeout );
         } catch (IOException e) {
@@ -363,10 +363,10 @@ class PacketSendPort<T extends Serializable> {
      * @param msg The data to send.
      * @param destination The port to send it to.
      * @param timeout The timeout of the transmission.
-     * @return The length of the transmitted data, or 0 if nothing could be transmitted.
+     * @return The length of the transmitted data, or -1 if nothing could be transmitted.
      */
     long tryToSend( int destination, T msg, int timeout ) {
-        long sz = 0;
+        long sz = -1;
         try {
             sz = send( destination, msg, timeout );
         } catch (IOException e) {

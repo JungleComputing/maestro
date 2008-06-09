@@ -11,11 +11,12 @@ interface JobSource
     /** Gets a job from this work source.
      * @return The job.
      */
-    RunJobMessage getJob();
+    RunJob getJob();
 
     /** Reports the result of executing a job.
-     * @param job The executed job
+     * @param job The executed job.
+     * @param result The result of the job execution.
      */
-    void reportJobCompletion( RunJobMessage job );
+    void reportJobCompletion( RunJob job, Object result );
 
 }

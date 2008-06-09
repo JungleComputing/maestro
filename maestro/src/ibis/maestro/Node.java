@@ -8,7 +8,6 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.Registry;
 import ibis.ipl.RegistryEventHandler;
-import ibis.maestro.Task.TaskIdentifier;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -28,8 +27,6 @@ public final class Node {
     private final Worker worker;
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
     RegistryEventHandler registryEventHandler;
-    private ArrayList<Task> tasks = new ArrayList<Task>();
-    private static int taskCounter = 0;
 
     /** The list of maestro nodes in this computation. */
     private final ArrayList<MaestroInfo> maestros = new ArrayList<MaestroInfo>();
@@ -260,10 +257,8 @@ public final class Node {
      */
     public void printStatistics( PrintStream s )
     {
-	for( Task t: tasks ) {
-	    t.printStatistics( s );
-	}
     }
+
     /**
      * Wait for this node to finish.
      */
@@ -387,14 +382,8 @@ public final class Node {
      * @param jobType The type of the job.
      * @return The estimated time in nanoseconds.
      */
-    long getRemainingJobsTime( JobType jobType )
+    long getRemainingJobsTime( Task t, JobType jobType )
     {
-	int ix = searchTask( jobType.task );
-	if( ix<0 ) {
-	    Globals.log.reportInternalError( "Unknown task id in job type " + jobType );
-	    return 0L;
-	}
-	Task t = tasks.get( ix );
 	JobType nextJobType = t.getNextJobType( jobType );
 	if( nextJobType == null ) {
 	    // There is no next job type; that's an easy estimate to make.
@@ -412,53 +401,12 @@ public final class Node {
      */
     public Task createTask( String name, Job... jobs )
     {
-	int taskId = taskCounter++;
-	Task task = new Task( this, taskId, name, jobs );
-
-	tasks.add( task );
-	worker.registerTask( task );
-	return task;
+        return worker.createTask( name, jobs );
     }
 
     ReceivePortIdentifier identifier()
     {
 	return master.identifier();
-    }
-
-    /** Given a task identifier, return the index in <code>tasks</code>
-     * of this identifier, or -1 if it doesn't exist.
-     * @param task The task to search for.
-     * @return The index of the task in <code>tasks</code>
-     */
-    private int searchTask( TaskIdentifier task )
-    {
-	for( int i=0; i<tasks.size(); i++ ) {
-	    Task t = tasks.get( i );
-	    if( t.id.equals( task ) ){
-		return i;
-	    }
-	}
-	return -1;
-
-    }
-
-    /** Runs the given job instance.
-     * 
-     * @param job The job instance to run.
-     */
-    public void run( JobInstance job )
-    {
-	JobType type = job.type;
-	TaskIdentifier task = type.task;
-
-	int ix = searchTask( task );
-	if( ix<0 ) {
-	    Globals.log.reportInternalError( "Unknown task id " + task );
-	    return;
-	}
-	Task t = tasks.get( ix );
-
-	run( job, type, t );
     }
 
     /**

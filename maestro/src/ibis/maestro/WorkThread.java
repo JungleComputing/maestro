@@ -39,13 +39,13 @@ final class WorkThread extends Thread
     public void run()
     {
         while( !isStopped() ) {
-            RunJobMessage job = source.getJob();
+            RunJob job = source.getJob();
 
             if( job == null ) {
                 break;
             }
-            localNode.run( job.job );
-            source.reportJobCompletion( job );
+            Object result = job.job.run( job.message.job.input, localNode );
+            source.reportJobCompletion( job, result );
         }
     }
 
