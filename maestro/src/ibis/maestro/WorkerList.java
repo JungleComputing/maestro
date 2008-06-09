@@ -134,11 +134,10 @@ final class WorkerList {
      * a job to a slower processor that can execute the job right now.
      *  
      * @param jobType The type of job we want to execute.
-     * @param queueSize How many jobs of this type are waiting.
      * @return The info of the best worker for this job, or <code>null</code>
      *         if there currently aren't any workers for this job type.
      */
-    WorkerInfo selectBestWorker( JobType jobType, int queueSize )
+    WorkerInfo selectBestWorker( JobType jobType )
     {
         WorkerInfo best = null;
         long bestInterval = Long.MAX_VALUE;

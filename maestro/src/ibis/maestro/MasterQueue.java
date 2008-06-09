@@ -35,7 +35,12 @@ final class MasterQueue {
         final JobType type;
 
         /** The work queue for these jobs. */
-        final LinkedList<JobInstance> queue = new LinkedList<JobInstance>();
+        private final LinkedList<JobInstance> queue = new LinkedList<JobInstance>();
+
+        /** The estimated time interval between jobs being dequeued. */
+        final TimeEstimate dequeueInterval = new TimeEstimate();
+
+        private long previousDequeueTime = 0;
 
         QueueType( JobType type ){
             this.type = type;
@@ -56,6 +61,22 @@ final class MasterQueue {
         int size() {
             return queue.size();
         }
+
+        void add( JobInstance j )
+        {
+            queue.add( j );
+        }
+
+        JobInstance removeFirst()
+        {
+            long now = System.nanoTime();
+            if( previousDequeueTime != 0 ) {
+                long i = now - previousDequeueTime;
+                dequeueInterval.addSample( i );
+            }
+            previousDequeueTime = now;
+            return queue.removeFirst();
+        }
     }
 
     /**
@@ -74,7 +95,7 @@ final class MasterQueue {
             ix--;
             QueueType x = queueTypes.get( ix );
             if( x.type.equals( t ) ) {
-                x.queue.add( j );
+                x.add( j );
                 return;
             }
         }
@@ -94,7 +115,7 @@ final class MasterQueue {
             ix++;
         }
         QueueType qt = new QueueType( t );
-        qt.queue.add( j );
+        qt.add( j );
         queueTypes.add( ix, qt );
     }
 
@@ -160,7 +181,7 @@ final class MasterQueue {
                 }
             }
             else {
-                WorkerInfo worker = workers.selectBestWorker( t.type, t.queue.size() );
+                WorkerInfo worker = workers.selectBestWorker( t.type );
 
                 noWork = false; // There is at least one queue with work.
                 if( worker == null ) {
@@ -169,7 +190,7 @@ final class MasterQueue {
                     }
                 }
                 else {
-                    JobInstance e = t.queue.removeFirst();
+                    JobInstance e = t.removeFirst();
                     sub.job = e;
                     sub.worker = worker;
                     size--;
