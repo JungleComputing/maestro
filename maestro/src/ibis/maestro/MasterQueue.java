@@ -105,7 +105,7 @@ final class MasterQueue {
 
         void printStatistics( PrintStream s )
         {
-            s.println( "master queue for " + type + ": average dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxsz );
+            s.println( "master queue for " + type + ": dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxsz );
         }
     }
 
