@@ -10,7 +10,6 @@ import ibis.ipl.Registry;
 import ibis.ipl.RegistryEventHandler;
 
 import java.io.IOException;
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -252,13 +251,6 @@ public final class Node {
 	master.setStopped();
     }
 
-    /** Print extensive statistics of this node.
-     * @param s The stream to print to.
-     */
-    public void printStatistics( PrintStream s )
-    {
-    }
-
     /**
      * Wait for this node to finish.
      */
@@ -275,7 +267,6 @@ public final class Node {
 	/** Once the master has stopped, stop the worker. */
 	worker.setStopped();
 	Service.waitToTerminate( worker );
-	printStatistics( System.out );
 	master.printStatistics( System.out );
 	worker.printStatistics( System.out );
 	try {
@@ -390,30 +381,5 @@ public final class Node {
     ReceivePortIdentifier identifier()
     {
 	return master.identifier();
-    }
-
-    /**
-     * @param job The job instance to run.
-     * @param type
-     * @param t The task this job belongs to. 
-     */
-    private void run( JobInstance job, JobType type, Task t )
-    {
-	Job j = t.jobs[type.jobNo];
-	Object result = j.run( job.input, this );
-	int nextJobNo = type.jobNo+1;
-
-	if( nextJobNo<t.jobs.length ){
-	    // There is a next step to take.
-	    JobInstance nextJob = new JobInstance( job.taskInstance, new JobType( type.task, nextJobNo ), result );
-	    // TODO: in some circumstances, it may be better to immediately
-	    // execute the next job instead of going through the machinery.
-	    master.submit( nextJob );
-	}
-	else {
-	    // This was the final step. Report back the result.
-	    TaskInstanceIdentifier identifier = job.taskInstance;
-	    sendResultMessage( identifier.receivePort, identifier, result );
-	}
     }
 }

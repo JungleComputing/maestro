@@ -77,14 +77,25 @@ final class MasterQueue {
             previousDequeueTime = now;
             return queue.removeFirst();
         }
+
+        /**
+         * @return The estimated time in ns it will take to drain all
+         * current jobs from the queue.
+         */
+        long estimateQueueTime() {
+            // TODO Auto-generated method stub
+            long timePerEntry = dequeueInterval.getAverage();
+            return timePerEntry*queue.size();
+        }
     }
 
     /**
      * Submit a new job, belonging to the task with the given identifier,
      * to the queue.
      * @param j The job to submit.
+     * @return The estimated time in ns this job will linger in the queue.
      */
-    void submit( JobInstance j )
+    long submit( JobInstance j )
     {
         JobType t = j.type;
 
@@ -96,7 +107,7 @@ final class MasterQueue {
             QueueType x = queueTypes.get( ix );
             if( x.type.equals( t ) ) {
                 x.add( j );
-                return;
+                return x.estimateQueueTime();
             }
         }
         if( Settings.traceMasterQueue ){
@@ -117,6 +128,7 @@ final class MasterQueue {
         QueueType qt = new QueueType( t );
         qt.add( j );
         queueTypes.add( ix, qt );
+        return 0l;   // We haven't had time to build a time estimate anyway, so don't bother to call estimateQueueTime().
     }
 
     /**

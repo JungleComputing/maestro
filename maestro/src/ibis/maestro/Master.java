@@ -313,8 +313,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
         synchronized ( queue ) {
             incomingJobCount++;
-            queue.submit( job );
-            long res = workers.getAverageCompletionTime( job.type );
+            long queueTime = queue.submit( job );
+            long res = queueTime + workers.getAverageCompletionTime( job.type );
             queue.notifyAll();
             // FIXME: take delay in this queue into account.
             return res;
