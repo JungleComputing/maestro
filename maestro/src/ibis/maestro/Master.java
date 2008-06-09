@@ -303,8 +303,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     /**
      * Adds the given job to the work queue of this master.
      * @param job The job instance to add to the queue.
+     * @return The estimated time in ns it will take to complete the entire task
+     *   instance this job instance belongs to.
      */
-    void submit( JobInstance job )
+    long submit( JobInstance job )
     {
         if( Settings.traceMasterProgress ) {
             System.out.println( "Master: received job " + job );
@@ -312,7 +314,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         synchronized ( queue ) {
             incomingJobCount++;
             queue.submit( job );
+            long res = workers.getAverageCompletionTime( job.type );
             queue.notifyAll();
+            // FIXME: take delay in this queue into account.
+            return res;
         }
     }
 
@@ -470,20 +475,5 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         s.println( "Master: run time         = " + Service.formatNanoseconds( workInterval ) );
         sendPort.printStats( s, "master send port" );
         workers.printStatistics( s );
-    }
-
-    /**
-     * Given a job type, return the estimated average time it will take
-     * to execute this job and all subsequent jobs in the task by
-     * the fastest route.
-     * 
-     * @param jobType The type of the job.
-     * @return The estimated time in nanoseconds.
-     */
-    long getAverageCompletionTime( JobType jobType )
-    {
-        synchronized( queue ){
-            return workers.getAverageCompletionTime( jobType );
-        }
     }
 }

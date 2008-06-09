@@ -332,9 +332,10 @@ public final class Node {
 	}
     }
 
-    void submit( JobInstance j )
+    
+    long submit( JobInstance j )
     {
-	master.submit( j );
+	return master.submit( j );
     }
 
     /** Start an extra work thread to replace the one that is blocked.
@@ -372,24 +373,6 @@ public final class Node {
 	{
 	    // Nothing we can do about it.
 	}
-    }
-
-    /**
-     * Given a job type, return the estimated average time it will take
-     * to execute all subsequent jobs in the task by
-     * the fastest route.
-     * 
-     * @param jobType The type of the job.
-     * @return The estimated time in nanoseconds.
-     */
-    long getRemainingJobsTime( Task t, JobType jobType )
-    {
-	JobType nextJobType = t.getNextJobType( jobType );
-	if( nextJobType == null ) {
-	    // There is no next job type; that's an easy estimate to make.
-	    return 0L;
-	}
-	return master.getAverageCompletionTime( nextJobType );
     }
 
     /**
