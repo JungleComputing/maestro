@@ -198,19 +198,6 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	sendPort.setLocalListener( localListener );
     }
 
-    /** Given a master identifier, returns the master info
-     * for the master with that id, or <code>null</code> if there is no such
-     * master (any more).
-     * @param master The master identifier to search for.
-     * @return The master info, or <code>null</code> if there is no such master.
-     */
-    private MasterInfo getMasterInfo( MasterIdentifier master )
-    {
-	synchronized( queue ) {
-	    return masters.get( master.value );
-	}
-    }
-
     /**
      * Sets the stopped state of this worker.
      */
@@ -549,8 +536,8 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	if( Settings.traceWorkerProgress ) {
 	    System.out.println( "Completed job "  + jobMessage );
 	}
-	final MasterInfo mi = getMasterInfo( master );
 	synchronized( queue ) {
+	    final MasterInfo mi = masters.get( master.value );
 	    if( mi != null ) {
 		if( !Service.member( jobSources, mi ) ) {
 		    jobSources.add( mi );
