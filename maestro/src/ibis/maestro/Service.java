@@ -16,6 +16,9 @@ import java.util.ArrayList;
  */
 public class Service
 {
+    static final int MICROSECOND_IN_NANOSECONDS = 1000;
+    static final int MILLISECOND_IN_NANOSECONDS = 1000*MICROSECOND_IN_NANOSECONDS;
+
     /** Prints the platform version that is used. */
     static String getPlatformVersion()
     {

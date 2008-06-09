@@ -7,7 +7,7 @@ final class WorkerJobInfo {
     /** label of this worker/job combination in traces. */
     private final String label;
 
-    private final TimeEstimate roundTripEstimate = new TimeEstimate();
+    private final TimeEstimate roundTripEstimate = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
 
     /** How many instances of this job does this worker currently have? */
     private int outstandingJobs = 0;

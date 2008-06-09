@@ -15,7 +15,7 @@ public final class Task
     final TaskIdentifier id;
     final String name;
     final Job[] jobs;
-    final TimeEstimate taskTime = new TimeEstimate();
+    final TimeEstimate taskTime = new TimeEstimate( 0 );
 
     static final class TaskIdentifier implements Serializable {
         private static final long serialVersionUID = -5895857432770361027L;
@@ -102,7 +102,6 @@ public final class Task
         JobType type = createJobType( jobNo );
         JobInstance j = new JobInstance( tii, type, value );
         node.submit( j );
-        node.notifyMasterQueue();
     }
 
     /**

@@ -583,7 +583,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
         if( nextJobNo<t.jobs.length ){
             // There is a next step to take.
             JobInstance nextJob = new JobInstance( job.message.job.taskInstance, new JobType( jobType.task, nextJobNo ), result );
-            taskCompletionInterval = node.submit( nextJob );
+            taskCompletionInterval = node.submitAndGetInfo( nextJob );
         }
         else {
             // This was the final step. Report back the result.
@@ -600,7 +600,12 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	if( Settings.traceWorkerProgress ) {
 	    System.out.println( "Completed job "  + job.message );
 	}
-        // Update statistics and notify the queue waiters that something
+	
+	// Now wake the master. With some luck we get our own submitted
+	// job back.
+        node.notifyMasterQueue();
+
+        // Update statistics and notify our own queue waiters that something
         // has happened.
 	synchronized( queue ) {
 	    final MasterInfo mi = masters.get( master.value );
@@ -617,7 +622,6 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    runningJobs--;
 	    queue.notifyAll();
 	}
-        node.notifyMasterQueue();
     }
 
     /**

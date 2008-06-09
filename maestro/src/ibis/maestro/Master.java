@@ -303,10 +303,26 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     /**
      * Adds the given job to the work queue of this master.
      * @param job The job instance to add to the queue.
+     */
+    void submit( JobInstance job )
+    {
+        if( Settings.traceMasterProgress ) {
+            System.out.println( "Master: received job " + job );
+        }
+        synchronized ( queue ) {
+            incomingJobCount++;
+            queue.submit( job );
+            queue.notifyAll();
+        }
+    }
+
+    /**
+     * Adds the given job to the work queue of this master.
+     * @param job The job instance to add to the queue.
      * @return The estimated time in ns it will take to complete the entire task
      *   instance this job instance belongs to.
      */
-    long submit( JobInstance job )
+    long submitAndGetInfo( JobInstance job )
     {
         if( Settings.traceMasterProgress ) {
             System.out.println( "Master: received job " + job );

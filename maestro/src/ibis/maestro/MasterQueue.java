@@ -38,10 +38,13 @@ final class MasterQueue {
         /** The work queue for these jobs. */
         private final LinkedList<JobInstance> queue = new LinkedList<JobInstance>();
 
-        /** The estimated time interval between jobs being dequeued. */
-        final TimeEstimate dequeueInterval = new TimeEstimate();
+        /** The number of jobs entered in this queue. */
+        private int jobCount = 0;
 
-        private long previousDequeueTime = 0;
+        /** The estimated time interval between jobs being dequeued. */
+        final TimeEstimate dequeueInterval = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
+
+        private long frontChangedTime = 0;
 
         private int maxsz = 0;
 
@@ -72,23 +75,30 @@ final class MasterQueue {
             if( sz>maxsz ) {
                 maxsz = sz;
             }
+            if( frontChangedTime == 0 ) {
+        	// This entry is the front of the queue,
+        	// record the time it became this.
+        	frontChangedTime = System.nanoTime();
+            }
+            jobCount++;
         }
 
         JobInstance removeFirst()
         {
             long now = System.nanoTime();
-            if( previousDequeueTime != 0 ) {
-                long i = now - previousDequeueTime;
+            if( frontChangedTime != 0 ) {
+        	// We know when this entry became the front of the queue.
+                long i = now - frontChangedTime;
                 dequeueInterval.addSample( i );
             }
             JobInstance res = queue.removeFirst();
             if( queue.isEmpty() ) {
                 // Don't take the next dequeueing into account,
                 // since the queue is now empty.
-                previousDequeueTime = 0l;
+                frontChangedTime = 0l;
             }
             else {
-                previousDequeueTime = now;
+                frontChangedTime = now;
             }
             return res;
         }
@@ -98,14 +108,13 @@ final class MasterQueue {
          * current jobs from the queue.
          */
         long estimateQueueTime() {
-            // TODO Auto-generated method stub
             long timePerEntry = dequeueInterval.getAverage();
             return timePerEntry*queue.size();
         }
 
         void printStatistics( PrintStream s )
         {
-            s.println( "master queue for " + type + ": dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxsz );
+            s.println( "master queue for " + type + ": " + jobCount + " jobs; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxsz );
         }
     }
 

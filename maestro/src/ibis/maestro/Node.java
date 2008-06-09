@@ -323,9 +323,14 @@ public final class Node {
 	}
     }
 
-    long submit( JobInstance j )
+    void submit( JobInstance j )
     {
-	return master.submit( j );
+	master.submit( j );
+    }
+    
+    long submitAndGetInfo( JobInstance j )
+    {
+	return master.submitAndGetInfo( j );
     }
     
     void notifyMasterQueue()

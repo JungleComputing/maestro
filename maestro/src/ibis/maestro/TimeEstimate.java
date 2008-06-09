@@ -13,9 +13,9 @@ class TimeEstimate
     private long stdDev;
     private final Random rng = new Random();
 
-    TimeEstimate()
+    TimeEstimate( long initial )
     {
-        average = 0l;
+        average = initial;
         stdDev = 0l;
     }
 

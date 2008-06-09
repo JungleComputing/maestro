@@ -9,7 +9,7 @@ class RunJob {
     final Job job;
     RunJobMessage message;
 
-    public RunJob(final Job job, final RunJobMessage message ) {
+    RunJob(final Job job, final RunJobMessage message ) {
         this.job = job;
         this.message = message;
     }

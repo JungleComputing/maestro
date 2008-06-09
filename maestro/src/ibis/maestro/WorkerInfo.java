@@ -109,15 +109,13 @@ final class WorkerInfo {
 	}
 	ActiveJob job = activeJobs.remove( ix );
         long queueInterval = result.queueInterval;
-        // FIXME: remove this terrible hack again. 
-	//long newRoundTripInterval = (now-job.startTime)-queueInterval; // The time interval to send the job, compute, and report the result.
 	long newRoundTripInterval = (now-job.startTime); // The time interval to send the job, compute, and report the result.
 
 	if( knownDelayedJobs>0 ) {
 	    knownDelayedJobs--;
 	}
 	job.workerJobInfo.registerJobCompleted( newRoundTripInterval, result.taskCompletionInterval );
-	if( queueInterval>(3*newRoundTripInterval)/5 ) {
+	if( queueInterval>newRoundTripInterval/2 ) {
 	    // If the time this job spent in the worker queue was a significant
 	    // fraction of the total turnaround time, reduce the allowance
 	    // of this worker.
