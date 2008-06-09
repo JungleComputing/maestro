@@ -5,6 +5,7 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Serializable;
 
 /**
@@ -457,18 +458,18 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /** Print some statistics about the entire master run. */
-    void printStatistics()
+    void printStatistics( PrintStream s )
     {
         if( stopTime<startTime ) {
             System.err.println( "Worker didn't stop yet" );
         }
         long workInterval = stopTime-startTime;
-        System.out.printf( "Master: # workers        = %5d\n", workerCount );
-        System.out.printf( "Master: # incoming jobs  = %5d\n", incomingJobCount );
-        System.out.printf( "Master: # handled jobs   = %5d\n", handledJobCount );
-        System.out.println( "Master: run time         = " + Service.formatNanoseconds( workInterval ) );
-        sendPort.printStats( "master send port" );
-        workers.printStatistics( System.out );
+        s.printf( "Master: # workers        = %5d\n", workerCount );
+        s.printf( "Master: # incoming jobs  = %5d\n", incomingJobCount );
+        s.printf( "Master: # handled jobs   = %5d\n", handledJobCount );
+        s.println( "Master: run time         = " + Service.formatNanoseconds( workInterval ) );
+        sendPort.printStats( s, "master send port" );
+        workers.printStatistics( s );
     }
 
     /**

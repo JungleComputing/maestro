@@ -8,6 +8,7 @@ import ibis.ipl.SendPort;
 import ibis.ipl.WriteMessage;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -99,9 +100,10 @@ class PacketSendPort<T extends Serializable> {
         }
 
         /** Print statistics for this destination. */
-        private void printStats() {
+        private void printStats( PrintStream s )
+        {
             char dest = local?'L':'R'; 
-            System.out.format( " %c %5d messages %7d bytes; port %s\n", dest, sentCount, sentBytes, portIdentifier.toString() );
+            s.format( " %c %5d messages %7d bytes; port %s\n", dest, sentCount, sentBytes, portIdentifier.toString() );
         }
     }
 
@@ -294,17 +296,17 @@ class PacketSendPort<T extends Serializable> {
      * @param portname The name of the port.
      */
     @SuppressWarnings("synthetic-access")
-    synchronized void printStats( String portname )
+    synchronized void printStats( PrintStream s, String portname )
     {
-        System.out.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " remote messages; " + localSentCount + " local sends; "+ evictions + " evictions" );
+        s.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " remote messages; " + localSentCount + " local sends; "+ evictions + " evictions" );
         if( sentCount>0 ) {
-            System.out.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
-            System.out.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
+            s.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
+            s.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
         }
-        System.out.println( portname + ": sent " + uncachedSentBytes + " bytes in " + uncachedSentCount + " uncached remote messages" );
+        s.println( portname + ": sent " + uncachedSentBytes + " bytes in " + uncachedSentCount + " uncached remote messages" );
         if( uncachedSentCount>0 ) {
-            System.out.println( portname + ": total uncached send time  " + Service.formatNanoseconds( uncachedSendTime ) + "; " + Service.formatNanoseconds( uncachedSendTime/uncachedSentCount ) + " per message" );
-            System.out.println( portname + ": total uncached setup time " + Service.formatNanoseconds( uncachedAdminTime ) + "; " + Service.formatNanoseconds( uncachedAdminTime/uncachedSentCount ) + " per message" );
+            s.println( portname + ": total uncached send time  " + Service.formatNanoseconds( uncachedSendTime ) + "; " + Service.formatNanoseconds( uncachedSendTime/uncachedSentCount ) + " per message" );
+            s.println( portname + ": total uncached setup time " + Service.formatNanoseconds( uncachedAdminTime ) + "; " + Service.formatNanoseconds( uncachedAdminTime/uncachedSentCount ) + " per message" );
         }
         DestinationInfo l[] = new DestinationInfo[destinations.size()];
         destinations.toArray( l );
@@ -312,7 +314,7 @@ class PacketSendPort<T extends Serializable> {
         Arrays.sort( l, comparator );
         for( DestinationInfo i: l ) {
             if( i != null ){
-                i.printStats();
+                i.printStats( s );
             }
         }
     }

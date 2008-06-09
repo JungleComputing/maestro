@@ -81,9 +81,9 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 		out.println( "Worker: " + t + ":" );
 		out.printf( "    # jobs          = %5d\n", jobCount );
 		out.println( "    total work time = " + Service.formatNanoseconds( workDuration ) + String.format( " (%.1f%%)", workPercentage )  );
-		System.out.println( "    queue time/job  = " + Service.formatNanoseconds( queueDuration/jobCount ) );
-		System.out.println( "    work time/job   = " + Service.formatNanoseconds( workDuration/jobCount ) );
-		System.out.println( "    average latency = " + Service.formatNanoseconds( (workDuration+queueDuration)/jobCount ) );
+		out.println( "    queue time/job  = " + Service.formatNanoseconds( queueDuration/jobCount ) );
+		out.println( "    work time/job   = " + Service.formatNanoseconds( workDuration/jobCount ) );
+		out.println( "    average latency = " + Service.formatNanoseconds( (workDuration+queueDuration)/jobCount ) );
 	    }
 	    else {
 		out.println( "Worker: " + t + " is unused" );
@@ -597,7 +597,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     }
 
     /** Print some statistics about the entire worker run. */
-    void printStatistics()
+    void printStatistics( PrintStream s )
     {
 	if( stopTime<startTime ) {
 	    System.err.println( "Worker didn't stop yet" );
@@ -612,13 +612,13 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	Set<JobType> tl = jobStats.keySet();
 	for( JobType t: tl ){
 	    JobStats stats = jobStats.get( t );
-	    stats.reportStats( System.out, t, workInterval );
+	    stats.reportStats( s, t, workInterval );
 	}
-	System.out.printf( "Worker: # threads        = %5d\n", workThreads.length );
-	System.out.println( "Worker: run time         = " + Service.formatNanoseconds( workInterval ) );
-	System.out.println( "Worker: activated after  = " + Service.formatNanoseconds( activeTime-startTime ) );
-	System.out.println( "Worker: total idle time  = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
-	sendPort.printStats( "worker send port" );
+	s.printf( "Worker: # threads        = %5d\n", workThreads.length );
+	s.println( "Worker: run time         = " + Service.formatNanoseconds( workInterval ) );
+	s.println( "Worker: activated after  = " + Service.formatNanoseconds( activeTime-startTime ) );
+	s.println( "Worker: total idle time  = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
+	sendPort.printStats( s, "worker send port" );
     }
 
     /**

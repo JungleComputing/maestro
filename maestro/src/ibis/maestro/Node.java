@@ -281,8 +281,8 @@ public final class Node {
 	worker.setStopped();
 	Service.waitToTerminate( worker );
 	printStatistics( System.out );
-	master.printStatistics();
-	worker.printStatistics();
+	master.printStatistics( System.out );
+	worker.printStatistics( System.out );
 	try {
 	    ibis.end();
 	}
