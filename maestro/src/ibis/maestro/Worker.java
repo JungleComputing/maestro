@@ -583,8 +583,6 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
         if( nextJobNo<t.jobs.length ){
             // There is a next step to take.
             JobInstance nextJob = new JobInstance( job.message.job.taskInstance, new JobType( jobType.task, nextJobNo ), result );
-            // TODO: in some circumstances, it may be better to immediately
-            // execute the next job instead of going through the machinery.
             taskCompletionInterval = node.submit( nextJob );
         }
         else {
@@ -619,6 +617,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    runningJobs--;
 	    queue.notifyAll();
 	}
+        node.notifyMasterQueue();
     }
 
     /**

@@ -315,12 +315,18 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             incomingJobCount++;
             long queueTime = queue.submit( job );
             long res = queueTime + workers.getAverageCompletionTime( job.type );
-            queue.notifyAll();
-            // FIXME: take delay in this queue into account.
+            // Do not notify the queue, since the submitter may want to
+            // handle some stuff (e.g. sending a completion message) before starting the master.
             return res;
         }
     }
 
+    void notifyQueue()
+    {
+        synchronized( queue ) {
+            queue.notifyAll();
+        }
+    }
     /**
      * Adds the given job to the work queue of this master.
      * This method only returns when the work queue was drained far enough

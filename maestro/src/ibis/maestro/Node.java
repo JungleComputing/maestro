@@ -323,10 +323,14 @@ public final class Node {
 	}
     }
 
-    
     long submit( JobInstance j )
     {
 	return master.submit( j );
+    }
+    
+    void notifyMasterQueue()
+    {
+        master.notifyQueue();
     }
 
     /** Start an extra work thread to replace the one that is blocked.

@@ -102,6 +102,7 @@ public final class Task
         JobType type = createJobType( jobNo );
         JobInstance j = new JobInstance( tii, type, value );
         node.submit( j );
+        node.notifyMasterQueue();
     }
 
     /**
