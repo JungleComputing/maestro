@@ -36,8 +36,8 @@ class TimeEstimate
      */
     long getEstimate()
     {
-        long res = (long) (average + stdDev*((2*rng.nextGaussian())-1.0));
-        return Math.max( 0L, res );
+	// FIXME: remove this method.
+        return average;
     }
 
     /**
