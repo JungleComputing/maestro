@@ -2,6 +2,7 @@ package ibis.maestro;
 
 import ibis.maestro.Master.WorkerIdentifier;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -42,6 +43,8 @@ final class MasterQueue {
 
         private long previousDequeueTime = 0;
 
+        private int maxsz = 0;
+
         QueueType( JobType type ){
             this.type = type;
         }
@@ -65,6 +68,10 @@ final class MasterQueue {
         void add( JobInstance j )
         {
             queue.add( j );
+            int sz = queue.size();
+            if( sz>maxsz ) {
+                maxsz = sz;
+            }
         }
 
         JobInstance removeFirst()
@@ -86,6 +93,11 @@ final class MasterQueue {
             // TODO Auto-generated method stub
             long timePerEntry = dequeueInterval.getAverage();
             return timePerEntry*queue.size();
+        }
+
+        void printStatistics( PrintStream s )
+        {
+            s.println( "master queue for " + type + ": average dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxsz );
         }
     }
 
@@ -223,5 +235,12 @@ final class MasterQueue {
     int size()
     {
         return size;
+    }
+    
+    void printStatistics( PrintStream s )
+    {
+        for( QueueType t: queueTypes ) {
+            t.printStatistics( s );
+        }
     }
 }

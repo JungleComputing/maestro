@@ -468,6 +468,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( stopTime<startTime ) {
             System.err.println( "Worker didn't stop yet" );
         }
+        queue.printStatistics( s );
         long workInterval = stopTime-startTime;
         s.printf( "Master: # workers        = %5d\n", workerCount );
         s.printf( "Master: # incoming jobs  = %5d\n", incomingJobCount );
