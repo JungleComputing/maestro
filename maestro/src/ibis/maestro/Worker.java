@@ -536,6 +536,8 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	if( Settings.traceWorkerProgress ) {
 	    System.out.println( "Completed job "  + jobMessage );
 	}
+        // Update statistics and notify the queue waiters that something
+        // has happened.
 	synchronized( queue ) {
 	    final MasterInfo mi = masters.get( master.value );
 	    if( mi != null ) {
