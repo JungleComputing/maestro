@@ -81,8 +81,16 @@ final class MasterQueue {
                 long i = now - previousDequeueTime;
                 dequeueInterval.addSample( i );
             }
-            previousDequeueTime = now;
-            return queue.removeFirst();
+            JobInstance res = queue.removeFirst();
+            if( queue.isEmpty() ) {
+                // Don't take the next dequeueing into account,
+                // since the queue is now empty.
+                previousDequeueTime = 0l;
+            }
+            else {
+                previousDequeueTime = now;
+            }
+            return res;
         }
 
         /**
