@@ -17,6 +17,9 @@ final class JobCompletedMessage extends WorkerMessage {
     /** The time interval this job spent in the worker queue. */
     final long queueInterval;
     
+    /** The time interval this job required to actually compute. */
+    final long computeInterval;
+
     /** The estimated time it will take to complete the remaining jobs
      * of this task.
      */
@@ -27,14 +30,16 @@ final class JobCompletedMessage extends WorkerMessage {
      * @param src The worker that handled the job.
      * @param jobId The identifier of the job, as handed out by the master.
      * @param queueInterval The time interval the job spent in the worker queue.
+     * @param computeInterval The time interval that was spent to compute the job.
      * @param taskCompletionInterval The estimated time it will take on this
      *     worker to complete the remaining jobs of this task.
      */
-    JobCompletedMessage( Master.WorkerIdentifier src, long jobId, long queueInterval, long taskCompletionInterval )
+    JobCompletedMessage( Master.WorkerIdentifier src, long jobId, long queueInterval, long computeInterval, long taskCompletionInterval )
     {
 	super( src );
         this.jobId = jobId;
         this.queueInterval = queueInterval;
+        this.computeInterval = computeInterval;
         this.taskCompletionInterval = taskCompletionInterval;
     }
 

@@ -115,7 +115,7 @@ final class WorkerInfo {
 	    knownDelayedJobs--;
 	}
 	job.workerJobInfo.registerJobCompleted( newRoundTripInterval, result.taskCompletionInterval );
-	if( queueInterval>newRoundTripInterval/2 ) {
+	if( queueInterval>result.computeInterval ) {
 	    // If the time this job spent in the worker queue was a significant
 	    // fraction of the total turnaround time, reduce the allowance
 	    // of this worker.
