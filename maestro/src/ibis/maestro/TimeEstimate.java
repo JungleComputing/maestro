@@ -1,7 +1,5 @@
 package ibis.maestro;
 
-import java.util.Random;
-
 /**
  * This class maintains a time estimate based on collected samples.
  *
@@ -11,7 +9,6 @@ class TimeEstimate
 {
     private long average;
     private long stdDev;
-    private final Random rng = new Random();
 
     TimeEstimate( long initial )
     {

@@ -332,11 +332,6 @@ public final class Node {
     {
 	return master.submitAndGetInfo( j );
     }
-    
-    void notifyMasterQueue()
-    {
-        master.notifyQueue();
-    }
 
     /** Start an extra work thread to replace the one that is blocked.
      * @return The newly started work thread.

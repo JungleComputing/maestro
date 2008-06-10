@@ -155,6 +155,6 @@ public final class Task
      */
     public void printStatistics( PrintStream s )
     {
-	s.println( name + ": " + taskTime.toString() );
+	s.println( "Task '" + name + "': " + taskTime.toString() );
     }
 }

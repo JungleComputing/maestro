@@ -44,7 +44,13 @@ final class WorkThread extends Thread
             if( job == null ) {
                 break;
             }
+            if( Settings.traceWorkerProgress ) {
+        	System.out.println( "Work thread: executing " + job.message );
+            }
             Object result = job.job.run( job.message.job.input, localNode );
+            if( Settings.traceWorkerProgress ) {
+        	System.out.println( "Work thread: completed " + job.message );
+            }
             source.reportJobCompletion( job, result );
         }
     }

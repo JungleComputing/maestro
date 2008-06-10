@@ -70,7 +70,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	 * @param queueInterval The time this job spent in the queue.
 	 * @param workInterval The time it took to execute this job.
 	 */
-	private void countJob(long queueInterval, long workInterval )
+	private void countJob( long queueInterval, long workInterval )
 	{
 	    jobCount++;
 	    queueDuration += queueInterval;
@@ -600,10 +600,6 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	if( Settings.traceWorkerProgress ) {
 	    System.out.println( "Completed job "  + job.message );
 	}
-	
-	// Now wake the master. With some luck we get our own submitted
-	// job back.
-        node.notifyMasterQueue();
 
         // Update statistics and notify our own queue waiters that something
         // has happened.
