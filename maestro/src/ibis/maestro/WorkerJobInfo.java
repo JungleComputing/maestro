@@ -43,7 +43,7 @@ final class WorkerJobInfo {
         if( outstandingJobs>=maximalAllowance ){
             return Long.MAX_VALUE;
         }
-	return roundTripEstimate.getEstimate();
+	return roundTripEstimate.getAverage();
     }
 
     long getAverageCompletionTime()

@@ -8,12 +8,10 @@ package ibis.maestro;
 class TimeEstimate
 {
     private long average;
-    private long stdDev;
 
     TimeEstimate( long initial )
     {
         average = initial;
-        stdDev = 0l;
     }
 
     /**
@@ -22,19 +20,7 @@ class TimeEstimate
     @Override
     public String toString()
     {
-        return "average=" + Service.formatNanoseconds( average ) + " stdDev=" + Service.formatNanoseconds( stdDev );
-    }
-
-    /**
-     * Returns a time estimate based on the current samples.
-     * This method returns random number with uniform distribution between
-     * the current minimum and maximum average in this list of samples.
-     * @return The time estimate.
-     */
-    long getEstimate()
-    {
-	// FIXME: remove this method.
-        return average;
+        return "average=" + Service.formatNanoseconds( average );
     }
 
     /**
@@ -53,7 +39,5 @@ class TimeEstimate
     void addSample( long val )
     {
         average = (2*average+val)/3;
-        long diff = Math.abs( average-val );
-        stdDev = (3*stdDev+diff)/4;
     }
 }
