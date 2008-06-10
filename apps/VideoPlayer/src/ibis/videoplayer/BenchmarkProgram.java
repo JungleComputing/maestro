@@ -122,6 +122,9 @@ class BenchmarkProgram {
             this.factor = factor;
 
             this.slow = slow && hasEnvironmentVariable( "SLOW_SCALE" );
+            if( this.slow ){
+                System.out.println( "Using slow upscaling" );
+            }
         }
 
         /**Scale up one frame in a Maestro flow.
@@ -165,6 +168,9 @@ class BenchmarkProgram {
         SharpenFrameJob( boolean slow )
         {
             this.slow = slow && hasEnvironmentVariable( "SLOW_SHARPEN" );
+            if( this.slow ){
+                System.out.println( "Using slow sharpen" );
+            }
         }
 
         /** Sharpen one frame in a Maestro flow.

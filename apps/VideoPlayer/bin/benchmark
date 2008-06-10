@@ -33,5 +33,5 @@ exec java \
     -classpath "$CLASSPATH:$LIBCLASSPATH" \
     -Dlog4j.configuration=file:"$VIDEOPLAYER_HOME"/log4j.properties \
     -Dibis.server.address=$SERVERHOST:5437 \
-    -Xmx1500M \
+    -Xmx2020M \
      ibis.videoplayer.BenchmarkProgram "$@"
