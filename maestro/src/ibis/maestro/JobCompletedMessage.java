@@ -23,7 +23,7 @@ final class JobCompletedMessage extends WorkerMessage {
     /** The estimated time it will take to complete the remaining jobs
      * of this task.
      */
-    final long taskCompletionInterval;
+    final CompletionInfo[] completionInfo;
 
     /**
      * Constructs a job-completed message for the master of a job.
@@ -31,16 +31,16 @@ final class JobCompletedMessage extends WorkerMessage {
      * @param jobId The identifier of the job, as handed out by the master.
      * @param queueInterval The time interval the job spent in the worker queue.
      * @param computeInterval The time interval that was spent to compute the job.
-     * @param taskCompletionInterval The estimated time it will take on this
+     * @param completionInfo The estimated time it will take on this
      *     worker to complete the remaining jobs of this task.
      */
-    JobCompletedMessage( Master.WorkerIdentifier src, long jobId, long queueInterval, long computeInterval, long taskCompletionInterval )
+    JobCompletedMessage( Master.WorkerIdentifier src, long jobId, long queueInterval, long computeInterval, CompletionInfo[] completionInfo )
     {
 	super( src );
         this.jobId = jobId;
         this.queueInterval = queueInterval;
         this.computeInterval = computeInterval;
-        this.taskCompletionInterval = taskCompletionInterval;
+        this.completionInfo = completionInfo;
     }
 
     /**
@@ -50,6 +50,6 @@ final class JobCompletedMessage extends WorkerMessage {
     @Override
     public String toString()
     {
-	return "worker status message: jobId=" + jobId + " queueInterval=" + Service.formatNanoseconds(queueInterval) + " taskCompletionInterval=" + Service.formatNanoseconds( taskCompletionInterval );
+	return "worker status message: jobId=" + jobId + " queueInterval=" + Service.formatNanoseconds(queueInterval);
     }
 }

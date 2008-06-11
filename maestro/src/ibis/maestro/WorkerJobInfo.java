@@ -88,17 +88,20 @@ final class WorkerJobInfo {
     /**
      * Registers the completion of a job.
      * @param theRoundTripInterval The round-trip interval of this job.
-     * @param taskCompletionTime The time it takes to complete the entire task this job belongs to.
      */
-    void registerJobCompleted( long theRoundTripInterval, long taskCompletionTime )
+    void registerJobCompleted( long theRoundTripInterval )
     {
 	executedJobs++;
 	roundTripEstimate.addSample( theRoundTripInterval );
-	remainingTasksTime = taskCompletionTime;
 	outstandingJobs--;
 	if( Settings.traceWorkerProgress || Settings.traceRemainingTaskTime ) {
-	    System.out.println( label + ": new roundtrip time estimate: " + roundTripEstimate + ", remaining tasks completion time: " + Service.formatNanoseconds( taskCompletionTime ) );
+	    System.out.println( label + ": new roundtrip time estimate: " + roundTripEstimate );
 	}
+    }
+
+    void setCompletionInterval( long interval )
+    {
+	this.remainingTasksTime = interval;
     }
 
     /** Register a new outstanding job. */

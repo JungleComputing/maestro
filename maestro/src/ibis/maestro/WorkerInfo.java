@@ -93,6 +93,23 @@ final class WorkerInfo {
 	knownDelayedJobs = activeJobs.size();
     }
 
+    private void registerCompletionInfo( CompletionInfo completionInfo )
+    {
+	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( completionInfo.type );
+
+	if( workerJobInfo == null ) {
+	    return;
+	}
+	workerJobInfo.setCompletionInterval( completionInfo.completionInterval );
+    }
+
+    private void registerCompletionInfo( CompletionInfo[] completionInfo )
+    {
+	for( CompletionInfo i: completionInfo ) {
+	    registerCompletionInfo( i );
+	}
+    }
+
     /**
      * Register a job result for an outstanding job.
      * @param result The job result message that tells about this job.
@@ -114,7 +131,8 @@ final class WorkerInfo {
 	if( knownDelayedJobs>0 ) {
 	    knownDelayedJobs--;
 	}
-	job.workerJobInfo.registerJobCompleted( newRoundTripInterval, result.taskCompletionInterval );
+	job.workerJobInfo.registerJobCompleted( newRoundTripInterval );
+	registerCompletionInfo( result.completionInfo );
 	limitQueueTime( job.workerJobInfo, newRoundTripInterval, queueInterval+result.computeInterval );
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Master: retired job " + job + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );

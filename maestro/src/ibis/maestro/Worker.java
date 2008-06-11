@@ -596,6 +596,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
             Globals.log.reportProgress( "Completed " + job.message + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + " taskCompletionInterval=" + Service.formatNanoseconds( taskCompletionInterval ) );
         }
 	final MasterIdentifier master = job.message.source;
+	CompletionInfo[] completionInfo;
 
         // Update statistics and notify our own queue waiters that something
         // has happened.
@@ -612,9 +613,11 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    JobStats stats = jobStats.get( jobType );
 	    stats.countJob( queueInterval, now-job.message.getRunTime() );
 	    runningJobs--;
+	    queue.updateCompletionInterval( jobType, taskCompletionInterval );
+	    completionInfo = queue.getCompletionInfo();
 	    queue.notifyAll();
 	}
-	WorkerMessage msg = new JobCompletedMessage( job.message.workerIdentifier, job.message.jobId, queueInterval, computeInterval, taskCompletionInterval );
+	WorkerMessage msg = new JobCompletedMessage( job.message.workerIdentifier, job.message.jobId, queueInterval, computeInterval, completionInfo );
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( Settings.traceWorkerProgress ) {
 	    System.out.println( "Completed job "  + job.message );

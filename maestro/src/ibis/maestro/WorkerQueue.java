@@ -31,12 +31,29 @@ final class WorkerQueue {
     private static final class QueueType {
 	/** The type of jobs in this queue. */
 	final JobType type;
+	
+	private long completionInterval = 0;
 
 	/** The work queue for these jobs. */
 	final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
 
 	QueueType( JobType type ){
 	    this.type = type;
+	}
+
+	void setCompletionInterval( long interval )
+	{
+	    this.completionInterval = interval;
+	}
+	
+	long getCompletionInterval()
+	{
+	    return completionInterval;
+	}
+
+	CompletionInfo getCompletionInfo()
+	{
+	    return new CompletionInfo( type, completionInterval );
 	}
     }
 
@@ -125,5 +142,51 @@ final class WorkerQueue {
 	    }
 	}
 	return null;
+    }
+
+    /** 
+     * Register a new completion interval (time needed on this node for
+     * all remaining jobs after the given job type).
+     * @param t The job type for which we register a new completion interval.
+     * @param taskCompletionInterval The new completion interval.
+     */
+    void updateCompletionInterval(JobType t, long taskCompletionInterval) {
+	// TODO: since we have an ordered list, use binary search.
+	int ix = queueTypes.size();
+	while( ix>0 ) {
+	    ix--;
+	    QueueType x = queueTypes.get( ix );
+	    if( x.type.equals( t ) ) {
+		x.setCompletionInterval( taskCompletionInterval );
+		return;
+	    }
+	}
+	// This is a new type. Insert it in the right place
+	// to keep the queues ordered from highest to lowest
+	// priority.
+	ix = 0;
+	while( ix<queueTypes.size() ){
+	    QueueType q = queueTypes.get( ix );
+	    int cmp = t.jobNo-q.type.jobNo;
+	    if( cmp>0 ){
+		break;
+	    }
+	    ix++;
+	}
+	QueueType qt = new QueueType( t );
+	queueTypes.add( ix, qt );
+	qt.setCompletionInterval( taskCompletionInterval );
+	
+    }
+
+    CompletionInfo[] getCompletionInfo()
+    {
+	CompletionInfo res[] = new CompletionInfo[queueTypes.size()];
+	int ix = 0;
+	
+	for( QueueType q: queueTypes ) {
+	    res[ix++] = q.getCompletionInfo();
+	}
+	return res;
     }
 }
