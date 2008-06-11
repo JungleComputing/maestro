@@ -150,4 +150,24 @@ final class WorkerJobInfo {
     {
 	return " executed " + executedJobs + " jobs; maximal allowance " + maximalEverAllowance + ", estimated round-trip interval " + roundTripEstimate + ", remaining tasks time " + Service.formatNanoseconds( remainingTasksTime );
     }
+
+    /**
+     * Limit the queue size on the worker.
+     * @param roundTripTime
+     * @param workerDwellTime
+     * @return
+     */
+    public boolean limitAllowance(long roundTripTime, long workerDwellTime) {
+	if( maximalAllowance<=1 ) {
+	    // We must have an allowance of at least one.
+	    return false;
+	}
+	if( ((maximalAllowance+1)*workerDwellTime)>roundTripTime ) {
+	    
+	    maximalAllowance--;
+	    mayIncreaseAllowance = false;
+	    return true;
+	}
+	return false;
+    }
 }
