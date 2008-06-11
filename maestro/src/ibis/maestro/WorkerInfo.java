@@ -75,7 +75,7 @@ final class WorkerInfo {
      * by reducing the number of allowed outstanding jobs.
      * @param workerJobInfo Information about the job that was delayed so long.
      */
-    private void reduceLongQueueTime( WorkerJobInfo workerJobInfo )
+    private void limitQueueTime( WorkerJobInfo workerJobInfo, long roundTripTime, long workerDwellTime )
     {
 	if( knownDelayedJobs>0 ) {
 	    // We've recently done a reduction, and there are still
@@ -83,7 +83,7 @@ final class WorkerInfo {
 	    // safe to do another reduction.
 	    return;
 	}
-	if( !workerJobInfo.decrementAllowance() ) {
+	if( !workerJobInfo.limitAllowance( roundTripTime, workerDwellTime ) ) {
 	    // We cannot reduce the allowance.
 	    return;
 	}
@@ -115,12 +115,7 @@ final class WorkerInfo {
 	    knownDelayedJobs--;
 	}
 	job.workerJobInfo.registerJobCompleted( newRoundTripInterval, result.taskCompletionInterval );
-	if( queueInterval>result.computeInterval ) {
-	    // If the time this job spent in the worker queue was a significant
-	    // fraction of the total turnaround time, reduce the allowance
-	    // of this worker.
-	    reduceLongQueueTime( job.workerJobInfo );
-	}
+	limitQueueTime( job.workerJobInfo, newRoundTripInterval, queueInterval+result.computeInterval );
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Master: retired job " + job + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );
 	}
