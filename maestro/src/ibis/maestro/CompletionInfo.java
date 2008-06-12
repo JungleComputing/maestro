@@ -1,11 +1,15 @@
 package ibis.maestro;
 
+import java.io.Serializable;
+
 /**
  * A class representing the completion interval for the given type.
  *
  * @author Kees van Reeuwijk
  */
-class CompletionInfo {
+class CompletionInfo implements Serializable
+{
+    private static final long serialVersionUID = 1L;
     final JobType type;
     final long completionInterval;
 
