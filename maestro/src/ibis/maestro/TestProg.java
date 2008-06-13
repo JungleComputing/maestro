@@ -15,12 +15,12 @@ public class TestProg {
 
     private static class Listener implements CompletionListener
     {
-        int jobsCompleted = 0;
-        private final int jobCount;
+        int tasksCompleted = 0;
+        private final int taskCount;
 
         Listener( int jobCount )
         {
-            this.jobCount = jobCount;
+            this.taskCount = jobCount;
         }
 
         /** Handle the completion of job 'j': the result is 'result'.
@@ -30,9 +30,9 @@ public class TestProg {
         @Override
         public void taskCompleted( Node node, Object id, Object result ) {
             //System.out.println( "result is " + result );
-            jobsCompleted++;
+            tasksCompleted++;
             //System.out.println( "I now have " + jobsCompleted + "/" + jobCount + " jobs" );
-            if( jobsCompleted>=jobCount ){
+            if( tasksCompleted>=taskCount ){
                 System.out.println( "I got all job results back; stopping test program" );
                 node.setStopped();
             }

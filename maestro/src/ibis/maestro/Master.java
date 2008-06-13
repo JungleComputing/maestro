@@ -389,6 +389,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
     /** Keep submitting jobs until the queue is empty. We occasionally may
      * have to wait for workers to get ready.
+     * FIXME: better comment, and perhaps better abstraction ordering.
      * 
      * @return True iff we want to keep running.
      */
