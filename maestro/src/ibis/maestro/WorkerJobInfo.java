@@ -158,9 +158,10 @@ final class WorkerJobInfo {
      * Limit the queue size on the worker.
      * @param roundTripTime
      * @param workerDwellTime
-     * @return
+     * @return True iff we really limited the allowance.
      */
-    public boolean limitAllowance(long roundTripTime, long workerDwellTime) {
+    public boolean limitAllowance( long roundTripTime, long workerDwellTime )
+    {
 	if( maximalAllowance<=1 ) {
 	    // We must have an allowance of at least one.
 	    return false;
