@@ -50,7 +50,7 @@ class TimeEstimate
                 ix = BUFFER_SIZE-1;
             }
             while( (now-sampleTimes[ix])>interval ) {
-                // We crossed a weigth treshold, decrease the
+                // We crossed a weight treshold, decrease the
                 // weight of this and earlier samples.
                 interval += interval;
                 weight *= 0.5;
