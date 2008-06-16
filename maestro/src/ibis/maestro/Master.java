@@ -101,8 +101,17 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         this.node = node;
         sendPort = new PacketSendPort<MasterMessage>( ibis );
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
-        receivePort.enable();		// We're open for business.
         startTime = System.nanoTime();
+    }
+
+    /**
+     * Start this master thread.
+     */
+    @Override
+    public void start()
+    {
+        receivePort.enable();           // We're open for business.
+        super.start();                  // Start the thread
     }
 
     /**
@@ -335,34 +344,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             long res = queueTime + workers.getAverageCompletionTime( job.type );
             queue.notifyAll();
             return res;
-        }
-    }
-
-    /**
-     * Adds the given job to the work queue of this master.
-     * This method only returns when the work queue was drained far enough
-     * to submit this job.
-     * @param j The job to add to the queue.
-     * @param task The identifier of the task this job belongs to.
-     */
-    private void submitWhenRoom( JobInstance j )
-    {
-        if( Settings.traceMasterProgress ) {
-            System.out.println( "Master: received job " + j );
-        }
-        int maxQueueLength = workers.getWorkerCount()*Settings.JOBS_PER_WORKER;
-        synchronized ( queue ) {
-            // First wait for the queue to drain to a reasonable size.
-            while( queue.size()>maxQueueLength ) {
-        	try {
-		    queue.wait();
-		} catch (InterruptedException e) {
-		    // Not interesting.
-		}
-            }
-            incomingJobCount++;
-            queue.submit( j );
-            queue.notifyAll();
         }
     }
 

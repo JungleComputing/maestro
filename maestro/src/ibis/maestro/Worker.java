@@ -164,7 +164,16 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	long now = System.nanoTime();
 	startTime = now;
 	queueEmptyMoment = now;
-	receivePort.enable();   // We're open for business.
+    }
+
+    /**
+     * Start this worker thread.
+     */
+    @Override
+    public void start()
+    {
+        receivePort.enable();           // We're open for business.
+        super.start();                  // Start the thread
     }
 
     /**
