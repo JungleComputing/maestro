@@ -476,4 +476,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         sendPort.printStats( s, "master send port" );
         workers.printStatistics( s );
     }
+
+    CompletionInfo[] getCompletionInfo() {
+	synchronized( queue ) {
+	    return queue.getCompletionInfo( workers );
+	}
+    }
 }

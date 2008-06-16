@@ -503,7 +503,6 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     {
 	while( true ) {
 	    boolean askForWork = false;
-	    CompletionInfo[] completionInfo = null;
 	    try {
 		synchronized( queue ) {
 		    if( queue.isEmpty() ) {
@@ -524,7 +523,6 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 			}
 			else {
 			    askForWork = true;
-			    completionInfo = queue.getCompletionInfo();
 			}
 		    }
 		    else {
@@ -541,6 +539,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 		    }
 		}
 		if( askForWork ){
+		    CompletionInfo[] completionInfo = node.getCompletionInfo();
 		    askMoreWork( completionInfo );
 		}
 	    }
@@ -626,7 +625,6 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
             Globals.log.reportProgress( "Completed " + job.message + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + " taskCompletionInterval=" + Service.formatNanoseconds( taskCompletionInterval ) );
         }
 	final MasterIdentifier master = job.message.source;
-	CompletionInfo[] completionInfo;
 
         // Update statistics and notify our own queue waiters that something
         // has happened.
@@ -643,10 +641,11 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    JobStats stats = jobStats.get( jobType );
 	    stats.countJob( queueInterval, now-job.message.getRunTime() );
 	    runningJobs--;
-	    queue.updateCompletionInterval( jobType, taskCompletionInterval );
-	    completionInfo = queue.getCompletionInfo();
+	    //queue.updateCompletionInterval( jobType, taskCompletionInterval );
+	    //completionInfo = queue.getCompletionInfo();
 	    queue.notifyAll();
 	}
+	CompletionInfo[] completionInfo = node.getCompletionInfo();	
 	WorkerMessage msg = new JobCompletedMessage( job.message.workerIdentifier, job.message.jobId, queueInterval, computeInterval, completionInfo );
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( Settings.traceWorkerProgress ) {

@@ -386,4 +386,8 @@ public final class Node {
     {
 	return master.identifier();
     }
+
+    CompletionInfo[] getCompletionInfo() {
+	return master.getCompletionInfo();
+    }
 }

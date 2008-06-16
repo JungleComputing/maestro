@@ -150,7 +150,7 @@ final class WorkerQueue {
      * @param t The job type for which we register a new completion interval.
      * @param taskCompletionInterval The new completion interval.
      */
-    void updateCompletionInterval(JobType t, long taskCompletionInterval) {
+    private void updateCompletionInterval(JobType t, long taskCompletionInterval) {
 	// TODO: since we have an ordered list, use binary search.
 	int ix = queueTypes.size();
 	while( ix>0 ) {
@@ -179,7 +179,7 @@ final class WorkerQueue {
 	
     }
 
-    CompletionInfo[] getCompletionInfo()
+    private CompletionInfo[] getCompletionInfo()
     {
 	CompletionInfo res[] = new CompletionInfo[queueTypes.size()];
 	int ix = 0;

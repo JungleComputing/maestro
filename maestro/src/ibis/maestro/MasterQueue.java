@@ -4,7 +4,6 @@ import ibis.maestro.Master.WorkerIdentifier;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 /**
  * A class representing the master work queue.
@@ -17,105 +16,12 @@ import java.util.LinkedList;
  *
  */
 final class MasterQueue {
-    private final ArrayList<QueueType> queueTypes = new ArrayList<QueueType>();
+    private final ArrayList<MasterQueueType> queueTypes = new ArrayList<MasterQueueType>();
     int size = 0;
 
     MasterQueue()
     {
         // Empty
-    }
-
-    /**
-     * The information for one type of job in the queue.
-     * 
-     * @author Kees van Reeuwijk
-     *
-     */
-    private static final class QueueType {
-        /** The type of jobs in this queue. */
-        final JobType type;
-
-        /** The work queue for these jobs. */
-        private final LinkedList<JobInstance> queue = new LinkedList<JobInstance>();
-
-        /** The number of jobs entered in this queue. */
-        private int jobCount = 0;
-
-        /** The estimated time interval between jobs being dequeued. */
-        final TimeEstimate dequeueInterval = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
-
-        private long frontChangedTime = 0;
-
-        private int maxsz = 0;
-
-        QueueType( JobType type ){
-            this.type = type;
-        }
-
-        /**
-         * Returns true iff the queue associated with this type is empty.
-         * @return True iff the queue is empty.
-         */
-        boolean isEmpty() {
-            return queue.isEmpty();
-        }
-        
-        /** Returns the size of the queue.
-         * 
-         * @return The queue size.
-         */
-        int size() {
-            return queue.size();
-        }
-
-        void add( JobInstance j )
-        {
-            queue.add( j );
-            int sz = queue.size();
-            if( sz>maxsz ) {
-                maxsz = sz;
-            }
-            if( frontChangedTime == 0 ) {
-        	// This entry is the front of the queue,
-        	// record the time it became this.
-        	frontChangedTime = System.nanoTime();
-            }
-            jobCount++;
-        }
-
-        JobInstance removeFirst()
-        {
-            long now = System.nanoTime();
-            if( frontChangedTime != 0 ) {
-        	// We know when this entry became the front of the queue.
-                long i = now - frontChangedTime;
-                dequeueInterval.addSample( i );
-            }
-            JobInstance res = queue.removeFirst();
-            if( queue.isEmpty() ) {
-                // Don't take the next dequeueing into account,
-                // since the queue is now empty.
-                frontChangedTime = 0l;
-            }
-            else {
-                frontChangedTime = now;
-            }
-            return res;
-        }
-
-        /**
-         * @return The estimated time in ns it will take to drain all
-         * current jobs from the queue.
-         */
-        long estimateQueueTime() {
-            long timePerEntry = dequeueInterval.getAverage();
-            return timePerEntry*queue.size();
-        }
-
-        void printStatistics( PrintStream s )
-        {
-            s.println( "master queue for " + type + ": " + jobCount + " jobs; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxsz );
-        }
     }
 
     /**
@@ -133,7 +39,7 @@ final class MasterQueue {
         int ix = queueTypes.size();
         while( ix>0 ) {
             ix--;
-            QueueType x = queueTypes.get( ix );
+            MasterQueueType x = queueTypes.get( ix );
             if( x.type.equals( t ) ) {
                 x.add( j );
                 return x.estimateQueueTime();
@@ -147,14 +53,14 @@ final class MasterQueue {
         // priority.
         ix = 0;
         while( ix<queueTypes.size() ){
-            QueueType q = queueTypes.get( ix );
+            MasterQueueType q = queueTypes.get( ix );
             int cmp = t.jobNo-q.type.jobNo;
             if( cmp>0 ){
                 break;
             }
             ix++;
         }
-        QueueType qt = new QueueType( t );
+        MasterQueueType qt = new MasterQueueType( t );
         qt.add( j );
         queueTypes.add( ix, qt );
         return 0l;   // We haven't had time to build a time estimate anyway, so don't bother to call estimateQueueTime().
@@ -166,7 +72,7 @@ final class MasterQueue {
      */
     boolean isEmpty()
     {
-        for( QueueType t: queueTypes ) {
+        for( MasterQueueType t: queueTypes ) {
             if( !t.isEmpty() ) {
                 return false;
             }
@@ -183,7 +89,7 @@ final class MasterQueue {
      */
     void incrementAllowance( WorkerIdentifier workerID, WorkerList workers )
     {
-        for( QueueType t: queueTypes ) {
+        for( MasterQueueType t: queueTypes ) {
             if( !t.isEmpty() ) {
                 // There are jobs of this type in the queue.
                 if( workers.incrementAllowance( workerID, t.type ) ) {
@@ -212,7 +118,7 @@ final class MasterQueue {
         boolean noWork = true;
         sub.worker = null;
         sub.job = null;
-        for( QueueType t: queueTypes ) {
+        for( MasterQueueType t: queueTypes ) {
             if( Settings.traceMasterQueue ){
                 System.out.println( "Trying to select job from " + t.type + " queue" );
             }
@@ -256,8 +162,19 @@ final class MasterQueue {
     
     void printStatistics( PrintStream s )
     {
-        for( QueueType t: queueTypes ) {
+        for( MasterQueueType t: queueTypes ) {
             t.printStatistics( s );
         }
+    }
+
+    CompletionInfo[] getCompletionInfo(WorkerList workers)
+    {
+	CompletionInfo res[] = new CompletionInfo[queueTypes.size()];
+	
+	for( int i=0; i<res.length; i++ ) {
+	    MasterQueueType q = queueTypes.get(i);
+	    res[i] = q.getCompletionInfo( workers );
+	}
+	return res;
     }
 }

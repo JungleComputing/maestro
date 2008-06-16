@@ -17,7 +17,8 @@ import java.util.List;
 final class WorkerList {
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
 
-    private static WorkerInfo searchWorker( List<WorkerInfo> workers, WorkerIdentifier workerIdentifier ) {
+    private static WorkerInfo searchWorker( List<WorkerInfo> workers, WorkerIdentifier workerIdentifier )
+    {
         for( int i=0; i<workers.size(); i++ ) {
             WorkerInfo w = workers.get( i );
 
@@ -270,8 +271,10 @@ final class WorkerList {
     long getAverageCompletionTime( JobType jobType )
     {
 	long res = Long.MAX_VALUE;
+
 	for( WorkerInfo wi: workers ) {
 	    long val = wi.getAverageCompletionTime( jobType );
+
 	    if( val<res ) {
 		res = val;
 	    }
