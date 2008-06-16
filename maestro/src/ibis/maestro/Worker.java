@@ -408,7 +408,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 
 	// Finally, try to tell a master we want more jobs.
 	MasterInfo jobSource = getRandomWorkSource();
-	if( jobSource != null ){
+	if( jobSource != null && jobSource.isRegisteredMaster() ){
 	    if( Settings.traceWorkerProgress ){
 		Globals.log.reportProgress( "Worker: asking master " + jobSource.localIdentifier + " for work" );
 	    }
@@ -427,7 +427,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    MasterInfo master = masters.get( msg.source.value );
 	    master.setIdentifierOnMaster( msg.identifierOnMaster );
 	    if( Service.member( mastersToUpdate, master ) ){
-		Globals.log.reportInternalError( "Master " + master + " is in update list before it accepted this worker??" );
+		Globals.log.reportInternalError( "Master " + master + " already was in update list before it accepted this worker??" );
 	    }
 	    mastersToUpdate.add( master );
 	    queue.notifyAll();
