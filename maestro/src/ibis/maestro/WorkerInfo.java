@@ -294,8 +294,10 @@ final class WorkerInfo {
 	while( keys.hasMoreElements() ){
 	    JobType jobType = keys.nextElement();
 	    WorkerJobInfo info = workerJobInfoTable.get( jobType );
-	    String stats = info.buildStatisticsString();
-	    s.println( "  " + jobType.toString() + ": " + stats );
+	    if( info.didWork() ) {
+	        String stats = info.buildStatisticsString();
+	        s.println( "  " + jobType.toString() + ": " + stats );
+	    }
 	}
     }
 }

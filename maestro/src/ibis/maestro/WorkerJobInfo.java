@@ -174,4 +174,12 @@ final class WorkerJobInfo {
 	}
 	return false;
     }
+
+    /**
+     * @return True iff this worker ever executed a job of this type.
+     */
+    public boolean didWork()
+    {
+        return (executedJobs != 0) || (outstandingJobs != 0);
+    }
 }

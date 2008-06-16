@@ -129,10 +129,7 @@ final class WorkerList {
     /**
      * Given a job type, select the best worker from the list that has a
      * free slot. In this context 'best' is simply the worker with the
-     * shortest round-trip interval. We take into account fast workers that
-     * can complete a job earlier even if they are busy right now, but
-     * if there are more jobs in the queue we may still want to assign
-     * a job to a slower processor that can execute the job right now.
+     * shortest round-trip interval.
      *  
      * @param jobType The type of job we want to execute.
      * @return The info of the best worker for this job, or <code>null</code>
@@ -149,8 +146,6 @@ final class WorkerList {
             if( !wi.isDead() ) {
         	long val = wi.estimateTaskCompletion( jobType );
 
-        	// FIXME: consider delaying a job to submit it later to a fast worker.
-        	// We will need the queue size to do this right.
         	if( Settings.traceRemainingTaskTime ) {
         	    System.out.println( "Worker " + wi + ": job type " + jobType + ": estimated completion time " + Service.formatNanoseconds( val ) );
         	}
