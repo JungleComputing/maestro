@@ -193,9 +193,9 @@ final class WorkerInfo {
 	workerJobInfoTable.put( type, info );
     }
 
-    /** Given a job type, return the maximal bond of the round-trip interval
-     *  for this job type, or
-     * Long.MAX_VALUE if the job type is not allowed on this worker.
+    /** Given a job type, estimate the completion time of this job type,
+     * or Long.MAX_VALUE if the job type is not allowed on this worker,
+     * or the worker is currently using its entire allowance.
      * @param jobType The job type for which we want to know the round-trip interval.
      * @return The interval, or Long.MAX_VALUE if this type of job is not allowed.
      */

@@ -46,18 +46,6 @@ final class WorkerJobInfo {
 	return roundTripEstimate.getAverage();
     }
 
-    long getAverageCompletionTime()
-    {
-	if( remainingTasksTime == Long.MAX_VALUE ) {
-	    return Long.MAX_VALUE;
-	}
-	long average = roundTripEstimate.getAverage();
-	if( average == Long.MAX_VALUE ) {
-	    return Long.MAX_VALUE;
-	}
-	return average + remainingTasksTime;
-    }
-
     /**
      * Returns the maximal round-trip interval for this worker and this job type, or
      * a very pessimistic estimate if currently there are no job slots.
@@ -74,6 +62,18 @@ final class WorkerJobInfo {
 	    return Long.MAX_VALUE;
 	}
 	return remainingTasksTime + roundTripTime;
+    }
+
+    long getAverageCompletionTime()
+    {
+        if( remainingTasksTime == Long.MAX_VALUE ) {
+            return Long.MAX_VALUE;
+        }
+        long average = roundTripEstimate.getAverage();
+        if( average == Long.MAX_VALUE ) {
+            return Long.MAX_VALUE;
+        }
+        return average + remainingTasksTime;
     }
 
     /**
