@@ -10,12 +10,15 @@ import ibis.maestro.Worker.MasterIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-class MasterInfo {
+final class MasterInfo {
     final MasterIdentifier localIdentifier;
 
     /** The identifier the master wants to see when we talk to it. */
     private WorkerIdentifier identifierOnMaster;
 
+    /** The last time we sent this master an update. */
+    private long lastUpdate = 0;
+    
     private boolean dead = false;
 
     /** The ibis this master lives on. */
@@ -49,6 +52,20 @@ class MasterInfo {
     public WorkerIdentifier getIdentifierOnMaster()
     {
         return identifierOnMaster;
+    }
+
+    /**
+     * @return The lastUpdate.
+     */
+    long getLastUpdate() {
+        return lastUpdate;
+    }
+
+    /**
+     * @param lastUpdate the lastUpdate to set
+     */
+    void setLastUpdate(long lastUpdate) {
+        this.lastUpdate = lastUpdate;
     }
 
     /**
