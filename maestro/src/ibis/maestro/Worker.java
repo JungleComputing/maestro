@@ -268,7 +268,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	                return null;
 	            }
 	            int ix = rng.nextInt( size );
-	            res = jobSources.get( ix );
+	            res = masters.get( ix );
 	            if( !res.isDead() ) {
 	                return res;
 	            }
