@@ -103,7 +103,7 @@ final class WorkerInfo {
 	workerJobInfo.setCompletionInterval( completionInfo.completionInterval );
     }
 
-    private void registerCompletionInfo( CompletionInfo[] completionInfo )
+    void registerCompletionInfo( CompletionInfo[] completionInfo )
     {
 	for( CompletionInfo i: completionInfo ) {
 	    registerCompletionInfo( i );

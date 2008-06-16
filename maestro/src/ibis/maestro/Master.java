@@ -199,6 +199,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         JobType allowedTypes[] = m.allowedType;
         synchronized( queue ) {
             workers.updateJobTypes( workerID, allowedTypes );
+            workers.registerCompletionInfo( workerID, m.completionInfo );
             queue.notifyAll();
         }
     }
@@ -216,6 +217,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	}
         synchronized( queue ){
             queue.incrementAllowance( workerID, workers );
+            workers.registerCompletionInfo( workerID, m.completionInfo );
             queue.notifyAll();
         }
     }

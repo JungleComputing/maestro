@@ -20,8 +20,8 @@ final class JobCompletedMessage extends WorkerMessage {
     /** The time interval this job required to actually compute. */
     final long computeInterval;
 
-    /** The estimated time it will take to complete the remaining jobs
-     * of this task.
+    /** For each type of job we know, the estimated time it will
+     * take to complete the remaining jobs of this task.
      */
     final CompletionInfo[] completionInfo;
 

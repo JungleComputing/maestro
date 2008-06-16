@@ -28,7 +28,8 @@ final class WorkerList {
         return null;
     }
 
-    private static WorkerInfo searchWorker( List<WorkerInfo> workers, IbisIdentifier id ) {
+    private static WorkerInfo searchWorker( List<WorkerInfo> workers, IbisIdentifier id )
+    {
 	for( int i=0; i<workers.size(); i++ ) {
 	    WorkerInfo w = workers.get(i);
 	    if( w.port.ibisIdentifier().equals( id ) ) {
@@ -228,7 +229,7 @@ final class WorkerList {
 	w.setDead();
     }
 
-    /** Given a new list of allowed types, update our adminstration
+    /** Given a new list of allowed types, update our administration
      * of the given worker.
      * 
      * @param workerID The id of the worker that supports these types.
@@ -281,5 +282,11 @@ final class WorkerList {
 	    }
 	}
 	return res;
+    }
+
+    void registerCompletionInfo( WorkerIdentifier workerID, CompletionInfo[] completionInfo )
+    {
+	WorkerInfo w = workers.get( workerID.value );
+        w.registerCompletionInfo( completionInfo );	
     }
 }

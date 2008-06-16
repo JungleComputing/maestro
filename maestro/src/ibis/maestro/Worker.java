@@ -332,8 +332,11 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	}
     }
 
-    /** Update the given master with our new list of allowed types. */
-    private void updateMaster( MasterInfo master )
+    /** Update the given master with our new list of allowed types.
+     * @param master The master to update.
+     * @param completionInfo Completion times for the different job types from this master.
+     */
+    private void updateMaster( MasterInfo master, CompletionInfo[] completionInfo )
     {
 	JobType jobTypesCopy[];
 
@@ -341,23 +344,23 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    jobTypesCopy = new JobType[jobTypes.size()];
 	    jobTypes.toArray( jobTypesCopy );
 	}
-	RegisterTypeMessage msg = new RegisterTypeMessage( master.getIdentifierOnMaster(), jobTypesCopy );
+	RegisterTypeMessage msg = new RegisterTypeMessage( master.getIdentifierOnMaster(), completionInfo, jobTypesCopy );
 	long sz = sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ) {
 	    master.declareDead();
 	}
     }
 
-    private void sendJobRequest( MasterInfo master )
+    private void sendJobRequest( MasterInfo master, CompletionInfo completionInfo[] )
     {
-	WorkRequestMessage msg = new WorkRequestMessage( master.getIdentifierOnMaster() );
+	WorkRequestMessage msg = new WorkRequestMessage( master.getIdentifierOnMaster(), completionInfo );
 	long sz = sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ) {
 	    master.declareDead();
 	}
     }
 
-    private void askMoreWork()
+    private void askMoreWork( CompletionInfo[] completionInfo )
     {
 	// First, try to tell a master about new job types.
 	MasterInfo masterToUpdate = getMasterToUpdate();
@@ -365,7 +368,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    if( Settings.traceWorkerProgress ){
 		Globals.log.reportProgress( "Worker: telling master " + masterToUpdate.localIdentifier + " about new job types" );
 	    }
-	    updateMaster( masterToUpdate );
+	    updateMaster( masterToUpdate, completionInfo );
 	    return;
 	}
 
@@ -385,7 +388,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    if( Settings.traceWorkerProgress ){
 		Globals.log.reportProgress( "Worker: asking master " + jobSource.localIdentifier + " for work" );
 	    }
-	    sendJobRequest( jobSource );
+	    sendJobRequest( jobSource, completionInfo );
 	    return;
 	}
     }
@@ -476,6 +479,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     {
 	while( true ) {
 	    boolean askForWork = false;
+	    CompletionInfo[] completionInfo = null;
 	    try {
 		synchronized( queue ) {
 		    if( queue.isEmpty() ) {
@@ -496,6 +500,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 			}
 			else {
 			    askForWork = true;
+			    completionInfo = queue.getCompletionInfo();
 			}
 		    }
 		    else {
@@ -512,7 +517,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 		    }
 		}
 		if( askForWork ){
-		    askMoreWork();
+		    askMoreWork( completionInfo );
 		}
 	    }
 	    catch( InterruptedException e ){
