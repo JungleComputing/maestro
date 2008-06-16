@@ -254,19 +254,34 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	MasterInfo res;
 
 	synchronized( queue ){
-            if( !askMastersForWork ){
-                return null;
-            }
+	    if( !askMastersForWork ){
+	        return null;
+	    }
 	    while( true ){
-		final int size = jobSources.size();
-		if( size == 0 ){
-		    return null;
-		}
-		int ix = rng.nextInt( size );
-		res = jobSources.remove( ix );
-		if( !res.isDead() ){
-		    return res;
-		}
+	        int size = jobSources.size();
+	        if( size == 0 ){
+	            // Nothing in the job sources; just draw a random master
+	            // from the list of known masters.
+	            size = masters.size();
+	            if( size == 0 ) {
+	                // No masters at all, give up.
+	                return null;
+	            }
+	            int ix = rng.nextInt( size );
+	            res = jobSources.get( ix );
+	            if( !res.isDead() ) {
+	                return res;
+	            }
+	        }
+	        else {
+                    // There are masters on the explict job sources list,
+                    // draw a random one.
+	            int ix = rng.nextInt( size );
+	            res = jobSources.remove( ix );
+	            if( !res.isDead() ){
+	                return res;
+	            }
+                }
 		// The master we drew from the lottery is dead. Try again.
 	    }
 	}
