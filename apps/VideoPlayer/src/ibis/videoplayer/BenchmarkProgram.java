@@ -140,7 +140,8 @@ class BenchmarkProgram {
             if( slow ) {
                 img.scaleUp( factor );
             }
-            return img.scaleUp( factor );
+            Object res = img.scaleUp( factor );
+            return res;
         }
 
         /**
@@ -156,7 +157,6 @@ class BenchmarkProgram {
     static boolean hasEnvironmentVariable( String s )
     {
         String e = System.getenv( s );
-        System.out.println( "Environment variable '" + s + "' set" );
         return e != null;
     }
 
