@@ -30,38 +30,27 @@ final class WorkerJobInfo {
     private boolean mayIncreaseAllowance = false;
 
     /**
-     * Returns the estimated round-trip interval for this worker and this job type, or
-     * a very pessimistic estimate if currently there are no job slots.
-     * @param The number of reservations we already have.
-     * @return The round-trip interval.
-     */
-    private long estimateRoundTripTime()
-    {
-        if( maximalAllowance == 0 ){
-            System.err.println( "Internal error: zero allowance" );
-        }
-        if( outstandingJobs>=maximalAllowance ){
-            return Long.MAX_VALUE;
-        }
-	return roundTripEstimate.getAverage();
-    }
-
-    /**
      * Returns the maximal round-trip interval for this worker and this job type, or
-     * a very pessimistic estimate if currently there are no job slots.
+     * Long.MAX_VALUE if currently there are no job slots.
      * @param The number of reservations we already have.
      * @return The round-trip interval.
      */
     long estimateTaskCompletion()
     {
+        if( maximalAllowance == 0 ){
+            System.err.println( "Internal error: zero allowance" );
+        }
 	if( remainingTasksTime == Long.MAX_VALUE ) {
 	    return Long.MAX_VALUE;
 	}
-	long roundTripTime = estimateRoundTripTime();
+        if( outstandingJobs >= maximalAllowance ){
+            return Long.MAX_VALUE;
+        }
+	long roundTripTime = roundTripEstimate.getAverage();
 	if( roundTripTime == Long.MAX_VALUE ) {
 	    return Long.MAX_VALUE;
 	}
-	return remainingTasksTime + roundTripTime;
+	return roundTripTime + remainingTasksTime;
     }
 
     long getAverageCompletionTime()

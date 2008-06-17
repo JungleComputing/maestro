@@ -41,7 +41,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 
     private final Node node;
 
-    private ArrayList<Task> tasks = new ArrayList<Task>();
+    private TaskList tasks = new TaskList();
     private static int taskCounter = 0;
 
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
@@ -539,7 +539,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 		    }
 		}
 		if( askForWork ){
-		    CompletionInfo[] completionInfo = node.getCompletionInfo();
+		    CompletionInfo[] completionInfo = node.getCompletionInfo( tasks );
 		    askMoreWork( completionInfo );
 		}
 	    }
@@ -645,7 +645,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    //completionInfo = queue.getCompletionInfo();
 	    queue.notifyAll();
 	}
-	CompletionInfo[] completionInfo = node.getCompletionInfo();	
+	CompletionInfo[] completionInfo = node.getCompletionInfo( tasks );	
 	WorkerMessage msg = new JobCompletedMessage( job.message.workerIdentifier, job.message.jobId, queueInterval, computeInterval, completionInfo );
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( Settings.traceWorkerProgress ) {
@@ -686,9 +686,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     /** Print some statistics about the entire worker run. */
     void printStatistics( PrintStream s )
     {
-        for( Task t: tasks ) {
-            t.printStatistics( s );
-        }
+        tasks.printStatistics( s );
 	if( stopTime<startTime ) {
 	    System.err.println( "Worker didn't stop yet" );
 	    stopTime = System.nanoTime();

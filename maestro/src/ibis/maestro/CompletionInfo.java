@@ -24,4 +24,13 @@ class CompletionInfo implements Serializable
 	this.completionInterval = completionInterval;
     }
 
+    /**
+     * Returns a string representation of this completion info. (Overrides method in superclass.)
+     * @return The string representation.
+     */
+    @Override
+    public String toString()
+    {
+        return "completionInterval(" + type + ")=" + Service.formatNanoseconds( completionInterval );
+    }
 }

@@ -31,6 +31,16 @@ final class MasterQueueType {
     }
 
     /**
+     * Returns a string representation of this queue.. (Overrides method in superclass.)
+     * @return The string representation.
+     */
+    @Override
+    public String toString()
+    {
+        return "Q for " + type + "; " + queue.size() + " elm.; dQi=" + dequeueInterval; 
+    }
+
+    /**
      * Returns true iff the queue associated with this type is empty.
      * @return True iff the queue is empty.
      */
@@ -65,13 +75,13 @@ final class MasterQueueType {
     {
         long now = System.nanoTime();
         if( frontChangedTime != 0 ) {
-    	// We know when this entry became the front of the queue.
+            // We know when this entry became the front of the queue.
             long i = now - frontChangedTime;
             dequeueInterval.addSample( i );
         }
         JobInstance res = queue.removeFirst();
         if( queue.isEmpty() ) {
-            // Don't take the next dequeueing into account,
+            // Don't take the next dequeuing into account,
             // since the queue is now empty.
             frontChangedTime = 0l;
         }
@@ -83,11 +93,13 @@ final class MasterQueueType {
 
     /**
      * @return The estimated time in ns it will take to drain all
-     * current jobs from the queue.
+     *          current jobs from the queue.
      */
-    long estimateQueueTime() {
+    long estimateQueueTime()
+    {
         long timePerEntry = dequeueInterval.getAverage();
-        return timePerEntry*queue.size();
+        long res = timePerEntry*queue.size();
+        return res;
     }
 
     void printStatistics( PrintStream s )
@@ -95,9 +107,22 @@ final class MasterQueueType {
         s.println( "master queue for " + type + ": " + jobCount + " jobs; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxsz );
     }
 
-    CompletionInfo getCompletionInfo(WorkerList workers )
+    CompletionInfo getCompletionInfo( TaskList tasks, WorkerList workers )
     {
-	long duration = estimateQueueTime() + workers.getAverageCompletionTime( type );
-	return new CompletionInfo( type, duration );
+        long averageCompletionTime = workers.getAverageCompletionTime( type );
+        long duration;
+
+        if( averageCompletionTime == Long.MAX_VALUE ) {
+            duration = Long.MAX_VALUE;
+        }
+        else {
+            long queueTime = estimateQueueTime();
+            duration = queueTime + averageCompletionTime;
+        }
+        JobType previousType = tasks.getPreviousJobType( type );
+        if( previousType == null ) {
+            return null;
+        }
+        return new CompletionInfo( previousType, duration );
     }
 }

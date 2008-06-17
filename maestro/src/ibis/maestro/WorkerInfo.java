@@ -95,12 +95,17 @@ final class WorkerInfo {
 
     private void registerCompletionInfo( CompletionInfo completionInfo )
     {
+        if( completionInfo == null ) {
+            return;
+        }
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( completionInfo.type );
 
 	if( workerJobInfo == null ) {
 	    return;
 	}
-	workerJobInfo.setCompletionInterval( completionInfo.completionInterval );
+	if( completionInfo.completionInterval != Long.MAX_VALUE ) {
+	    workerJobInfo.setCompletionInterval( completionInfo.completionInterval );
+	}
     }
 
     void registerCompletionInfo( CompletionInfo[] completionInfo )
@@ -217,7 +222,7 @@ final class WorkerInfo {
 
 	if( workerJobInfo == null ) {
 	    if( Settings.traceTypeHandling ){
-		Globals.log.reportProgress( "getRemainingTaskTime(): worker " + identifier + " does not support type " + jobType );
+		Globals.log.reportProgress( "getAverageCompletionTime(): worker " + identifier + " does not support type " + jobType );
 	    }
 	    return Long.MAX_VALUE;
 	}

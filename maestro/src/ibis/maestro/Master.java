@@ -477,9 +477,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         workers.printStatistics( s );
     }
 
-    CompletionInfo[] getCompletionInfo() {
+    CompletionInfo[] getCompletionInfo( TaskList tasks )
+    {
 	synchronized( queue ) {
-	    return queue.getCompletionInfo( workers );
+	    return queue.getCompletionInfo( tasks, workers );
 	}
     }
 }

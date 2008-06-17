@@ -167,13 +167,13 @@ final class MasterQueue {
         }
     }
 
-    CompletionInfo[] getCompletionInfo(WorkerList workers)
+    CompletionInfo[] getCompletionInfo( TaskList tasks, WorkerList workers )
     {
 	CompletionInfo res[] = new CompletionInfo[queueTypes.size()];
 	
 	for( int i=0; i<res.length; i++ ) {
-	    MasterQueueType q = queueTypes.get(i);
-	    res[i] = q.getCompletionInfo( workers );
+	    MasterQueueType q = queueTypes.get( i );
+	    res[i] = q.getCompletionInfo( tasks, workers );
 	}
 	return res;
     }

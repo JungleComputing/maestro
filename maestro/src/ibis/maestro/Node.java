@@ -387,7 +387,8 @@ public final class Node {
 	return master.identifier();
     }
 
-    CompletionInfo[] getCompletionInfo() {
-	return master.getCompletionInfo();
+    CompletionInfo[] getCompletionInfo( TaskList tasks )
+    {
+	return master.getCompletionInfo( tasks );
     }
 }
