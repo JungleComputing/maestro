@@ -61,6 +61,15 @@ class PacketSendPort<T extends Serializable> {
              */
             @Override
             public int compare(DestinationInfo a, DestinationInfo b) {
+                if( a == b ) {
+                    return 0;                    
+                }
+                if( a == null ) {
+                    return 1;
+                }
+                if( b == null ) {
+                    return -1;
+                }
                 if( a.sentCount<b.sentCount ){
                     return 1;
                 }
@@ -103,7 +112,7 @@ class PacketSendPort<T extends Serializable> {
         private void printStats( PrintStream s )
         {
             char dest = local?'L':'R'; 
-            s.format( " %c %5d messages %7d bytes; port %s\n", dest, sentCount, sentBytes, portIdentifier.toString() );
+            s.format( " %c %5d messages %7d bytes; port %s\n", dest, sentCount, sentBytes, local?"":portIdentifier.toString() );
         }
     }
 
@@ -204,7 +213,7 @@ class PacketSendPort<T extends Serializable> {
         if( destinations.get( identifier ) != null ) {
             System.err.println( "Internal error: duplicate registration for sendport ID " + identifier + ": old=" + destinations.get( identifier ) + "; new=" + port );
         }
-        boolean local = localListener.hasReceivePort(port);
+        boolean local = (port == null);
         destinations.set( identifier, new DestinationInfo( port, local ) );
     }
 

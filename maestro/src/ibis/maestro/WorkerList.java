@@ -53,13 +53,24 @@ final class WorkerList {
     WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, MasterIdentifier identifierForWorker )
     {
 	Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
-        WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker );
+        WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker, false );
 
         if( Settings.traceMasterProgress ){
 	    System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
 	}
 	workers.add( worker );
 	return workerID;
+    }
+
+
+    WorkerIdentifier subscribeLocalWorker( ArrayList<JobType> l )
+    {
+        Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
+        WorkerInfo worker = new WorkerInfo( null, workerID, null, true );
+        worker.registerJobTypes( l );
+
+        workers.add( worker );
+        return workerID;
     }
 
     /**

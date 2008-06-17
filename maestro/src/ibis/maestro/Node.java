@@ -46,7 +46,7 @@ public final class Node {
 	public void joined( IbisIdentifier theIbis )
 	{
 	    registerIbisJoined( theIbis );
-	    worker.addJobSource( theIbis );
+	    worker.addJobSource( theIbis, theIbis.equals( ibis ) );
 	}
 
 	/**
@@ -280,16 +280,6 @@ public final class Node {
 	}
     }
 
-    /**
-     * Given a job type, records the fact that it can be executed by
-     * the worker of this node.
-     * @param jobType The allowed job type.
-     */
-    public void allowJobType( JobType jobType )
-    {
-	worker.allowJobType( jobType );
-    }
-
     /** Report the completion of the task with the given identifier.
      * @param id The task that has been completed.
      * @param result The task result.
@@ -390,5 +380,14 @@ public final class Node {
     CompletionInfo[] getCompletionInfo( TaskList tasks )
     {
 	return master.getCompletionInfo( tasks );
+    }
+
+    /**
+     * Register the local worker with the local master by telling the master about the given job types.
+     * @param jobTypes The job types supported by the local worker.
+     */
+    protected void registerLocalWorkerWithMaster( ArrayList<JobType> jobTypes )
+    {
+        master.registerLocalWorker( jobTypes );
     }
 }

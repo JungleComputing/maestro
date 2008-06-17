@@ -27,6 +27,8 @@ final class WorkerInfo {
     /** The receive port of the worker. */
     final ReceivePortIdentifier port;
 
+    final boolean local;
+
     private boolean dead = false;
 
     /** We know that this many jobs have excessive queue times. We have already
@@ -44,11 +46,12 @@ final class WorkerInfo {
 	return "Worker " + identifier;
     }
 
-    WorkerInfo( ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker )
+    WorkerInfo( ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local )
     {
 	this.port = port;
 	this.identifier = identifier;
 	this.identifierWithWorker = identifierForWorker;
+	this.local = local;
     }
 
     /**
@@ -194,8 +197,14 @@ final class WorkerInfo {
         if( Settings.traceTypeHandling ){
             System.out.println( "worker " + identifier + " (" + port + ") can handle " + type );
         }
-	WorkerJobInfo info = new WorkerJobInfo( toString() + " job type " + type );
+	WorkerJobInfo info = new WorkerJobInfo( toString() + " job type " + type, local );
 	workerJobInfoTable.put( type, info );
+    }
+    
+    protected void registerJobTypes( ArrayList<JobType> l ) {
+        for( JobType t: l ) {
+            registerJobType( t );
+        }
     }
 
     /** Given a job type, estimate the completion time of this job type,

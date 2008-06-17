@@ -7,6 +7,7 @@ import ibis.ipl.ReceivePortIdentifier;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * A master in the Maestro flow graph framework.
@@ -504,5 +505,19 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	synchronized( queue ) {
 	    return queue.getCompletionInfo( tasks, workers );
 	}
+    }
+
+    /**
+     * Register the local worker.
+     * @param jobTypes The list of job types the worker supports.
+     */
+    protected void registerLocalWorker( ArrayList<JobType> jobTypes )
+    {
+        if( Settings.traceMasterProgress ){
+            Globals.log.reportProgress( "Master: register local worker" );
+        }
+        WorkerIdentifier workerID = workers.subscribeLocalWorker( jobTypes );
+        sendPort.registerDestination( null, workerID.value );
+        workerCount++;
     }
 }

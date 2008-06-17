@@ -172,33 +172,13 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     @Override
     public void start()
     {
+        // Reserve a slot for this master, and get an id.
+        MasterIdentifier masterID = new MasterIdentifier( 0 );
+        MasterInfo info = new MasterInfo( masterID, null );
+        masters.add( info );
+        node.registerLocalWorkerWithMaster( jobTypes );
         receivePort.enable();           // We're open for business.
         super.start();                  // Start the thread
-    }
-
-    /**
-     * Given a job type, records the fact that it can be executed by
-     * this worker.
-     * @param jobType The allowed job type.
-     */
-    void allowJobType( JobType jobType )
-    {
-	synchronized( queue ) {
-	    if( !Service.member( jobTypes, jobType ) ) {
-		if( Settings.traceTypeHandling ){
-		    Globals.log.reportProgress( "Worker: I can now handle job type " + jobType );
-		}
-		jobTypes.add( jobType );
-		// Now make sure all masters we know get informed about this new job type we support.
-		mastersToUpdate.clear();
-		for( MasterInfo master: masters ) {
-		    if( master.isRegistered() && !master.isDead() ) {
-			mastersToUpdate.add( master );
-		    }
-		}
-		queue.notifyAll();
-	    }
-	}
     }
 
     /**
@@ -277,9 +257,14 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     /**
      * A new ibis has joined the computation.
      * @param theIbis The ibis that has joined.
+     * @param isLocal True iff this is the local ibis.
      */
-    void addJobSource( IbisIdentifier theIbis )
+    void addJobSource( IbisIdentifier theIbis, boolean isLocal )
     {
+        if( isLocal ) {
+            // We already registered the local master.
+            return;
+        }
 	synchronized( queue ){
             unregisteredMasters.addLast( theIbis );
 	    if( activeTime == 0 || queueEmptyMoment != 0 ) {
@@ -779,10 +764,11 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	TaskIdentifier id = task.id;
 	Job jobs[] = task.jobs;
 
+	// FIXME: make sure this method is only invoked before the node is started.
 	for( int i=0; i<jobs.length; i++ ){
 	    Job j = jobs[i];
 	    if( j.isSupported() ) {
-		allowJobType( new JobType( id, i ) );
+	        jobTypes.add( new JobType( id, i ) );
 	    }
 	}
     }

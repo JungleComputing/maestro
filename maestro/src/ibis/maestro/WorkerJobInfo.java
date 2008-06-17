@@ -7,7 +7,7 @@ final class WorkerJobInfo {
     /** label of this worker/job combination in traces. */
     private final String label;
 
-    private final TimeEstimate roundTripEstimate = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
+    private final TimeEstimate roundTripEstimate;
 
     /** How many instances of this job does this worker currently have? */
     private int outstandingJobs = 0;
@@ -22,7 +22,7 @@ final class WorkerJobInfo {
     private int maximalAllowance = 1;
 
     /** How long in ns it takes to complete the rest of the task this job belongs to. */
-    private long remainingTasksTime = 0L;
+    private long remainingTasksTime;
 
     /** If set, we are willing to allow an increased allowance if the worker
      * would request it.
@@ -69,9 +69,12 @@ final class WorkerJobInfo {
      * Constructs a new information class for a particular job type
      * for a particular worker.
      */
-    WorkerJobInfo( String label )
+    WorkerJobInfo( String label, boolean local )
     {
 	this.label = label;
+	long initialEstimate = local?0:1*Service.MILLISECOND_IN_NANOSECONDS;
+	this.roundTripEstimate = new TimeEstimate( initialEstimate );
+	this.remainingTasksTime = 2*initialEstimate;
     }
 
     /**
