@@ -31,7 +31,7 @@ final class MasterInfo {
 	this.ibis = ibis;
     }
 
-    boolean isRegisteredMaster()
+    boolean isRegistered()
     {
         return identifierOnMaster != null;
     }

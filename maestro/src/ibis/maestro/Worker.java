@@ -192,7 +192,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 		// Now make sure all masters we know get informed about this new job type we support.
 		mastersToUpdate.clear();
 		for( MasterInfo master: masters ) {
-		    if( master.isRegisteredMaster() && !master.isDead() ) {
+		    if( master.isRegistered() && !master.isDead() ) {
 			mastersToUpdate.add( master );
 		    }
 		}
@@ -268,21 +268,34 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	                return null;
 	            }
 	            int ix = rng.nextInt( size );
-	            res = masters.get( ix );
-	            if( !res.isDead() ) {
-	                return res;
+	            int n = size;
+	            while( n>0 ) {
+	                // We have picked a random place in the list of known masters, don't
+	                // return a dead or unregistered one, so keep walking the list until we
+	                // encounter a good one.
+	                // We only try 'n' times, since the list may consist entirely of duds.
+	                // (And yes, these duds skew the probabilities, we don't care.)
+	                res = masters.get( ix );
+	                if( !res.isDead() && res.isRegistered() ) {
+	                    return res;
+	                }
+	                ix++;
+	                if( ix>=masters.size() ) {
+	                    // Wrap around.
+	                    ix = 0;
+	                }
+	                n--;
 	            }
+	            return null;
 	        }
-	        else {
-                    // There are masters on the explict job sources list,
-                    // draw a random one.
-	            int ix = rng.nextInt( size );
-	            res = jobSources.remove( ix );
-	            if( !res.isDead() ){
-	                return res;
-	            }
-                }
-		// The master we drew from the lottery is dead. Try again.
+	        // There are masters on the explict job sources list,
+	        // draw a random one.
+	        int ix = rng.nextInt( size );
+	        res = jobSources.remove( ix );
+	        if( !res.isDead() ){
+	            return res;
+	        }
+	        // The master we drew from the lottery is dead. Try again.
 	    }
 	}
     }
@@ -348,7 +361,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 		    return null;
 		}
 		MasterInfo master = mastersToUpdate.removeFirst();
-		if( master.isRegisteredMaster() && !master.isDead() ) {
+		if( master.isRegistered() && !master.isDead() ) {
 		    return master;
 		}
 		// Don't return this one, it hasn't accepted yet, or was declared dead.
@@ -408,7 +421,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 
 	// Finally, try to tell a master we want more jobs.
 	MasterInfo jobSource = getRandomWorkSource();
-	if( jobSource != null && jobSource.isRegisteredMaster() ){
+	if( jobSource != null ){
 	    if( Settings.traceWorkerProgress ){
 		Globals.log.reportProgress( "Worker: asking master " + jobSource.localIdentifier + " for work" );
 	    }
