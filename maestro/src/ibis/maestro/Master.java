@@ -232,6 +232,23 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /**
+     * A worker has sent us a message with its current task completion times.
+     * 
+     * @param m The update message.
+     */
+    private void handleWorkerUpdateMessage( WorkerUpdateMessage m )
+    {
+        WorkerIdentifier workerID = m.source;
+        if( Settings.traceMasterProgress ){
+            Globals.log.reportProgress( "Received worker update message " + m + " from worker " + workerID );
+        }
+        synchronized( queue ){
+            workers.registerCompletionInfo( workerID, m.completionInfo );
+            queue.notifyAll();
+        }
+    }
+
+    /**
      * A worker has sent us a message to register itself with us. This is
      * just to tell us that it's out there. We tell it what our receive port is,
      * and which handle we have assigned to it, so that it can then inform us
@@ -285,6 +302,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             TaskResultMessage m = (TaskResultMessage) msg;
             
             handleResultMessage( m );
+        }
+        else if( msg instanceof WorkerUpdateMessage ) {
+            WorkerUpdateMessage m = (WorkerUpdateMessage) msg;
+
+            handleWorkerUpdateMessage( m );
         }
         else if( msg instanceof WorkRequestMessage ) {
             WorkRequestMessage m = (WorkRequestMessage) msg;

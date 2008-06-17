@@ -260,32 +260,6 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    while( true ){
 	        int size = jobSources.size();
 	        if( size == 0 ){
-	            // Nothing in the job sources; just draw a random master
-	            // from the list of known masters.
-	            size = masters.size();
-	            if( size == 0 ) {
-	                // No masters at all, give up.
-	                return null;
-	            }
-	            int ix = rng.nextInt( size );
-	            int n = size;
-	            while( n>0 ) {
-	                // We have picked a random place in the list of known masters, don't
-	                // return a dead or unregistered one, so keep walking the list until we
-	                // encounter a good one.
-	                // We only try 'n' times, since the list may consist entirely of duds.
-	                // (And yes, these duds skew the probabilities, we don't care.)
-	                res = masters.get( ix );
-	                if( !res.isDead() && res.isRegistered() ) {
-	                    return res;
-	                }
-	                ix++;
-	                if( ix>=masters.size() ) {
-	                    // Wrap around.
-	                    ix = 0;
-	                }
-	                n--;
-	            }
 	            return null;
 	        }
 	        // There are masters on the explict job sources list,
@@ -313,6 +287,46 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	        queue.notifyAll();
 	    }
 	}
+    }
+
+    /**
+     * Returns a random registered master.
+     * @return The job source, or null if there isn't one.
+     */
+    private MasterInfo getRandomRegisteredMaster()
+    {
+        MasterInfo res;
+
+        synchronized( queue ){
+            if( !askMastersForWork ){
+                return null;
+            }
+            int size = masters.size();
+            if( size == 0 ) {
+                // No masters at all, give up.
+                return null;
+            }
+            int ix = rng.nextInt( size );
+            int n = size;
+            while( n>0 ) {
+                // We have picked a random place in the list of known masters, don't
+                // return a dead or unregistered one, so keep walking the list until we
+                // encounter a good one.
+                // We only try 'n' times, since the list may consist entirely of duds.
+                // (And yes, these duds skew the probabilities, we don't care.)
+                res = masters.get( ix );
+                if( !res.isDead() && res.isRegistered() ) {
+                    return res;
+                }
+                ix++;
+                if( ix>=masters.size() ) {
+                    // Wrap around.
+                    ix = 0;
+                }
+                n--;
+            }
+            return null;
+        }
     }
 
     /**
@@ -397,6 +411,15 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	}
     }
 
+    private void sendUpdate( MasterInfo master, CompletionInfo completionInfo[] )
+    {
+        WorkerUpdateMessage msg = new WorkerUpdateMessage( master.getIdentifierOnMaster(), completionInfo );
+        long sz = sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+        if( sz<0 ) {
+            master.declareDead();
+        }
+    }
+
     private void askMoreWork( CompletionInfo[] completionInfo )
     {
 	// First, try to tell a master about new job types.
@@ -419,7 +442,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    return;
 	}
 
-	// Finally, try to tell a master we want more jobs.
+	// Try to tell a master we want more jobs.
 	MasterInfo jobSource = getRandomWorkSource();
 	if( jobSource != null ){
 	    if( Settings.traceWorkerProgress ){
@@ -428,6 +451,16 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    sendJobRequest( jobSource, completionInfo );
 	    return;
 	}
+	
+        // Finally, just tell a random master about our current work queues.
+	jobSource = getRandomRegisteredMaster();
+        if( jobSource != null ){
+            if( Settings.traceWorkerProgress ){
+                Globals.log.reportProgress( "Worker: updating master " + jobSource.localIdentifier );
+            }
+            sendUpdate( jobSource, completionInfo );
+            return;
+        }
     }
 
     private void handleWorkerAcceptMessage( WorkerAcceptMessage msg )
