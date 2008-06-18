@@ -61,15 +61,6 @@ class PacketSendPort<T extends Serializable> {
              */
             @Override
             public int compare(DestinationInfo a, DestinationInfo b) {
-                if( a == b ) {
-                    return 0;                    
-                }
-                if( a == null ) {
-                    return 1;
-                }
-                if( b == null ) {
-                    return -1;
-                }
                 if( a.sentCount<b.sentCount ){
                     return 1;
                 }
@@ -319,10 +310,15 @@ class PacketSendPort<T extends Serializable> {
         }
         DestinationInfo l[] = new DestinationInfo[destinations.size()];
         destinations.toArray( l );
-        Comparator<? super DestinationInfo> comparator = new DestinationInfo.InfoComparator();
-        Arrays.sort( l, comparator );
-        for( DestinationInfo i: l ) {
-            if( i != null ){
+        //Comparator<? super DestinationInfo> comparator = new DestinationInfo.InfoComparator();
+        //Arrays.sort( l, comparator );
+        for( int ix=0; ix<l.length; ix++ ) {
+            DestinationInfo i = l[ix];
+
+            if( i == null ){
+                s.println( "Destination identifier + " + ix + " is unregistered" );
+            }
+            else {
                 i.printStats( s );
             }
         }
