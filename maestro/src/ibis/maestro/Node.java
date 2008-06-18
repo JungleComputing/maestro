@@ -46,7 +46,7 @@ public final class Node {
 	public void joined( IbisIdentifier theIbis )
 	{
 	    registerIbisJoined( theIbis );
-	    worker.addJobSource( theIbis );
+	    worker.addUnregisteredMasters( theIbis );
 	}
 
 	/**
@@ -380,5 +380,12 @@ public final class Node {
     CompletionInfo[] getCompletionInfo( TaskList tasks )
     {
 	return master.getCompletionInfo( tasks );
+    }
+
+    /**
+     * @return
+     */
+    IbisIdentifier ibisIdentifier() {
+        return ibis.identifier();
     }
 }

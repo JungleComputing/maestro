@@ -250,7 +250,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
      * A new ibis has joined the computation.
      * @param theIbis The ibis that has joined.
      */
-    void addJobSource( IbisIdentifier theIbis )
+    void addUnregisteredMasters( IbisIdentifier theIbis )
     {
 	synchronized( queue ){
             unregisteredMasters.addLast( theIbis );
