@@ -6,6 +6,7 @@ package ibis.videoplayer;
 import ibis.maestro.Job;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
+import ibis.maestro.TaskList;
 import ibis.maestro.TaskWaiter;
 
 /**
@@ -41,7 +42,7 @@ public final class BuildFragmentJob implements Job
         }
         for( int frame=startFrame; frame<=endFrame; frame++ ) {
             Integer frameno = new Integer( frame );
-            waiter.submit( fetchTask, frameno );
+            waiter.submit( node, fetchTask, frameno );
         }
         // FIXME: run another tread during the sync.
         Object res[] = waiter.sync();
@@ -71,9 +72,9 @@ public final class BuildFragmentJob implements Job
         return value;
     }
 
-    static Task createGetFrameTask( Node node )
+    static Task createGetFrameTask( TaskList tasks )
     {
-        return node.createTask(
+        return tasks.createTask(
                 "getFrame",
                 new FetchFrameJob(),
                 new DecompressFrameJob(),

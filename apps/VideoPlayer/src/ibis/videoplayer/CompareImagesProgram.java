@@ -3,6 +3,7 @@ package ibis.videoplayer;
 import ibis.maestro.Job;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
+import ibis.maestro.TaskList;
 import ibis.maestro.TaskWaiter;
 
 import java.io.File;
@@ -22,19 +23,19 @@ class CompareImagesProgram
      * @param waiter The waiter thread that will wait for the return of the results.
      * @param searchTask The task to submit the files to.
      */
-    private void submitAll( File file, TaskWaiter waiter, Task searchTask )
+    private void submitAll( Node node, File file, TaskWaiter waiter, Task searchTask )
     {
         if( file.isDirectory() ) {
             File files[] = file.listFiles();
             for( File f: files ) {
-                submitAll( f, waiter, searchTask );
+                submitAll( node, f, waiter, searchTask );
             }
         }
         else {
             try {
                 UncompressedImage img = UncompressedImage.load( file, 0 );
                 CompareImageJob.ImageMatches im = new CompareImageJob.ImageMatches( img, file );
-                waiter.submit( searchTask, im );
+                waiter.submit( node, searchTask, im );
             }
             catch( IOException e ) {
                 System.err.println( "Cannot load image '" + file + "': " + e.getLocalizedMessage() );
@@ -44,8 +45,8 @@ class CompareImagesProgram
 
     private void run( File subjectDirectory, String databaseList[] ) throws Exception
     {
-        Node node = new Node( subjectDirectory != null );
         TaskWaiter waiter = new TaskWaiter();
+        TaskList tasks = new TaskList();
 
         Job jobs[] = new Job[databaseList.length];
         int ix = 0;
@@ -53,10 +54,11 @@ class CompareImagesProgram
             File dbf = new File( db );
             jobs[ix++] = new CompareImageJob( dbf );
         }
-        Task searchTask =  node.createTask( "databaseSearch", jobs );
+        Task searchTask =  tasks.createTask( "databaseSearch", jobs );
+        Node node = new Node( tasks, subjectDirectory != null );
         System.out.println( "Node created" );
         if( subjectDirectory != null && node.isMaestro() ) {
-            submitAll( subjectDirectory, waiter, searchTask );
+            submitAll( node, subjectDirectory, waiter, searchTask );
             Object res[] = waiter.sync();
             node.setStopped();
             for( Object o: res ) {

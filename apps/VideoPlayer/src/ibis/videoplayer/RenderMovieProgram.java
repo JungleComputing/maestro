@@ -4,6 +4,7 @@ import ibis.maestro.CompletionListener;
 import ibis.maestro.Job;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
+import ibis.maestro.TaskList;
 
 import java.io.File;
 import java.io.IOException;
@@ -33,7 +34,7 @@ public class RenderMovieProgram implements CompletionListener
         this.outputDir = outputDir;
     }
 
-    private void submitNeededFrames( long now, Task task )
+    private void submitNeededFrames( Node node, long now, Task task )
     {
         long renderDeadline = now+(long) (RENDER_TIME*1e9);
         synchronized( queue ) {
@@ -44,7 +45,7 @@ public class RenderMovieProgram implements CompletionListener
                     // This one is required soon, put it in the queue.
                     System.out.println( "Submitting frame " + fr.frameno );
                     RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo( WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, fr.frameno, fr.scene );
-                    task.submit( info, new Integer( fr.frameno ), this );
+                    task.submit( node, info, new Integer( fr.frameno ), this );
                     outstandingJobs++;
                 }
             }
@@ -181,8 +182,8 @@ public class RenderMovieProgram implements CompletionListener
     @SuppressWarnings("synthetic-access")
     private void run( File sourceDirectory, File iniFile ) throws Exception
     {
-        Node node = new Node( sourceDirectory != null );
-        Task convertTask =  node.createTask(
+        TaskList tasks = new TaskList();
+        Task convertTask =  tasks.createTask(
             "converter",
             new RenderFrameJob(),
             new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
@@ -192,6 +193,7 @@ public class RenderMovieProgram implements CompletionListener
         );
 
         int frameno = 0;
+        Node node = new Node( tasks, sourceDirectory != null );
         System.out.println( "Node created" );
         if( sourceDirectory != null && node.isMaestro() ) {
             String init = RenderFrameJob.readFile( iniFile );
@@ -211,7 +213,7 @@ public class RenderMovieProgram implements CompletionListener
                         else {
                             int n = frameno++;
                             RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo( WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, n, init + scene );
-                            convertTask.submit( info, new Integer( n ), this );
+                            convertTask.submit( node, info, new Integer( n ), this );
                             System.out.println( "Submitted frame " + n );
                             outstandingJobs++;
                         }

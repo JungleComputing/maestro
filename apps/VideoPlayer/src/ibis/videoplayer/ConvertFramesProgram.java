@@ -3,6 +3,7 @@ package ibis.videoplayer;
 import ibis.maestro.Job;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
+import ibis.maestro.TaskList;
 import ibis.maestro.TaskWaiter;
 
 import java.io.File;
@@ -126,9 +127,9 @@ class ConvertFramesProgram {
     @SuppressWarnings("synthetic-access")
     private void run( File framesDirectory ) throws Exception
     {
-        Node node = new Node( framesDirectory != null );
+        TaskList tasks = new TaskList();
         TaskWaiter waiter = new TaskWaiter();
-        Task convertTask =  node.createTask(
+        Task convertTask =  tasks.createTask(
                 "converter",
                 new FetchImageJob(),
                 new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
@@ -136,12 +137,13 @@ class ConvertFramesProgram {
                 new CompressFrameJob()
         );
 
+        Node node = new Node( tasks, framesDirectory != null );
         System.out.println( "Node created" );
         if( framesDirectory != null ) {
             File files[] = framesDirectory.listFiles();
             System.out.println( "I am maestro; converting " + files.length + " images" );
             for( File f: files ) {
-                waiter.submit( convertTask, f );
+                waiter.submit( node, convertTask, f );
             }
 	    node.setStopped();
         }

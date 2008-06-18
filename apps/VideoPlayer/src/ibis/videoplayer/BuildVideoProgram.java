@@ -3,6 +3,7 @@ package ibis.videoplayer;
 import ibis.maestro.CompletionListener;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
+import ibis.maestro.TaskList;
 
 /**
  * Small test program.
@@ -58,13 +59,14 @@ public class BuildVideoProgram {
     @SuppressWarnings("synthetic-access")
     private void run( int frameCount, boolean goForMaestro ) throws Exception
     {
-        Node node = new Node( goForMaestro );
+        TaskList tasks = new TaskList();
         // How many fragments will there be?
         int fragmentCount = (frameCount+Settings.FRAME_FRAGMENT_COUNT-1)/Settings.FRAME_FRAGMENT_COUNT;
         Listener listener = new Listener( fragmentCount );
-	Task getFrameTask = BuildFragmentJob.createGetFrameTask( node );
-	Task playTask = node.createTask( "videoplayer", new BuildFragmentJob( getFrameTask ) );
+	Task getFrameTask = BuildFragmentJob.createGetFrameTask( tasks );
+	Task playTask = tasks.createTask( "videoplayer", new BuildFragmentJob( getFrameTask ) );
 
+        Node node = new Node( tasks, goForMaestro );
         System.out.println( "Node created" );
         if( node.isMaestro() ) {
             System.out.println( "I am maestro; building a movie of " + frameCount + " frames" );
@@ -72,7 +74,7 @@ public class BuildVideoProgram {
                 final int endFrame = frame+Settings.FRAME_FRAGMENT_COUNT-1;
                 FrameNumberRange range = new FrameNumberRange( frame, endFrame );
                 listener.waitForRoom();
-                playTask.submit( range, frame, listener );
+                playTask.submit( node, range, frame, listener );
             }
         }
         node.waitToTerminate();

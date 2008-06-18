@@ -7,7 +7,6 @@ import java.io.Serializable;
 
 class FrameNumberRange implements Serializable
 {
-    /** FIXME. */
     private static final long serialVersionUID = -7295339911112467893L;
     final int startFrameNumber;
     final int endFrameNumber;

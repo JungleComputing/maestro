@@ -4,6 +4,7 @@ import ibis.maestro.Job;
 import ibis.maestro.Node;
 import ibis.maestro.Service;
 import ibis.maestro.Task;
+import ibis.maestro.TaskList;
 import ibis.maestro.TaskWaiter;
 
 import java.io.File;
@@ -353,19 +354,19 @@ class BenchmarkProgram {
             System.exit( 1 );
         }
         System.out.println( "frames=" + frames + " goForMaestro=" + goForMaestro + " saveFrames=" + saveFrames + " oneJob=" + oneJob + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale  );
-        Node node = new Node( goForMaestro );
         TaskWaiter waiter = new TaskWaiter();
+        TaskList tasks = new TaskList();
         Task convertTask;
         File dir = saveFrames?outputDir:null;
         if( oneJob ) {
             System.out.println( "One-job benchmark" );
-            convertTask = node.createTask(
+            convertTask = tasks.createTask(
                     "benchmark",
                     new ProcessFrameJob( slowScale, slowSharpen, dir )
             );
         }
         else {
-            convertTask = node.createTask(
+            convertTask = tasks.createTask(
                     "benchmark",
                     new GenerateFrameJob(),
                     new ScaleUpFrameJob( 2, slowScale ),
@@ -374,6 +375,7 @@ class BenchmarkProgram {
                     new SaveFrameJob( dir )
             );
         }
+        Node node = new Node( tasks, goForMaestro );
 
         removeDirectory( dir );
 
@@ -381,7 +383,7 @@ class BenchmarkProgram {
         long startTime = System.nanoTime();
         if( node.isMaestro() ) {
             for( int frame=0; frame<frames; frame++ ){
-                waiter.submit( convertTask, frame );
+                waiter.submit( node, convertTask, frame );
             }
             System.out.println( "Jobs submitted" );
             waiter.sync();

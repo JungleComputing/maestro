@@ -1,8 +1,8 @@
 #!/bin/sh
 
-#SERVERHOST=babylon.few.vu.nl
+SERVERHOST=babylon.few.vu.nl
 #SERVERHOST=lily.local
-SERVERHOST=fs0.das3.cs.vu.nl
+#SERVERHOST=fs0.das3.cs.vu.nl
 
 # Check setting of VIDEOPLAYER_HOME
 if [ -z "$VIDEOPLAYER_HOME" ];  then
