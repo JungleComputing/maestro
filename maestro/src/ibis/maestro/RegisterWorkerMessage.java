@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.util.ArrayList;
+
 import ibis.ipl.ReceivePortIdentifier;
 import ibis.maestro.Worker.MasterIdentifier;
 
@@ -17,7 +19,8 @@ final class RegisterWorkerMessage extends WorkerMessage {
     /** Our receive port. */
     final ReceivePortIdentifier port;
 
-    final JobType supportedTypes[];
+    final ArrayList<JobType> supportedTypes;
+
     /** Our identifier for the master. */
     final MasterIdentifier masterIdentifier;
 
@@ -26,11 +29,25 @@ final class RegisterWorkerMessage extends WorkerMessage {
      * @param port The receive port to use to submit jobs.
      * @param masterID The identifier to use.
      */
-    RegisterWorkerMessage( ReceivePortIdentifier port, MasterIdentifier masterID, JobType supportedTypes[] )
+    RegisterWorkerMessage( ReceivePortIdentifier port, MasterIdentifier masterID, ArrayList<JobType> jobTypes )
     {
 	super( null );
 	this.port = port;
 	this.masterIdentifier = masterID;
-	this.supportedTypes = supportedTypes;
+	this.supportedTypes = jobTypes;
+    }
+
+    @Override
+    public String toString()
+    {
+        String tl = "";
+        
+        for( JobType t: supportedTypes ) {
+            if( !tl.isEmpty() ) {
+                tl += ',';
+            }
+            tl += t;
+        }
+        return "register worker " + port + "; supported types: [" + tl + ']';
     }
 }

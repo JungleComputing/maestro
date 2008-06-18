@@ -50,7 +50,7 @@ final class WorkerList {
 	return -1;
     }
 
-    WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, MasterIdentifier identifierForWorker, JobType supportedTypes[] )
+    WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, MasterIdentifier identifierForWorker, ArrayList<JobType> supportedTypes )
     {
 	Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
         WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker, local, supportedTypes );
@@ -200,20 +200,6 @@ final class WorkerList {
     {
         WorkerInfo wi = workers.get( workerID.value );
         return wi.incrementAllowance( jobType );
-    }
-
-    /**
-     * Register the job types of the given worker.
-     * @param worker The worker for which we have job types.
-     * @param allowedType The allowed job types for the given worker.
-     */
-    void registerWorkerJobTypes( ReceivePortIdentifier worker, JobType allowedType )
-    {
-	int ix = searchWorker( workers, worker );
-	if( ix>=0 ){
-	    WorkerInfo wi = workers.get( ix );
-	    wi.registerAllowedType( allowedType );
-	}
     }
 
     /** Given a worker identifier, declare it dead.

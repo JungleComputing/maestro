@@ -319,18 +319,15 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     private void registerWithMaster( IbisIdentifier ibis )
     {
 	MasterIdentifier masterID;
-	JobType jobTypesCopy[];
 
 	synchronized( queue ){
 	    // Reserve a slot for this master, and get an id.
 	    masterID = new MasterIdentifier( masters.size() );
 	    MasterInfo info = new MasterInfo( masterID, ibis );
 	    masters.add( info );
-	    jobTypesCopy = new JobType[jobTypes.size()];
-	    jobTypes.toArray( jobTypesCopy );
-	    queue.notifyAll();   // FIXME: why this notify?
 	}
-	RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), masterID, jobTypesCopy );
+        //System.out.println( "jobTypes.size()=" + jobTypes.size() + "; jobTypesCopy.length=" + jobTypesCopy.length );
+	RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), masterID, jobTypes );
 	long sz = sendPort.tryToSend( ibis, Globals.masterReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ) {
 	    System.err.println( "Cannot register with master " + ibis );
@@ -391,15 +388,19 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 
     private void handleWorkerAcceptMessage( WorkerAcceptMessage msg )
     {
-	if( Settings.traceWorkerProgress ){
+        MasterInfo master;
+
+        if( Settings.traceWorkerProgress ){
 	    Globals.log.reportProgress( "Received a worker accept message " + msg );
 	}
 	synchronized( queue ){
 	    sendPort.registerDestination( msg.port, msg.source.value );
-	    MasterInfo master = masters.get( msg.source.value );
+            master = masters.get( msg.source.value );
 	    master.setIdentifierOnMaster( msg.identifierOnMaster );
 	    queue.notifyAll();
 	}
+	CompletionInfo[] completionInfo = node.getCompletionInfo( tasks );
+        sendUpdate( master, completionInfo );
     }
 
     /**
@@ -705,7 +706,11 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	for( int i=0; i<jobs.length; i++ ){
 	    Job j = jobs[i];
 	    if( j.isSupported() ) {
-	        jobTypes.add( new JobType( id, i ) );
+	        final JobType jobType = new JobType( id, i );
+                if( Settings.traceTypeHandling ) {
+                    System.out.println( "Node supports job type " + jobType);
+                }
+	        jobTypes.add( jobType );
 	    }
 	}
     }
