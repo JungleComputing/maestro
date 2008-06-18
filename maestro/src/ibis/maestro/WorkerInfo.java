@@ -48,13 +48,13 @@ final class WorkerInfo {
 	return "Worker " + identifier;
     }
 
-    WorkerInfo( ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local, ArrayList<JobType> supportedTypes )
+    WorkerInfo( ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local, JobType[] types )
     {
 	this.port = port;
 	this.identifier = identifier;
 	this.identifierWithWorker = identifierForWorker;
 	this.local = local;
-	for( JobType t: supportedTypes ) {
+	for( JobType t: types ) {
 	    registerJobType(t);
 	}
     }

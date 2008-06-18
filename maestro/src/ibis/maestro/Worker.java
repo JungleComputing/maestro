@@ -33,13 +33,9 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     /** The list of masters we should ask for extra work if we are bored. */
     private final ArrayList<MasterInfo> jobSources = new ArrayList<MasterInfo>();
 
-    /** The list of job types we know how to handle. */
-    private ArrayList<JobType> jobTypes = new ArrayList<JobType>();
-
     private final Node node;
 
-    private TaskList tasks = new TaskList();
-    private static int taskCounter = 0;
+    private final TaskList tasks;
 
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
@@ -145,12 +141,14 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
      * Creates a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to.
      * @param node The node this worker belongs to.
+     * @param tasks The list of tasks.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    Worker( Ibis ibis, Node node ) throws IOException
+    Worker( Ibis ibis, Node node, TaskList tasks ) throws IOException
     {
 	super( "Worker" );   // Create a thread with a name.
 	this.node = node;
+        this.tasks = tasks;
 	receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
 	sendPort = new PacketSendPort<WorkerMessage>( ibis );
 	for( int i=0; i<numberOfProcessors; i++ ) {
@@ -171,6 +169,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     {
         receivePort.enable();           // We're open for business.
         super.start();                  // Start the thread
+        registerWithMaster( node.ibisIdentifier() );
     }
 
     /**
@@ -250,10 +249,13 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
      * A new ibis has joined the computation.
      * @param theIbis The ibis that has joined.
      */
-    void addUnregisteredMasters( IbisIdentifier theIbis )
+    void addUnregisteredMasters( IbisIdentifier theIbis, boolean local )
     {
 	synchronized( queue ){
-            unregisteredMasters.addLast( theIbis );
+            if( !local ) {
+                // FIXME: we don't need the notify for the local master.
+                unregisteredMasters.addLast( theIbis );
+            }
 	    if( activeTime == 0 || queueEmptyMoment != 0 ) {
 	        // We haven't done any work yet, or we are idle.
 	        queue.notifyAll();
@@ -326,7 +328,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    MasterInfo info = new MasterInfo( masterID, ibis );
 	    masters.add( info );
 	}
-        //System.out.println( "jobTypes.size()=" + jobTypes.size() + "; jobTypesCopy.length=" + jobTypesCopy.length );
+        JobType jobTypes[] = tasks.getSupportedJobTypes();
 	RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), masterID, jobTypes );
 	long sz = sendPort.tryToSend( ibis, Globals.masterReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ) {
@@ -690,45 +692,5 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    Object result) {
 	WorkerMessage msg = new TaskResultMessage( id, result );
 	return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-    }
-
-    /**
-     * Register a new task.
-     * 
-     * @param task The task to register.
-     */
-    void registerTask( Task task )
-    {
-	TaskIdentifier id = task.id;
-	Job jobs[] = task.jobs;
-
-	// FIXME: make sure this method is only invoked before the node is started.
-	for( int i=0; i<jobs.length; i++ ){
-	    Job j = jobs[i];
-	    if( j.isSupported() ) {
-	        final JobType jobType = new JobType( id, i );
-                if( Settings.traceTypeHandling ) {
-                    System.out.println( "Node supports job type " + jobType);
-                }
-	        jobTypes.add( jobType );
-	    }
-	}
-    }
-
-    /**
-     * Creates a task with the given name and the given sequence of jobs.
-     * 
-     * @param name The name of the task.
-     * @param jobs The list of jobs of the task.
-     * @return A new task instance representing this task.
-     */
-    public Task createTask( String name, Job jobs[] )
-    {
-        int taskId = taskCounter++;
-        Task task = new Task( node, taskId, name, jobs );
-
-        tasks.add( task );
-        registerTask( task );
-        return task;
     }
 }

@@ -46,7 +46,8 @@ public final class Node {
 	public void joined( IbisIdentifier theIbis )
 	{
 	    registerIbisJoined( theIbis );
-	    worker.addUnregisteredMasters( theIbis );
+            boolean local = theIbis.equals( ibis );
+	    worker.addUnregisteredMasters( theIbis, local );
 	}
 
 	/**
@@ -183,22 +184,12 @@ public final class Node {
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
-     * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
-     * @throws IOException Thrown if for some reason we cannot communicate.
-     */
-    public Node() throws IbisCreationFailedException, IOException
-    {
-	this( true );
-    }
-
-    /**
-     * Constructs a new Maestro node using the given name server and completion listener.
      * @param runForMaestro If true, try to get elected as maestro.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
     @SuppressWarnings("synthetic-access")
-    public Node( boolean runForMaestro ) throws IbisCreationFailedException, IOException
+    public Node( TaskList tasks, boolean runForMaestro ) throws IbisCreationFailedException, IOException
     {
 	Properties ibisProperties = new Properties();
 	IbisIdentifier maestro;
@@ -230,7 +221,7 @@ public final class Node {
 	    Globals.log.reportProgress( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
 	}
 	master = new Master( ibis, this );
-	worker = new Worker( ibis, this );
+	worker = new Worker( ibis, this, tasks );
 	master.setLocalListener( worker );
 	worker.setLocalListener( master );
 	master.start();
@@ -323,16 +314,6 @@ public final class Node {
 	return master.submitAndGetInfo( j );
     }
 
-    /** Start an extra work thread to replace the one that is blocked.
-     * @return The newly started work thread.
-     */
-    WorkThread startExtraWorker()
-    {
-	WorkThread t = new WorkThread( worker, this );
-	t.start();
-	return t;
-    }
-
     /**
      * 
      * @param receivePort The port to send it to.
@@ -358,18 +339,6 @@ public final class Node {
 	{
 	    // Nothing we can do about it.
 	}
-    }
-
-    /**
-     * Creates a task with the given name and the given sequence of jobs.
-     * 
-     * @param name The name of the task.
-     * @param jobs The list of jobs of the task.
-     * @return A new task instance representing this task.
-     */
-    public Task createTask( String name, Job... jobs )
-    {
-        return worker.createTask( name, jobs );
     }
 
     ReceivePortIdentifier identifier()

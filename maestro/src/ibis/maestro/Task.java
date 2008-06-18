@@ -11,7 +11,6 @@ import java.io.Serializable;
  */
 public final class Task
 {
-    private final Node node;
     final TaskIdentifier id;
     final String name;
     final Job[] jobs;
@@ -68,9 +67,8 @@ public final class Task
     }
 
     @SuppressWarnings("synthetic-access")
-    Task( Node node, int id, String name, Job[] jobs )
+    Task( int id, String name, Job[] jobs )
     {
-        this.node = node;
         this.id = new TaskIdentifier( id );
         this.name = name;
         this.jobs = jobs;
@@ -81,7 +79,7 @@ public final class Task
      * @param userIdentifier The user identifier to include in this identifier.
      * @return The newly constructed identifier.
      */
-    private TaskInstanceIdentifier buildTaskInstanceIdentifier( Object userIdentifier )
+    private TaskInstanceIdentifier buildTaskInstanceIdentifier( Node node, Object userIdentifier )
     {
         return new TaskInstanceIdentifier( userIdentifier, node.identifier() );
     }
@@ -97,7 +95,7 @@ public final class Task
      * @param jobNo The sequence number of the job to execute in the list of jobs of a task.
      * @param value The input value of the job.
      */
-    private void submitAJob( TaskInstanceIdentifier tii, int jobNo, Object value )
+    private void submitAJob( Node node, TaskInstanceIdentifier tii, int jobNo, Object value )
     {
         JobType type = createJobType( jobNo );
         JobInstance j = new JobInstance( tii, type, value );
@@ -110,11 +108,11 @@ public final class Task
      * @param userId The identifier for the user of this task.
      * @param listener The listener that should be informed when this task is completed.
      */
-    public void submit( Object value, Object userId, CompletionListener listener )
+    public void submit( Node node, Object value, Object userId, CompletionListener listener )
     {
-        TaskInstanceIdentifier tii = buildTaskInstanceIdentifier( userId );
+        TaskInstanceIdentifier tii = buildTaskInstanceIdentifier( node, userId );
         node.addRunningTask( tii, this, listener );
-        submitAJob( tii, 0, value );
+        submitAJob( node, tii, 0, value );
     }
 
     /**

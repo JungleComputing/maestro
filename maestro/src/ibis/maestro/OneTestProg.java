@@ -79,17 +79,18 @@ public class OneTestProg {
     @SuppressWarnings("synthetic-access")
     private void run( int jobCount, boolean goForMaestro ) throws Exception
     {
-	Node node = new Node( goForMaestro );
 	Listener listener = new Listener( jobCount );
+        TaskList tasks = new TaskList();
 
-	Task task = node.createTask( "testprog", new CreateArrayJob() );
+	Task task = tasks.createTask( "testprog", new CreateArrayJob() );
+        Node node = new Node( tasks, goForMaestro );
 	System.out.println( "Node created" );
 	long startTime = System.nanoTime();
 	if( node.isMaestro() ) {
 	    System.out.println( "I am maestro; submitting " + jobCount + " jobs" );
 	    for( int i=0; i<jobCount; i++ ){
 		Integer length = new Integer( 12*i );
-		task.submit( length, i, listener );
+		task.submit( node, length, i, listener );
 	    }
 	}
 	node.waitToTerminate();

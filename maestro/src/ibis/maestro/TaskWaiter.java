@@ -33,11 +33,11 @@ public class TaskWaiter implements CompletionListener
      * @param input Input for the (first job of the) task.
      */
     @SuppressWarnings("synthetic-access")
-    public synchronized void submit( Task task, Object input )
+    public synchronized void submit( Node node, Task task, Object input )
     {
 	Object id = new WaiterTaskIdentifier( jobNo++ );
         outstandingJobs++;
-        task.submit( input, id, this );
+        task.submit( node, input, id, this );
     }
 
     /**

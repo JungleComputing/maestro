@@ -19,7 +19,7 @@ final class RegisterWorkerMessage extends WorkerMessage {
     /** Our receive port. */
     final ReceivePortIdentifier port;
 
-    final ArrayList<JobType> supportedTypes;
+    final JobType[] supportedTypes;
 
     /** Our identifier for the master. */
     final MasterIdentifier masterIdentifier;
@@ -29,7 +29,7 @@ final class RegisterWorkerMessage extends WorkerMessage {
      * @param port The receive port to use to submit jobs.
      * @param masterID The identifier to use.
      */
-    RegisterWorkerMessage( ReceivePortIdentifier port, MasterIdentifier masterID, ArrayList<JobType> jobTypes )
+    RegisterWorkerMessage( ReceivePortIdentifier port, MasterIdentifier masterID, JobType[] jobTypes )
     {
 	super( null );
 	this.port = port;

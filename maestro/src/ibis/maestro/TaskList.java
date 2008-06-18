@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.maestro.Task.TaskIdentifier;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
 
@@ -11,6 +13,8 @@ import java.util.ArrayList;
 final class TaskList
 {
     private final ArrayList<Task> tasks = new ArrayList<Task>();
+    private final ArrayList<JobType> jobTypes = new ArrayList<JobType>();
+    private int taskCounter = 0;
 
     /** Add a new tasks to this list.
      * @param task
@@ -57,4 +61,52 @@ final class TaskList
         }
     }
 
+    /**
+     * Register a new task.
+     * 
+     * @param task The task to register.
+     */
+    void registerTask( Task task )
+    {
+        TaskIdentifier id = task.id;
+        Job jobs[] = task.jobs;
+
+        for( int i=0; i<jobs.length; i++ ){
+            Job j = jobs[i];
+            if( j.isSupported() ) {
+                final JobType jobType = new JobType( id, i );
+                if( Settings.traceTypeHandling ) {
+                    System.out.println( "Node supports job type " + jobType);
+                }
+                jobTypes.add( jobType );
+            }
+        }
+    }
+
+    /**
+     * Creates a task with the given name and the given sequence of jobs.
+     * 
+     * @param name The name of the task.
+     * @param jobs The list of jobs of the task.
+     * @return A new task instance representing this task.
+     */
+    public Task createTask( String name, Job... jobs )
+    {
+        int taskId = taskCounter++;
+        Task task = new Task( taskId, name, jobs );
+
+        tasks.add( task );
+        registerTask( task );
+        return task;
+    }
+
+    /**
+     * @return A list of all supported job types.
+     */
+    public JobType[] getSupportedJobTypes()
+    {
+        JobType res[] = new JobType[jobTypes.size()];
+        jobTypes.toArray( res );
+        return res;
+    }
 }
