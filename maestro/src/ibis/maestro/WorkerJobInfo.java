@@ -158,7 +158,7 @@ final class WorkerJobInfo {
 	    // We must have an allowance of at least one.
 	    return false;
 	}
-	if( ((maximalAllowance+1)*workerDwellTime)>roundTripTime ) {
+	if( (maximalAllowance*workerDwellTime)>roundTripTime ) {
 	    
 	    maximalAllowance--;
 	    mayIncreaseAllowance = false;
