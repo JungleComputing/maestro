@@ -211,20 +211,6 @@ final class WorkerList {
 	w.setDead();
     }
 
-    /** Given a new list of allowed types, update our administration
-     * of the given worker.
-     * 
-     * @param workerID The id of the worker that supports these types.
-     * @param allowedTypes The list of types supported by this worker.
-     */
-    void updateJobTypes( WorkerIdentifier workerID, JobType[] allowedTypes )
-    {
-	WorkerInfo w = workers.get( workerID.value );
-	for( JobType t: allowedTypes ){
-	    w.registerAllowedType( t );
-	}
-    }
-
     /**
      * Return the number of known workers.
      * @return The number of known workers.

@@ -16,14 +16,10 @@ final class WorkerJobInfo {
     private int executedJobs = 0;
 
     /** The maximal ever allowance given to this worker for this job. */
-    private int maximalEverAllowance = 0;
+    private int maximalEverAllowance = 1;
 
-    /**
-     * How many outstanding instances of this job should this worker maximally have?
-     * We start with a zero allowance to make sure we don't send work before the worker
-     * has been able to register this master.
-     */
-    private int maximalAllowance = 0;
+    /** How many outstanding instances of this job should this worker maximally have? */
+    private int maximalAllowance = 1;
 
     /** How long in ns it takes to complete the rest of the task this job belongs to. */
     private long remainingTasksTime;
@@ -98,12 +94,6 @@ final class WorkerJobInfo {
     void setCompletionInterval( long interval )
     {
 	this.remainingTasksTime = interval;
-        if( maximalAllowance<1 ) {
-            maximalAllowance = 1;
-            if( maximalEverAllowance<1 ) {
-                maximalEverAllowance = 1;
-            }
-        }
     }
 
     /** Register a new outstanding job. */

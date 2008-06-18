@@ -244,6 +244,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Master: received registration message " + m + " from worker " + worker );
         }
+        if( m.supportedTypes.size() == 0 ) {
+            Globals.log.reportInternalError( "Worker " + worker + " has zero supported types??" );
+        }
         synchronized( queue ) {
             boolean local = sendPort.isLocalListener( receivePort.identifier() );
             workerID = workers.subscribeWorker( receivePort.identifier(), worker, local, m.masterIdentifier, m.supportedTypes );

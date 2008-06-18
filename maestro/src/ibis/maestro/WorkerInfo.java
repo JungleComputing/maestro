@@ -29,6 +29,8 @@ final class WorkerInfo {
 
     final boolean local;
 
+    private boolean enabled = false;
+
     private boolean dead = false;
 
     /** We know that this many jobs have excessive queue times. We have already
@@ -116,6 +118,7 @@ final class WorkerInfo {
 
     void registerCompletionInfo( CompletionInfo[] completionInfo )
     {
+        enabled = true;
 	for( CompletionInfo i: completionInfo ) {
 	    registerCompletionInfo( i );
 	}
@@ -156,7 +159,7 @@ final class WorkerInfo {
      */
     boolean isIdle()
     {
-	return activeJobs.isEmpty();
+	return enabled && activeJobs.isEmpty();
     }
 
     /** Register the start of a new job.
@@ -212,6 +215,12 @@ final class WorkerInfo {
      */
     long estimateTaskCompletion( JobType jobType )
     {
+        if( !enabled ) {
+            if( Settings.traceTypeHandling ){
+                System.out.println( "estimateTaskCompletion(): worker " + identifier + " not yet enabled" );
+            }
+            return Long.MAX_VALUE;
+        }
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
 	if( workerJobInfo == null ) {
 	    if( Settings.traceTypeHandling ){
@@ -247,18 +256,6 @@ final class WorkerInfo {
 	    return false;
 	}
 	return workerJobInfo.incrementAllowance();
-    }
-
-    /** Registers that the worker can support the given type.
-     * @param allowedType An allowed type of this worker.
-     */
-    void registerAllowedType( JobType allowedType )
-    {
-	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( allowedType );
-	if( workerJobInfo == null ) {
-	    // This is new information.
-	    registerJobType( allowedType );
-	}
     }
 
     /**
