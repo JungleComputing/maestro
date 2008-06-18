@@ -46,7 +46,7 @@ public final class Node {
 	public void joined( IbisIdentifier theIbis )
 	{
 	    registerIbisJoined( theIbis );
-            boolean local = theIbis.equals( ibis );
+            boolean local = theIbis.equals( ibis.identifier() );
 	    worker.addUnregisteredMasters( theIbis, local );
 	}
 

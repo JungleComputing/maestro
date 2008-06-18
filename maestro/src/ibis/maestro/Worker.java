@@ -252,7 +252,15 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     void addUnregisteredMasters( IbisIdentifier theIbis, boolean local )
     {
 	synchronized( queue ){
-            if( !local ) {
+            if( local ) {
+                if( Settings.traceWorkerList ) {
+                    Globals.log.reportProgress( "Local ibis " + theIbis + " need not be added to unregisteredMasters" );
+                }
+            }
+            else {
+                if( Settings.traceWorkerList ) {
+                    Globals.log.reportProgress( "Non-local ibis " + theIbis + " must be added to unregisteredMasters" );
+                }
                 // FIXME: we don't need the notify for the local master.
                 unregisteredMasters.addLast( theIbis );
             }
@@ -322,6 +330,9 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     {
 	MasterIdentifier masterID;
 
+        if( Settings.traceWorkerList ) {
+            Globals.log.reportProgress( "Worker " + node.ibisIdentifier() + ": sending registration message to ibis " + ibis );
+        }
 	synchronized( queue ){
 	    // Reserve a slot for this master, and get an id.
 	    masterID = new MasterIdentifier( masters.size() );
