@@ -46,12 +46,15 @@ final class WorkerInfo {
 	return "Worker " + identifier;
     }
 
-    WorkerInfo( ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local )
+    WorkerInfo( ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local, JobType supportedTypes[] )
     {
 	this.port = port;
 	this.identifier = identifier;
 	this.identifierWithWorker = identifierForWorker;
 	this.local = local;
+	for( JobType t: supportedTypes ) {
+	    registerJobType(t);
+	}
     }
 
     /**
@@ -199,12 +202,6 @@ final class WorkerInfo {
         }
 	WorkerJobInfo info = new WorkerJobInfo( toString() + " job type " + type, local );
 	workerJobInfoTable.put( type, info );
-    }
-    
-    protected void registerJobTypes( ArrayList<JobType> l ) {
-        for( JobType t: l ) {
-            registerJobType( t );
-        }
     }
 
     /** Given a job type, estimate the completion time of this job type,

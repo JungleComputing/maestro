@@ -7,7 +7,6 @@ import ibis.ipl.ReceivePortIdentifier;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 
 /**
  * A master in the Maestro flow graph framework.
@@ -65,7 +64,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	 * @return True iff the two identifiers are equal.
 	 */
 	@Override
-	public boolean equals(Object obj)
+	public boolean equals( Object obj )
 	{
 	    if (this == obj)
 		return true;
@@ -195,26 +194,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /**
-     * A worker has sent us a message telling us it can handle the given
-     * job types. Presumably some of the types are new.
-     * 
-     * @param m The type registration message.
-     */
-    private void handleRegisterTypeMessage( RegisterTypeMessage m )
-    {
-        WorkerIdentifier workerID = m.source;
-        if( Settings.traceMasterProgress ){
-            Globals.log.reportProgress( "Received work request message " + m + " from worker " + workerID );
-        }
-        JobType allowedTypes[] = m.allowedType;
-        synchronized( queue ) {
-            workers.updateJobTypes( workerID, allowedTypes );
-            workers.registerCompletionInfo( workerID, m.completionInfo );
-            queue.notifyAll();
-        }
-    }
-
-    /**
      * A worker has sent us a message asking for more work.
      * 
      * @param m The work request message.
@@ -266,7 +245,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             Globals.log.reportProgress( "Master: received registration message " + m + " from worker " + worker );
         }
         synchronized( queue ) {
-            workerID = workers.subscribeWorker( receivePort.identifier(), worker, m.masterIdentifier );
+            boolean local = sendPort.isLocalListener( receivePort.identifier() );
+            workerID = workers.subscribeWorker( receivePort.identifier(), worker, local, m.masterIdentifier, m.supportedTypes );
             sendPort.registerDestination( worker, workerID.value );
             workerCount++;
         }
@@ -313,11 +293,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             WorkRequestMessage m = (WorkRequestMessage) msg;
 
             handleWorkRequestMessage( m );
-        }
-        else if( msg instanceof RegisterTypeMessage ) {
-            RegisterTypeMessage m = (RegisterTypeMessage) msg;
-
-            handleRegisterTypeMessage( m );
         }
         else if( msg instanceof RegisterWorkerMessage ) {
             RegisterWorkerMessage m = (RegisterWorkerMessage) msg;
@@ -505,19 +480,5 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	synchronized( queue ) {
 	    return queue.getCompletionInfo( tasks, workers );
 	}
-    }
-
-    /**
-     * Register the local worker.
-     * @param jobTypes The list of job types the worker supports.
-     */
-    protected void registerLocalWorker( ArrayList<JobType> jobTypes )
-    {
-        if( Settings.traceMasterProgress ){
-            Globals.log.reportProgress( "Master: register local worker" );
-        }
-        WorkerIdentifier workerID = workers.subscribeLocalWorker( jobTypes );
-        sendPort.registerDestination( null, workerID.value );
-        workerCount++;
     }
 }

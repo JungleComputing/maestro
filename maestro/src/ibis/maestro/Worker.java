@@ -30,9 +30,6 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     /** The list of ibises we haven't registered with yet. */
     private final LinkedList<IbisIdentifier> unregisteredMasters = new LinkedList<IbisIdentifier>();
 
-    /** The list of masters we should tell about new job types we can handle. */
-    private final LinkedList<MasterInfo> mastersToUpdate = new LinkedList<MasterInfo>();
-
     /** The list of masters we should ask for extra work if we are bored. */
     private final ArrayList<MasterInfo> jobSources = new ArrayList<MasterInfo>();
 
@@ -172,11 +169,6 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     @Override
     public void start()
     {
-        // Reserve a slot for this master, and get an id.
-        MasterIdentifier masterID = new MasterIdentifier( 0 );
-        MasterInfo info = new MasterInfo( masterID, null );
-        masters.add( info );
-        node.registerLocalWorkerWithMaster( jobTypes );
         receivePort.enable();           // We're open for business.
         super.start();                  // Start the thread
     }
@@ -257,14 +249,9 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     /**
      * A new ibis has joined the computation.
      * @param theIbis The ibis that has joined.
-     * @param isLocal True iff this is the local ibis.
      */
-    void addJobSource( IbisIdentifier theIbis, boolean isLocal )
+    void addJobSource( IbisIdentifier theIbis )
     {
-        if( isLocal ) {
-            // We already registered the local master.
-            return;
-        }
 	synchronized( queue ){
             unregisteredMasters.addLast( theIbis );
 	    if( activeTime == 0 || queueEmptyMoment != 0 ) {
@@ -332,58 +319,22 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     private void registerWithMaster( IbisIdentifier ibis )
     {
 	MasterIdentifier masterID;
+	JobType jobTypesCopy[];
 
 	synchronized( queue ){
 	    // Reserve a slot for this master, and get an id.
 	    masterID = new MasterIdentifier( masters.size() );
 	    MasterInfo info = new MasterInfo( masterID, ibis );
 	    masters.add( info );
-	    queue.notifyAll();
+	    jobTypesCopy = new JobType[jobTypes.size()];
+	    jobTypes.toArray( jobTypesCopy );
+	    queue.notifyAll();   // FIXME: why this notify?
 	}
-	RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), masterID );
+	RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), masterID, jobTypesCopy );
 	long sz = sendPort.tryToSend( ibis, Globals.masterReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ) {
 	    System.err.println( "Cannot register with master " + ibis );
 	    node.declareIbisDead( ibis );
-	}
-    }
-
-    /** Returns a master to update, or null if there is no such master.
-     * 
-     * @return The master to update.
-     */
-    private MasterInfo getMasterToUpdate()
-    {
-	synchronized( queue ){
-	    while( true ) {
-		if( mastersToUpdate.isEmpty() ){
-		    return null;
-		}
-		MasterInfo master = mastersToUpdate.removeFirst();
-		if( master.isRegistered() && !master.isDead() ) {
-		    return master;
-		}
-		// Don't return this one, it hasn't accepted yet, or was declared dead.
-	    }
-	}
-    }
-
-    /** Update the given master with our new list of allowed types.
-     * @param master The master to update.
-     * @param completionInfo Completion times for the different job types from this master.
-     */
-    private void updateMaster( MasterInfo master, CompletionInfo[] completionInfo )
-    {
-	JobType jobTypesCopy[];
-
-	synchronized( queue ){
-	    jobTypesCopy = new JobType[jobTypes.size()];
-	    jobTypes.toArray( jobTypesCopy );
-	}
-	RegisterTypeMessage msg = new RegisterTypeMessage( master.getIdentifierOnMaster(), completionInfo, jobTypesCopy );
-	long sz = sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
-	if( sz<0 ) {
-	    master.declareDead();
 	}
     }
 
@@ -407,17 +358,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 
     private void askMoreWork( CompletionInfo[] completionInfo )
     {
-	// First, try to tell a master about new job types.
-	MasterInfo masterToUpdate = getMasterToUpdate();
-	if( masterToUpdate != null ){
-	    if( Settings.traceWorkerProgress ){
-		Globals.log.reportProgress( "Worker: telling master " + masterToUpdate.localIdentifier + " about new job types" );
-	    }
-	    updateMaster( masterToUpdate, completionInfo );
-	    return;
-	}
-
-	// Then, try to register with a new ibis.
+	// Try to register with a new Ibis.
 	IbisIdentifier newIbis = getUnregisteredMaster();
 	if( newIbis != null ){
 	    if( Settings.traceWorkerProgress ){
@@ -457,10 +398,6 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    sendPort.registerDestination( msg.port, msg.source.value );
 	    MasterInfo master = masters.get( msg.source.value );
 	    master.setIdentifierOnMaster( msg.identifierOnMaster );
-	    if( Service.member( mastersToUpdate, master ) ){
-		Globals.log.reportInternalError( "Master " + master + " already was in update list before it accepted this worker??" );
-	    }
-	    mastersToUpdate.add( master );
 	    queue.notifyAll();
 	}
     }
@@ -545,7 +482,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 			    // indicate that there won't be further jobs.
 			    break;
 			}
-			if( jobSources.isEmpty() && unregisteredMasters.isEmpty() && mastersToUpdate.isEmpty() ){
+			if( jobSources.isEmpty() && unregisteredMasters.isEmpty() ){
 			    // There was no master to subscribe to, update, or ask for work.
 			    if( Settings.traceWorkerProgress ) {
 				System.out.println( "Worker: waiting for new jobs in queue" );

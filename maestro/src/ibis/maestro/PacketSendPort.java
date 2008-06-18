@@ -213,7 +213,7 @@ class PacketSendPort<T extends Serializable> {
         if( destinations.get( identifier ) != null ) {
             System.err.println( "Internal error: duplicate registration for sendport ID " + identifier + ": old=" + destinations.get( identifier ) + "; new=" + port );
         }
-        boolean local = (port == null);
+        boolean local = localListener.hasReceivePort( port );
         destinations.set( identifier, new DestinationInfo( port, local ) );
     }
 
@@ -428,5 +428,13 @@ class PacketSendPort<T extends Serializable> {
             e.printStackTrace( Globals.log.getPrintStream() );
         }
         return len;
+    }
+
+    boolean isLocalListener(ReceivePortIdentifier identifier)
+    {
+	if( localListener == null ) {
+	    return false;
+	}
+	return localListener.hasReceivePort(identifier);
     }
 }
