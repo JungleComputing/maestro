@@ -112,7 +112,7 @@ class PacketSendPort<T extends Serializable> {
         private void printStats( PrintStream s )
         {
             char dest = local?'L':'R'; 
-            s.format( " %c %5d messages %7d bytes; port %s\n", dest, sentCount, sentBytes, local?"":portIdentifier.toString() );
+            s.format( " %c %5d messages %7d bytes; port %s\n", dest, sentCount, sentBytes, portIdentifier.toString() );
         }
     }
 
