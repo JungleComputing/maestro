@@ -1,7 +1,5 @@
 package ibis.maestro;
 
-import java.util.ArrayList;
-
 import ibis.ipl.ReceivePortIdentifier;
 import ibis.maestro.Worker.MasterIdentifier;
 

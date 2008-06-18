@@ -10,7 +10,7 @@ import java.util.ArrayList;
  *
  * @author Kees van Reeuwijk.
  */
-final class TaskList
+public final class TaskList
 {
     private final ArrayList<Task> tasks = new ArrayList<Task>();
     private final ArrayList<JobType> jobTypes = new ArrayList<JobType>();
