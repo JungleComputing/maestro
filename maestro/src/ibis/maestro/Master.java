@@ -408,10 +408,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             }
             submitJobToWorker( sub );
         }
-        if( newWorker != null ) {
-            sendAcceptMessage( newWorker );
-            newWorker = null;
-        }
         // There are no jobs in the queue, or there are no workers ready.
         if( nowork && isFinished() ){
             // No jobs, and we are stopped; don't try to send new jobs.
@@ -422,6 +418,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 System.out.println( "Master: nothing in the queue, or no ready workers; waiting" );
             }
             // Since the queue is empty, we can only wait for new jobs.
+            if( newWorker != null ) {
+                sendAcceptMessage( newWorker );
+                newWorker = null;
+            }
             try {
                 synchronized( queue ){
                     if( !isFinished() ){
