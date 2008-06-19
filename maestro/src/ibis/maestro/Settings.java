@@ -21,7 +21,7 @@ class Settings {
     // Debugging flags.
     
     /** Trace type handling? */
-    static final boolean traceTypeHandling = false;
+    static final boolean traceTypeHandling = true;
 
     /** Trace the progress of workers? */
     static final boolean traceWorkerProgress = false;
@@ -30,10 +30,10 @@ class Settings {
     static final boolean traceResultJobs = false;
 
     /** Trace the progress of the worker lists of masters. */
-    static final boolean traceWorkerList = false;
+    static final boolean traceWorkerList = true;
     
     /** Trace the creation and destruction of Nodes. */
-    static final boolean traceNodes = false;
+    static final boolean traceNodes = true;
 
     /** Trace the events in the master queue? */
     static final boolean traceMasterQueue = false;
@@ -42,7 +42,7 @@ class Settings {
     static final boolean traceRemainingTaskTime = false;
 
     /** Trace the progress of masters? */
-    static final boolean traceMasterProgress = false;
+    static final boolean traceMasterProgress = true;
 
     /** Trace all send events. */
     static final boolean traceSends = false;

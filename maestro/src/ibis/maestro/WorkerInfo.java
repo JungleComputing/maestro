@@ -118,6 +118,9 @@ final class WorkerInfo {
 
     void registerCompletionInfo( CompletionInfo[] completionInfo )
     {
+        if( Settings.traceWorkerList && !enabled ){
+            System.out.println( "Enabled worker " + identifier + " (" + port + ")" );
+        }
         enabled = true;
 	for( CompletionInfo i: completionInfo ) {
 	    registerCompletionInfo( i );

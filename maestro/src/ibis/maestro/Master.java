@@ -419,17 +419,22 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             }
             // Since the queue is empty, we can only wait for new jobs.
             if( newWorker != null ) {
+                if( Settings.traceMasterProgress ){
+                    System.out.println( "Sending accept message to " + newWorker );
+                }
                 sendAcceptMessage( newWorker );
                 newWorker = null;
             }
-            try {
-                synchronized( queue ){
-                    if( !isFinished() ){
-                        queue.wait();
+            else {
+                try {
+                    synchronized( queue ){
+                        if( !isFinished() ){
+                            queue.wait();
+                        }
                     }
+                } catch (InterruptedException e) {
+                    // Not interested.
                 }
-            } catch (InterruptedException e) {
-                // Not interested.
             }
             keepRunning = true;
         }
