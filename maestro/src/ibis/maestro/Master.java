@@ -32,6 +32,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private int workerCount = 0;
     private final long startTime;
     private long stopTime = 0;
+    
+    /** How many new workers should we accept.
+     * Apart from the initial quotum, we only add to the quotum if
+     * we have more jobs than the current workers can handle.
+     */
+    private int acceptQuotum = 3;
 
     /**
      * A worker identifier.
@@ -398,6 +404,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 nowork = queue.selectSubmisson( sub, workers );
                 if( !nowork && sub.worker == null ) {
                     // We have work, but no workers. Time to accept a new candidate, if available.
+                    if( acceptQuotum<2 ) {
+                	acceptQuotum = 2;
+                    }
                     if( !workersToAccept.isEmpty() ) {
                         newWorker = workersToAccept.removeFirst();
                     }
