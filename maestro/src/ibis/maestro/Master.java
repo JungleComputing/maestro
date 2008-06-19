@@ -369,13 +369,14 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( sz<0 ){
             // Try to put the paste back in the tube.
             synchronized( queue ){
-                queue.submit( msg.job );
                 sub.worker.retractJob( msg.jobId );
+                queue.submit( msg.job );
             }
         }
     }
 
-    /** Keep submitting jobs until the queue is empty. We occasionally may
+    /**
+     * Keep submitting jobs until the queue is empty. We occasionally may
      * have to wait for workers to get ready.
      * FIXME: better comment, and perhaps better abstraction ordering.
      * 
