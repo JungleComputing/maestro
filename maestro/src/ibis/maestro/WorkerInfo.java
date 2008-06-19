@@ -16,10 +16,10 @@ final class WorkerInfo {
     /** Our identifier with this worker. */
     final MasterIdentifier identifierWithWorker;
 
-    /** The active jobs of this worker. */
-    private final ArrayList<ActiveJob> activeJobs = new ArrayList<ActiveJob>();
+    /** The active tasks of this worker. */
+    private final ArrayList<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
 
-    private final Hashtable<JobType,WorkerJobInfo> workerJobInfoTable = new Hashtable<JobType, WorkerJobInfo>();
+    private final Hashtable<TaskType,WorkerTaskInfo> workerTaskInfoTable = new Hashtable<TaskType, WorkerTaskInfo>();
 
     /** Our local identifier of this worker. */
     final Master.WorkerIdentifier identifier;
@@ -33,10 +33,10 @@ final class WorkerInfo {
 
     private boolean dead = false;
 
-    /** We know that this many jobs have excessive queue times. We have already
+    /** We know that this many tasks have excessive queue times. We have already
      * reduced the allowance for this worker, don't try again for the moment.
      */
-    private int knownDelayedJobs = 0;
+    private int knownDelayedTasks = 0;
 
     /**
      * Returns a string representation of this worker info. (Overrides method in superclass.)
@@ -48,29 +48,29 @@ final class WorkerInfo {
 	return "Worker " + identifier;
     }
 
-    WorkerInfo( ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local, JobType[] types )
+    WorkerInfo( ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local, TaskType[] types )
     {
 	this.port = port;
 	this.identifier = identifier;
 	this.identifierWithWorker = identifierForWorker;
 	this.local = local;
-	for( JobType t: types ) {
-	    registerJobType(t);
+	for( TaskType t: types ) {
+	    registerTaskType(t);
 	}
     }
 
     /**
-     * Given a job identifier, returns the job queue entry with that id, or null.
-     * @param id The job identifier to search for.
-     * @return The index of the ActiveJob with this id, or -1 if there isn't one.
+     * Given a task identifier, returns the task queue entry with that id, or null.
+     * @param id The task identifier to search for.
+     * @return The index of the ActiveTask with this id, or -1 if there isn't one.
      */
-    private int searchActiveJob( long id )
+    private int searchActiveTask( long id )
     {
         // Note that we blindly assume that there is only one entry with
         // the given id. Reasonable because we hand out the ids ourselves,
         // and we never make mistakes...
-        for( int ix=0; ix<activeJobs.size(); ix++ ) {
-            ActiveJob e = activeJobs.get( ix );
+        for( int ix=0; ix<activeTasks.size(); ix++ ) {
+            ActiveTask e = activeTasks.get( ix );
 	    if( e.id == id ) {
 		return ix;
 	    }
@@ -78,27 +78,27 @@ final class WorkerInfo {
 	return -1;
     }
 
-    /** The most recently returned job spent most of its time in the queue.
+    /** The most recently returned task spent most of its time in the queue.
      * If we haven't done so recently, reduce the queue time of this worker
-     * by reducing the number of allowed outstanding jobs.
-     * @param workerJobInfo Information about the job that was delayed so long.
+     * by reducing the number of allowed outstanding tasks.
+     * @param workerTaskInfo Information about the task that was delayed so long.
      */
-    private void limitQueueTime( WorkerJobInfo workerJobInfo, long roundTripTime, long workerDwellTime )
+    private void limitQueueTime( WorkerTaskInfo workerTaskInfo, long roundTripTime, long workerDwellTime )
     {
-	if( knownDelayedJobs>0 ) {
+	if( knownDelayedTasks>0 ) {
 	    // We've recently done a reduction, and there are still
-	    // outstanding jobs from before that. It's not
+	    // outstanding tasks from before that. It's not
 	    // safe to do another reduction.
 	    return;
 	}
-	if( !workerJobInfo.limitAllowance( roundTripTime, workerDwellTime ) ) {
+	if( !workerTaskInfo.limitAllowance( roundTripTime, workerDwellTime ) ) {
 	    // We cannot reduce the allowance.
 	    return;
 	}
 	if( Settings.traceMasterProgress ) {
-	    System.out.println( "Reduced allowance of job type " + workerJobInfo + " to reduce queue time" );
+	    System.out.println( "Reduced allowance of task type " + workerTaskInfo + " to reduce queue time" );
 	}
-	knownDelayedJobs = activeJobs.size();
+	knownDelayedTasks = activeTasks.size();
     }
 
     private void registerCompletionInfo( CompletionInfo completionInfo )
@@ -106,13 +106,13 @@ final class WorkerInfo {
         if( completionInfo == null ) {
             return;
         }
-	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( completionInfo.type );
+	WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( completionInfo.type );
 
-	if( workerJobInfo == null ) {
+	if( workerTaskInfo == null ) {
 	    return;
 	}
 	if( completionInfo.completionInterval != Long.MAX_VALUE ) {
-	    workerJobInfo.setCompletionInterval( completionInfo.completionInterval );
+	    workerTaskInfo.setCompletionInterval( completionInfo.completionInterval );
 	}
     }
 
@@ -128,31 +128,31 @@ final class WorkerInfo {
     }
 
     /**
-     * Register a job result for an outstanding job.
-     * @param result The job result message that tells about this job.
+     * Register a task result for an outstanding task.
+     * @param result The task result message that tells about this task.
      */
-    void registerWorkerStatus( JobCompletedMessage result )
+    void registerWorkerStatus( TaskCompletedMessage result )
     {
-	final long id = result.jobId;    // The identifier of the job, as handed out by us.
+	final long id = result.taskId;    // The identifier of the task, as handed out by us.
 
 	long now = System.nanoTime();
-	int ix = searchActiveJob( id );
+	int ix = searchActiveTask( id );
 	if( ix<0 ) {
-	    Globals.log.reportInternalError( "Master: ignoring reported result from job with unknown id " + id );
+	    Globals.log.reportInternalError( "Master: ignoring reported result from task with unknown id " + id );
 	    return;
 	}
-	ActiveJob job = activeJobs.remove( ix );
+	ActiveTask task = activeTasks.remove( ix );
         long queueInterval = result.queueInterval;
-	long newRoundTripInterval = (now-job.startTime); // The time interval to send the job, compute, and report the result.
+	long newRoundTripInterval = (now-task.startTime); // The time interval to send the task, compute, and report the result.
 
-	if( knownDelayedJobs>0 ) {
-	    knownDelayedJobs--;
+	if( knownDelayedTasks>0 ) {
+	    knownDelayedTasks--;
 	}
-	job.workerJobInfo.registerJobCompleted( newRoundTripInterval );
+	task.workerTaskInfo.registerTaskCompleted( newRoundTripInterval );
 	registerCompletionInfo( result.completionInfo );
-	limitQueueTime( job.workerJobInfo, newRoundTripInterval, queueInterval+result.computeInterval );
+	limitQueueTime( task.workerTaskInfo, newRoundTripInterval, queueInterval+result.computeInterval );
 	if( Settings.traceMasterProgress ){
-	    System.out.println( "Master: retired job " + job + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );
+	    System.out.println( "Master: retired task " + task + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );
 	}
     }
 
@@ -162,103 +162,103 @@ final class WorkerInfo {
      */
     boolean isIdle()
     {
-	return enabled && activeJobs.isEmpty();
+	return enabled && activeTasks.isEmpty();
     }
 
-    /** Register the start of a new job.
+    /** Register the start of a new task.
      * 
-     * @param job The job that was started.
-     * @param id The id given to the job.
+     * @param task The task that was started.
+     * @param id The id given to the task.
      */
-    void registerJobStart( JobInstance job, long id )
+    void registerTaskStart( TaskInstance task, long id )
     {
-	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( job.type );
-	if( workerJobInfo == null ) {
-	    System.err.println( "No worker job info for job type " + job.type );
+	WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( task.type );
+	if( workerTaskInfo == null ) {
+	    System.err.println( "No worker task info for task type " + task.type );
 	    return;
 	}
-	workerJobInfo.incrementOutstandingJobs();
-	ActiveJob j = new ActiveJob( job, id, System.nanoTime(), workerJobInfo );
+	workerTaskInfo.incrementOutstandingTasks();
+	ActiveTask j = new ActiveTask( task, id, System.nanoTime(), workerTaskInfo );
 
-	activeJobs.add( j );
+	activeTasks.add( j );
     }
 
-    /** Given a job id, retract it from the administration.
-     * For some reason we could not send this job to the worker.
-     * @param id The identifier of the job.
+    /** Given a task id, retract it from the administration.
+     * For some reason we could not send this task to the worker.
+     * @param id The identifier of the task.
      */
-    void retractJob( long id )
+    void retractTask( long id )
     {
-        int ix = searchActiveJob( id );
+        int ix = searchActiveTask( id );
         if( ix<0 ) {
-            Globals.log.reportInternalError( "Master: ignoring job retraction for unknown id " + id );
+            Globals.log.reportInternalError( "Master: ignoring task retraction for unknown id " + id );
             return;
         }
-        ActiveJob job = activeJobs.remove( ix );
-	System.out.println( "Master: retracted job " + job );
+        ActiveTask task = activeTasks.remove( ix );
+	System.out.println( "Master: retracted task " + task );
     }
 
     /**
-     * @param type The job type to register for.
+     * @param type The task type to register for.
      */
-    private void registerJobType( JobType type )
+    private void registerTaskType( TaskType type )
     {
         if( Settings.traceTypeHandling ){
             System.out.println( "worker " + identifier + " (" + port + ") can handle " + type );
         }
-	WorkerJobInfo info = new WorkerJobInfo( toString() + " job type " + type, local );
-	workerJobInfoTable.put( type, info );
+	WorkerTaskInfo info = new WorkerTaskInfo( toString() + " task type " + type, local );
+	workerTaskInfoTable.put( type, info );
     }
 
-    /** Given a job type, estimate the completion time of this job type,
-     * or Long.MAX_VALUE if the job type is not allowed on this worker,
+    /** Given a task type, estimate the completion time of this task type,
+     * or Long.MAX_VALUE if the task type is not allowed on this worker,
      * or the worker is currently using its entire allowance.
-     * @param jobType The job type for which we want to know the round-trip interval.
-     * @return The interval, or Long.MAX_VALUE if this type of job is not allowed.
+     * @param taskType The task type for which we want to know the round-trip interval.
+     * @return The interval, or Long.MAX_VALUE if this type of task is not allowed.
      */
-    long estimateTaskCompletion( JobType jobType )
+    long estimateJobCompletion( TaskType taskType )
     {
         if( !enabled ) {
             if( Settings.traceTypeHandling ){
-                System.out.println( "estimateTaskCompletion(): worker " + identifier + " not yet enabled" );
+                System.out.println( "estimateJobCompletion(): worker " + identifier + " not yet enabled" );
             }
             return Long.MAX_VALUE;
         }
-	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
-	if( workerJobInfo == null ) {
+	WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
+	if( workerTaskInfo == null ) {
 	    if( Settings.traceTypeHandling ){
-	        System.out.println( "estimateTaskCompletion(): worker " + identifier + " does not support type " + jobType );
+	        System.out.println( "estimateJobCompletion(): worker " + identifier + " does not support type " + taskType );
 	    }
 	    return Long.MAX_VALUE;
 	}
-	return workerJobInfo.estimateTaskCompletion();
+	return workerTaskInfo.estimateJobCompletion();
     }
 
-    long getAverageCompletionTime( JobType jobType )
+    long getAverageCompletionTime( TaskType taskType )
     {
-	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
+	WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
 
-	if( workerJobInfo == null ) {
+	if( workerTaskInfo == null ) {
 	    if( Settings.traceTypeHandling ){
-		Globals.log.reportProgress( "getAverageCompletionTime(): worker " + identifier + " does not support type " + jobType );
+		Globals.log.reportProgress( "getAverageCompletionTime(): worker " + identifier + " does not support type " + taskType );
 	    }
 	    return Long.MAX_VALUE;
 	}
-        return workerJobInfo.getAverageCompletionTime();
+        return workerTaskInfo.getAverageCompletionTime();
     }
 
     /**
-     * Tries to increment the maximal number of outstanding jobs for this worker.
-     * @param jobType The job type for which we want to increase our allowance.
+     * Tries to increment the maximal number of outstanding tasks for this worker.
+     * @param taskType The task type for which we want to increase our allowance.
      * @return True iff we could increment the allowance of this type.
      */
-    boolean incrementAllowance( JobType jobType )
+    boolean incrementAllowance( TaskType taskType )
     {
-	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( jobType );
-	if( workerJobInfo == null ) {
+	WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
+	if( workerTaskInfo == null ) {
 	    return false;
 	}
-	return workerJobInfo.incrementAllowance();
+	return workerTaskInfo.incrementAllowance();
     }
 
     /**
@@ -279,15 +279,15 @@ final class WorkerInfo {
     }
 
     /**
-     * Given a job type, return true iff this worker
-     * supports the job type.
-     * @param type The job type we're looking for.
+     * Given a task type, return true iff this worker
+     * supports the task type.
+     * @param type The task type we're looking for.
      * @return True iff this worker supports the type.
      */
-    boolean supportsType( JobType type )
+    boolean supportsType( TaskType type )
     {
-	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( type );
-	final boolean res = workerJobInfo != null;
+	WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( type );
+	final boolean res = workerTaskInfo != null;
 
         if( Settings.traceTypeHandling ){
             System.out.println( "Worker " + identifier + " supports type " + type + "? Answer: " + res );
@@ -301,15 +301,15 @@ final class WorkerInfo {
      */
     void printStatistics( PrintStream s )
     {
-        Enumeration<JobType> keys = workerJobInfoTable.keys();
+        Enumeration<TaskType> keys = workerTaskInfoTable.keys();
 	s.println( "Worker " + identifier + (local?" (local)":"") );
 
         while( keys.hasMoreElements() ){
-	    JobType jobType = keys.nextElement();
-	    WorkerJobInfo info = workerJobInfoTable.get( jobType );
+	    TaskType taskType = keys.nextElement();
+	    WorkerTaskInfo info = workerTaskInfoTable.get( taskType );
 	    if( info.didWork() ) {
 	        String stats = info.buildStatisticsString();
-	        s.println( "  " + jobType.toString() + ": " + stats );
+	        s.println( "  " + taskType.toString() + ": " + stats );
 	    }
 	}
     }

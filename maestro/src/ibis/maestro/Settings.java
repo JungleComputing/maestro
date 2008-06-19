@@ -9,10 +9,10 @@ package ibis.maestro;
 class Settings {
     // Timeout values.
     
-    /** Message transmission timeout in ms on optional communication. */
+    /** Message transjob timeout in ms on optional communication. */
     static final int OPTIONAL_COMMUNICATION_TIMEOUT = 30000;
     
-    /** Message transmission timeout in ms on essential communications. */
+    /** Message transjob timeout in ms on essential communications. */
     static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 5*OPTIONAL_COMMUNICATION_TIMEOUT;
 
     /** The number of connections we maximally keep open. */
@@ -26,8 +26,8 @@ class Settings {
     /** Trace the progress of workers? */
     static final boolean traceWorkerProgress = false;
 
-    /** Trace the handling or result jobs? */
-    static final boolean traceResultJobs = false;
+    /** Trace the handling or result tasks? */
+    static final boolean traceResultTasks = false;
 
     /** Trace the progress of the worker lists of masters. */
     static final boolean traceWorkerList = false;
@@ -38,8 +38,8 @@ class Settings {
     /** Trace the events in the master queue? */
     static final boolean traceMasterQueue = false;
 
-    /** Trace the administration of remaining task time. */
-    static final boolean traceRemainingTaskTime = false;
+    /** Trace the administration of remaining job time. */
+    static final boolean traceRemainingJobTime = false;
 
     /** Trace the progress of masters? */
     static final boolean traceMasterProgress = false;
@@ -47,6 +47,6 @@ class Settings {
     /** Trace all send events. */
     static final boolean traceSends = false;
 
-    /** We limit the master queue to this many jobs per known worker. */
-    static final int JOBS_PER_WORKER = 10;
+    /** We limit the master queue to this many tasks per known worker. */
+    static final int TASKS_PER_WORKER = 10;
 }

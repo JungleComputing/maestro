@@ -1,20 +1,20 @@
 package ibis.maestro;
 
 /**
- * The interface of Maestro job completion listeners.
+ * The interface of Maestro task completion listeners.
  * 
  * @author Kees van Reeuwijk
  *
  */
 public interface CompletionListener {
     /**
-     * Registers that a task has completed, and handles the
-     * final result of the task.
+     * Registers that a job has completed, and handles the
+     * final result of the job.
      * @param node The node we're running on.
-     * @param id The identifier of the task that was completed.
+     * @param id The identifier of the job that was completed.
      *      This identifier was provided by the user program at the moment
-     *      the task instance was submitted.
-     * @param result The result of the task.
+     *      the job instance was submitted.
+     * @param result The result of the job.
      */
-    void taskCompleted( Node node, Object id, Object result );
+    void jobCompleted( Node node, Object id, Object result );
 }

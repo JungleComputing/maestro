@@ -26,9 +26,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final LinkedList<WorkerIdentifier> workersToAccept = new LinkedList<WorkerIdentifier>();
 
     private boolean stopped = false;
-    private long nextJobId = 0;
-    private long incomingJobCount = 0;
-    private long handledJobCount = 0;
+    private long nextTaskId = 0;
+    private long incomingTaskCount = 0;
+    private long handledTaskCount = 0;
     private final long startTime;
     private long stopTime = 0;
 
@@ -134,8 +134,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
     /**
      * Returns true iff this master is in stopped mode, has no
-     * jobs in its queue, and has not outstanding jobs on its workers.
-     * @return True iff this master has processed all jobs it ever will.
+     * tasks in its queue, and has not outstanding tasks on its workers.
+     * @return True iff this master has processed all tasks it ever will.
      */
     private boolean isFinished()
     {
@@ -162,24 +162,24 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /**
-     * A worker has sent use a status message for a job. Process it.
+     * A worker has sent use a status message for a task. Process it.
      * @param result The status message.
      */
-    private void handleWorkerStatusMessage( JobCompletedMessage result )
+    private void handleWorkerStatusMessage( TaskCompletedMessage result )
     {
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Received a worker status message " + result );
         }
         synchronized( queue ){
             workers.registerWorkerStatus( result );
-            handledJobCount++;
+            handledTaskCount++;
             queue.notifyAll();
         }
     }
 
-    private void handleResultMessage( TaskResultMessage m )
+    private void handleResultMessage( JobResultMessage m )
     {
-        node.reportCompletion( m.task, m.result );
+        node.reportCompletion( m.job, m.result );
     }
 
     private void sendAcceptMessage( Master.WorkerIdentifier workerID )
@@ -216,7 +216,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /**
-     * A worker has sent us a message with its current task completion times.
+     * A worker has sent us a message with its current job completion times.
      * 
      * @param m The update message.
      */
@@ -236,7 +236,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * A worker has sent us a message to register itself with us. This is
      * just to tell us that it's out there. We tell it what our receive port is,
      * and which handle we have assigned to it, so that it can then inform us
-     * of the types of jobs it supports.
+     * of the types of tasks it supports.
      *
      * @param m The worker registration message.
      */
@@ -281,13 +281,13 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Master: received message " + msg );
         }
-        if( msg instanceof JobCompletedMessage ) {
-            JobCompletedMessage result = (JobCompletedMessage) msg;
+        if( msg instanceof TaskCompletedMessage ) {
+            TaskCompletedMessage result = (TaskCompletedMessage) msg;
 
             handleWorkerStatusMessage( result );
         }
-        else if( msg instanceof TaskResultMessage ) {
-            TaskResultMessage m = (TaskResultMessage) msg;
+        else if( msg instanceof JobResultMessage ) {
+            JobResultMessage m = (JobResultMessage) msg;
 
             handleResultMessage( m );
         }
@@ -317,75 +317,75 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /**
-     * Adds the given job to the work queue of this master.
-     * @param job The job instance to add to the queue.
+     * Adds the given task to the work queue of this master.
+     * @param task The task instance to add to the queue.
      */
-    void submit( JobInstance job )
+    void submit( TaskInstance task )
     {
         if( Settings.traceMasterProgress ) {
-            System.out.println( "Master: received job " + job );
+            System.out.println( "Master: received task " + task );
         }
         synchronized ( queue ) {
-            incomingJobCount++;
-            queue.submit( job );
+            incomingTaskCount++;
+            queue.submit( task );
             queue.notifyAll();
         }
     }
 
     /**
-     * Adds the given job to the work queue of this master.
-     * @param job The job instance to add to the queue.
-     * @return The estimated time in ns it will take to complete the entire task
-     *   instance this job instance belongs to.
+     * Adds the given task to the work queue of this master.
+     * @param task The task instance to add to the queue.
+     * @return The estimated time in ns it will take to complete the entire job
+     *   instance this task instance belongs to.
      */
-    long submitAndGetInfo( JobInstance job )
+    long submitAndGetInfo( TaskInstance task )
     {
         if( Settings.traceMasterProgress ) {
-            System.out.println( "Master: received job " + job );
+            System.out.println( "Master: received task " + task );
         }
         synchronized ( queue ) {
-            incomingJobCount++;
-            long queueTime = queue.submit( job );
-            long res = queueTime + workers.getAverageCompletionTime( job.type );
+            incomingTaskCount++;
+            long queueTime = queue.submit( task );
+            long res = queueTime + workers.getAverageCompletionTime( task.type );
             queue.notifyAll();
             return res;
         }
     }
 
     /**
-     * @param worker The worker to send the job to.
-     * @param job The job to send.
+     * @param worker The worker to send the task to.
+     * @param task The task to send.
      */
-    private void submitJobToWorker( Submission sub )
+    private void submitTaskToWorker( Subjob sub )
     {
-        long jobId;
+        long taskId;
 
         synchronized( queue ){
-            jobId = nextJobId++;
-            sub.worker.registerJobStart( sub.job, jobId );
+            taskId = nextTaskId++;
+            sub.worker.registerTaskStart( sub.task, taskId );
         }
-        RunJobMessage msg = new RunJobMessage( sub.worker.identifierWithWorker, sub.worker.identifier, sub.job, jobId );
+        RunTaskMessage msg = new RunTaskMessage( sub.worker.identifierWithWorker, sub.worker.identifier, sub.task, taskId );
         long sz = sendPort.tryToSend( sub.worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( sz<0 ){
             // Try to put the paste back in the tube.
             synchronized( queue ){
-                sub.worker.retractJob( msg.jobId );
-                queue.submit( msg.job );
+                sub.worker.retractTask( msg.taskId );
+                queue.submit( msg.task );
             }
         }
     }
 
     /**
-     * Keep submitting jobs until the queue is empty. We occasionally may
+     * Keep submitting tasks until the queue is empty. We occasionally may
      * have to wait for workers to get ready.
      * FIXME: better comment, and perhaps better abstraction ordering.
      * 
      * @return True iff we want to keep running.
      */
-    private boolean submitAllJobs()
+    private boolean submitAllTasks()
     {
         boolean nowork;
-        Submission sub = new Submission();
+        Subjob sub = new Subjob();
         WorkerIdentifier newWorker = null;
 
         boolean keepRunning = true;
@@ -405,20 +405,20 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 }
             }
             if( Settings.traceMasterQueue ) {
-                System.out.println( "Selected " + sub.worker + " as best for job " + sub.job );
+                System.out.println( "Selected " + sub.worker + " as best for task " + sub.task );
             }
-            submitJobToWorker( sub );
+            submitTaskToWorker( sub );
         }
-        // There are no jobs in the queue, or there are no workers ready.
+        // There are no tasks in the queue, or there are no workers ready.
         if( nowork && isFinished() ){
-            // No jobs, and we are stopped; don't try to send new jobs.
+            // No tasks, and we are stopped; don't try to send new tasks.
             keepRunning = false;   // We're no longer busy.
         }
         else {
             if( Settings.traceMasterProgress ){
                 System.out.println( "Master: nothing in the queue, or no ready workers; waiting" );
             }
-            // Since the queue is empty, we can only wait for new jobs.
+            // Since the queue is empty, we can only wait for new tasks.
             if( newWorker != null ) {
                 if( Settings.traceMasterProgress ){
                     System.out.println( "Sending accept message to " + newWorker );
@@ -452,7 +452,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             System.out.println( "Starting master thread" );
         }
         while( active ){
-            active = submitAllJobs( );
+            active = submitAllTasks( );
         }
         stopTime = System.nanoTime();
         System.out.println( "End of master thread" );
@@ -487,17 +487,17 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         long workInterval = stopTime-startTime;
         s.printf( "Master: # workers          = %5d\n", workers.size() );
         s.printf( "Master: # inactive workers = %5d\n", workersToAccept.size() );
-        s.printf( "Master: # incoming jobs    = %5d\n", incomingJobCount );
-        s.printf( "Master: # handled jobs     = %5d\n", handledJobCount );
+        s.printf( "Master: # incoming tasks    = %5d\n", incomingTaskCount );
+        s.printf( "Master: # handled tasks     = %5d\n", handledTaskCount );
         s.println( "Master: run time           = " + Service.formatNanoseconds( workInterval ) );
         sendPort.printStats( s, "master send port" );
         workers.printStatistics( s );
     }
 
-    CompletionInfo[] getCompletionInfo( TaskList tasks )
+    CompletionInfo[] getCompletionInfo( JobList jobs )
     {
         synchronized( queue ) {
-            return queue.getCompletionInfo( tasks, workers );
+            return queue.getCompletionInfo( jobs, workers );
         }
     }
 }

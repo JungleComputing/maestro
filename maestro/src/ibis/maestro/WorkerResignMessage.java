@@ -4,7 +4,7 @@ import ibis.maestro.Master.WorkerIdentifier;
 
 
 /**
- * A message to tell the master not to send jobs to this worker any more.
+ * A message to tell the master not to send tasks to this worker any more.
  * 
  * @author Kees van Reeuwijk.
  */

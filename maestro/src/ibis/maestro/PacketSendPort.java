@@ -212,7 +212,7 @@ class PacketSendPort<T extends Serializable> {
      * Sends the given data to the given port.
      * @param destination The port to send it to.
      * @param data The data to send.
-     * @param timeout The timeout of the transmission.
+     * @param timeout The timeout of the transjob.
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
@@ -367,7 +367,7 @@ class PacketSendPort<T extends Serializable> {
      * Sends the given data to the given port.
      * @param msg The data to send.
      * @param destination The port to send it to.
-     * @param timeout The timeout of the transmission.
+     * @param timeout The timeout of the transjob.
      * @return The length of the transmitted data, or -1 if nothing could be transmitted.
      */
     long tryToSend( int destination, T msg, int timeout ) {
@@ -386,7 +386,7 @@ class PacketSendPort<T extends Serializable> {
      * @param port The port to send the message to.
      * @param data The message to send.
      * @param timeout The timeout value to use.
-     * @return The size of the transmitted message, or -1 if the transmission failed.
+     * @return The size of the transmitted message, or -1 if the transjob failed.
      */
     long tryToSend( ReceivePortIdentifier port, T data, int timeout )
     {

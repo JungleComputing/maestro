@@ -15,25 +15,25 @@ public class TestProg {
 
     private static class Listener implements CompletionListener
     {
-        int tasksCompleted = 0;
-        private final int taskCount;
+        int jobsCompleted = 0;
+        private final int jobCount;
 
         Listener( int jobCount )
         {
-            this.taskCount = jobCount;
+            this.jobCount = jobCount;
         }
 
-        /** Handle the completion of job 'j': the result is 'result'.
-         * @param id The job that was completed.
-         * @param result The result of the job.
+        /** Handle the completion of task 'j': the result is 'result'.
+         * @param id The task that was completed.
+         * @param result The result of the task.
          */
         @Override
-        public void taskCompleted( Node node, Object id, Object result ) {
+        public void jobCompleted( Node node, Object id, Object result ) {
             //System.out.println( "result is " + result );
-            tasksCompleted++;
-            //System.out.println( "I now have " + jobsCompleted + "/" + jobCount + " jobs" );
-            if( tasksCompleted>=taskCount ){
-                System.out.println( "I got all job results back; stopping test program" );
+            jobsCompleted++;
+            //System.out.println( "I now have " + tasksCompleted + "/" + taskCount + " tasks" );
+            if( jobsCompleted>=jobCount ){
+                System.out.println( "I got all task results back; stopping test program" );
                 node.setStopped();
             }
         }
@@ -48,7 +48,7 @@ public class TestProg {
         }
 
         /**
-         * Returns a string representation of this multiply job.
+         * Returns a string representation of this multiply task.
          * @return The string representation.
          */
         @Override
@@ -62,15 +62,15 @@ public class TestProg {
 
     }
 
-    private static class CreateArrayJob implements Job
+    private static class CreateArrayTask implements Task
     {
         private static final long serialVersionUID = 2347248108353357517L;
 
         /**
-         * Runs this job.
-         * @param obj The input parameter of this job.
-         * @param node The node the job is running on.
-         * @return The result value of this job.
+         * Runs this task.
+         * @param obj The input parameter of this task.
+         * @param node The node the task is running on.
+         * @return The result value of this task.
          */
         @Override
         @SuppressWarnings("synthetic-access")
@@ -85,8 +85,8 @@ public class TestProg {
         }
 
         /**
-         * Returns true iff this job is supported in this context.
-         * @return True iff this job is supported.
+         * Returns true iff this task is supported in this context.
+         * @return True iff this task is supported.
          */
         @Override
         public boolean isSupported()
@@ -95,14 +95,14 @@ public class TestProg {
         }
     }
 
-    private static class AdditionJob implements Job
+    private static class AdditionTask implements Task
     {
         private static final long serialVersionUID = 7652370809998864296L;
 
         /**
-         * @param obj The input parameter of the job.
-         * @param node The node the job is running on.
-         * @return The result of the job.
+         * @param obj The input parameter of the task.
+         * @param node The node the task is running on.
+         * @return The result of the task.
          */
         @Override
         public AdditionData run( Object obj, Node node )
@@ -118,8 +118,8 @@ public class TestProg {
         }
 
         /**
-         * Returns true iff this job is supported in this context.
-         * @return True iff this job is supported.
+         * Returns true iff this task is supported in this context.
+         * @return True iff this task is supported.
          */
         @Override
         public boolean isSupported()
@@ -129,20 +129,20 @@ public class TestProg {
     }
 
     @SuppressWarnings("synthetic-access")
-    private void run( int jobCount, boolean goForMaestro ) throws Exception
+    private void run( int taskCount, boolean goForMaestro ) throws Exception
     {
-        Listener listener = new Listener( jobCount );
-        TaskList tasks = new TaskList();
+        Listener listener = new Listener( taskCount );
+        JobList jobs = new JobList();
 
-        Task task = tasks.createTask( "testprog", new CreateArrayJob(), new AdditionJob(), new AdditionJob(), new AdditionJob(), new AdditionJob() );
-        Node node = new Node( tasks, goForMaestro );
+        Job job = jobs.createJob( "testprog", new CreateArrayTask(), new AdditionTask(), new AdditionTask(), new AdditionTask(), new AdditionTask() );
+        Node node = new Node( jobs, goForMaestro );
         System.out.println( "Node created" );
         long startTime = System.nanoTime();
         if( node.isMaestro() ) {
-            System.out.println( "I am maestro; submitting " + jobCount + " jobs" );
-            for( int i=0; i<jobCount; i++ ){
+            System.out.println( "I am maestro; submitting " + taskCount + " tasks" );
+            for( int i=0; i<taskCount; i++ ){
                 Integer length = new Integer( 12*i );
-                task.submit( node, length, i, listener );
+                job.submit( node, length, i, listener );
             }
         }
         node.waitToTerminate();
@@ -157,10 +157,10 @@ public class TestProg {
     public static void main( String args[] )
     {
         boolean goForMaestro = true;
-        int jobCount = 0;
+        int taskCount = 0;
 
         if( args.length == 0 ){
-            System.err.println( "Missing parameter: I need a job count, or 'worker'" );
+            System.err.println( "Missing parameter: I need a task count, or 'worker'" );
             System.exit( 1 );
         }
         String arg = args[0];
@@ -168,11 +168,11 @@ public class TestProg {
             goForMaestro = false;
         }
         else {
-            jobCount = Integer.parseInt( arg );
+            taskCount = Integer.parseInt( arg );
         }
-        System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro + "; jobCount=" + jobCount );
+        System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro + "; taskCount=" + taskCount );
         try {
-            new TestProg().run( jobCount, goForMaestro );
+            new TestProg().run( taskCount, goForMaestro );
         }
         catch( Exception e ) {
             e.printStackTrace( System.err );

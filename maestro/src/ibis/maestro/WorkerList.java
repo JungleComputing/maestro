@@ -50,7 +50,7 @@ final class WorkerList {
         return -1;
     }
 
-    WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, MasterIdentifier identifierForWorker, JobType[] types )
+    WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, MasterIdentifier identifierForWorker, TaskType[] types )
     {
         Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
         WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker, local, types );
@@ -100,10 +100,10 @@ final class WorkerList {
     }
 
     /**
-     * Register a job result in the info of the worker that handled it.
-     * @param result The job result.
+     * Register a task result in the info of the worker that handled it.
+     * @param result The task result.
      */
-    void registerWorkerStatus( JobCompletedMessage result )
+    void registerWorkerStatus( TaskCompletedMessage result )
     {
         WorkerInfo w = searchWorker( workers, result.source );
         if( w == null ) {
@@ -128,15 +128,15 @@ final class WorkerList {
     }
 
     /**
-     * Given a job type, select the best worker from the list that has a
+     * Given a task type, select the best worker from the list that has a
      * free slot. In this context 'best' is simply the worker with the
      * shortest round-trip interval.
      *  
-     * @param jobType The type of job we want to execute.
-     * @return The info of the best worker for this job, or <code>null</code>
-     *         if there currently aren't any workers for this job type.
+     * @param taskType The type of task we want to execute.
+     * @return The info of the best worker for this task, or <code>null</code>
+     *         if there currently aren't any workers for this task type.
      */
-    WorkerInfo selectBestWorker( JobType jobType )
+    WorkerInfo selectBestWorker( TaskType taskType )
     {
         WorkerInfo best = null;
         long bestInterval = Long.MAX_VALUE;
@@ -145,10 +145,10 @@ final class WorkerList {
             WorkerInfo wi = workers.get( i );
 
             if( !wi.isDead() ) {
-                long val = wi.estimateTaskCompletion( jobType );
+                long val = wi.estimateJobCompletion( taskType );
 
-                if( Settings.traceRemainingTaskTime ) {
-                    System.out.println( "Worker " + wi + ": job type " + jobType + ": estimated completion time " + Service.formatNanoseconds( val ) );
+                if( Settings.traceRemainingJobTime ) {
+                    System.out.println( "Worker " + wi + ": task type " + taskType + ": estimated completion time " + Service.formatNanoseconds( val ) );
                 }
                 if( val<bestInterval ) {
                     bestInterval = val;
@@ -161,17 +161,17 @@ final class WorkerList {
                 int busy = 0;
                 int notSupported = 0;
                 for( WorkerInfo wi: workers ){
-                    if( wi.supportsType( jobType ) ){
+                    if( wi.supportsType( taskType ) ){
                         busy++;
                     }
                     else {
                         notSupported++;
                     }
                 }
-                System.out.println( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for job of type " + jobType );
+                System.out.println( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for task of type " + taskType );
             }
             else {
-                System.out.println( "Selected " + best + " for job of type " + jobType + "; estimated task completion time " + Service.formatNanoseconds( bestInterval ) );
+                System.out.println( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) );
             }
         }
         return best;
@@ -189,17 +189,17 @@ final class WorkerList {
     }
 
     /**
-     * Try to increment the maximal number of outstanding jobs for the given
-     * worker for the given job type.
-     * @param workerID The worker that should get a higher number of outstanding jobs.
-     * @param jobType The job type for which we want to increment.
+     * Try to increment the maximal number of outstanding tasks for the given
+     * worker for the given task type.
+     * @param workerID The worker that should get a higher number of outstanding tasks.
+     * @param taskType The task type for which we want to increment.
      * @return True iff we could actually increment the allowance
-     *         for the job type.
+     *         for the task type.
      */
-    boolean incrementAllowance( WorkerIdentifier workerID, JobType jobType )
+    boolean incrementAllowance( WorkerIdentifier workerID, TaskType taskType )
     {
         WorkerInfo wi = workers.get( workerID.value );
-        return wi.incrementAllowance( jobType );
+        return wi.incrementAllowance( taskType );
     }
 
     /** Given a worker identifier, declare it dead.
@@ -233,19 +233,19 @@ final class WorkerList {
     }
 
     /**
-     * Given a job type, return the estimated average time it will take
-     * to execute this job and all subsequent jobs in the task by
+     * Given a task type, return the estimated average time it will take
+     * to execute this task and all subsequent tasks in the job by
      * the fastest route.
      * 
-     * @param jobType The type of the job.
+     * @param taskType The type of the task.
      * @return The estimated time in nanoseconds.
      */
-    long getAverageCompletionTime( JobType jobType )
+    long getAverageCompletionTime( TaskType taskType )
     {
         long res = Long.MAX_VALUE;
 
         for( WorkerInfo wi: workers ) {
-            long val = wi.getAverageCompletionTime( jobType );
+            long val = wi.getAverageCompletionTime( taskType );
 
             if( val<res ) {
                 res = val;

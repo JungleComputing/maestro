@@ -107,10 +107,10 @@ public class Service
         return false;
     }
 
-    static boolean member( ArrayList<JobType> jobTypes, JobType jobType )
+    static boolean member( ArrayList<TaskType> taskTypes, TaskType taskType )
     {
-        for( JobType t: jobTypes ) {
-            if( t.equals( jobType ) ) {
+        for( TaskType t: taskTypes ) {
+            if( t.equals( taskType ) ) {
         	return true;
             }
         }

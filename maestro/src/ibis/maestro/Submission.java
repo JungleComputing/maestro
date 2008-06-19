@@ -1,12 +1,12 @@
 package ibis.maestro;
 
 /**
- * A simple class to store a job, worker pair.
+ * A simple class to store a task, worker pair.
  * 
  * @author Kees van Reeuwijk
  *
  */
-class Submission {
-    JobInstance job = null;
+class Subjob {
+    TaskInstance task = null;
     WorkerInfo worker = null;
 }

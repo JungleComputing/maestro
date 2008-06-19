@@ -5,11 +5,11 @@ import ibis.ipl.ReceivePortIdentifier;
 import java.io.Serializable;
 
 /**
- * The identifier of a task.
+ * The identifier of a job.
  *
  * @author Kees van Reeuwijk.
  */
-class TaskInstanceIdentifier implements Serializable
+class JobInstanceIdentifier implements Serializable
 {
     private static final long serialVersionUID = -7567750999837567234L;
     private static long serialNo = 0;
@@ -23,7 +23,7 @@ class TaskInstanceIdentifier implements Serializable
      * @param userId The user identifier to include.
      * @param receivePortIdentifier The receive port to send the result to.
      */
-    TaskInstanceIdentifier( Object userId, ReceivePortIdentifier receivePortIdentifier )
+    JobInstanceIdentifier( Object userId, ReceivePortIdentifier receivePortIdentifier )
     {
         this.id = serialNo++;
         this.userId = userId;
@@ -31,16 +31,16 @@ class TaskInstanceIdentifier implements Serializable
     }
 
     /**
-     * Returns a string representation of this task instance identifier.
+     * Returns a string representation of this job instance identifier.
      * @return The string representation.
      */
     @Override
     public String toString()
     {
-        return "(task instance: id=" + id + " user id=" + userId + " port=" + receivePort + ")";
+        return "(job instance: id=" + id + " user id=" + userId + " port=" + receivePort + ")";
     }
     /**
-     * Returns a hash code for this task identifier.
+     * Returns a hash code for this job identifier.
      * 
      * @return The hash code of the identifier.
      */
@@ -53,10 +53,10 @@ class TaskInstanceIdentifier implements Serializable
         return result;
     }
 
-    /** Compares this task identifier with the given
+    /** Compares this job identifier with the given
      * other object.
      * @param obj The other object to compare to.
-     * @return True iff the two task identifiers are equal.
+     * @return True iff the two job identifiers are equal.
      */
     @Override
     public boolean equals(Object obj) {
@@ -69,7 +69,7 @@ class TaskInstanceIdentifier implements Serializable
         if (getClass() != obj.getClass()) {
             return false;
         }
-        final TaskInstanceIdentifier other = (TaskInstanceIdentifier) obj;
+        final JobInstanceIdentifier other = (JobInstanceIdentifier) obj;
         if (id != other.id) {
             return false;
         }

@@ -4,29 +4,29 @@ import java.io.PrintStream;
 import java.util.LinkedList;
 
 /**
- * The information for one type of job in the queue.
+ * The information for one type of task in the queue.
  * 
  * @author Kees van Reeuwijk
  *
  */
 final class MasterQueueType {
-    /** The type of jobs in this queue. */
-    final JobType type;
+    /** The type of tasks in this queue. */
+    final TaskType type;
 
-    /** The work queue for these jobs. */
-    private final LinkedList<JobInstance> queue = new LinkedList<JobInstance>();
+    /** The work queue for these tasks. */
+    private final LinkedList<TaskInstance> queue = new LinkedList<TaskInstance>();
 
-    /** The number of jobs entered in this queue. */
-    private int jobCount = 0;
+    /** The number of tasks entered in this queue. */
+    private int taskCount = 0;
 
-    /** The estimated time interval between jobs being dequeued. */
+    /** The estimated time interval between tasks being dequeued. */
     final TimeEstimate dequeueInterval = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
 
     private long frontChangedTime = 0;
 
     private int maxsz = 0;
 
-    MasterQueueType( JobType type ){
+    MasterQueueType( TaskType type ){
         this.type = type;
     }
 
@@ -56,7 +56,7 @@ final class MasterQueueType {
         return queue.size();
     }
 
-    void add( JobInstance j )
+    void add( TaskInstance j )
     {
         queue.add( j );
         int sz = queue.size();
@@ -68,10 +68,10 @@ final class MasterQueueType {
     	// record the time it became this.
     	frontChangedTime = System.nanoTime();
         }
-        jobCount++;
+        taskCount++;
     }
 
-    JobInstance removeFirst()
+    TaskInstance removeFirst()
     {
         long now = System.nanoTime();
         if( frontChangedTime != 0 ) {
@@ -79,7 +79,7 @@ final class MasterQueueType {
             long i = now - frontChangedTime;
             dequeueInterval.addSample( i );
         }
-        JobInstance res = queue.removeFirst();
+        TaskInstance res = queue.removeFirst();
         if( queue.isEmpty() ) {
             // Don't take the next dequeuing into account,
             // since the queue is now empty.
@@ -93,7 +93,7 @@ final class MasterQueueType {
 
     /**
      * @return The estimated time in ns it will take to drain all
-     *          current jobs from the queue.
+     *          current tasks from the queue.
      */
     long estimateQueueTime()
     {
@@ -104,10 +104,10 @@ final class MasterQueueType {
 
     void printStatistics( PrintStream s )
     {
-        s.println( "master queue for " + type + ": " + jobCount + " jobs; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxsz );
+        s.println( "master queue for " + type + ": " + taskCount + " tasks; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxsz );
     }
 
-    CompletionInfo getCompletionInfo( TaskList tasks, WorkerList workers )
+    CompletionInfo getCompletionInfo( JobList jobs, WorkerList workers )
     {
         long averageCompletionTime = workers.getAverageCompletionTime( type );
         long duration;
@@ -119,7 +119,7 @@ final class MasterQueueType {
             long queueTime = estimateQueueTime();
             duration = queueTime + averageCompletionTime;
         }
-        JobType previousType = tasks.getPreviousJobType( type );
+        TaskType previousType = jobs.getPreviousTaskType( type );
         if( previousType == null ) {
             return null;
         }

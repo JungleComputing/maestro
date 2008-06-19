@@ -13,8 +13,8 @@ final class WorkRequestMessage extends WorkerMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
-    /** For each type of job we know, the estimated time it will
-     * take to complete the remaining jobs of this task.
+    /** For each type of task we know, the estimated time it will
+     * take to complete the remaining tasks of this job.
      */
     final CompletionInfo[] completionInfo;
 

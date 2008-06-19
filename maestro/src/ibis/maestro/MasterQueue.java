@@ -9,8 +9,8 @@ import java.util.ArrayList;
  * A class representing the master work queue.
  *
  * This requires a special implementation because we want to enforce
- * priorities for the different job types, and we want to know
- * which job types are currently present in the queue.
+ * priorities for the different task types, and we want to know
+ * which task types are currently present in the queue.
  *
  * @author Kees van Reeuwijk
  *
@@ -25,14 +25,14 @@ final class MasterQueue {
     }
 
     /**
-     * Submit a new job, belonging to the task with the given identifier,
+     * Submit a new task, belonging to the job with the given identifier,
      * to the queue.
-     * @param j The job to submit.
-     * @return The estimated time in ns this job will linger in the queue.
+     * @param j The task to submit.
+     * @return The estimated time in ns this task will linger in the queue.
      */
-    long submit( JobInstance j )
+    long submit( TaskInstance j )
     {
-        JobType t = j.type;
+        TaskType t = j.type;
 
         size++;
         // TODO: since we have an ordered list, use binary search.
@@ -54,7 +54,7 @@ final class MasterQueue {
         ix = 0;
         while( ix<queueTypes.size() ){
             MasterQueueType q = queueTypes.get( ix );
-            int cmp = t.jobNo-q.type.jobNo;
+            int cmp = t.taskNo-q.type.taskNo;
             if( cmp>0 ){
                 break;
             }
@@ -82,7 +82,7 @@ final class MasterQueue {
 
     /**
      * Given a worker, try to increment the allowance of one of its
-     * supported types. We only increment the allowance of a job
+     * supported types. We only increment the allowance of a task
      * type that is currently present in the queue.
      * @param workerID The id of the worker to increase the allowance for.
      * @param workers The list of workers of the master.
@@ -91,9 +91,9 @@ final class MasterQueue {
     {
         for( MasterQueueType t: queueTypes ) {
             if( !t.isEmpty() ) {
-                // There are jobs of this type in the queue.
+                // There are tasks of this type in the queue.
                 if( workers.incrementAllowance( workerID, t.type ) ) {
-                    // We could increment the allowance. Mission accomplished.
+                    // We could increment the allowance. Job accomplished.
                     break;
                 }
             }
@@ -101,26 +101,26 @@ final class MasterQueue {
     }
 
     /**
-     * Given a list of workers and a submission structure to fill,
-     * try to select a job and a worker to execute the job.
-     * If there are no jobs in the queue, return false.
-     * If there are jobs in the queue, but no workers to execute the
-     * jobs, set the worker field of the submission to <code>null</code>.
+     * Given a list of workers and a subjob structure to fill,
+     * try to select a task and a worker to execute the task.
+     * If there are no tasks in the queue, return false.
+     * If there are tasks in the queue, but no workers to execute the
+     * tasks, set the worker field of the subjob to <code>null</code>.
      *
      * FIXME: see if we can factor out the empty queue test.
      * 
-     * @param sub The submission structure to fill.
+     * @param sub The subjob structure to fill.
      * @param workers The list of workers to choose from.
      * @return True iff there currently is no work.
      */
-    boolean selectSubmisson( Submission sub, WorkerList workers )
+    boolean selectSubmisson( Subjob sub, WorkerList workers )
     {
         boolean noWork = true;
         sub.worker = null;
-        sub.job = null;
+        sub.task = null;
         for( MasterQueueType t: queueTypes ) {
             if( Settings.traceMasterQueue ){
-                System.out.println( "Trying to select job from " + t.type + " queue" );
+                System.out.println( "Trying to select task from " + t.type + " queue" );
             }
             if( t.isEmpty() ) {
                 if( Settings.traceMasterQueue ){
@@ -133,16 +133,16 @@ final class MasterQueue {
                 noWork = false; // There is at least one queue with work.
                 if( worker == null ) {
                     if( Settings.traceMasterQueue ){
-                        System.out.println( "No ready worker for job type " + t.type );
+                        System.out.println( "No ready worker for task type " + t.type );
                     }
                 }
                 else {
-                    JobInstance e = t.removeFirst();
-                    sub.job = e;
+                    TaskInstance e = t.removeFirst();
+                    sub.task = e;
                     sub.worker = worker;
                     size--;
                     if( Settings.traceMasterQueue ){
-                        System.out.println( "Found a worker for job type " + t.type );
+                        System.out.println( "Found a worker for task type " + t.type );
                     }
                     break;
                 }
@@ -167,13 +167,13 @@ final class MasterQueue {
         }
     }
 
-    CompletionInfo[] getCompletionInfo( TaskList tasks, WorkerList workers )
+    CompletionInfo[] getCompletionInfo( JobList jobs, WorkerList workers )
     {
 	CompletionInfo res[] = new CompletionInfo[queueTypes.size()];
 	
 	for( int i=0; i<res.length; i++ ) {
 	    MasterQueueType q = queueTypes.get( i );
-	    res[i] = q.getCompletionInfo( tasks, workers );
+	    res[i] = q.getCompletionInfo( jobs, workers );
 	}
 	return res;
     }

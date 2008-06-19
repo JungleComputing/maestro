@@ -17,30 +17,34 @@ final class RegisterWorkerMessage extends WorkerMessage {
     /** Our receive port. */
     final ReceivePortIdentifier port;
 
-    final JobType[] supportedTypes;
+    final TaskType[] supportedTypes;
 
     /** Our identifier for the master. */
     final MasterIdentifier masterIdentifier;
 
     /**
      * Constructs a new worker registration message.
-     * @param port The receive port to use to submit jobs.
+     * @param port The receive port to use to submit tasks.
      * @param masterID The identifier to use.
      */
-    RegisterWorkerMessage( ReceivePortIdentifier port, MasterIdentifier masterID, JobType[] jobTypes )
+    RegisterWorkerMessage( ReceivePortIdentifier port, MasterIdentifier masterID, TaskType[] taskTypes )
     {
 	super( null );
 	this.port = port;
 	this.masterIdentifier = masterID;
-	this.supportedTypes = jobTypes;
+	this.supportedTypes = taskTypes;
     }
 
+    /**
+     * Returns a string representation of this message.
+     * @return The string representation.
+     */
     @Override
     public String toString()
     {
         String tl = "";
         
-        for( JobType t: supportedTypes ) {
+        for( TaskType t: supportedTypes ) {
             if( !tl.isEmpty() ) {
                 tl += ',';
             }

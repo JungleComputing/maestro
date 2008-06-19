@@ -7,8 +7,8 @@ import java.util.LinkedList;
  * A class representing the master work queue.
  *
  * This requires a special implementation because we want to enforce
- * priorities for the different job types, and we want to know
- * which job types are currently present in the queue.
+ * priorities for the different task types, and we want to know
+ * which task types are currently present in the queue.
  *
  * @author Kees van Reeuwijk
  *
@@ -23,31 +23,31 @@ final class WorkerQueue {
     }
 
     /**
-     * The information for one type of job in the queue.
+     * The information for one type of task in the queue.
      * 
      * @author Kees van Reeuwijk
      *
      */
     private static final class QueueType {
-	/** The type of jobs in this queue. */
-	final JobType type;
+	/** The type of tasks in this queue. */
+	final TaskType type;
 
-	/** The work queue for these jobs. */
-	final LinkedList<RunJobMessage> queue = new LinkedList<RunJobMessage>();
+	/** The work queue for these tasks. */
+	final LinkedList<RunTaskMessage> queue = new LinkedList<RunTaskMessage>();
 
-	QueueType( JobType type ){
+	QueueType( TaskType type ){
 	    this.type = type;
 	}
     }
 
     /**
-     * Submit a new job, belonging to the task with the given identifier,
+     * Submit a new task, belonging to the job with the given identifier,
      * to the queue.
-     * @param msg The job to submit.
+     * @param msg The task to submit.
      */
-    void add( RunJobMessage msg )
+    void add( RunTaskMessage msg )
     {
-	JobType t = msg.job.type;
+	TaskType t = msg.task.type;
 
 	size++;
 	// TODO: since we have an ordered list, use binary search.
@@ -69,7 +69,7 @@ final class WorkerQueue {
 	ix = 0;
 	while( ix<queueTypes.size() ){
 	    QueueType q = queueTypes.get( ix );
-	    int cmp = t.jobNo-q.type.jobNo;
+	    int cmp = t.taskNo-q.type.taskNo;
 	    if( cmp>0 ){
 		break;
 	    }
@@ -95,31 +95,31 @@ final class WorkerQueue {
     }
 
     /**
-     * Given a list of workers and a submission structure to fill,
-     * try to select a job and a worker to execute the job.
-     * If there are no jobs in the queue, return false.
-     * If there are jobs in the queue, but no workers to execute the
-     * jobs, set the worker field of the submission to <code>null</code>.
+     * Given a list of workers and a subjob structure to fill,
+     * try to select a task and a worker to execute the task.
+     * If there are no tasks in the queue, return false.
+     * If there are tasks in the queue, but no workers to execute the
+     * tasks, set the worker field of the subjob to <code>null</code>.
      *
      * FIXME: see if we can factor out the empty queue test.
      * 
-     * @param sub The submission structure to fill.
+     * @param sub The subjob structure to fill.
      * @param workers The list of workers to choose from.
      * @return True iff there currently is no work.
      */
-    RunJobMessage remove()
+    RunTaskMessage remove()
     {
-	// Search from highest to lowest priority for a job to execute.
+	// Search from highest to lowest priority for a task to execute.
 	for( QueueType t: queueTypes ) {
 	    if( Settings.traceWorkerProgress ){
-		System.out.println( "Worker: trying to select job from " + t.type + " queue" );
+		System.out.println( "Worker: trying to select task from " + t.type + " queue" );
 	    }
-		LinkedList<RunJobMessage> queue = t.queue;
+		LinkedList<RunTaskMessage> queue = t.queue;
 	    if( !queue.isEmpty() ) {
-		RunJobMessage e = queue.removeFirst();
+		RunTaskMessage e = queue.removeFirst();
 		size--;
 		if( Settings.traceWorkerProgress ){
-		    System.out.println( "Worker: found a job of type " + t.type );
+		    System.out.println( "Worker: found a task of type " + t.type );
 		}
 		return e;
 	    }

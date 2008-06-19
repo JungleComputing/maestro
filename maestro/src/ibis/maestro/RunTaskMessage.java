@@ -4,35 +4,35 @@ import ibis.maestro.Master.WorkerIdentifier;
 
 
 /**
- * Tell the worker to execute the job contained in this message.
+ * Tell the worker to execute the task contained in this message.
  * 
  * @author Kees van Reeuwijk
  *
  */
-final class RunJobMessage extends MasterMessage {
+final class RunTaskMessage extends MasterMessage {
     /** */
     private static final long serialVersionUID = 1L;
     final WorkerIdentifier workerIdentifier;
-    final JobInstance job;
-    final long jobId;
+    final TaskInstance task;
+    final long taskId;
     private transient long queueTime = 0;
     private transient long runTime = 0;
 
     /**
-     * Given a job and its source, constructs a new RunJobMessage.
-     * @param source Who sent this job, as an identifier we know about.
-     * @param job The job to run.
-     * @param jobId The identifier of the job.
+     * Given a task and its source, constructs a new RunTaskMessage.
+     * @param source Who sent this task, as an identifier we know about.
+     * @param task The task to run.
+     * @param taskId The identifier of the task.
      */
-    RunJobMessage( Worker.MasterIdentifier source, WorkerIdentifier workerIdentifier, JobInstance job, long jobId )
+    RunTaskMessage( Worker.MasterIdentifier source, WorkerIdentifier workerIdentifier, TaskInstance task, long taskId )
     {
 	super( source );
 	this.workerIdentifier = workerIdentifier;
-	this.job = job;
-        this.jobId = jobId;
+	this.task = task;
+        this.taskId = taskId;
     }
 
-    /** Set the start time of this job to the given time in ns.
+    /** Set the start time of this task to the given time in ns.
      * @param t The start time.
      */
     void setQueueTime(long t) {
@@ -40,7 +40,7 @@ final class RunJobMessage extends MasterMessage {
     }
 
     /**
-     * Registers the given time as the moment this job started running.
+     * Registers the given time as the moment this task started running.
      * @param t The start time.
      */
     void setRunTime(long t )
@@ -65,12 +65,12 @@ final class RunJobMessage extends MasterMessage {
     }
 
     /**
-     * Returns a string representation of this job messabge.
+     * Returns a string representation of this task messabge.
      * @return The string representation.
      */
     @Override
     public String toString()
     {
-	return "Job message for job " + jobId + " of type " + job.type;
+	return "Task message for task " + taskId + " of type " + task.type;
     }
 }

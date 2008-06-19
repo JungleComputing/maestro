@@ -3,7 +3,7 @@ package ibis.maestro;
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
-import ibis.maestro.Task.TaskIdentifier;
+import ibis.maestro.Job.JobIdentifier;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -19,7 +19,7 @@ import java.util.Set;
  * @author Kees van Reeuwijk
  */
 @SuppressWarnings("synthetic-access")
-public final class Worker extends Thread implements JobSource, PacketReceiveListener<MasterMessage> {
+public final class Worker extends Thread implements TaskSource, PacketReceiveListener<MasterMessage> {
 
     /** The list of all known masters, in the order that they were handed their
      * id. Thus, element <code>i</code> of the list is guaranteed to have
@@ -31,11 +31,11 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     private final LinkedList<IbisIdentifier> unregisteredMasters = new LinkedList<IbisIdentifier>();
 
     /** The list of masters we should ask for extra work if we are bored. */
-    private final ArrayList<MasterInfo> jobSources = new ArrayList<MasterInfo>();
+    private final ArrayList<MasterInfo> taskSources = new ArrayList<MasterInfo>();
 
     private final Node node;
 
-    private final TaskList tasks;
+    private final JobList jobs;
 
     private final PacketUpcallReceivePort<MasterMessage> receivePort;
     private final PacketSendPort<WorkerMessage> sendPort;
@@ -48,38 +48,38 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     private long activeTime = 0;
     private long stopTime = 0;
     private long idleDuration = 0;      // Cumulative idle time during the run.
-    private int runningJobs = 0;
+    private int runningTasks = 0;
     private boolean askMastersForWork = true;
     private final Random rng = new Random();
 
-    private static class JobStats {
-	private int jobCount = 0;
+    private static class TaskStats {
+	private int taskCount = 0;
 	private long workDuration = 0;        
-	private long queueDuration = 0;     // Cumulative queue time of all jobs.
+	private long queueDuration = 0;     // Cumulative queue time of all tasks.
 
 	/**
-	 * Registers the completion of a job of this particular type, with the
+	 * Registers the completion of a task of this particular type, with the
 	 * given queue interval and the given work interval.
-	 * @param queueInterval The time this job spent in the queue.
-	 * @param workInterval The time it took to execute this job.
+	 * @param queueInterval The time this task spent in the queue.
+	 * @param workInterval The time it took to execute this task.
 	 */
-	private void countJob( long queueInterval, long workInterval )
+	private void countTask( long queueInterval, long workInterval )
 	{
-	    jobCount++;
+	    taskCount++;
 	    queueDuration += queueInterval;
 	    workDuration += workInterval;
 	}
 
-	private void reportStats( PrintStream out, JobType t, double workInterval )
+	private void reportStats( PrintStream out, TaskType t, double workInterval )
 	{
 	    double workPercentage = 100.0*(workDuration/workInterval);
-	    if( jobCount>0 ) {
+	    if( taskCount>0 ) {
 		out.println( "Worker: " + t + ":" );
-		out.printf( "    # jobs          = %5d\n", jobCount );
+		out.printf( "    # tasks          = %5d\n", taskCount );
 		out.println( "    total work time = " + Service.formatNanoseconds( workDuration ) + String.format( " (%.1f%%)", workPercentage )  );
-		out.println( "    queue time/job  = " + Service.formatNanoseconds( queueDuration/jobCount ) );
-		out.println( "    work time/job   = " + Service.formatNanoseconds( workDuration/jobCount ) );
-		out.println( "    average latency = " + Service.formatNanoseconds( (workDuration+queueDuration)/jobCount ) );
+		out.println( "    queue time/task  = " + Service.formatNanoseconds( queueDuration/taskCount ) );
+		out.println( "    work time/task   = " + Service.formatNanoseconds( workDuration/taskCount ) );
+		out.println( "    average latency = " + Service.formatNanoseconds( (workDuration+queueDuration)/taskCount ) );
 	    }
 	    else {
 		out.println( "Worker: " + t + " is unused" );
@@ -87,7 +87,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	}
     }
 
-    private HashMap<JobType, JobStats> jobStats = new HashMap<JobType, JobStats>();
+    private HashMap<TaskType, TaskStats> taskStats = new HashMap<TaskType, TaskStats>();
 
     static final class MasterIdentifier implements Serializable {
 	private static final long serialVersionUID = 7727840589973468928L;
@@ -141,14 +141,14 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
      * Creates a new Maestro worker instance using the given Ibis instance.
      * @param ibis The Ibis instance this worker belongs to.
      * @param node The node this worker belongs to.
-     * @param tasks The list of tasks.
+     * @param jobs The list of jobs.
      * @throws IOException Thrown if the construction of the worker failed.
      */
-    Worker( Ibis ibis, Node node, TaskList tasks ) throws IOException
+    Worker( Ibis ibis, Node node, JobList jobs ) throws IOException
     {
 	super( "Worker" );   // Create a thread with a name.
 	this.node = node;
-        this.tasks = tasks;
+        this.jobs = jobs;
 	receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
 	sendPort = new PacketSendPort<WorkerMessage>( ibis );
 	for( int i=0; i<numberOfProcessors; i++ ) {
@@ -207,7 +207,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     }
 
     /**
-     * Returns the identifier of the job submission port of this worker.
+     * Returns the identifier of the task subjob port of this worker.
      * @return The port identifier.
      */
     ReceivePortIdentifier identifier()
@@ -215,10 +215,10 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	return receivePort.identifier();
     }
 
-    /** Removes and returns a random job source from the list of
-     * known job sources. Returns null if the list is empty.
+    /** Removes and returns a random task source from the list of
+     * known task sources. Returns null if the list is empty.
      * 
-     * @return The job source, or null if there isn't one.
+     * @return The task source, or null if there isn't one.
      */
     private MasterInfo getRandomWorkSource()
     {
@@ -229,14 +229,14 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	        return null;
 	    }
 	    while( true ){
-	        int size = jobSources.size();
+	        int size = taskSources.size();
 	        if( size == 0 ){
 	            return null;
 	        }
-	        // There are masters on the explict job sources list,
+	        // There are masters on the explict task sources list,
 	        // draw a random one.
 	        int ix = rng.nextInt( size );
-	        res = jobSources.remove( ix );
+	        res = taskSources.remove( ix );
 	        if( !res.isDead() ){
 	            return res;
 	        }
@@ -273,7 +273,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 
     /**
      * Returns a random registered master.
-     * @return The job source, or null if there isn't one.
+     * @return The task source, or null if there isn't one.
      */
     private MasterInfo getRandomRegisteredMaster()
     {
@@ -339,8 +339,8 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    MasterInfo info = new MasterInfo( masterID, ibis );
 	    masters.add( info );
 	}
-        JobType jobTypes[] = tasks.getSupportedJobTypes();
-	RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), masterID, jobTypes );
+        TaskType taskTypes[] = jobs.getSupportedTaskTypes();
+	RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), masterID, taskTypes );
 	long sz = sendPort.tryToSend( ibis, Globals.masterReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ) {
 	    System.err.println( "Cannot register with master " + ibis );
@@ -348,7 +348,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	}
     }
 
-    private void sendJobRequest( MasterInfo master, CompletionInfo completionInfo[] )
+    private void sendTaskRequest( MasterInfo master, CompletionInfo completionInfo[] )
     {
 	WorkRequestMessage msg = new WorkRequestMessage( master.getIdentifierOnMaster(), completionInfo );
 	long sz = sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
@@ -378,23 +378,23 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    return;
 	}
 
-	// Try to tell a master we want more jobs.
-	MasterInfo jobSource = getRandomWorkSource();
-	if( jobSource != null ){
+	// Try to tell a master we want more tasks.
+	MasterInfo taskSource = getRandomWorkSource();
+	if( taskSource != null ){
 	    if( Settings.traceWorkerProgress ){
-		Globals.log.reportProgress( "Worker: asking master " + jobSource.localIdentifier + " for work" );
+		Globals.log.reportProgress( "Worker: asking master " + taskSource.localIdentifier + " for work" );
 	    }
-	    sendJobRequest( jobSource, completionInfo );
+	    sendTaskRequest( taskSource, completionInfo );
 	    return;
 	}
 	
         // Finally, just tell a random master about our current work queues.
-	jobSource = getRandomRegisteredMaster();
-        if( jobSource != null ){
+	taskSource = getRandomRegisteredMaster();
+        if( taskSource != null ){
             if( Settings.traceWorkerProgress ){
-                Globals.log.reportProgress( "Worker: updating master " + jobSource.localIdentifier );
+                Globals.log.reportProgress( "Worker: updating master " + taskSource.localIdentifier );
             }
-            sendUpdate( jobSource, completionInfo );
+            sendUpdate( taskSource, completionInfo );
             return;
         }
     }
@@ -412,16 +412,16 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	    master.setIdentifierOnMaster( msg.identifierOnMaster );
 	    queue.notifyAll();
 	}
-	CompletionInfo[] completionInfo = node.getCompletionInfo( tasks );
+	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );
         sendUpdate( master, completionInfo );
     }
 
     /**
-     * Handle a message containing a new job to run.
+     * Handle a message containing a new task to run.
      * 
      * @param msg The message to handle.
      */
-    private void handleRunJobMessage( RunJobMessage msg )
+    private void handleRunTaskMessage( RunTaskMessage msg )
     {
 	long now = System.nanoTime();
 
@@ -432,7 +432,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
             }
 	    if( queueEmptyMoment>0 ){
 		// The queue was empty before we entered this
-		// job in it. Register this with this job,
+		// task in it. Register this with this task,
 		// so that we can give feedback to the master.
 		long queueEmptyInterval = now - queueEmptyMoment;
 		idleDuration += queueEmptyInterval;
@@ -454,18 +454,18 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     }
 
     /**
-     * Handles job request message <code>msg</code>.
-     * @param msg The job we received and will put in the queue.
+     * Handles task request message <code>msg</code>.
+     * @param msg The task we received and will put in the queue.
      */
     public void messageReceived( MasterMessage msg )
     {
 	if( Settings.traceWorkerProgress ){
 	    Globals.log.reportProgress( "Worker: received message " + msg );
 	}
-	if( msg instanceof RunJobMessage ){
-	    RunJobMessage runJobMessage = (RunJobMessage) msg;
+	if( msg instanceof RunTaskMessage ){
+	    RunTaskMessage runTaskMessage = (RunTaskMessage) msg;
 
-	    handleRunJobMessage( runJobMessage );
+	    handleRunTaskMessage( runTaskMessage );
 	}
 	else if( msg instanceof WorkerAcceptMessage ) {
 	    WorkerAcceptMessage am = (WorkerAcceptMessage) msg;
@@ -477,11 +477,11 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	}
     }
 
-    /** Gets a job to execute.
-     * @return The next job to execute.
+    /** Gets a task to execute.
+     * @return The next task to execute.
      */
     @Override
-    public RunJob getJob()
+    public RunTask getTask()
     {
 	while( true ) {
 	    boolean askForWork = false;
@@ -491,15 +491,15 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 			if( queueEmptyMoment == 0 ) {
 			    queueEmptyMoment = System.nanoTime();
 			}
-			if( stopped && runningJobs == 0 ) {
-			    // No jobs in queue, and worker is stopped. Return null to
-			    // indicate that there won't be further jobs.
+			if( stopped && runningTasks == 0 ) {
+			    // No tasks in queue, and worker is stopped. Return null to
+			    // indicate that there won't be further tasks.
 			    break;
 			}
-			if( jobSources.isEmpty() && unregisteredMasters.isEmpty() ){
+			if( taskSources.isEmpty() && unregisteredMasters.isEmpty() ){
 			    // There was no master to subscribe to, update, or ask for work.
 			    if( Settings.traceWorkerProgress ) {
-				System.out.println( "Worker: waiting for new jobs in queue" );
+				System.out.println( "Worker: waiting for new tasks in queue" );
 			    }
 			    queue.wait();
 			}
@@ -508,20 +508,19 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 			}
 		    }
 		    else {
-			runningJobs++;
-			RunJobMessage message = queue.remove();
+			runningTasks++;
+			RunTaskMessage message = queue.remove();
 			long now = System.nanoTime();
 			message.setRunTime( now );
-                        Job job = findJob( message.job.type );
+                        Task task = findTask( message.task.type );
 			if( Settings.traceWorkerProgress ) {
-			    System.out.println( "Worker: handed out job " + message + " of type " + message.job.type + "; it was queued for " + Service.formatNanoseconds( now-message.getQueueTime() ) + "; there are now " + runningJobs + " running jobs" );
+			    System.out.println( "Worker: handed out task " + message + " of type " + message.task.type + "; it was queued for " + Service.formatNanoseconds( now-message.getQueueTime() ) + "; there are now " + runningTasks + " running tasks" );
 			}
-                        // TODO: also pass on the task in RunJob.
-			return new RunJob( job, message );
+			return new RunTask( task, message );
 		    }
 		}
 		if( askForWork ){
-		    CompletionInfo[] completionInfo = node.getCompletionInfo( tasks );
+		    CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );
 		    askMoreWork( completionInfo );
 		}
 	    }
@@ -533,16 +532,16 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     }
 
 
-    /** Given a task identifier, return the index in <code>tasks</code>
+    /** Given a job identifier, return the index in <code>jobs</code>
      * of this identifier, or -1 if it doesn't exist.
-     * @param task The task to search for.
-     * @return The index of the task in <code>tasks</code>
+     * @param job The job to search for.
+     * @return The index of the job in <code>jobs</code>
      */
-    private int searchTask( TaskIdentifier task )
+    private int searchJob( JobIdentifier job )
     {
-        for( int i=0; i<tasks.size(); i++ ) {
-            Task t = tasks.get( i );
-            if( t.id.equals( task ) ){
+        for( int i=0; i<jobs.size(); i++ ) {
+            Job t = jobs.get( i );
+            if( t.id.equals( job ) ){
                 return i;
             }
         }
@@ -551,87 +550,85 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     }
 
     /**
-     * Given a job type, return the task it belongs to, or <code>null</code> if we
+     * Given a task type, return the job it belongs to, or <code>null</code> if we
      * cannot find it. Since that is an internal error, report that error.
      * @param type
      * @return
      */
-    private Task findTask( JobType type )
+    private Job findJob( TaskType type )
     {
-        int ix = searchTask( type.task );
+        int ix = searchJob( type.job );
         if( ix<0 ) {
-            Globals.log.reportInternalError( "Unknown task id in job type " + type );
+            Globals.log.reportInternalError( "Unknown job id in task type " + type );
             return null;
         }
-        return tasks.get( ix );
+        return jobs.get( ix );
     }
 
     /**
-     * Given a job type, return the job.
-     * @param type The job type.
-     * @return The job.
+     * Given a task type, return the task.
+     * @param type The task type.
+     * @return The task.
      */
-    private Job findJob( JobType type )
+    private Task findTask( TaskType type )
     {
-        Task t = findTask( type );
-        return t.jobs[type.jobNo];
+        Job t = findJob( type );
+        return t.tasks[type.taskNo];
     }
 
-    /** Reports the result of the execution of a job. (Overrides method in superclass.)
-     * @param job The job that was run.
-     * @param result The result coming rom the run job.
+    /** Reports the result of the execution of a task. (Overrides method in superclass.)
+     * @param task The task that was run.
+     * @param result The result coming rom the run task.
      */
     @Override
-    public void reportJobCompletion( RunJob job, Object result )
+    public void reportTaskCompletion( RunTask task, Object result )
     {
 	long now = System.nanoTime();
-	long queueInterval = job.message.getRunTime()-job.message.getQueueTime();
-	long computeInterval = job.message.getRunTime()-now;
-	JobType jobType = job.message.job.type;
-        Task t = findTask( jobType );
-        int nextJobNo = jobType.jobNo+1;
+	long queueInterval = task.message.getRunTime()-task.message.getQueueTime();
+	long computeInterval = task.message.getRunTime()-now;
+	TaskType taskType = task.message.task.type;
+        Job t = findJob( taskType );
+        int nextTaskNo = taskType.taskNo+1;
 
-        long taskCompletionInterval;
-        if( nextJobNo<t.jobs.length ){
+        long jobCompletionInterval;
+        if( nextTaskNo<t.tasks.length ){
             // There is a next step to take.
-            JobInstance nextJob = new JobInstance( job.message.job.taskInstance, new JobType( jobType.task, nextJobNo ), result );
-            taskCompletionInterval = node.submitAndGetInfo( nextJob );
+            TaskInstance nextTask = new TaskInstance( task.message.task.jobInstance, new TaskType( taskType.job, nextTaskNo ), result );
+            jobCompletionInterval = node.submitAndGetInfo( nextTask );
         }
         else {
             // This was the final step. Report back the result.
-            TaskInstanceIdentifier identifier = job.message.job.taskInstance;
+            JobInstanceIdentifier identifier = task.message.task.jobInstance;
             sendResultMessage( identifier.receivePort, identifier, result );
-            taskCompletionInterval = 0L;
+            jobCompletionInterval = 0L;
         }
-        if( Settings.traceRemainingTaskTime ) {
-            Globals.log.reportProgress( "Completed " + job.message + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + " taskCompletionInterval=" + Service.formatNanoseconds( taskCompletionInterval ) );
+        if( Settings.traceRemainingJobTime ) {
+            Globals.log.reportProgress( "Completed " + task.message + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + " jobCompletionInterval=" + Service.formatNanoseconds( jobCompletionInterval ) );
         }
-	final MasterIdentifier master = job.message.source;
+	final MasterIdentifier master = task.message.source;
 
         // Update statistics and notify our own queue waiters that something
         // has happened.
 	synchronized( queue ) {
 	    final MasterInfo mi = masters.get( master.value );
 	    if( mi != null ) {
-		if( !Service.member( jobSources, mi ) ) {
-		    jobSources.add( mi );
+		if( !Service.member( taskSources, mi ) ) {
+		    taskSources.add( mi );
 		}
 	    }
-	    if( !jobStats.containsKey(jobType) ){
-		jobStats.put( jobType, new JobStats() );
+	    if( !taskStats.containsKey(taskType) ){
+		taskStats.put( taskType, new TaskStats() );
 	    }
-	    JobStats stats = jobStats.get( jobType );
-	    stats.countJob( queueInterval, now-job.message.getRunTime() );
-	    runningJobs--;
-	    //queue.updateCompletionInterval( jobType, taskCompletionInterval );
-	    //completionInfo = queue.getCompletionInfo();
+	    TaskStats stats = taskStats.get( taskType );
+	    stats.countTask( queueInterval, now-task.message.getRunTime() );
+	    runningTasks--;
 	    queue.notifyAll();
 	}
-	CompletionInfo[] completionInfo = node.getCompletionInfo( tasks );	
-	WorkerMessage msg = new JobCompletedMessage( job.message.workerIdentifier, job.message.jobId, queueInterval, computeInterval, completionInfo );
+	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );	
+	WorkerMessage msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, queueInterval, computeInterval, completionInfo );
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( Settings.traceWorkerProgress ) {
-	    System.out.println( "Completed job "  + job.message );
+	    System.out.println( "Completed task "  + task.message );
 	}
     }
 
@@ -668,7 +665,7 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     /** Print some statistics about the entire worker run. */
     void printStatistics( PrintStream s )
     {
-        tasks.printStatistics( s );
+        jobs.printStatistics( s );
 	if( stopTime<startTime ) {
 	    System.err.println( "Worker didn't stop yet" );
 	    stopTime = System.nanoTime();
@@ -679,9 +676,9 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
 	}
 	long workInterval = stopTime-activeTime;
 	double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
-	Set<JobType> tl = jobStats.keySet();
-	for( JobType t: tl ){
-	    JobStats stats = jobStats.get( t );
+	Set<TaskType> tl = taskStats.keySet();
+	for( TaskType t: tl ){
+	    TaskStats stats = taskStats.get( t );
 	    stats.reportStats( s, t, workInterval );
 	}
 	s.printf( "Worker: # threads        = %5d\n", workThreads.length );
@@ -692,16 +689,16 @@ public final class Worker extends Thread implements JobSource, PacketReceiveList
     }
 
     /**
-     * Send a result message to the given port, using the given task identifier
+     * Send a result message to the given port, using the given job identifier
      * and the given result value.
      * @param port The port to send the result to.
-     * @param id The task identifier.
+     * @param id The job instance identifier.
      * @param result The result to send.
-     * @return The size of the sent message, or -1 if the transmission failed.
+     * @return The size of the sent message, or -1 if the transjob failed.
      */
-    long sendResultMessage(ReceivePortIdentifier port, TaskInstanceIdentifier id,
+    long sendResultMessage(ReceivePortIdentifier port, JobInstanceIdentifier id,
 	    Object result) {
-	WorkerMessage msg = new TaskResultMessage( id, result );
+	WorkerMessage msg = new JobResultMessage( id, result );
 	return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
     }
 }

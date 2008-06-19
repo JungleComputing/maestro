@@ -10,16 +10,16 @@ import java.io.Serializable;
 class CompletionInfo implements Serializable
 {
     private static final long serialVersionUID = 1L;
-    final JobType type;
+    final TaskType type;
     final long completionInterval;
 
-    // TODO: instead of storing the info per type, use an array for a task
+    // TODO: instead of storing the info per type, use an array for a job
     // and just mark the unknown values.
     /**
-     * @param type The type of job.
+     * @param type The type of task.
      * @param completionInterval The completion interval.
      */
-    CompletionInfo(JobType type, long completionInterval) {
+    CompletionInfo(TaskType type, long completionInterval) {
 	this.type = type;
 	this.completionInterval = completionInterval;
     }

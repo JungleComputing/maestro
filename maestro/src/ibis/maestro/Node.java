@@ -30,8 +30,8 @@ public final class Node {
     /** The list of maestro nodes in this computation. */
     private final ArrayList<MaestroInfo> maestros = new ArrayList<MaestroInfo>();
 
-    /** The list of running tasks with their completion listeners. */
-    private final ArrayList<TaskInstanceInfo> runningTasks = new ArrayList<TaskInstanceInfo>();
+    /** The list of running jobs with their completion listeners. */
+    private final ArrayList<JobInstanceInfo> runningJobs = new ArrayList<JobInstanceInfo>();
 
     private boolean isMaestro;
 
@@ -104,23 +104,23 @@ public final class Node {
 
     }
 
-    private static class TaskInstanceInfo {
-	final TaskInstanceIdentifier identifier;
-	final Task task;
+    private static class JobInstanceInfo {
+	final JobInstanceIdentifier identifier;
+	final Job job;
 	final CompletionListener listener;
 	private final long startTime = System.nanoTime();
 
 	/**
-	 * Constructs an information class for the given task identifier.
+	 * Constructs an information class for the given job identifier.
 	 * 
-	 * @param identifier The task identifier.
-	 * @param task The task this belongs to.
-	 * @param listener The completion listener associated with the task.
+	 * @param identifier The job identifier.
+	 * @param job The job this belongs to.
+	 * @param listener The completion listener associated with the job.
 	 */
-	private TaskInstanceInfo( final TaskInstanceIdentifier identifier, Task task, final CompletionListener listener )
+	private JobInstanceInfo( final JobInstanceIdentifier identifier, Job job, final CompletionListener listener )
 	{
 	    this.identifier = identifier;
-	    this.task = task;
+	    this.job = job;
 	    this.listener = listener;
 	}
     }
@@ -184,12 +184,13 @@ public final class Node {
 
     /**
      * Constructs a new Maestro node using the given name server and completion listener.
+     * @param jobs The jobs that should be supported in this node.
      * @param runForMaestro If true, try to get elected as maestro.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
     @SuppressWarnings("synthetic-access")
-    public Node( TaskList tasks, boolean runForMaestro ) throws IbisCreationFailedException, IOException
+    public Node( JobList jobs, boolean runForMaestro ) throws IbisCreationFailedException, IOException
     {
 	Properties ibisProperties = new Properties();
 	IbisIdentifier maestro;
@@ -221,7 +222,7 @@ public final class Node {
 	    Globals.log.reportProgress( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
 	}
 	master = new Master( ibis, this );
-	worker = new Worker( ibis, this, tasks );
+	worker = new Worker( ibis, this, jobs );
 	master.setLocalListener( worker );
 	worker.setLocalListener( master );
 	master.start();
@@ -271,45 +272,45 @@ public final class Node {
 	}
     }
 
-    /** Report the completion of the task with the given identifier.
-     * @param id The task that has been completed.
-     * @param result The task result.
+    /** Report the completion of the job with the given identifier.
+     * @param id The job that has been completed.
+     * @param result The job result.
      */
     @SuppressWarnings("synthetic-access")
-    void reportCompletion( TaskInstanceIdentifier id, Object result )
+    void reportCompletion( JobInstanceIdentifier id, Object result )
     {
-	TaskInstanceInfo task = null;
+	JobInstanceInfo job = null;
 
-	synchronized( runningTasks ){
-	    for( int i=0; i<runningTasks.size(); i++ ){
-		task = runningTasks.get( i );
-		if( task.identifier.equals( id ) ){
-		    long taskInterval = System.nanoTime()-task.startTime;
-		    task.task.registerTaskTime( taskInterval );
-		    runningTasks.remove( i );
+	synchronized( runningJobs ){
+	    for( int i=0; i<runningJobs.size(); i++ ){
+		job = runningJobs.get( i );
+		if( job.identifier.equals( id ) ){
+		    long jobInterval = System.nanoTime()-job.startTime;
+		    job.job.registerJobTime( jobInterval );
+		    runningJobs.remove( i );
 		    break;
 		}
 	    }
 	}
-	if( task != null ){
-	    task.listener.taskCompleted( this, id.userId, result );
+	if( job != null ){
+	    job.listener.jobCompleted( this, id.userId, result );
 	}
     }
 
     @SuppressWarnings("synthetic-access")
-    void addRunningTask( TaskInstanceIdentifier id, Task task, CompletionListener listener )
+    void addRunningJob( JobInstanceIdentifier id, Job job, CompletionListener listener )
     {
-	synchronized( runningTasks ){
-	    runningTasks.add( new TaskInstanceInfo( id, task, listener ) );
+	synchronized( runningJobs ){
+	    runningJobs.add( new JobInstanceInfo( id, job, listener ) );
 	}
     }
 
-    void submit( JobInstance j )
+    void submit( TaskInstance j )
     {
 	master.submit( j );
     }
     
-    long submitAndGetInfo( JobInstance j )
+    long submitAndGetInfo( TaskInstance j )
     {
 	return master.submitAndGetInfo( j );
     }
@@ -317,11 +318,11 @@ public final class Node {
     /**
      * 
      * @param receivePort The port to send it to.
-     * @param id The identifier of the task.
+     * @param id The identifier of the job.
      * @param result The result.
-     * @return The size of the transmitted message, or -1 if the transmission failed.
+     * @return The size of the transmitted message, or -1 if the transjob failed.
      */
-    long sendResultMessage( ReceivePortIdentifier receivePort, TaskInstanceIdentifier id,
+    long sendResultMessage( ReceivePortIdentifier receivePort, JobInstanceIdentifier id,
 	    Object result ) {
 	return worker.sendResultMessage( receivePort, id, result );
     }
@@ -346,9 +347,9 @@ public final class Node {
 	return master.identifier();
     }
 
-    CompletionInfo[] getCompletionInfo( TaskList tasks )
+    CompletionInfo[] getCompletionInfo( JobList jobs )
     {
-	return master.getCompletionInfo( tasks );
+	return master.getCompletionInfo( jobs );
     }
 
     /**

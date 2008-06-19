@@ -1,25 +1,25 @@
 package ibis.maestro;
 
 /**
- * A message containing the result of an entire task.
+ * A message containing the result of an entire job.
  * 
  * @author Kees van Reeuwijk
  *
  */
-final class TaskResultMessage extends WorkerMessage {
+final class JobResultMessage extends WorkerMessage {
     private static final long serialVersionUID = 5158569253342276404L;
-    final TaskInstanceIdentifier task;
+    final JobInstanceIdentifier job;
     final Object result;
 
     /**
      * Constructs a new result message.
-     * @param task The identifier of the task this is a result for.
+     * @param job The identifier of the job this is a result for.
      * @param result The result value.
      */
-    public TaskResultMessage( TaskInstanceIdentifier task, Object result )
+    public JobResultMessage( JobInstanceIdentifier job, Object result )
     {
 	super( null );
-	this.task = task;
+	this.job = job;
 	this.result = result;
     }
 

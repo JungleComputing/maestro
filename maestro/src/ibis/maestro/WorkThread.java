@@ -7,7 +7,7 @@ package ibis.maestro;
  */
 final class WorkThread extends Thread
 {
-    private final JobSource source;
+    private final TaskSource source;
     private final Node localNode;
     private boolean stopped = false;
 
@@ -16,7 +16,7 @@ final class WorkThread extends Thread
      * @param source The work source.
      * @param localMaster The local master.
      */
-    WorkThread( JobSource source, Node localMaster )
+    WorkThread( TaskSource source, Node localMaster )
     {
         super( "Work thread" );
         // Unfortunately, bureaucracy has to go before work,
@@ -32,31 +32,31 @@ final class WorkThread extends Thread
     }
 
     /**
-     * Run this thread: keep getting and executing jobs until a null
-     * job is returned.
+     * Run this thread: keep getting and executing tasks until a null
+     * task is returned.
      */
     @Override
     public void run()
     {
         while( !isStopped() ) {
-            RunJob job = source.getJob();
+            RunTask task = source.getTask();
 
-            if( job == null ) {
+            if( task == null ) {
                 break;
             }
             if( Settings.traceWorkerProgress ) {
-        	System.out.println( "Work thread: executing " + job.message );
+        	System.out.println( "Work thread: executing " + task.message );
             }
-            Object result = job.job.run( job.message.job.input, localNode );
+            Object result = task.task.run( task.message.task.input, localNode );
             if( Settings.traceWorkerProgress ) {
-        	System.out.println( "Work thread: completed " + job.message );
+        	System.out.println( "Work thread: completed " + task.message );
             }
-            source.reportJobCompletion( job, result );
+            source.reportTaskCompletion( task, result );
         }
     }
 
     /** Tell this work thread to shut down. We don't wait for
-     * it to stop, since it won't run a new job in any case.
+     * it to stop, since it won't run a new task in any case.
      */
     void shutdown()
     {
