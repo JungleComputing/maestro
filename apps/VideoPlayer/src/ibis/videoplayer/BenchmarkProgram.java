@@ -364,14 +364,25 @@ class BenchmarkProgram {
             );
         }
         else {
-            convertTask = tasks.createJob(
-                    "benchmark",
-                    new GenerateFrameTask(),
-                    new ScaleUpFrameTask( 2, slowScale ),
-                    new SharpenFrameTask( slowSharpen ),
-                    new CompressFrameTask(),
-                    new SaveFrameTask( dir )
-            );
+            if( saveFrames ){
+                convertTask = tasks.createJob(
+                        "benchmark",
+                        new GenerateFrameTask(),
+                        new ScaleUpFrameTask( 2, slowScale ),
+                        new SharpenFrameTask( slowSharpen ),
+                        new CompressFrameTask(),
+                        new SaveFrameTask( dir )
+                );
+            }
+            else {
+                convertTask = tasks.createJob(
+                        "benchmark",
+                        new GenerateFrameTask(),
+                        new ScaleUpFrameTask( 2, slowScale ),
+                        new SharpenFrameTask( slowSharpen ),
+                        new CompressFrameTask()
+                );
+            }
         }
         Node node = new Node( tasks, goForMaestro );
 
