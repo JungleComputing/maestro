@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashMap;
 
@@ -308,18 +309,18 @@ class PacketSendPort<T extends Serializable> {
             s.println( portname + ": total uncached setup time " + Service.formatNanoseconds( uncachedAdminTime ) + "; " + Service.formatNanoseconds( uncachedAdminTime/uncachedSentCount ) + " per message" );
         }
         DestinationInfo l[] = new DestinationInfo[destinations.size()];
-        destinations.toArray( l );
-        //Comparator<? super DestinationInfo> comparator = new DestinationInfo.InfoComparator();
-        //Arrays.sort( l, comparator );
-        for( int ix=0; ix<l.length; ix++ ) {
+        int sz = 0;
+        for( DestinationInfo i: destinations ) {
+            if( i != null ) {
+                l[sz++] = i;
+            }
+        }
+        Comparator<? super DestinationInfo> comparator = new DestinationInfo.InfoComparator();
+        Arrays.sort( l, 0, sz, comparator );
+        for( int ix=0; ix<sz; ix++ ) {
             DestinationInfo i = l[ix];
 
-            if( i == null ){
-                s.println( "Destination identifier + " + ix + " is unregistered" );
-            }
-            else {
-                i.printStats( s );
-            }
+            i.printStats( s );
         }
     }
 

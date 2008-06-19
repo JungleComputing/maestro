@@ -29,7 +29,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private long nextJobId = 0;
     private long incomingJobCount = 0;
     private long handledJobCount = 0;
-    private int workerCount = 0;
     private final long startTime;
     private long stopTime = 0;
 
@@ -255,9 +254,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         synchronized( queue ) {
             boolean local = sendPort.isLocalListener( receivePort.identifier() );
             workerID = workers.subscribeWorker( receivePort.identifier(), worker, local, m.masterIdentifier, m.supportedTypes );
-            workersToAccept.add( workerID );
             sendPort.registerDestination( worker, workerID.value );
-            workerCount++;
+            workersToAccept.add( workerID );
             queue.notifyAll();
         }
     }
@@ -481,10 +479,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
         queue.printStatistics( s );
         long workInterval = stopTime-startTime;
-        s.printf( "Master: # workers        = %5d\n", workerCount );
-        s.printf( "Master: # incoming jobs  = %5d\n", incomingJobCount );
-        s.printf( "Master: # handled jobs   = %5d\n", handledJobCount );
-        s.println( "Master: run time         = " + Service.formatNanoseconds( workInterval ) );
+        s.printf( "Master: # workers          = %5d\n", workers.size() );
+        s.printf( "Master: # inactive workers = %5d\n", workersToAccept.size() );
+        s.printf( "Master: # incoming jobs    = %5d\n", incomingJobCount );
+        s.printf( "Master: # handled jobs     = %5d\n", handledJobCount );
+        s.println( "Master: run time           = " + Service.formatNanoseconds( workInterval ) );
         sendPort.printStats( s, "master send port" );
         workers.printStatistics( s );
     }

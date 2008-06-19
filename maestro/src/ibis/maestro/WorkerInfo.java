@@ -285,6 +285,7 @@ final class WorkerInfo {
     {
 	WorkerJobInfo workerJobInfo = workerJobInfoTable.get( type );
 	final boolean res = workerJobInfo != null;
+
         if( Settings.traceTypeHandling ){
             System.out.println( "Worker " + identifier + " supports type " + type + "? Answer: " + res );
         }
@@ -297,9 +298,10 @@ final class WorkerInfo {
      */
     void printStatistics( PrintStream s )
     {
-	s.println( "Worker " + identifier );
-	Enumeration<JobType> keys = workerJobInfoTable.keys();
-	while( keys.hasMoreElements() ){
+        Enumeration<JobType> keys = workerJobInfoTable.keys();
+	s.println( "Worker " + identifier + (local?" (local)":"") );
+
+        while( keys.hasMoreElements() ){
 	    JobType jobType = keys.nextElement();
 	    WorkerJobInfo info = workerJobInfoTable.get( jobType );
 	    if( info.didWork() ) {

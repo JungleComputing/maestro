@@ -269,4 +269,9 @@ final class WorkerList {
         WorkerInfo w = workers.get( workerID.value );
         return w.identifierWithWorker;
     }
+
+    int size()
+    {
+        return workers.size();
+    }
 }
