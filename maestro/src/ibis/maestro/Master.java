@@ -7,6 +7,7 @@ import ibis.ipl.ReceivePortIdentifier;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.LinkedList;
 
 /**
  * A master in the Maestro flow graph framework.
@@ -22,6 +23,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
     private final MasterQueue queue;
+    private final LinkedList<WorkerIdentifier> workersToAccept = new LinkedList<WorkerIdentifier>();
 
     private boolean stopped = false;
     private long nextJobId = 0;
@@ -181,9 +183,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	node.reportCompletion( m.task, m.result );
     }
 
-    private void sendAcceptMessage( Master.WorkerIdentifier workerID, ReceivePortIdentifier myport, Worker.MasterIdentifier idOnWorker )
+    private void sendAcceptMessage( Master.WorkerIdentifier workerID )
     {
+        ReceivePortIdentifier myport = receivePort.identifier();
+        Worker.MasterIdentifier idOnWorker = workers.getMasterIdentifier( workerID );
         WorkerAcceptMessage msg = new WorkerAcceptMessage( idOnWorker, myport, workerID );
+
         long sz = sendPort.tryToSend( workerID.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( sz<0 ){
             synchronized( queue ) {
@@ -250,10 +255,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         synchronized( queue ) {
             boolean local = sendPort.isLocalListener( receivePort.identifier() );
             workerID = workers.subscribeWorker( receivePort.identifier(), worker, local, m.masterIdentifier, m.supportedTypes );
+            workersToAccept.add( workerID );
             sendPort.registerDestination( worker, workerID.value );
             workerCount++;
         }
-        sendAcceptMessage( workerID, receivePort.identifier(), m.masterIdentifier );
     }
 
     /**
@@ -381,6 +386,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     {
 	boolean nowork;
         Submission sub = new Submission();
+        WorkerIdentifier newWorker = null;
 
 	boolean keepRunning = true;
 	if( Settings.traceMasterProgress ){
@@ -390,6 +396,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	while( true ) {
             synchronized( queue ){
                 nowork = queue.selectSubmisson( sub, workers );
+                if( !nowork && sub.worker == null ) {
+                    // We have work, but no workers. Time to accept a new candidate, if available.
+                    if( !workersToAccept.isEmpty() ) {
+                        newWorker = workersToAccept.removeFirst();
+                    }
+                }
                 if( nowork || sub.worker == null ){
                     break;
                 }
@@ -399,6 +411,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    }
 	    submitJobToWorker( sub );
 	}
+	if( newWorker != null ) {
+	    sendAcceptMessage( newWorker );
+	    newWorker = null;
+	}
 	// There are no jobs in the queue, or there are no workers ready.
 	if( nowork && isFinished() ){
 	    // No jobs, and we are stopped; don't try to send new jobs.
@@ -406,14 +422,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	}
 	else {
 	    if( Settings.traceMasterProgress ){
-		System.out.println( "Master: nothing in the queue; waiting" );
+		System.out.println( "Master: nothing in the queue, or no ready workers; waiting" );
 	    }
 	    // Since the queue is empty, we can only wait for new jobs.
 	    try {
-		// There is nothing to do; Wait for new queue entries.
-		if( Settings.traceMasterProgress ){
-		    System.out.println( "Master: waiting for new jobs in queue" );
-		}
 		synchronized( queue ){
                     if( !isFinished() ){
                         queue.wait();

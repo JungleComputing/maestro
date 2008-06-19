@@ -31,35 +31,35 @@ final class WorkerList {
 
     private static WorkerInfo searchWorker( List<WorkerInfo> workers, IbisIdentifier id )
     {
-	for( int i=0; i<workers.size(); i++ ) {
-	    WorkerInfo w = workers.get(i);
-	    if( w.port.ibisIdentifier().equals( id ) ) {
-		return w;
-	    }
-	}
-	return null;
+        for( int i=0; i<workers.size(); i++ ) {
+            WorkerInfo w = workers.get(i);
+            if( w.port.ibisIdentifier().equals( id ) ) {
+                return w;
+            }
+        }
+        return null;
     }
 
     private static int searchWorker( List<WorkerInfo> workers, ReceivePortIdentifier id ) {
-	for( int i=0; i<workers.size(); i++ ) {
-	    WorkerInfo w = workers.get(i);
-	    if( w.port.equals( id ) ) {
-		return i;
-	    }
-	}
-	return -1;
+        for( int i=0; i<workers.size(); i++ ) {
+            WorkerInfo w = workers.get(i);
+            if( w.port.equals( id ) ) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, MasterIdentifier identifierForWorker, JobType[] types )
     {
-	Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
+        Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
         WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker, local, types );
 
         if( Settings.traceMasterProgress ){
-	    System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
-	}
-	workers.add( worker );
-	return workerID;
+            System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
+        }
+        workers.add( worker );
+        return workerID;
     }
 
     /**
@@ -82,10 +82,10 @@ final class WorkerList {
      */
     void removeWorker( WorkerIdentifier identifier )
     {
-	WorkerInfo wi = searchWorker( workers, identifier );
-	if( wi != null ) {
-	    wi.setDead();
-	}
+        WorkerInfo wi = searchWorker( workers, identifier );
+        if( wi != null ) {
+            wi.setDead();
+        }
     }
 
     /** Returns true iff we have a worker on our list with the
@@ -145,32 +145,32 @@ final class WorkerList {
             WorkerInfo wi = workers.get( i );
 
             if( !wi.isDead() ) {
-        	long val = wi.estimateTaskCompletion( jobType );
+                long val = wi.estimateTaskCompletion( jobType );
 
-        	if( Settings.traceRemainingTaskTime ) {
-        	    System.out.println( "Worker " + wi + ": job type " + jobType + ": estimated completion time " + Service.formatNanoseconds( val ) );
-        	}
-        	if( val<bestInterval ) {
-        	    bestInterval = val;
-        	    best = wi;
-        	}
+                if( Settings.traceRemainingTaskTime ) {
+                    System.out.println( "Worker " + wi + ": job type " + jobType + ": estimated completion time " + Service.formatNanoseconds( val ) );
+                }
+                if( val<bestInterval ) {
+                    bestInterval = val;
+                    best = wi;
+                }
             }
         }
-	if( Settings.traceMasterQueue ){
-	    if( best == null ) {
-		int busy = 0;
-		int notSupported = 0;
-		for( WorkerInfo wi: workers ){
-		    if( wi.supportsType( jobType ) ){
-			busy++;
-		    }
-		    else {
-			notSupported++;
-		    }
-		}
-		System.out.println( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for job of type " + jobType );
-	    }
-	    else {
+        if( Settings.traceMasterQueue ){
+            if( best == null ) {
+                int busy = 0;
+                int notSupported = 0;
+                for( WorkerInfo wi: workers ){
+                    if( wi.supportsType( jobType ) ){
+                        busy++;
+                    }
+                    else {
+                        notSupported++;
+                    }
+                }
+                System.out.println( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for job of type " + jobType );
+            }
+            else {
                 System.out.println( "Selected " + best + " for job of type " + jobType + "; estimated task completion time " + Service.formatNanoseconds( bestInterval ) );
             }
         }
@@ -184,8 +184,8 @@ final class WorkerList {
      */
     boolean isKnownWorker( ReceivePortIdentifier worker )
     {
-	int ix = searchWorker( workers, worker );
-	return ix>=0;
+        int ix = searchWorker( workers, worker );
+        return ix>=0;
     }
 
     /**
@@ -207,8 +207,8 @@ final class WorkerList {
      */
     void declareDead( WorkerIdentifier workerID )
     {
-	WorkerInfo w = workers.get( workerID.value );
-	w.setDead();
+        WorkerInfo w = workers.get( workerID.value );
+        w.setDead();
     }
 
     /**
@@ -242,21 +242,31 @@ final class WorkerList {
      */
     long getAverageCompletionTime( JobType jobType )
     {
-	long res = Long.MAX_VALUE;
+        long res = Long.MAX_VALUE;
 
-	for( WorkerInfo wi: workers ) {
-	    long val = wi.getAverageCompletionTime( jobType );
+        for( WorkerInfo wi: workers ) {
+            long val = wi.getAverageCompletionTime( jobType );
 
-	    if( val<res ) {
-		res = val;
-	    }
-	}
-	return res;
+            if( val<res ) {
+                res = val;
+            }
+        }
+        return res;
     }
 
     void registerCompletionInfo( WorkerIdentifier workerID, CompletionInfo[] completionInfo )
     {
-	WorkerInfo w = workers.get( workerID.value );
+        WorkerInfo w = workers.get( workerID.value );
         w.registerCompletionInfo( completionInfo );	
+    }
+
+    /** Given a worker, return the identifier of this master on the worker.
+     * @param workerID The worker to get the identifier for.
+     * @return The identifier of this master on the worker.
+     */
+    MasterIdentifier getMasterIdentifier( WorkerIdentifier workerID )
+    {
+        WorkerInfo w = workers.get( workerID.value );
+        return w.identifierWithWorker;
     }
 }
