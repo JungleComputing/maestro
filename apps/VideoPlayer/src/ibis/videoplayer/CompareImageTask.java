@@ -1,12 +1,12 @@
 package ibis.videoplayer;
 
+import ibis.maestro.Node;
+import ibis.maestro.Task;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
-
-import ibis.maestro.Job;
-import ibis.maestro.Node;
 
 /**
  * Compares an input image to the local images in this database.
@@ -14,11 +14,11 @@ import ibis.maestro.Node;
  * @author Kees van Reeuwijk
  *
  */
-class CompareImageJob implements Job {
+class CompareImageTask implements Task {
     private static final long serialVersionUID = -4202576028676660015L;
     final File imageDirectory;
     
-    CompareImageJob( File dir )
+    CompareImageTask( File dir )
     {
 	this.imageDirectory = dir;
     }

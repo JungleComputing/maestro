@@ -1,20 +1,20 @@
 package ibis.videoplayer;
 
-import ibis.maestro.Job;
 import ibis.maestro.Node;
+import ibis.maestro.Task;
 
 /**
- * A job to fetch and scale a frame.
+ * A task to scale down a frame.
  * 
  * @author Kees van Reeuwijk
  *
  */
-class ScaleFrameJob implements Job
+class ScaleFrameTask implements Task
 {
     private static final long serialVersionUID = -3938044583266505212L;
     private final int factor;
     
-    ScaleFrameJob( int factor )
+    ScaleFrameTask( int factor )
     {
         this.factor = factor;
     }

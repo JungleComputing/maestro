@@ -1,19 +1,19 @@
 package ibis.videoplayer;
 
-import ibis.maestro.Job;
 import ibis.maestro.Node;
+import ibis.maestro.Task;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
 
 /**
- * A given pair of images.
  * 
  * @author Kees van Reeuwijk
  *
  */
-class FindNovaJob implements Job {
+class FindNovaTask implements Task
+{
     private static final long serialVersionUID = -4202576028676660015L;
 
     static final int VERDICT_UNKNOWN = -1;
@@ -46,7 +46,7 @@ class FindNovaJob implements Job {
 
 	/**
 	 * Returns the file for this image.
-	 * @return
+	 * @return The file.
 	 */
 	public File buildFile() {
 	    String nm = String.format( "gen%03d/img%05d.png", generation, place );

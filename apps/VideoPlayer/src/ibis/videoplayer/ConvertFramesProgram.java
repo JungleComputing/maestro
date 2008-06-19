@@ -1,10 +1,10 @@
 package ibis.videoplayer;
 
 import ibis.maestro.Job;
+import ibis.maestro.JobList;
+import ibis.maestro.JobWaiter;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
-import ibis.maestro.TaskList;
-import ibis.maestro.TaskWaiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.io.IOException;
  *
  */
 class ConvertFramesProgram {    
-    private final class FetchImageJob implements Job {
+    private final class FetchImageTask implements Task {
         private static final long serialVersionUID = -7976035811697720295L;
 
         /**
@@ -38,7 +38,6 @@ class ConvertFramesProgram {
         }
 
         /**
-         * @param context The program context.
          * @return True, because this job can run anywhere.
          */
         @Override
@@ -48,14 +47,14 @@ class ConvertFramesProgram {
         }
     }
 
-    private final class ColorCorrectJob implements Job
+    private final class ColorCorrectTask implements Task
     {
         private static final long serialVersionUID = 5452987225377415308L;
         final double rr, rg, rb;
         final double gr, gg, gb;
         final double br, bg, bb;
         
-        ColorCorrectJob(final double rr, final double rg, final double rb, final double gr, final double gg, final double gb, final double br, final double bg, final double bb) {
+        ColorCorrectTask(final double rr, final double rg, final double rb, final double gr, final double gg, final double gb, final double br, final double bg, final double bb) {
             super();
             this.rr = rr;
             this.rg = rg;
@@ -91,15 +90,15 @@ class ConvertFramesProgram {
         }
     }
 
-    private final class CompressFrameJob implements Job
+    private final class CompressFrameTask implements Task
     {
         private static final long serialVersionUID = 5452987225377415310L;
 
         /**
-         * Run a Jpeg conversion Maestro job.
-         * @param in The input of this job.
+         * Run a Jpeg conversion Maestro task.
+         * @param in The input of this task.
          * @param node The node this job runs on.
-         * @return The result of the job.
+         * @return The result of the task.
          */
         @Override
         public Object run( Object in, Node node ) {
@@ -127,14 +126,14 @@ class ConvertFramesProgram {
     @SuppressWarnings("synthetic-access")
     private void run( File framesDirectory ) throws Exception
     {
-        TaskList tasks = new TaskList();
-        TaskWaiter waiter = new TaskWaiter();
-        Task convertTask =  tasks.createTask(
+        JobList tasks = new JobList();
+        JobWaiter waiter = new JobWaiter();
+        Job convertTask =  tasks.createJob(
                 "converter",
-                new FetchImageJob(),
-                new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
-                new ScaleFrameJob( 2 ),
-                new CompressFrameJob()
+                new FetchImageTask(),
+                new ColorCorrectTask( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
+                new ScaleFrameTask( 2 ),
+                new CompressFrameTask()
         );
 
         Node node = new Node( tasks, framesDirectory != null );

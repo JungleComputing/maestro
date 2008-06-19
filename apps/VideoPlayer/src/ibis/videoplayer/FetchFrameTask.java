@@ -1,22 +1,22 @@
 package ibis.videoplayer;
 
-import ibis.maestro.Job;
 import ibis.maestro.Node;
+import ibis.maestro.Task;
 
 import java.io.File;
 import java.io.IOException;
 
 /**
- * A job to fetch a frame.
+ * A task to fetch a frame.
  * 
  * @author Kees van Reeuwijk
  *
  */
-public class FetchFrameJob implements Job
+public class FetchFrameTask implements Task
 {
     private static final long serialVersionUID = -3938044583266505212L;
 
-    /** Runs this action.
+    /** Runs this task.
      * @return The frame we have fetched.
      */
     @Override
@@ -39,7 +39,7 @@ public class FetchFrameJob implements Job
     }
 
     /**
-     * @return True, because this job can run anywhere.
+     * @return True, because this task can run anywhere.
      */
     @Override
     public boolean isSupported()

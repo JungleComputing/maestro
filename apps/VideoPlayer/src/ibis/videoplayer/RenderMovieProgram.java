@@ -2,9 +2,9 @@ package ibis.videoplayer;
 
 import ibis.maestro.CompletionListener;
 import ibis.maestro.Job;
+import ibis.maestro.JobList;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
-import ibis.maestro.TaskList;
 
 import java.io.File;
 import java.io.IOException;
@@ -34,7 +34,7 @@ public class RenderMovieProgram implements CompletionListener
         this.outputDir = outputDir;
     }
 
-    private void submitNeededFrames( Node node, long now, Task task )
+    private void submitNeededFrames( Node node, long now, Job job )
     {
         long renderDeadline = now+(long) (RENDER_TIME*1e9);
         synchronized( queue ) {
@@ -44,22 +44,22 @@ public class RenderMovieProgram implements CompletionListener
                 if( fr.showMoment<renderDeadline ) {
                     // This one is required soon, put it in the queue.
                     System.out.println( "Submitting frame " + fr.frameno );
-                    RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo( WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, fr.frameno, fr.scene );
-                    task.submit( node, info, new Integer( fr.frameno ), this );
+                    RenderFrameTask.RenderInfo info = new RenderFrameTask.RenderInfo( WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, fr.frameno, fr.scene );
+                    job.submit( node, info, new Integer( fr.frameno ), this );
                     outstandingJobs++;
                 }
             }
         }
     }
 
-    private final class ColorCorrectJob implements Job
+    private final class ColorCorrectTask implements Task
     {
         private static final long serialVersionUID = 5452987225377415308L;
         final double rr, rg, rb;
         final double gr, gg, gb;
         final double br, bg, bb;
 
-        ColorCorrectJob(final double rr, final double rg, final double rb, final double gr, final double gg, final double gb, final double br, final double bg, final double bb) {
+        ColorCorrectTask(final double rr, final double rg, final double rb, final double gr, final double gg, final double gb, final double br, final double bg, final double bb) {
             super();
             this.rr = rr;
             this.rg = rg;
@@ -97,7 +97,7 @@ public class RenderMovieProgram implements CompletionListener
     }
 
 
-    private final class DownsampleJob implements Job
+    private final class DownsampleTask implements Task
     {
         private static final long serialVersionUID = 5452987225377415308L;
 
@@ -125,7 +125,7 @@ public class RenderMovieProgram implements CompletionListener
         }
     }
 
-    private final class CompressFrameJob implements Job
+    private final class CompressFrameTask implements Task
     {
         private static final long serialVersionUID = 5452987225377415310L;
 
@@ -150,7 +150,6 @@ public class RenderMovieProgram implements CompletionListener
         }
 
         /**
-         * @param context The program context.
          * @return True, because this job can run anywhere.
          */
         @Override
@@ -182,21 +181,21 @@ public class RenderMovieProgram implements CompletionListener
     @SuppressWarnings("synthetic-access")
     private void run( File sourceDirectory, File iniFile ) throws Exception
     {
-        TaskList tasks = new TaskList();
-        Task convertTask =  tasks.createTask(
+        JobList jobList = new JobList();
+        Job convertTask =  jobList.createJob(
             "converter",
-            new RenderFrameJob(),
-            new ColorCorrectJob( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
+            new RenderFrameTask(),
+            new ColorCorrectTask( 1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0 ),
             //new ScaleFrameJob( 2 ),
-            new DownsampleJob(),
-            new CompressFrameJob()
+            new DownsampleTask(),
+            new CompressFrameTask()
         );
 
         int frameno = 0;
-        Node node = new Node( tasks, sourceDirectory != null );
+        Node node = new Node( jobList, sourceDirectory != null );
         System.out.println( "Node created" );
         if( sourceDirectory != null && node.isMaestro() ) {
-            String init = RenderFrameJob.readFile( iniFile );
+            String init = RenderFrameTask.readFile( iniFile );
             if( init == null ) {
                 System.err.println( "Cannot read file " + iniFile );
                 return;
@@ -206,13 +205,13 @@ public class RenderMovieProgram implements CompletionListener
             for( int iter=0; iter<REPEATS; iter++ ) {
                 for( File f: files ) {
                     if( !f.getName().equals( ".svn" ) ) {
-                        String scene = RenderFrameJob.readFile( f );
+                        String scene = RenderFrameTask.readFile( f );
                         if( scene == null ) {
                             System.err.println( "Cannot read scene file " + f );
                         }
                         else {
                             int n = frameno++;
-                            RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo( WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, n, init + scene );
+                            RenderFrameTask.RenderInfo info = new RenderFrameTask.RenderInfo( WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, n, init + scene );
                             convertTask.submit( node, info, new Integer( n ), this );
                             System.out.println( "Submitted frame " + n );
                             outstandingJobs++;
@@ -285,7 +284,7 @@ public class RenderMovieProgram implements CompletionListener
      * @param result The result of the task.
      */
     @Override
-    public void taskCompleted( Node node, Object id, Object result )
+    public void jobCompleted( Node node, Object id, Object result )
     {
         int frameno = (Integer) id;
         Image img = (Image) result;

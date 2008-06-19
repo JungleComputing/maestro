@@ -1,10 +1,10 @@
 package ibis.videoplayer;
 
 import ibis.maestro.Job;
+import ibis.maestro.JobList;
+import ibis.maestro.JobWaiter;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
-import ibis.maestro.TaskList;
-import ibis.maestro.TaskWaiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -21,21 +21,21 @@ class CompareImagesProgram
     /**
      * @param file The file or directory to submit.
      * @param waiter The waiter thread that will wait for the return of the results.
-     * @param searchTask The task to submit the files to.
+     * @param searchJob The job to submit the files to.
      */
-    private void submitAll( Node node, File file, TaskWaiter waiter, Task searchTask )
+    private void submitAll( Node node, File file, JobWaiter waiter, Job searchJob )
     {
         if( file.isDirectory() ) {
             File files[] = file.listFiles();
             for( File f: files ) {
-                submitAll( node, f, waiter, searchTask );
+                submitAll( node, f, waiter, searchJob );
             }
         }
         else {
             try {
                 UncompressedImage img = UncompressedImage.load( file, 0 );
-                CompareImageJob.ImageMatches im = new CompareImageJob.ImageMatches( img, file );
-                waiter.submit( node, searchTask, im );
+                CompareImageTask.ImageMatches im = new CompareImageTask.ImageMatches( img, file );
+                waiter.submit( node, searchJob, im );
             }
             catch( IOException e ) {
                 System.err.println( "Cannot load image '" + file + "': " + e.getLocalizedMessage() );
@@ -45,24 +45,24 @@ class CompareImagesProgram
 
     private void run( File subjectDirectory, String databaseList[] ) throws Exception
     {
-        TaskWaiter waiter = new TaskWaiter();
-        TaskList tasks = new TaskList();
+        JobWaiter waiter = new JobWaiter();
+        JobList jobList = new JobList();
 
-        Job jobs[] = new Job[databaseList.length];
+        Task jobs[] = new Task[databaseList.length];
         int ix = 0;
         for( String db: databaseList ) {
             File dbf = new File( db );
-            jobs[ix++] = new CompareImageJob( dbf );
+            jobs[ix++] = new CompareImageTask( dbf );
         }
-        Task searchTask =  tasks.createTask( "databaseSearch", jobs );
-        Node node = new Node( tasks, subjectDirectory != null );
+        Job searchTask =  jobList.createJob( "databaseSearch", jobs );
+        Node node = new Node( jobList, subjectDirectory != null );
         System.out.println( "Node created" );
         if( subjectDirectory != null && node.isMaestro() ) {
             submitAll( node, subjectDirectory, waiter, searchTask );
             Object res[] = waiter.sync();
             node.setStopped();
             for( Object o: res ) {
-                CompareImageJob.ImageMatches im = (CompareImageJob.ImageMatches) o;
+                CompareImageTask.ImageMatches im = (CompareImageTask.ImageMatches) o;
                 if( im.matches.size()>1 ) {
                     System.out.println( o.toString() );
                 }

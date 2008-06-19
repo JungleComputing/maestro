@@ -4,23 +4,23 @@
 package ibis.videoplayer;
 
 import ibis.maestro.Job;
+import ibis.maestro.JobList;
+import ibis.maestro.JobWaiter;
 import ibis.maestro.Node;
 import ibis.maestro.Task;
-import ibis.maestro.TaskList;
-import ibis.maestro.TaskWaiter;
 
 /**
  * @author Kees van Reeuwijk
  *
  */
-public final class BuildFragmentJob implements Job
+public final class BuildFragmentTask implements Task
 {
     private static final long serialVersionUID = 6769001575637882594L;
-    private Task fetchTask;
+    private Job fetchJob;
 
-    BuildFragmentJob( Task fetchTask )
+    BuildFragmentTask( Job fetchJob )
     {
-        this.fetchTask = fetchTask;
+        this.fetchJob = fetchJob;
     }
 
     /**
@@ -31,7 +31,7 @@ public final class BuildFragmentJob implements Job
     @Override
     public Object run( Object obj, Node node )
     {
-        TaskWaiter waiter = new TaskWaiter();
+        JobWaiter waiter = new JobWaiter();
 
         FrameNumberRange range = (FrameNumberRange) obj;
         int startFrame = range.startFrameNumber;
@@ -42,7 +42,7 @@ public final class BuildFragmentJob implements Job
         }
         for( int frame=startFrame; frame<=endFrame; frame++ ) {
             Integer frameno = new Integer( frame );
-            waiter.submit( node, fetchTask, frameno );
+            waiter.submit( node, fetchJob, frameno );
         }
         // FIXME: run another tread during the sync.
         Object res[] = waiter.sync();
@@ -72,14 +72,14 @@ public final class BuildFragmentJob implements Job
         return value;
     }
 
-    static Task createGetFrameTask( TaskList tasks )
+    static Job createGetFrameJob( JobList jobs )
     {
-        return tasks.createTask(
+        return jobs.createJob(
                 "getFrame",
-                new FetchFrameJob(),
-                new DecompressFrameJob(),
-                new ColourCorrectJob(),
-                new ScaleFrameJob( 2 )
+                new FetchFrameTask(),
+                new DecompressFrameTask(),
+                new ColourCorrectTask(),
+                new ScaleFrameTask( 2 )
         );
     }
 

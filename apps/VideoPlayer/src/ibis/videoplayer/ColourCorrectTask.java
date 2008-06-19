@@ -1,7 +1,7 @@
 package ibis.videoplayer;
 
-import ibis.maestro.Job;
 import ibis.maestro.Node;
+import ibis.maestro.Task;
 
 /**
  * An action to color-correct a frame. We fake this by a video frame
@@ -10,11 +10,11 @@ import ibis.maestro.Node;
  * @author Kees van Reeuwijk
  *
  */
-public class ColourCorrectJob implements Job
+public class ColourCorrectTask implements Task
 {
     private static final long serialVersionUID = -3938044583266505212L;
 
-    /** Runs this job.
+    /** Runs this task.
      * @return The decompressed frame.
      */
     @Override
@@ -31,7 +31,7 @@ public class ColourCorrectJob implements Job
 
 
     /**
-     * @return True, because this job can run anywhere.
+     * @return True, because this task can run anywhere.
      */
     @Override
     public boolean isSupported()

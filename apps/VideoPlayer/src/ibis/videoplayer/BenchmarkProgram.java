@@ -1,11 +1,11 @@
 package ibis.videoplayer;
 
 import ibis.maestro.Job;
+import ibis.maestro.JobList;
+import ibis.maestro.JobWaiter;
 import ibis.maestro.Node;
 import ibis.maestro.Service;
 import ibis.maestro.Task;
-import ibis.maestro.TaskList;
-import ibis.maestro.TaskWaiter;
 
 import java.io.File;
 import java.io.IOException;
@@ -28,13 +28,13 @@ class BenchmarkProgram {
     }
 
     // Do all the image processing steps in one go. Used as baseline.
-    private static final class ProcessFrameJob implements Job {
+    private static final class ProcessFrameTask implements Task {
         private static final long serialVersionUID = -7976035811697720295L;
         final boolean slowScale;
         final boolean slowSharpen;
         final File saveDir;
 
-        ProcessFrameJob( final boolean slowScale, final boolean slowSharpen, final File saveDir )
+        ProcessFrameTask( final boolean slowScale, final boolean slowSharpen, final File saveDir )
         {
             this.slowScale = slowScale;
             this.slowSharpen = slowSharpen;
@@ -77,7 +77,6 @@ class BenchmarkProgram {
         }
 
         /**
-         * @param context The program context.
          * @return True, because this job can run anywhere.
          */
         @Override
@@ -88,7 +87,7 @@ class BenchmarkProgram {
 
     }
 
-    private static final class GenerateFrameJob implements Job {
+    private static final class GenerateFrameTask implements Task {
         private static final long serialVersionUID = -7976035811697720295L;
 
         /**
@@ -102,7 +101,6 @@ class BenchmarkProgram {
         }
 
         /**
-         * @param context The program context.
          * @return True, because this job can run anywhere.
          */
         @Override
@@ -112,13 +110,13 @@ class BenchmarkProgram {
         }
     }
 
-    private static final class ScaleUpFrameJob implements Job
+    private static final class ScaleUpFrameTask implements Task
     {
         private static final long serialVersionUID = 5452987225377415308L;
         private final int factor;
         private final boolean slow;
 
-        ScaleUpFrameJob( int factor, boolean slow )
+        ScaleUpFrameTask( int factor, boolean slow )
         {
             this.factor = factor;
 
@@ -161,12 +159,12 @@ class BenchmarkProgram {
         return e != null;
     }
 
-    private static final class SharpenFrameJob implements Job
+    private static final class SharpenFrameTask implements Task
     {
         private static final long serialVersionUID = 54529872253774153L;
         private boolean slow;
 
-        SharpenFrameJob( boolean slow )
+        SharpenFrameTask( boolean slow )
         {
             this.slow = slow && hasEnvironmentVariable( "SLOW_SHARPEN" );
             if( this.slow ){
@@ -200,7 +198,7 @@ class BenchmarkProgram {
         }
     }
 
-    private static final class CompressFrameJob implements Job
+    private static final class CompressFrameTask implements Task
     {
         private static final long serialVersionUID = 5452987225377415310L;
 
@@ -233,12 +231,12 @@ class BenchmarkProgram {
         }
     }
 
-    private static final class SaveFrameJob implements Job
+    private static final class SaveFrameTask implements Task
     {
         private static final long serialVersionUID = 54529872253774153L;
         private final File saveDir;
 
-        SaveFrameJob( File saveDir )
+        SaveFrameTask( File saveDir )
         {
             this.saveDir = saveDir;
         }
@@ -354,25 +352,25 @@ class BenchmarkProgram {
             System.exit( 1 );
         }
         System.out.println( "frames=" + frames + " goForMaestro=" + goForMaestro + " saveFrames=" + saveFrames + " oneJob=" + oneJob + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale  );
-        TaskWaiter waiter = new TaskWaiter();
-        TaskList tasks = new TaskList();
-        Task convertTask;
+        JobWaiter waiter = new JobWaiter();
+        JobList tasks = new JobList();
+        Job convertTask;
         File dir = saveFrames?outputDir:null;
         if( oneJob ) {
             System.out.println( "One-job benchmark" );
-            convertTask = tasks.createTask(
+            convertTask = tasks.createJob(
                     "benchmark",
-                    new ProcessFrameJob( slowScale, slowSharpen, dir )
+                    new ProcessFrameTask( slowScale, slowSharpen, dir )
             );
         }
         else {
-            convertTask = tasks.createTask(
+            convertTask = tasks.createJob(
                     "benchmark",
-                    new GenerateFrameJob(),
-                    new ScaleUpFrameJob( 2, slowScale ),
-                    new SharpenFrameJob( slowSharpen ),
-                    new CompressFrameJob(),
-                    new SaveFrameJob( dir )
+                    new GenerateFrameTask(),
+                    new ScaleUpFrameTask( 2, slowScale ),
+                    new SharpenFrameTask( slowSharpen ),
+                    new CompressFrameTask(),
+                    new SaveFrameTask( dir )
             );
         }
         Node node = new Node( tasks, goForMaestro );

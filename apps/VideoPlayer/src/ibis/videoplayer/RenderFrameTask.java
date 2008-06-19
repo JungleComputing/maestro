@@ -1,6 +1,7 @@
 package ibis.videoplayer;
 
 import ibis.maestro.Node;
+import ibis.maestro.Task;
 import ibis.util.RunProcess;
 
 import java.io.BufferedReader;
@@ -11,13 +12,13 @@ import java.io.IOException;
 import java.io.Serializable;
 
 /**
- * An action to run a PovRay scene description through povray, and load the
+ * An task to run a PovRay scene description through povray, and load the
  * resulting image.
  * 
  * @author Kees van Reeuwijk
  *
  */
-public class RenderFrameJob implements ibis.maestro.Job
+public class RenderFrameTask implements Task
 {
     private static final long serialVersionUID = -3938044583266505212L;
     private static final File tmpDir = new File( "/tmp" );  // FIXME: be more paranoid than this.
@@ -175,7 +176,7 @@ public class RenderFrameJob implements ibis.maestro.Job
 
     }
 
-    /** Runs this render job.
+    /** Runs this render task.
      * @return The rendered frame.
      */
     @Override
@@ -186,7 +187,7 @@ public class RenderFrameJob implements ibis.maestro.Job
     }
 
     /**
-     * @return True, because this job can run anywhere.
+     * @return True, because this task can run anywhere.
      */
     @Override
     public boolean isSupported()

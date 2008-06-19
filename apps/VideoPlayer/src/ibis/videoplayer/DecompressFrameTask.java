@@ -1,15 +1,17 @@
 package ibis.videoplayer;
 
 import ibis.maestro.Node;
+import ibis.maestro.Task;
 
 /**
- * An action to decompress a frame. We fake decompressing a video frame
+ * A task to decompress a frame. We fake decompressing a video frame
  * by simply doubling the frame and repeating the content.
+ * FIXME: implement this properly.
  * 
  * @author Kees van Reeuwijk
  *
  */
-public class DecompressFrameJob implements ibis.maestro.Job
+public class DecompressFrameTask implements Task
 {
     private static final long serialVersionUID = -3938044583266505212L;
 
@@ -22,7 +24,7 @@ public class DecompressFrameJob implements ibis.maestro.Job
      * @return The decompressed frame.
      */
     @Override
-    public Object run(Object obj, Node node )
+    public Object run( Object obj, Node node )
     {
 	RGB48Image frame = (RGB48Image) obj;
         short in[] = frame.data;

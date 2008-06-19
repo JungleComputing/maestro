@@ -1,9 +1,9 @@
 package ibis.videoplayer;
 
 import ibis.maestro.CompletionListener;
+import ibis.maestro.Job;
+import ibis.maestro.JobList;
 import ibis.maestro.Node;
-import ibis.maestro.Task;
-import ibis.maestro.TaskList;
 
 /**
  * Small test program.
@@ -30,7 +30,7 @@ public class BuildVideoProgram {
          * @param result The result of the job.
          */
         @Override
-        public synchronized void taskCompleted( Node node, Object id, Object result ) {
+        public synchronized void jobCompleted( Node node, Object id, Object result ) {
             //System.out.println( "result is " + result );
             jobsCompleted++;
             runningJobs--;
@@ -59,14 +59,14 @@ public class BuildVideoProgram {
     @SuppressWarnings("synthetic-access")
     private void run( int frameCount, boolean goForMaestro ) throws Exception
     {
-        TaskList tasks = new TaskList();
+        JobList jobList = new JobList();
         // How many fragments will there be?
         int fragmentCount = (frameCount+Settings.FRAME_FRAGMENT_COUNT-1)/Settings.FRAME_FRAGMENT_COUNT;
         Listener listener = new Listener( fragmentCount );
-	Task getFrameTask = BuildFragmentJob.createGetFrameTask( tasks );
-	Task playTask = tasks.createTask( "videoplayer", new BuildFragmentJob( getFrameTask ) );
+	Job getFrameTask = BuildFragmentTask.createGetFrameJob( jobList );
+	Job playTask = jobList.createJob( "videoplayer", new BuildFragmentTask( getFrameTask ) );
 
-        Node node = new Node( tasks, goForMaestro );
+        Node node = new Node( jobList, goForMaestro );
         System.out.println( "Node created" );
         if( node.isMaestro() ) {
             System.out.println( "I am maestro; building a movie of " + frameCount + " frames" );
