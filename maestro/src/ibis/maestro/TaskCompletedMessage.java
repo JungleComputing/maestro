@@ -13,7 +13,7 @@ final class TaskCompletedMessage extends WorkerMessage {
     
     /** The identifier of the task. */
     final long taskId;
-    
+
     /** The time interval this task spent in the worker queue. */
     final long queueInterval;
     

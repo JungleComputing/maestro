@@ -82,8 +82,9 @@ final class WorkerInfo {
      * If we haven't done so recently, reduce the queue time of this worker
      * by reducing the number of allowed outstanding tasks.
      * @param workerTaskInfo Information about the task that was delayed so long.
+     * @param queueLength The length of the worker queue.
      */
-    private void limitQueueTime( WorkerTaskInfo workerTaskInfo, long roundTripTime, long workerDwellTime )
+    private void limitQueueTime( WorkerTaskInfo workerTaskInfo, int queueLength, long roundTripTime, long workerDwellTime )
     {
 	if( knownDelayedTasks>0 ) {
 	    // We've recently done a reduction, and there are still
@@ -91,7 +92,7 @@ final class WorkerInfo {
 	    // safe to do another reduction.
 	    return;
 	}
-	if( !workerTaskInfo.limitAllowance( roundTripTime, workerDwellTime ) ) {
+	if( !workerTaskInfo.limitAllowance( queueLength, roundTripTime, workerDwellTime ) ) {
 	    // We cannot reduce the allowance.
 	    return;
 	}
@@ -111,6 +112,7 @@ final class WorkerInfo {
 	if( workerTaskInfo == null ) {
 	    return;
 	}
+	workerTaskInfo.controlAllowance( completionInfo.queueLength );
 	if( completionInfo.completionInterval != Long.MAX_VALUE ) {
 	    workerTaskInfo.setCompletionInterval( completionInfo.completionInterval );
 	}
@@ -150,7 +152,7 @@ final class WorkerInfo {
 	}
 	task.workerTaskInfo.registerTaskCompleted( newRoundTripInterval );
 	registerCompletionInfo( result.completionInfo );
-	limitQueueTime( task.workerTaskInfo, newRoundTripInterval, queueInterval+result.computeInterval );
+	//limitQueueTime( task.workerTaskInfo, newRoundTripInterval, queueInterval+result.computeInterval );
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Master: retired task " + task + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );
 	}
@@ -252,7 +254,7 @@ final class WorkerInfo {
      * @param taskType The task type for which we want to increase our allowance.
      * @return True iff we could increment the allowance of this type.
      */
-    boolean incrementAllowance( TaskType taskType )
+    protected boolean incrementAllowance( TaskType taskType )
     {
 	WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
 	if( workerTaskInfo == null ) {

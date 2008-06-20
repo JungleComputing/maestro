@@ -196,7 +196,7 @@ final class WorkerList {
      * @return True iff we could actually increment the allowance
      *         for the task type.
      */
-    boolean incrementAllowance( WorkerIdentifier workerID, TaskType taskType )
+    protected boolean incrementAllowance( WorkerIdentifier workerID, TaskType taskType )
     {
         WorkerInfo wi = workers.get( workerID.value );
         return wi.incrementAllowance( taskType );

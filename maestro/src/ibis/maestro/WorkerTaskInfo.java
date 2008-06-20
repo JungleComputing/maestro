@@ -112,7 +112,7 @@ final class WorkerTaskInfo {
      * this worker and this type of work.
      *  @return True iff we really incremented the allowance.
      */
-    boolean incrementAllowance()
+    protected boolean incrementAllowance()
     {
 	if( !mayIncreaseAllowance ) {
 	    return false;
@@ -131,7 +131,7 @@ final class WorkerTaskInfo {
      * be too low.
      * @return True iff we reduced the allowance.
      */
-    boolean decrementAllowance()
+    private boolean decrementAllowance()
     {
 	if( maximalAllowance<=1 ) {
 	    return false;
@@ -148,18 +148,19 @@ final class WorkerTaskInfo {
 
     /**
      * Limit the queue size on the worker.
-     * @param roundTripTime
+     * @param queueLength The length of the current queue on the worker.
+     * @param roundTripTime The time interval between the transmission of the task to the worker, and getting back the completion message.
      * @param workerDwellTime
      * @return True iff we really limited the allowance.
      */
-    public boolean limitAllowance( long roundTripTime, long workerDwellTime )
+    public boolean limitAllowance( int queueLength, long roundTripTime, long workerDwellTime )
     {
 	if( maximalAllowance<=1 ) {
 	    // We must have an allowance of at least one.
 	    return false;
 	}
-	if( (maximalAllowance*workerDwellTime)>roundTripTime ) {
-	    
+	if( queueLength>1 ) {
+	//if( (maximalAllowance*workerDwellTime)>roundTripTime ) {
 	    maximalAllowance--;
 	    mayIncreaseAllowance = false;
 	    return true;
@@ -173,5 +174,18 @@ final class WorkerTaskInfo {
     public boolean didWork()
     {
         return (executedTasks != 0) || (outstandingTasks != 0);
+    }
+
+    /** FIXME.
+     * @param queueLength
+     */
+    protected void controlAllowance( int queueLength )
+    {
+        if( queueLength<1 ) {
+            maximalAllowance++;
+        }
+        else if( queueLength>1 && maximalAllowance>1 ) {
+            maximalAllowance--;
+        }
     }
 }

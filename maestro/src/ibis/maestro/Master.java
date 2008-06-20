@@ -209,7 +209,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             Globals.log.reportProgress( "Received work request message " + m + " from worker " + workerID );
         }
         synchronized( queue ){
-            queue.incrementAllowance( workerID, workers );
+            // FIXME: remove or enable again.
+            //queue.incrementAllowance( workerID, workers );
             workers.registerCompletionInfo( workerID, m.completionInfo );
             queue.notifyAll();
         }

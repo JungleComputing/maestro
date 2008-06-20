@@ -87,7 +87,7 @@ final class MasterQueue {
      * @param workerID The id of the worker to increase the allowance for.
      * @param workers The list of workers of the master.
      */
-    void incrementAllowance( WorkerIdentifier workerID, WorkerList workers )
+    private void incrementAllowance( WorkerIdentifier workerID, WorkerList workers )
     {
         for( MasterQueueType t: queueTypes ) {
             if( !t.isEmpty() ) {
