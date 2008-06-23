@@ -33,11 +33,6 @@ final class WorkerInfo {
 
     private boolean dead = false;
 
-    /** We know that this many tasks have excessive queue times. We have already
-     * reduced the allowance for this worker, don't try again for the moment.
-     */
-    private int knownDelayedTasks = 0;
-
     /**
      * Returns a string representation of this worker info. (Overrides method in superclass.)
      * @return The worker info.
@@ -86,12 +81,6 @@ final class WorkerInfo {
      */
     private void limitQueueTime( WorkerTaskInfo workerTaskInfo, int queueLength, long roundTripTime, long workerDwellTime )
     {
-	if( knownDelayedTasks>0 ) {
-	    // We've recently done a reduction, and there are still
-	    // outstanding tasks from before that. It's not
-	    // safe to do another reduction.
-	    return;
-	}
 	if( !workerTaskInfo.limitAllowance( queueLength, roundTripTime, workerDwellTime ) ) {
 	    // We cannot reduce the allowance.
 	    return;
@@ -99,7 +88,6 @@ final class WorkerInfo {
 	if( Settings.traceMasterProgress ) {
 	    System.out.println( "Reduced allowance of task type " + workerTaskInfo + " to reduce queue time" );
 	}
-	knownDelayedTasks = activeTasks.size();
     }
 
     private void registerCompletionInfo( CompletionInfo completionInfo )
@@ -147,11 +135,8 @@ final class WorkerInfo {
         long queueInterval = result.queueInterval;
 	long newRoundTripInterval = (now-task.startTime); // The time interval to send the task, compute, and report the result.
 
-	if( knownDelayedTasks>0 ) {
-	    knownDelayedTasks--;
-	}
-	task.workerTaskInfo.registerTaskCompleted( newRoundTripInterval );
 	registerCompletionInfo( result.completionInfo );
+	task.workerTaskInfo.registerTaskCompleted( newRoundTripInterval );
 	//limitQueueTime( task.workerTaskInfo, newRoundTripInterval, queueInterval+result.computeInterval );
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Master: retired task " + task + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );

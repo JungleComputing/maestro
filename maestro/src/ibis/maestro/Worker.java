@@ -590,20 +590,18 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
         Job t = findJob( taskType );
         int nextTaskNo = taskType.taskNo+1;
 
-        long jobCompletionInterval;
         if( nextTaskNo<t.tasks.length ){
             // There is a next step to take.
             TaskInstance nextTask = new TaskInstance( task.message.task.jobInstance, new TaskType( taskType.job, nextTaskNo ), result );
-            jobCompletionInterval = node.submitAndGetInfo( nextTask );
+            node.submitAndGetInfo( nextTask );
         }
         else {
             // This was the final step. Report back the result.
             JobInstanceIdentifier identifier = task.message.task.jobInstance;
             sendResultMessage( identifier.receivePort, identifier, result );
-            jobCompletionInterval = 0L;
         }
         if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "Completed " + task.message + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + " jobCompletionInterval=" + Service.formatNanoseconds( jobCompletionInterval ) );
+            Globals.log.reportProgress( "Completed " + task.message + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) );
         }
 	final MasterIdentifier master = task.message.source;
 
@@ -624,7 +622,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    runningTasks--;
 	    queue.notifyAll();
 	}
-	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );	
+	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );
 	WorkerMessage msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, queueInterval, computeInterval, completionInfo );
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( Settings.traceWorkerProgress ) {

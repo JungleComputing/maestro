@@ -16,10 +16,10 @@ final class WorkerTaskInfo {
     private int executedTasks = 0;
 
     /** The maximal ever allowance given to this worker for this task. */
-    private int maximalEverAllowance = 1;
+    private int maximalEverAllowance = 2;
 
     /** How many outstanding instances of this task should this worker maximally have? */
-    private int maximalAllowance = 1;
+    private int maximalAllowance = 2;
 
     /** How long in ns it takes to complete the rest of the job this task belongs to. */
     private long remainingJobTime;
@@ -181,10 +181,14 @@ final class WorkerTaskInfo {
      */
     protected void controlAllowance( int queueLength )
     {
-        if( queueLength<1 ) {
+        if( maximalAllowance == outstandingTasks && queueLength<1 ) {
             maximalAllowance++;
+            if( maximalEverAllowance<maximalAllowance ) {
+                maximalEverAllowance = maximalAllowance;
+            }
         }
-        else if( queueLength>1 && maximalAllowance>1 ) {
+        else if( maximalAllowance == outstandingTasks && queueLength>2 && maximalAllowance>1 ) {
+            System.out.println( "Decrementing allowance to " + maximalAllowance );
             maximalAllowance--;
         }
     }
