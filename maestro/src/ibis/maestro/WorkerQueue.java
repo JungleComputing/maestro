@@ -38,6 +38,21 @@ final class WorkerQueue {
 	QueueType( TaskType type ){
 	    this.type = type;
 	}
+	
+	WorkerQueueInfo getWorkerQueueInfo()
+	{
+	    return new WorkerQueueInfo( type, queue.size() );
+	}
+    }
+
+    protected WorkerQueueInfo[] getWorkerQueueInfo()
+    {
+	WorkerQueueInfo res[] = new WorkerQueueInfo[queueTypes.size()];
+	
+	for( int i=0; i<res.length; i++ ) {
+	    res[i] = queueTypes.get( i ).getWorkerQueueInfo();
+	}
+	return res;
     }
 
     /**

@@ -123,6 +123,6 @@ final class MasterQueueType {
         if( previousType == null ) {
             return null;
         }
-        return new CompletionInfo( previousType, queue.size(), duration );
+        return new CompletionInfo( previousType, duration );
     }
 }

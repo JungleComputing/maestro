@@ -11,7 +11,6 @@ class CompletionInfo implements Serializable
 {
     private static final long serialVersionUID = 1L;
     final TaskType type;
-    final int queueLength;
     final long completionInterval;
 
     // TODO: instead of storing the info per type, use an array for a job
@@ -20,9 +19,8 @@ class CompletionInfo implements Serializable
      * @param type The type of task.
      * @param completionInterval The completion interval.
      */
-    CompletionInfo(TaskType type, int queueLength, long completionInterval) {
+    CompletionInfo(TaskType type, long completionInterval) {
 	this.type = type;
-	this.queueLength = queueLength;
 	this.completionInterval = completionInterval;
     }
 

@@ -348,25 +348,25 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	}
     }
 
-    private void sendTaskRequest( MasterInfo master, CompletionInfo completionInfo[] )
+    private void sendTaskRequest( MasterInfo master, CompletionInfo completionInfo[], WorkerQueueInfo workerQueueInfo[] )
     {
-	WorkRequestMessage msg = new WorkRequestMessage( master.getIdentifierOnMaster(), completionInfo );
+	WorkRequestMessage msg = new WorkRequestMessage( master.getIdentifierOnMaster(), completionInfo, workerQueueInfo );
 	long sz = sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ) {
 	    master.declareDead();
 	}
     }
 
-    private void sendUpdate( MasterInfo master, CompletionInfo completionInfo[] )
+    private void sendUpdate( MasterInfo master, CompletionInfo completionInfo[], WorkerQueueInfo workerQueueInfo[] )
     {
-        WorkerUpdateMessage msg = new WorkerUpdateMessage( master.getIdentifierOnMaster(), completionInfo );
+        WorkerUpdateMessage msg = new WorkerUpdateMessage( master.getIdentifierOnMaster(), completionInfo, workerQueueInfo );
         long sz = sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
         if( sz<0 ) {
             master.declareDead();
         }
     }
 
-    private void askMoreWork( CompletionInfo[] completionInfo )
+    private void askMoreWork( CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
     {
 	// Try to register with a new Ibis.
 	IbisIdentifier newIbis = getUnregisteredMaster();
@@ -384,7 +384,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    if( Settings.traceWorkerProgress ){
 		Globals.log.reportProgress( "Worker: asking master " + taskSource.localIdentifier + " for work" );
 	    }
-	    sendTaskRequest( taskSource, completionInfo );
+	    sendTaskRequest( taskSource, completionInfo, workerQueueInfo );
 	    return;
 	}
 	
@@ -394,7 +394,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
             if( Settings.traceWorkerProgress ){
                 Globals.log.reportProgress( "Worker: updating master " + taskSource.localIdentifier );
             }
-            sendUpdate( taskSource, completionInfo );
+            sendUpdate( taskSource, completionInfo, workerQueueInfo );
             return;
         }
     }
@@ -413,7 +413,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    queue.notifyAll();
 	}
 	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );
-        sendUpdate( master, completionInfo );
+	WorkerQueueInfo[] workerQueueInfo = queue.getWorkerQueueInfo();
+        sendUpdate( master, completionInfo, workerQueueInfo );
     }
 
     /**
@@ -521,7 +522,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 		}
 		if( askForWork ){
 		    CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );
-		    askMoreWork( completionInfo );
+		    WorkerQueueInfo[] workerQueueInfo = queue.getWorkerQueueInfo();
+		    askMoreWork( completionInfo, workerQueueInfo );
 		}
 	    }
 	    catch( InterruptedException e ){
@@ -623,7 +625,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    queue.notifyAll();
 	}
 	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );
-	WorkerMessage msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, queueInterval, computeInterval, completionInfo );
+	WorkerQueueInfo[] workerQueueInfo = queue.getWorkerQueueInfo();
+	WorkerMessage msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, queueInterval, computeInterval, completionInfo, workerQueueInfo );
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( Settings.traceWorkerProgress ) {
 	    System.out.println( "Completed task "  + task.message );

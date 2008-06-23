@@ -100,7 +100,6 @@ final class WorkerInfo {
 	if( workerTaskInfo == null ) {
 	    return;
 	}
-	workerTaskInfo.controlAllowance( completionInfo.queueLength );
 	if( completionInfo.completionInterval != Long.MAX_VALUE ) {
 	    workerTaskInfo.setCompletionInterval( completionInfo.completionInterval );
 	}
@@ -114,6 +113,31 @@ final class WorkerInfo {
         enabled = true;
 	for( CompletionInfo i: completionInfo ) {
 	    registerCompletionInfo( i );
+	}
+    }
+
+    private void registerWorkerQueueInfo( WorkerQueueInfo info )
+    {
+        if( info == null ) {
+            return;
+        }
+	WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( info.type );
+
+	if( workerTaskInfo == null ) {
+	    return;
+	}
+	workerTaskInfo.controlAllowance( info.queueLength );
+
+    }
+
+    void registerWorkerQueueInfo( WorkerQueueInfo[] completionInfo )
+    {
+        if( Settings.traceWorkerList && !enabled ){
+            System.out.println( "Enabled worker " + identifier + " (" + port + ")" );
+        }
+        enabled = true;
+	for( WorkerQueueInfo i: completionInfo ) {
+	    registerWorkerQueueInfo( i );
 	}
     }
 
@@ -136,6 +160,7 @@ final class WorkerInfo {
 	long newRoundTripInterval = (now-task.startTime); // The time interval to send the task, compute, and report the result.
 
 	registerCompletionInfo( result.completionInfo );
+	registerWorkerQueueInfo( result.workerQueueInfo );
 	task.workerTaskInfo.registerTaskCompleted( newRoundTripInterval );
 	//limitQueueTime( task.workerTaskInfo, newRoundTripInterval, queueInterval+result.computeInterval );
 	if( Settings.traceMasterProgress ){

@@ -212,6 +212,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             // FIXME: remove or enable again.
             //queue.incrementAllowance( workerID, workers );
             workers.registerCompletionInfo( workerID, m.completionInfo );
+            workers.registerWorkerQueueInfo(workerID, m.workerQueueInfo );
             queue.notifyAll();
         }
     }
@@ -225,10 +226,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     {
         WorkerIdentifier workerID = m.source;
         if( Settings.traceMasterProgress ){
-            Globals.log.reportProgress( "Received worker update message " + m + " from worker " + workerID );
+            Globals.log.reportProgress( "Received worker update message " +m + " from worker " + workerID );
         }
         synchronized( queue ){
             workers.registerCompletionInfo( workerID, m.completionInfo );
+            workers.registerWorkerQueueInfo(workerID, m.workerQueueInfo );
             queue.notifyAll();
         }
     }

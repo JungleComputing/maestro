@@ -18,12 +18,17 @@ final class WorkRequestMessage extends WorkerMessage {
      */
     final CompletionInfo[] completionInfo;
 
+    /** For each type of task we know, the worker queue length.     */
+    final WorkerQueueInfo[] workerQueueInfo;
+
     /**
      * Constructs a new work request message.
      * @param identifier The identifier to use.
+     * @param workerQueueInfo 
      */
-    WorkRequestMessage( WorkerIdentifier identifier, CompletionInfo[] completionInfo ){
+    WorkRequestMessage( WorkerIdentifier identifier, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo ){
 	super( identifier );
 	this.completionInfo = completionInfo;
+	this.workerQueueInfo = workerQueueInfo;
     }
 }

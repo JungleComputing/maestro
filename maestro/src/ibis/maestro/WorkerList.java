@@ -260,6 +260,13 @@ final class WorkerList {
         w.registerCompletionInfo( completionInfo );	
     }
 
+
+    void registerWorkerQueueInfo( WorkerIdentifier workerID, WorkerQueueInfo[] workerQueueInfo )
+    {
+        WorkerInfo w = workers.get( workerID.value );
+        w.registerWorkerQueueInfo( workerQueueInfo );	
+    }
+
     /** Given a worker, return the identifier of this master on the worker.
      * @param workerID The worker to get the identifier for.
      * @return The identifier of this master on the worker.
