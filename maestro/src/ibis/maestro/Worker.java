@@ -593,7 +593,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
         if( nextTaskNo<t.tasks.length ){
             // There is a next step to take.
             TaskInstance nextTask = new TaskInstance( task.message.task.jobInstance, new TaskType( taskType.job, nextTaskNo ), result );
-            node.submitAndGetInfo( nextTask );
+            node.submit( nextTask );
         }
         else {
             // This was the final step. Report back the result.
@@ -694,8 +694,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
      * @param result The result to send.
      * @return The size of the sent message, or -1 if the transjob failed.
      */
-    long sendResultMessage(ReceivePortIdentifier port, JobInstanceIdentifier id,
-	    Object result) {
+    long sendResultMessage( ReceivePortIdentifier port, JobInstanceIdentifier id,
+	    Object result ) {
 	WorkerMessage msg = new JobResultMessage( id, result );
 	return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
     }

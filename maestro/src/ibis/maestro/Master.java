@@ -334,26 +334,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /**
-     * Adds the given task to the work queue of this master.
-     * @param task The task instance to add to the queue.
-     * @return The estimated time in ns it will take to complete the entire job
-     *   instance this task instance belongs to.
-     */
-    long submitAndGetInfo( TaskInstance task )
-    {
-        if( Settings.traceMasterProgress ) {
-            System.out.println( "Master: received task " + task );
-        }
-        synchronized ( queue ) {
-            incomingTaskCount++;
-            long queueTime = queue.submit( task );
-            long res = queueTime + workers.getAverageCompletionTime( task.type );
-            queue.notifyAll();
-            return res;
-        }
-    }
-
-    /**
      * @param worker The worker to send the task to.
      * @param task The task to send.
      */

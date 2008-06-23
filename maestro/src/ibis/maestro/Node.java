@@ -309,11 +309,6 @@ public final class Node {
     {
 	master.submit( j );
     }
-    
-    long submitAndGetInfo( TaskInstance j )
-    {
-	return master.submitAndGetInfo( j );
-    }
 
     /**
      * 

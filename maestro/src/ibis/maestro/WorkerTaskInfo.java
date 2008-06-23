@@ -153,7 +153,7 @@ final class WorkerTaskInfo {
      * @param workerDwellTime
      * @return True iff we really limited the allowance.
      */
-    public boolean limitAllowance( int queueLength, long roundTripTime, long workerDwellTime )
+    boolean limitAllowance( int queueLength, long roundTripTime, long workerDwellTime )
     {
 	if( maximalAllowance<=1 ) {
 	    // We must have an allowance of at least one.
