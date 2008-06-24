@@ -24,11 +24,6 @@ final class WorkerTaskInfo {
     /** How long in ns it takes to complete the rest of the job this task belongs to. */
     private long remainingJobTime;
 
-    /** If set, we are willing to allow an increased allowance if the worker
-     * would request it.
-     */
-    private boolean mayIncreaseAllowance = false;
-
     /**
      * Returns the maximal round-trip interval for this worker and this task type, or
      * Long.MAX_VALUE if currently there are no task slots.
@@ -72,9 +67,9 @@ final class WorkerTaskInfo {
     WorkerTaskInfo( String label, int remainingTasks, boolean local )
     {
 	this.label = label;
-	long initialEstimate = local?0:1*remainingTasks*Service.MILLISECOND_IN_NANOSECONDS;
+	long initialEstimate = local?0:1*Service.MILLISECOND_IN_NANOSECONDS;
 	this.roundTripEstimate = new TimeEstimate( initialEstimate );
-	this.remainingJobTime = 2*initialEstimate;
+	this.remainingJobTime = 2*remainingTasks*initialEstimate;
     }
 
     /**
@@ -100,29 +95,6 @@ final class WorkerTaskInfo {
     void incrementOutstandingTasks()
     {
 	outstandingTasks++;
-	if( outstandingTasks >= maximalAllowance ) {
-	    // Since we're now using the maximal allowance on this
-	    // worker, we are willing to consider an increment.
-	    mayIncreaseAllowance = true;
-	}
-    }
-
-    /**
-     * If allowed, increment the maximal number of outstanding tasks for
-     * this worker and this type of work.
-     *  @return True iff we really incremented the allowance.
-     */
-    protected boolean incrementAllowance()
-    {
-	if( !mayIncreaseAllowance ) {
-	    return false;
-	}
-        maximalAllowance++;
-        if( maximalEverAllowance<maximalAllowance ) {
-            maximalEverAllowance = maximalAllowance;
-        }
-        mayIncreaseAllowance = false;
-        return true;
     }
     
     String buildStatisticsString()
@@ -133,7 +105,7 @@ final class WorkerTaskInfo {
     /**
      * @return True iff this worker ever executed a task of this type.
      */
-    public boolean didWork()
+    protected boolean didWork()
     {
         return (executedTasks != 0) || (outstandingTasks != 0);
     }
@@ -144,14 +116,28 @@ final class WorkerTaskInfo {
      */
     protected void controlAllowance( int queueLength )
     {
-        if( maximalAllowance == outstandingTasks && queueLength<1 ) {
-            maximalAllowance++;
-            if( maximalEverAllowance<maximalAllowance ) {
-                maximalEverAllowance = maximalAllowance;
-            }
-        }
-        else if( maximalAllowance == outstandingTasks && queueLength>2 && maximalAllowance>1 ) {
-            maximalAllowance--;
-        }
+	if( maximalAllowance == outstandingTasks ) {
+	    // We can only regulate the allowance if we
+	    // at our current maximal allowance.
+	    if( queueLength<1 ) {
+		maximalAllowance++;
+	    }
+	    else if( queueLength>4 ) {
+		// There are a lot of items in the queue; take a larger step.
+		maximalAllowance -= queueLength/2;
+	    }
+	    else if( queueLength>2 ) {
+		maximalAllowance--;
+	    }
+	    if( maximalAllowance<1 ) {
+		// Don't close the door entirely.
+		// TODO: try if it makes sense to allow 0 allowance.
+		// If it's our only worker, we won't be happy.
+		maximalAllowance = 1;
+	    }
+	    if( maximalEverAllowance<maximalAllowance ) {
+		maximalEverAllowance = maximalAllowance;
+	    }
+	}
     }
 }

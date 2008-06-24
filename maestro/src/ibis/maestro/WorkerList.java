@@ -188,20 +188,6 @@ final class WorkerList {
         return ix>=0;
     }
 
-    /**
-     * Try to increment the maximal number of outstanding tasks for the given
-     * worker for the given task type.
-     * @param workerID The worker that should get a higher number of outstanding tasks.
-     * @param taskType The task type for which we want to increment.
-     * @return True iff we could actually increment the allowance
-     *         for the task type.
-     */
-    protected boolean incrementAllowance( WorkerIdentifier workerID, TaskType taskType )
-    {
-        WorkerInfo wi = workers.get( workerID.value );
-        return wi.incrementAllowance( taskType );
-    }
-
     /** Given a worker identifier, declare it dead.
      * @param workerID The worker to declare dead.
      */

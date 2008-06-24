@@ -242,20 +242,6 @@ final class WorkerInfo {
     }
 
     /**
-     * Tries to increment the maximal number of outstanding tasks for this worker.
-     * @param taskType The task type for which we want to increase our allowance.
-     * @return True iff we could increment the allowance of this type.
-     */
-    protected boolean incrementAllowance( TaskType taskType )
-    {
-	WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
-	if( workerTaskInfo == null ) {
-	    return false;
-	}
-	return workerTaskInfo.incrementAllowance();
-    }
-
-    /**
      * Returns true iff this worker is dead.
      * @return Is this worker dead?
      */
