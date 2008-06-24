@@ -456,7 +456,7 @@ class RGB24Image extends UncompressedImage {
         ByteArrayOutputStream out = new ByteArrayOutputStream();
 
         ImageIO.setUseCache( false );
-        ImageOutputStream output = ImageIO.createImageOutputStream(out);
+        ImageOutputStream output = ImageIO.createImageOutputStream( out );
         Iterator<?> writers = ImageIO.getImageWritersByFormatName( "jpg" );
 
         if( writers == null || !writers.hasNext() ){
@@ -466,6 +466,8 @@ class RGB24Image extends UncompressedImage {
         writer.setOutput( output );
         writer.write( img );
         writer.dispose();
+        output.close();
+        out.close();
 
         byte [] tmp = out.toByteArray();
 
