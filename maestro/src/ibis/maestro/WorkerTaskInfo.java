@@ -16,10 +16,10 @@ final class WorkerTaskInfo {
     private int executedTasks = 0;
 
     /** The maximal ever allowance given to this worker for this task. */
-    private int maximalEverAllowance = 1;
+    private int maximalEverAllowance;
 
     /** How many outstanding instances of this task should this worker maximally have? */
-    private int maximalAllowance = 1;
+    private int maximalAllowance;
 
     /** How long in ns it takes to complete the rest of the job this task belongs to. */
     private long remainingJobTime;
@@ -67,7 +67,12 @@ final class WorkerTaskInfo {
     WorkerTaskInfo( String label, int remainingTasks, boolean local )
     {
 	this.label = label;
-	long initialEstimate = local?0:1*Service.MILLISECOND_IN_NANOSECONDS;
+
+        this.maximalAllowance = local?5:2;
+        this.maximalEverAllowance = maximalAllowance;
+
+        // A totally unfounded guess, but we should learn soon enough what the real value is..
+	long initialEstimate = local?0:10*Service.MILLISECOND_IN_NANOSECONDS;
 	this.roundTripEstimate = new TimeEstimate( initialEstimate );
 	this.remainingJobTime = 2*remainingTasks*initialEstimate;
     }
