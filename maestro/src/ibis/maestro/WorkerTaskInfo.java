@@ -69,10 +69,10 @@ final class WorkerTaskInfo {
      * Constructs a new information class for a particular task type
      * for a particular worker.
      */
-    WorkerTaskInfo( String label, boolean local )
+    WorkerTaskInfo( String label, int remainingTasks, boolean local )
     {
 	this.label = label;
-	long initialEstimate = local?0:1*Service.MILLISECOND_IN_NANOSECONDS;
+	long initialEstimate = local?0:1*remainingTasks*Service.MILLISECOND_IN_NANOSECONDS;
 	this.roundTripEstimate = new TimeEstimate( initialEstimate );
 	this.remainingJobTime = 2*initialEstimate;
     }

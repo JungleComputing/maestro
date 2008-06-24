@@ -84,9 +84,9 @@ public final class Job
         return new JobInstanceIdentifier( userIdentifier, node.identifier() );
     }
 
-    private TaskType createTaskType( int taskNo )
+    private TaskType createTaskType( int taskNo, int remainingTasks )
     {
-        return new TaskType( id, taskNo );
+        return new TaskType( id, taskNo, remainingTasks );
     }
 
     /**
@@ -97,7 +97,7 @@ public final class Job
      */
     private void submitATask( Node node, JobInstanceIdentifier tii, int taskNo, Object value )
     {
-        TaskType type = createTaskType( taskNo );
+        TaskType type = createTaskType( taskNo, (tasks.length-1)-taskNo  );
         TaskInstance j = new TaskInstance( tii, type, value );
         node.submit( j );
     }
@@ -139,7 +139,7 @@ public final class Job
             return null;
         }
         if( taskType.taskNo>0 ) {
-            return new TaskType( taskType.job, taskType.taskNo-1 );
+            return new TaskType( taskType.job, taskType.taskNo-1, taskType.remainingTasks+1 );
         }
         return null;
     }
@@ -157,7 +157,7 @@ public final class Job
 	    return null;
 	}
 	if( taskType.taskNo<tasks.length-1 ) {
-	    return new TaskType( taskType.job, taskType.taskNo+1 );
+	    return new TaskType( taskType.job, taskType.taskNo+1, taskType.remainingTasks+1 );
 	}
 	return null;
     }

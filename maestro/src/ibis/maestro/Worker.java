@@ -585,7 +585,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 
         if( nextTaskNo<t.tasks.length ){
             // There is a next step to take.
-            TaskInstance nextTask = new TaskInstance( task.message.task.jobInstance, new TaskType( taskType.job, nextTaskNo ), result );
+            TaskInstance nextTask = new TaskInstance( task.message.task.jobInstance, t.getNextTaskType( taskType ), result );
             node.submit( nextTask );
         }
         else {

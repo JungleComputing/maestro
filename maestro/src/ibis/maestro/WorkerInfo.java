@@ -200,7 +200,7 @@ final class WorkerInfo {
         if( Settings.traceTypeHandling ){
             System.out.println( "worker " + identifier + " (" + port + ") can handle " + type );
         }
-	WorkerTaskInfo info = new WorkerTaskInfo( toString() + " task type " + type, local );
+	WorkerTaskInfo info = new WorkerTaskInfo( toString() + " task type " + type, type.remainingTasks, local );
 	workerTaskInfoTable.put( type, info );
     }
 
