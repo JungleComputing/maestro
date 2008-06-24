@@ -394,21 +394,22 @@ class BenchmarkProgram {
         else {
             if( saveFrames ){
                 convertTask = tasks.createJob(
-                        "benchmark",
-                        new GenerateFrameTask(),
-                        new ScaleUpFrameTask( 2, slowScale ),
-                        new SharpenFrameTask( slowSharpen ),
-                        new CompressFrameTask(),
-                        new SaveFrameTask( dir )
+                    "benchmark",
+                    new GenerateFrameTask(),
+                    new ScaleUpFrameTask( 2, slowScale ),
+                    new SharpenFrameTask( slowSharpen ),
+                    new CompressFrameTask(),
+                    new SaveFrameTask( dir )
                 );
             }
             else {
                 convertTask = tasks.createJob(
-                        "benchmark",
-                        new GenerateFrameTask(),
-                        new ScaleUpFrameTask( 2, slowScale ),
-                        new SharpenFrameTask( slowSharpen ),
-                        new CompressFrameTask()
+                    "benchmark",
+                    new GenerateFrameTask(),
+                    new ScaleUpFrameTask( 2, slowScale ),
+                    new SharpenFrameTask( slowSharpen ),
+                    new CompressFrameTask(),
+                    new SaveFrameTask( dir )
                 );
             }
         }
