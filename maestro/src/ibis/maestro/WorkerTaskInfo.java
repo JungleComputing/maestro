@@ -131,28 +131,6 @@ final class WorkerTaskInfo {
     }
 
     /**
-     * Limit the queue size on the worker.
-     * @param queueLength The length of the current queue on the worker.
-     * @param roundTripTime The time interval between the transmission of the task to the worker, and getting back the completion message.
-     * @param workerDwellTime
-     * @return True iff we really limited the allowance.
-     */
-    boolean limitAllowance( int queueLength, long roundTripTime, long workerDwellTime )
-    {
-	if( maximalAllowance<=1 ) {
-	    // We must have an allowance of at least one.
-	    return false;
-	}
-	if( queueLength>1 ) {
-	//if( (maximalAllowance*workerDwellTime)>roundTripTime ) {
-	    maximalAllowance--;
-	    mayIncreaseAllowance = false;
-	    return true;
-	}
-	return false;
-    }
-
-    /**
      * @return True iff this worker ever executed a task of this type.
      */
     public boolean didWork()
