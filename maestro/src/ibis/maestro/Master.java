@@ -198,27 +198,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /**
-     * A worker has sent us a message asking for more work.
-     * 
-     * @param m The work request message.
-     */
-    private void handleWorkRequestMessage( WorkRequestMessage m )
-    {
-        WorkerIdentifier workerID = m.source;
-        if( Settings.traceMasterProgress ){
-            Globals.log.reportProgress( "Received work request message " + m + " from worker " + workerID );
-        }
-        synchronized( queue ){
-            // FIXME: remove or enable again.
-            //queue.incrementAllowance( workerID, workers );
-            workers.registerCompletionInfo( workerID, m.completionInfo );
-            workers.registerWorkerQueueInfo(workerID, m.workerQueueInfo );
-            queue.notifyAll();
-        }
-    }
-
-    /**
-     * A worker has sent us a message with its current job completion times.
+     * A worker has sent us a message with its current status, handle it.
      * 
      * @param m The update message.
      */
@@ -298,11 +278,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             WorkerUpdateMessage m = (WorkerUpdateMessage) msg;
 
             handleWorkerUpdateMessage( m );
-        }
-        else if( msg instanceof WorkRequestMessage ) {
-            WorkRequestMessage m = (WorkRequestMessage) msg;
-
-            handleWorkRequestMessage( m );
         }
         else if( msg instanceof RegisterWorkerMessage ) {
             RegisterWorkerMessage m = (RegisterWorkerMessage) msg;

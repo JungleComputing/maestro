@@ -73,23 +73,6 @@ final class WorkerInfo {
 	return -1;
     }
 
-    /** The most recently returned task spent most of its time in the queue.
-     * If we haven't done so recently, reduce the queue time of this worker
-     * by reducing the number of allowed outstanding tasks.
-     * @param workerTaskInfo Information about the task that was delayed so long.
-     * @param queueLength The length of the worker queue.
-     */
-    private void limitQueueTime( WorkerTaskInfo workerTaskInfo, int queueLength, long roundTripTime, long workerDwellTime )
-    {
-	if( !workerTaskInfo.limitAllowance( queueLength, roundTripTime, workerDwellTime ) ) {
-	    // We cannot reduce the allowance.
-	    return;
-	}
-	if( Settings.traceMasterProgress ) {
-	    System.out.println( "Reduced allowance of task type " + workerTaskInfo + " to reduce queue time" );
-	}
-    }
-
     private void registerCompletionInfo( CompletionInfo completionInfo )
     {
         if( completionInfo == null ) {
@@ -156,7 +139,6 @@ final class WorkerInfo {
 	    return;
 	}
 	ActiveTask task = activeTasks.remove( ix );
-        long queueInterval = result.queueInterval;
 	long newRoundTripInterval = (now-task.startTime); // The time interval to send the task, compute, and report the result.
 
 	registerCompletionInfo( result.completionInfo );

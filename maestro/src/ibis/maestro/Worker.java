@@ -348,15 +348,6 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	}
     }
 
-    private void sendTaskRequest( MasterInfo master, CompletionInfo completionInfo[], WorkerQueueInfo workerQueueInfo[] )
-    {
-	WorkRequestMessage msg = new WorkRequestMessage( master.getIdentifierOnMaster(), completionInfo, workerQueueInfo );
-	long sz = sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
-	if( sz<0 ) {
-	    master.declareDead();
-	}
-    }
-
     private void sendUpdate( MasterInfo master, CompletionInfo completionInfo[], WorkerQueueInfo workerQueueInfo[] )
     {
         WorkerUpdateMessage msg = new WorkerUpdateMessage( master.getIdentifierOnMaster(), completionInfo, workerQueueInfo );
@@ -378,13 +369,14 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    return;
 	}
 
-	// Try to tell a master we want more tasks.
+	// Try to tell a known master we want more tasks. We do this by
+	// telling it about our current state.
 	MasterInfo taskSource = getRandomWorkSource();
 	if( taskSource != null ){
 	    if( Settings.traceWorkerProgress ){
 		Globals.log.reportProgress( "Worker: asking master " + taskSource.localIdentifier + " for work" );
 	    }
-	    sendTaskRequest( taskSource, completionInfo, workerQueueInfo );
+	    sendUpdate( taskSource, completionInfo, workerQueueInfo );
 	    return;
 	}
 	
@@ -587,7 +579,6 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
     {
 	long now = System.nanoTime();
 	long queueInterval = task.message.getRunTime()-task.message.getQueueTime();
-	long computeInterval = task.message.getRunTime()-now;
 	TaskType taskType = task.message.task.type;
         Job t = findJob( taskType );
         int nextTaskNo = taskType.taskNo+1;
@@ -626,7 +617,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	}
 	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );
 	WorkerQueueInfo[] workerQueueInfo = queue.getWorkerQueueInfo();
-	WorkerMessage msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, queueInterval, computeInterval, completionInfo, workerQueueInfo );
+	WorkerMessage msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, completionInfo, workerQueueInfo );
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( Settings.traceWorkerProgress ) {
 	    System.out.println( "Completed task "  + task.message );

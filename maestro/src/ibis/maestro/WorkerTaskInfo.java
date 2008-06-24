@@ -124,22 +124,6 @@ final class WorkerTaskInfo {
         mayIncreaseAllowance = false;
         return true;
     }
-
-    /**
-     * Try to reduce the allowance of this worker and task.
-     * This may not succeed if the new allowance would
-     * be too low.
-     * @return True iff we reduced the allowance.
-     */
-    private boolean decrementAllowance()
-    {
-	if( maximalAllowance<=1 ) {
-	    return false;
-	}
-	maximalAllowance--;
-	mayIncreaseAllowance = false;
-	return true;
-    }
     
     String buildStatisticsString()
     {

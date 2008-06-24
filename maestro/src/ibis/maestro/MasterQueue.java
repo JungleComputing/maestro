@@ -1,7 +1,5 @@
 package ibis.maestro;
 
-import ibis.maestro.Master.WorkerIdentifier;
-
 import java.io.PrintStream;
 import java.util.ArrayList;
 
@@ -78,26 +76,6 @@ final class MasterQueue {
             }
         }
         return true;
-    }
-
-    /**
-     * Given a worker, try to increment the allowance of one of its
-     * supported types. We only increment the allowance of a task
-     * type that is currently present in the queue.
-     * @param workerID The id of the worker to increase the allowance for.
-     * @param workers The list of workers of the master.
-     */
-    private void incrementAllowance( WorkerIdentifier workerID, WorkerList workers )
-    {
-        for( MasterQueueType t: queueTypes ) {
-            if( !t.isEmpty() ) {
-                // There are tasks of this type in the queue.
-                if( workers.incrementAllowance( workerID, t.type ) ) {
-                    // We could increment the allowance. Job accomplished.
-                    break;
-                }
-            }
-        }
     }
 
     /**
