@@ -1,5 +1,6 @@
 package ibis.videoplayer;
 
+import ibis.maestro.CompletionListener;
 import ibis.maestro.Job;
 import ibis.maestro.JobList;
 import ibis.maestro.JobWaiter;
@@ -25,6 +26,33 @@ class BenchmarkProgram {
     /** Empty class to send around when there is nothing to say. */
     static final class Empty implements Serializable {
         private static final long serialVersionUID = 2;
+    }
+
+    private static class Listener implements CompletionListener
+    {
+        int jobsCompleted = 0;
+        private final int jobCount;
+
+        Listener( int jobCount )
+        {
+            this.jobCount = jobCount;
+        }
+
+        /** Handle the completion of task 'j': the result is 'result'.
+         * @param id The task that was completed.
+         * @param result The result of the task.
+         */
+        @Override
+        public void jobCompleted( Node node, Object id, Object result )
+        {
+            // FIXME: keep track of the results we got back and weed out duplicates.
+            jobsCompleted++;
+            //System.out.println( "I now have " + tasksCompleted + "/" + taskCount + " tasks" );
+            if( jobsCompleted>=jobCount ){
+                System.out.println( "I got all task results back; stopping test program" );
+                node.setStopped();
+            }
+        }
     }
 
     // Do all the image processing steps in one go. Used as baseline.
@@ -352,9 +380,9 @@ class BenchmarkProgram {
             System.exit( 1 );
         }
         System.out.println( "frames=" + frames + " goForMaestro=" + goForMaestro + " saveFrames=" + saveFrames + " oneJob=" + oneJob + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale  );
-        JobWaiter waiter = new JobWaiter();
         JobList tasks = new JobList();
         Job convertTask;
+        Listener listener = new Listener( frames );
         File dir = saveFrames?outputDir:null;
         if( oneJob ) {
             System.out.println( "One-job benchmark" );
@@ -392,12 +420,9 @@ class BenchmarkProgram {
         long startTime = System.nanoTime();
         if( node.isMaestro() ) {
             for( int frame=0; frame<frames; frame++ ){
-                waiter.submit( node, convertTask, frame );
+                convertTask.submit( node, frame, frame, listener );
             }
             System.out.println( "Jobs submitted" );
-            waiter.sync();
-            System.out.println( "Jobs finished" );
-            node.setStopped();
         }
         node.waitToTerminate();
         long stopTime = System.nanoTime();
