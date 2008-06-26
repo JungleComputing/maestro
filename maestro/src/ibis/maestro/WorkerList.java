@@ -62,6 +62,11 @@ final class WorkerList {
             System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
         }
         workers.add( worker );
+        for( TaskType t: types ) {
+            if( !reservedTasks.containsKey(t)) {
+                reservedTasks.put( t, local?4:0 );
+            }
+        }
         return workerID;
     }
 
@@ -159,7 +164,7 @@ final class WorkerList {
                 }
             }
         }
-        int n = reservedTasks.get(taskType);
+        int n = reservedTasks.get( taskType );
         if( best == null && queueLength>n ) {
             // We can't find a worker for this task. See if there is
             // a disabled worker we can enable.
