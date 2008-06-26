@@ -7,6 +7,7 @@ import ibis.maestro.Worker.MasterIdentifier;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -17,7 +18,7 @@ import java.util.List;
 final class WorkerList {
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
     /** How many tasks have we reserved to learn about a new worker? */
-    private int reservedTasks = 0;
+    private HashMap<TaskType,Integer> reservedTasks = new HashMap<TaskType, Integer>();
 
     private static WorkerInfo searchWorker( List<WorkerInfo> workers, WorkerIdentifier workerIdentifier )
     {
@@ -158,7 +159,8 @@ final class WorkerList {
                 }
             }
         }
-        if( best == null && queueLength>reservedTasks ) {
+        int n = reservedTasks.get(taskType);
+        if( best == null && queueLength>n ) {
             // We can't find a worker for this task. See if there is
             // a disabled worker we can enable.
             for( int i=0; i<workers.size(); i++ ) {
@@ -166,9 +168,10 @@ final class WorkerList {
 
                 if( !wi.isDead() ) {
                     if( wi.activate( taskType ) ) {
-                        reservedTasks += 4;  // Reserve this many tasks for learning about a new worker. 
+                        n += 4;  // Reserve this many tasks for learning about a new worker.
+                        reservedTasks.put( taskType, n );
                 	if( Settings.traceMasterQueue ) {
-                	    Globals.log.reportProgress( "activated worker " + wi + "; reservedTasks=" + reservedTasks );
+                	    Globals.log.reportProgress( "activated worker " + wi + "; reservedTasks[" + taskType + "]=" + n );
                 	}
                 	best = wi;
                 	break;
@@ -192,8 +195,9 @@ final class WorkerList {
             }
         }
         else {
-            if( reservedTasks>0 ) {
-                reservedTasks--;
+            int rt = reservedTasks.get( taskType );
+            if( rt>0 ) {
+                reservedTasks.put( taskType, rt );
             }
             if( Settings.traceMasterQueue ){
         	Globals.log.reportProgress( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) + "; reservedTasks=" + reservedTasks );
