@@ -62,11 +62,6 @@ final class WorkerList {
             System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
         }
         workers.add( worker );
-        for( TaskType t: types ) {
-            if( !reservedTasks.containsKey(t)) {
-                reservedTasks.put( t, local?4:0 );
-            }
-        }
         return workerID;
     }
 
@@ -164,7 +159,8 @@ final class WorkerList {
                 }
             }
         }
-        int n = reservedTasks.get( taskType );
+        Integer nobj = reservedTasks.get( taskType );
+        int n = (nobj == null)?0:nobj;
         if( best == null && queueLength>n ) {
             // We can't find a worker for this task. See if there is
             // a disabled worker we can enable.
@@ -200,9 +196,8 @@ final class WorkerList {
             }
         }
         else {
-            int rt = reservedTasks.get( taskType );
-            if( rt>0 ) {
-                reservedTasks.put( taskType, rt );
+            if( n>0 ) {
+                reservedTasks.put( taskType, n-1 );
             }
             if( Settings.traceMasterQueue ){
         	Globals.log.reportProgress( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) + "; reservedTasks=" + reservedTasks );
