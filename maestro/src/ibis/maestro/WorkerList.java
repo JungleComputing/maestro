@@ -166,17 +166,17 @@ final class WorkerList {
 
                 if( !wi.isDead() ) {
                     if( wi.activate( taskType ) ) {
-                	if( Settings.traceMasterQueue ) {
-                	    Globals.log.reportProgress( "activated worker " + wi );
-                	}
                         reservedTasks += 4;  // Reserve this many tasks for learning about a new worker. 
+                	if( Settings.traceMasterQueue ) {
+                	    Globals.log.reportProgress( "activated worker " + wi + "; reservedTasks=" + reservedTasks );
+                	}
                 	best = wi;
                 	break;
                     }
                 }
             }
         }
-        if( best == null ) {            
+        if( best == null && queueLength>2 ){            
             if( Settings.traceMasterQueue ){
                 int busy = 0;
                 int notSupported = 0;
@@ -196,7 +196,7 @@ final class WorkerList {
                 reservedTasks--;
             }
             if( Settings.traceMasterQueue ){
-        	Globals.log.reportProgress( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) );
+        	Globals.log.reportProgress( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) + "; reservedTasks=" + reservedTasks );
             }
         }
         return best;

@@ -27,7 +27,6 @@ final class WorkerTaskInfo {
     /**
      * Returns the maximal round-trip interval for this worker and this task type, or
      * Long.MAX_VALUE if currently there are no task slots.
-     * @param The number of reservations we already have.
      * @return The round-trip interval.
      */
     long estimateJobCompletion()
@@ -117,7 +116,7 @@ final class WorkerTaskInfo {
      */
     protected void controlAllowance( int queueLength )
     {
-	if( maximalAllowance == outstandingTasks ) {
+	if( maximalAllowance>0 && maximalAllowance == outstandingTasks ) {
 	    // We can only regulate the allowance if we
 	    // at our current maximal allowance.
 	    if( queueLength<1 ) {
