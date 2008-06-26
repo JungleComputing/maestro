@@ -16,6 +16,15 @@ import java.util.List;
  * @author Kees van Reeuwijk
  */
 final class WorkerList {
+    /**
+     * The queue length for a particular type that triggers an attempt
+     * to add a worker.
+     */
+    private static final int ADD_WORKER_THRESHOLD = 2;
+    /**
+     * The number of tasks we reserve for a new worker to learn.
+     */
+    private static final int LEARNING_TASK_COUNT = 4;
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
     /** How many tasks have we reserved to learn about a new worker? */
     private HashMap<TaskType,Integer> reservedTasks = new HashMap<TaskType, Integer>();
@@ -169,7 +178,7 @@ final class WorkerList {
 
                 if( !wi.isDead() ) {
                     if( wi.activate( taskType ) ) {
-                        n += 4;  // Reserve this many tasks for learning about a new worker.
+                        n += LEARNING_TASK_COUNT;  // Reserve this many tasks for learning about a new worker.
                         reservedTasks.put( taskType, n );
                 	if( Settings.traceMasterQueue ) {
                 	    Globals.log.reportProgress( "activated worker " + wi + "; reservedTasks[" + taskType + "]=" + n );
@@ -180,7 +189,7 @@ final class WorkerList {
                 }
             }
         }
-        if( best == null && queueLength>2 ){            
+        if( best == null && queueLength>ADD_WORKER_THRESHOLD ) {
             if( Settings.traceMasterQueue ){
                 int busy = 0;
                 int notSupported = 0;
