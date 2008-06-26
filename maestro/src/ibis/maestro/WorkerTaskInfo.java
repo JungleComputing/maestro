@@ -32,9 +32,6 @@ final class WorkerTaskInfo {
      */
     long estimateJobCompletion()
     {
-        if( maximalAllowance == 0 ){
-            System.err.println( "Internal error: zero allowance" );
-        }
 	if( remainingJobTime == Long.MAX_VALUE ) {
 	    return Long.MAX_VALUE;
 	}
@@ -50,7 +47,7 @@ final class WorkerTaskInfo {
 
     long getAverageCompletionTime()
     {
-        if( remainingJobTime == Long.MAX_VALUE ) {
+        if( maximalAllowance == 0 || remainingJobTime == Long.MAX_VALUE ) {
             return Long.MAX_VALUE;
         }
         long average = roundTripEstimate.getAverage();
@@ -67,8 +64,7 @@ final class WorkerTaskInfo {
     WorkerTaskInfo( String label, int remainingTasks, boolean local )
     {
 	this.label = label;
-
-        this.maximalAllowance = local?5:2;
+        this.maximalAllowance = local?2:0;
         this.maximalEverAllowance = maximalAllowance;
 
         // A totally unfounded guess, but we should learn soon enough what the real value is..
@@ -134,15 +130,24 @@ final class WorkerTaskInfo {
 	    else if( queueLength>2 ) {
 		maximalAllowance--;
 	    }
-	    if( maximalAllowance<1 ) {
-		// Don't close the door entirely.
-		// TODO: try if it makes sense to allow 0 allowance.
-		// If it's our only worker, we won't be happy.
-		maximalAllowance = 1;
+	    if( maximalAllowance<0 ) {
+		// Yes, we are prepared to cut off a worker entirely.
+		// However, if our work queue gets too large, we will
+		// enable this worker again.
+		maximalAllowance = 0;
 	    }
 	    if( maximalEverAllowance<maximalAllowance ) {
 		maximalEverAllowance = maximalAllowance;
 	    }
 	}
+    }
+
+    protected boolean activate()
+    {
+        if( maximalAllowance>0 || remainingJobTime == Long.MAX_VALUE ) {
+            return false;
+        }
+        maximalAllowance = 1;
+	return true;
     }
 }

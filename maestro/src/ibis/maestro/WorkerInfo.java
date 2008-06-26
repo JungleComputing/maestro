@@ -293,4 +293,19 @@ final class WorkerInfo {
 	    }
 	}
     }
+
+    protected boolean activate( TaskType taskType )
+    {
+        if( !enabled ) {
+            return false;
+        }
+	WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
+	if( workerTaskInfo == null ) {
+	    if( Settings.traceTypeHandling ){
+	        System.out.println( "estimateJobCompletion(): worker " + identifier + " does not support type " + taskType );
+	    }
+	    return false;
+	}
+	return workerTaskInfo.activate();
+    }
 }

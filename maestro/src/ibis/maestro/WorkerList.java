@@ -156,8 +156,25 @@ final class WorkerList {
                 }
             }
         }
-        if( Settings.traceMasterQueue ){
-            if( best == null ) {
+        if( best == null ) {
+            // We can't find a worker for this task. See if there is
+            // a disabled worker we can enable.
+            for( int i=0; i<workers.size(); i++ ) {
+                WorkerInfo wi = workers.get( i );
+
+                if( !wi.isDead() ) {
+                    if( wi.activate( taskType ) ) {
+                	if( Settings.traceMasterQueue ) {
+                	    Globals.log.reportProgress( "activated worker " + wi );
+                	}
+                	best = wi;
+                	break;
+                    }
+                }
+            }
+        }
+        if( best == null ) {            
+            if( Settings.traceMasterQueue ){
                 int busy = 0;
                 int notSupported = 0;
                 for( WorkerInfo wi: workers ){
@@ -168,10 +185,12 @@ final class WorkerList {
                         notSupported++;
                     }
                 }
-                System.out.println( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for task of type " + taskType );
+                Globals.log.reportProgress( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for task of type " + taskType );
             }
-            else {
-                System.out.println( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) );
+        }
+        else {
+            if( Settings.traceMasterQueue ){
+        	Globals.log.reportProgress( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) );
             }
         }
         return best;
