@@ -16,6 +16,8 @@ import java.util.List;
  */
 final class WorkerList {
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
+    /** How many tasks have we reserved to learn about a new worker? */
+    private int reservedTasks = 0;
 
     private static WorkerInfo searchWorker( List<WorkerInfo> workers, WorkerIdentifier workerIdentifier )
     {
@@ -136,7 +138,7 @@ final class WorkerList {
      * @return The info of the best worker for this task, or <code>null</code>
      *         if there currently aren't any workers for this task type.
      */
-    WorkerInfo selectBestWorker( TaskType taskType )
+    WorkerInfo selectBestWorker( TaskType taskType, int queueLength )
     {
         WorkerInfo best = null;
         long bestInterval = Long.MAX_VALUE;
@@ -156,7 +158,7 @@ final class WorkerList {
                 }
             }
         }
-        if( best == null ) {
+        if( best == null && queueLength>reservedTasks ) {
             // We can't find a worker for this task. See if there is
             // a disabled worker we can enable.
             for( int i=0; i<workers.size(); i++ ) {
@@ -167,6 +169,7 @@ final class WorkerList {
                 	if( Settings.traceMasterQueue ) {
                 	    Globals.log.reportProgress( "activated worker " + wi );
                 	}
+                        reservedTasks += 4;  // Reserve this many tasks for learning about a new worker. 
                 	best = wi;
                 	break;
                     }
@@ -189,6 +192,9 @@ final class WorkerList {
             }
         }
         else {
+            if( reservedTasks>0 ) {
+                reservedTasks--;
+            }
             if( Settings.traceMasterQueue ){
         	Globals.log.reportProgress( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) );
             }
