@@ -426,11 +426,11 @@ class PacketSendPort<T extends Serializable> {
         return len;
     }
 
-    boolean isLocalListener(ReceivePortIdentifier identifier)
+    boolean isLocalListener( ReceivePortIdentifier identifier )
     {
 	if( localListener == null ) {
 	    return false;
 	}
-	return localListener.hasReceivePort(identifier);
+	return localListener.hasReceivePort( identifier );
     }
 }

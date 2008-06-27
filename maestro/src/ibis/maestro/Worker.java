@@ -443,7 +443,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
      */
     public boolean hasReceivePort( ReceivePortIdentifier port )
     {
-	return port.equals( receivePort.identifier() );
+	boolean res = port.equals( receivePort.identifier() );
+        return res;
     }
 
     /**

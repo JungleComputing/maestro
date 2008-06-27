@@ -25,6 +25,15 @@ final class WorkerTaskInfo {
     private long remainingJobTime;
 
     /**
+     * @return A string representation of this class instance.
+     */
+    @Override
+    public String toString()
+    {
+	return "[" + label + ": roundTripEstimate=" + roundTripEstimate + ",remainingJobTime=" + Service.formatNanoseconds(remainingJobTime) + ",outstandingTasks=" + outstandingTasks + ",maximalAllowance=" + maximalAllowance + "]";
+    }
+
+    /**
      * Returns the maximal round-trip interval for this worker and this task type, or
      * Long.MAX_VALUE if currently there are no task slots.
      * @return The round-trip interval.
@@ -70,6 +79,9 @@ final class WorkerTaskInfo {
 	long initialEstimate = local?0:10*Service.MILLISECOND_IN_NANOSECONDS;
 	this.roundTripEstimate = new TimeEstimate( initialEstimate );
 	this.remainingJobTime = 2*remainingTasks*initialEstimate;
+	if( Settings.traceWorkerList ) {
+	    Globals.log.reportProgress( "Created new WorkerTaskInfo " + toString() );
+	}
     }
 
     /**

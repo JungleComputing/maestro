@@ -50,7 +50,7 @@ final class WorkerInfo {
 	this.identifierWithWorker = identifierForWorker;
 	this.local = local;
 	for( TaskType t: types ) {
-	    registerTaskType(t);
+	    registerTaskType( t );
 	}
     }
 
@@ -198,7 +198,7 @@ final class WorkerInfo {
     private void registerTaskType( TaskType type )
     {
         if( Settings.traceTypeHandling ){
-            System.out.println( "worker " + identifier + " (" + port + ") can handle " + type );
+            System.out.println( "worker " + identifier + " (" + port + ") can handle " + type + ", local=" + local );
         }
 	WorkerTaskInfo info = new WorkerTaskInfo( toString() + " task type " + type, type.remainingTasks, local );
 	workerTaskInfoTable.put( type, info );

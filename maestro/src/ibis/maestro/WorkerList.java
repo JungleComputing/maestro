@@ -20,11 +20,13 @@ final class WorkerList {
      * The queue length for a particular type that triggers an attempt
      * to add a worker.
      */
-    private static final int ADD_WORKER_THRESHOLD = 2;
+    private static final int ADD_WORKER_THRESHOLD = 4;
+
     /**
      * The number of tasks we reserve for a new worker to learn.
      */
-    private static final int LEARNING_TASK_COUNT = 4;
+    private static final int LEARNING_TASK_COUNT = 2;
+
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
     /** How many tasks have we reserved to learn about a new worker? */
     private HashMap<TaskType,Integer> reservedTasks = new HashMap<TaskType, Integer>();
@@ -68,7 +70,7 @@ final class WorkerList {
         WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker, local, types );
 
         if( Settings.traceMasterProgress ){
-            System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker );
+            System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker + "; local=" + local );
         }
         workers.add( worker );
         return workerID;

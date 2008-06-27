@@ -235,7 +235,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             Globals.log.reportInternalError( "Worker " + worker + " has zero supported types??" );
         }
         synchronized( queue ) {
-            boolean local = sendPort.isLocalListener( receivePort.identifier() );
+            boolean local = sendPort.isLocalListener( m.port );
             workerID = workers.subscribeWorker( receivePort.identifier(), worker, local, m.masterIdentifier, m.supportedTypes );
             sendPort.registerDestination( worker, workerID.value );
             workersToAccept.add( workerID );
@@ -251,7 +251,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     @Override
     public boolean hasReceivePort( ReceivePortIdentifier port )
     {
-        return port.equals( receivePort.identifier() );
+	boolean res = port.equals( receivePort.identifier() );
+        return res;
     }
 
     /**
