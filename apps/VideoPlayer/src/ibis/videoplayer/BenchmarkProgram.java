@@ -3,7 +3,6 @@ package ibis.videoplayer;
 import ibis.maestro.CompletionListener;
 import ibis.maestro.Job;
 import ibis.maestro.JobList;
-import ibis.maestro.JobWaiter;
 import ibis.maestro.Node;
 import ibis.maestro.Service;
 import ibis.maestro.Task;

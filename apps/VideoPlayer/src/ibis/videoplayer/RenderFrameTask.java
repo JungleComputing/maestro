@@ -159,9 +159,9 @@ public class RenderFrameTask implements Task
         	    }
         	    cmd += c;
         	}
-                System.err.println( "Rendering command '" + cmd + "' failed:" );
-                System.err.println( p.getStdout() );
-                System.err.println( p.getStderr() );
+                System.err.println( "Render command '" + cmd + "' failed:" );
+                System.err.println( new String( p.getStdout() ) );
+                System.err.println( new String( p.getStderr() ) );
                 return null;
             }
             img = UncompressedImage.load( outFile, frameno );
