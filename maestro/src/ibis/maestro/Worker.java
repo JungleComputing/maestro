@@ -579,7 +579,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 
     /** Reports the result of the execution of a task. (Overrides method in superclass.)
      * @param task The task that was run.
-     * @param result The result coming rom the run task.
+     * @param result The result coming from the run task.
      */
     @Override
     public void reportTaskCompletion( RunTask task, Object result )
@@ -591,9 +591,6 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	int nextTaskNo = taskType.taskNo+1;
         final MasterIdentifier master = task.message.source;
 
-        if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "Completed " + task.message + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) );
-        }
 	if( nextTaskNo<t.tasks.length ){
 	    // There is a next step to take.
 	    TaskInstance nextTask = new TaskInstance( task.message.task.jobInstance, t.getNextTaskType( taskType ), result );
@@ -620,6 +617,9 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    TaskStats stats = taskStats.get( taskType );
 	    stats.countTask( queueInterval, now-task.message.getRunTime() );
 	    runningTasks--;
+	    if( Settings.traceRemainingJobTime ) {
+		Globals.log.reportProgress( "Completed " + task.message + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
+	    }
 	    queue.notifyAll();
 	}
 	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );

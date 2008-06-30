@@ -14,16 +14,13 @@ final class WorkThread extends Thread
     /**
      * Given a work source, constructs a new WorkThread.
      * @param source The work source.
-     * @param localMaster The local master.
+     * @param localNode The local node.
      */
-    WorkThread( TaskSource source, Node localMaster )
+    WorkThread( TaskSource source, Node localNode )
     {
         super( "Work thread" );
-        // Unfortunately, bureaucracy has to go before work,
-        // because we have to make sure other nodes get work too.
-        //setPriority( NORM_PRIORITY-1 );
         this.source = source;
-        this.localNode = localMaster;
+        this.localNode = localNode;
     }
 
     private synchronized boolean isStopped()
