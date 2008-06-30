@@ -39,7 +39,7 @@ final class WorkerInfo {
     private long pingSentTime = 0;
 
     /** The duration of the ping round-trip for this worker. */
-    private long pingDuration = -1;
+    private long pingDuration = Long.MAX_VALUE;
 
     /**
      * Returns a string representation of this worker info. (Overrides method in superclass.)
@@ -315,5 +315,22 @@ final class WorkerInfo {
     void registerPingTime( long t )
     {
 	this.pingSentTime = t;
+    }
+
+    boolean isIdleWorker( TaskType taskType )
+    {
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
+        if( !enabled || workerTaskInfo == null ) {
+            return false;
+        }
+        return workerTaskInfo.isIdleWorker();
+    }
+
+    /**
+     * @return Ping duration.
+     */
+    long getPingDuration()
+    {
+        return pingDuration;
     }
 }

@@ -589,7 +589,11 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	TaskType taskType = task.message.task.type;
 	Job t = findJob( taskType );
 	int nextTaskNo = taskType.taskNo+1;
+        final MasterIdentifier master = task.message.source;
 
+        if( Settings.traceRemainingJobTime ) {
+            Globals.log.reportProgress( "Completed " + task.message + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) );
+        }
 	if( nextTaskNo<t.tasks.length ){
 	    // There is a next step to take.
 	    TaskInstance nextTask = new TaskInstance( task.message.task.jobInstance, t.getNextTaskType( taskType ), result );
@@ -600,10 +604,6 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    JobInstanceIdentifier identifier = task.message.task.jobInstance;
 	    sendResultMessage( identifier.receivePort, identifier, result );
 	}
-	if( Settings.traceRemainingJobTime ) {
-	    Globals.log.reportProgress( "Completed " + task.message + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) );
-	}
-	final MasterIdentifier master = task.message.source;
 
 	// Update statistics and notify our own queue waiters that something
 	// has happened.
@@ -614,7 +614,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 		    taskSources.add( mi );
 		}
 	    }
-	    if( !taskStats.containsKey(taskType) ){
+	    if( !taskStats.containsKey( taskType ) ){
 		taskStats.put( taskType, new TaskStats() );
 	    }
 	    TaskStats stats = taskStats.get( taskType );

@@ -161,4 +161,14 @@ final class WorkerTaskInfo {
         maximalAllowance = 1;
 	return true;
     }
+
+    /**
+     * @return True iff this worker is ready to handle this task, but isn't doing so yet.
+     */
+    public boolean isIdleWorker() {
+        if( maximalAllowance>0 || remainingJobTime == Long.MAX_VALUE ) {
+            return false;
+        }
+        return true;
+    }
 }

@@ -175,20 +175,25 @@ final class WorkerList {
         if( best == null && queueLength>n ) {
             // We can't find a worker for this task. See if there is
             // a disabled worker we can enable.
+            long bestPingTime = Long.MAX_VALUE;
+            WorkerInfo candidate = null;
             for( int i=0; i<workers.size(); i++ ) {
                 WorkerInfo wi = workers.get( i );
 
-                if( !wi.isDead() ) {
-                    if( wi.activate( taskType ) ) {
-                        n += LEARNING_TASK_COUNT;  // Reserve this many tasks for learning about a new worker.
-                        reservedTasks.put( taskType, n );
-                	if( Settings.traceMasterQueue ) {
-                	    Globals.log.reportProgress( "activated worker " + wi + "; reservedTasks[" + taskType + "]=" + n );
-                	}
-                	best = wi;
-                	break;
+                if( wi.isIdleWorker( taskType ) ) {
+                    long pingTime = wi.getPingDuration();
+                    if( pingTime<bestPingTime ) {
+                        candidate = wi;
                     }
                 }
+            }
+            if( candidate != null && candidate.activate( taskType ) ) {
+                n += LEARNING_TASK_COUNT;  // Reserve this many tasks for learning about a new worker.
+                reservedTasks.put( taskType, n );
+                if( Settings.traceMasterQueue ) {
+                    Globals.log.reportProgress( "activated worker " + candidate + "; reservedTasks[" + taskType + "]=" + n );
+                }
+                best = candidate;
             }
         }
         if( best == null && queueLength>ADD_WORKER_THRESHOLD ) {
