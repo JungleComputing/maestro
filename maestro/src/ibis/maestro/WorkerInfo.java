@@ -32,6 +32,14 @@ final class WorkerInfo {
     private boolean enabled = false;
 
     private boolean dead = false;
+    
+    /** The time the accept message was sent to this worker.
+     * The roundtrip time determines the ping duration of this worker.
+     */
+    private long pingSentTime = 0;
+
+    /** The duration of the ping round-trip for this worker. */
+    private long pingDuration = -1;
 
     /**
      * Returns a string representation of this worker info. (Overrides method in superclass.)
@@ -88,17 +96,6 @@ final class WorkerInfo {
 	}
     }
 
-    void registerCompletionInfo( CompletionInfo[] completionInfo )
-    {
-        if( Settings.traceWorkerList && !enabled ){
-            System.out.println( "Enabled worker " + identifier + " (" + port + ")" );
-        }
-        enabled = true;
-	for( CompletionInfo i: completionInfo ) {
-	    registerCompletionInfo( i );
-	}
-    }
-
     private void registerWorkerQueueInfo( WorkerQueueInfo info )
     {
         if( info == null ) {
@@ -113,14 +110,22 @@ final class WorkerInfo {
 
     }
 
-    void registerWorkerQueueInfo( WorkerQueueInfo[] completionInfo )
+    void registerWorkerInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
     {
         if( Settings.traceWorkerList && !enabled ){
             System.out.println( "Enabled worker " + identifier + " (" + port + ")" );
         }
+        if( pingSentTime != 0 ) {
+            // We are measuring this round-trip time.
+            pingDuration = System.nanoTime()-pingSentTime;
+            pingSentTime = 0L;  // We're no longer measureing a ping time.
+        }
         enabled = true;
-	for( WorkerQueueInfo i: completionInfo ) {
+	for( WorkerQueueInfo i: workerQueueInfo ) {
 	    registerWorkerQueueInfo( i );
+	}
+	for( CompletionInfo i: completionInfo ) {
+	    registerCompletionInfo( i );
 	}
     }
 
@@ -141,10 +146,8 @@ final class WorkerInfo {
 	ActiveTask task = activeTasks.remove( ix );
 	long newRoundTripInterval = (now-task.startTime); // The time interval to send the task, compute, and report the result.
 
-	registerCompletionInfo( result.completionInfo );
-	registerWorkerQueueInfo( result.workerQueueInfo );
+	registerWorkerInfo( result.workerQueueInfo, result.completionInfo );
 	task.workerTaskInfo.registerTaskCompleted( newRoundTripInterval );
-	//limitQueueTime( task.workerTaskInfo, newRoundTripInterval, queueInterval+result.computeInterval );
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Master: retired task " + task + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );
 	}
@@ -307,5 +310,10 @@ final class WorkerInfo {
 	    return false;
 	}
 	return workerTaskInfo.activate();
+    }
+
+    void registerPingTime( long t )
+    {
+	this.pingSentTime = t;
     }
 }

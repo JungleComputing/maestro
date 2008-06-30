@@ -7,7 +7,6 @@ import ibis.ipl.ReceivePortIdentifier;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.LinkedList;
 
 /**
  * A master in the Maestro flow graph framework.
@@ -23,7 +22,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
     private final PacketSendPort<MasterMessage> sendPort;
     private final MasterQueue queue;
-    private final LinkedList<WorkerIdentifier> workersToAccept = new LinkedList<WorkerIdentifier>();
 
     private boolean stopped = false;
     private long nextTaskId = 0;
@@ -41,53 +39,53 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      *
      */
     static final class WorkerIdentifier implements Serializable {
-        private static final long serialVersionUID = 3271311796768467853L;
-        final int value;
+	private static final long serialVersionUID = 3271311796768467853L;
+	final int value;
 
-        WorkerIdentifier( int value )
-        {
-            this.value = value;
-        }
+	WorkerIdentifier( int value )
+	{
+	    this.value = value;
+	}
 
-        /**
-         * Returns the hash code of this worker identifier.
-         * @return A hash code for this identifier.
-         */
-        @Override
-        public int hashCode() {
-            return value;
-        }
+	/**
+	 * Returns the hash code of this worker identifier.
+	 * @return A hash code for this identifier.
+	 */
+	@Override
+	public int hashCode() {
+	    return value;
+	}
 
-        /**
-         * Returns true iff this worker identifier is equal to the given
-         * one.
-         * @param obj The object to compare to.
-         * @return True iff the two identifiers are equal.
-         */
-        @Override
-        public boolean equals( Object obj )
-        {
-            if (this == obj)
-                return true;
-            if (obj == null)
-                return false;
-            if (getClass() != obj.getClass())
-                return false;
-            final WorkerIdentifier other = (WorkerIdentifier) obj;
-            if (value != other.value)
-                return false;
-            return true;
-        }
+	/**
+	 * Returns true iff this worker identifier is equal to the given
+	 * one.
+	 * @param obj The object to compare to.
+	 * @return True iff the two identifiers are equal.
+	 */
+	@Override
+	public boolean equals( Object obj )
+	{
+	    if (this == obj)
+		return true;
+	    if (obj == null)
+		return false;
+	    if (getClass() != obj.getClass())
+		return false;
+	    final WorkerIdentifier other = (WorkerIdentifier) obj;
+	    if (value != other.value)
+		return false;
+	    return true;
+	}
 
-        /** Returns a string representation of this worker.
-         * 
-         * @return The string representation.
-         */
-        @Override
-        public String toString()
-        {
-            return "W" + value;
-        }
+	/** Returns a string representation of this worker.
+	 * 
+	 * @return The string representation.
+	 */
+	@Override
+	public String toString()
+	{
+	    return "W" + value;
+	}
     }
 
     /** Creates a new master instance.
@@ -97,12 +95,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     Master( Ibis ibis, Node node ) throws IOException
     {
-        super( "Master" );
-        this.queue = new MasterQueue();
-        this.node = node;
-        sendPort = new PacketSendPort<MasterMessage>( ibis );
-        receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
-        startTime = System.nanoTime();
+	super( "Master" );
+	this.queue = new MasterQueue();
+	this.node = node;
+	sendPort = new PacketSendPort<MasterMessage>( ibis );
+	receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
+	startTime = System.nanoTime();
     }
 
     /**
@@ -111,8 +109,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     @Override
     public void start()
     {
-        receivePort.enable();           // We're open for business.
-        super.start();                  // Start the thread
+	receivePort.enable();           // We're open for business.
+	super.start();                  // Start the thread
     }
 
     /**
@@ -121,15 +119,15 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     void setLocalListener( PacketReceiveListener<MasterMessage> localListener )
     {
-        sendPort.setLocalListener( localListener );
+	sendPort.setLocalListener( localListener );
     }
 
     void setStopped()
     {
-        synchronized( queue ) {
-            stopped = true;
-            queue.notifyAll();
-        }
+	synchronized( queue ) {
+	    stopped = true;
+	    queue.notifyAll();
+	}
     }
 
     /**
@@ -139,26 +137,26 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private boolean isFinished()
     {
-        synchronized( queue ){
-            if( !stopped ){
-                return false;
-            }
-            if( !queue.isEmpty() ) {
-                return false;
-            }
-            return workers.areIdle();
-        }
+	synchronized( queue ){
+	    if( !stopped ){
+		return false;
+	    }
+	    if( !queue.isEmpty() ) {
+		return false;
+	    }
+	    return workers.areIdle();
+	}
     }
 
     private void unsubscribeWorker( WorkerIdentifier worker )
     {
-        if( Settings.traceWorkerList ) {
-            System.out.println( "unsubscribe of worker " + worker );
-        }
-        synchronized( queue ){
-            workers.removeWorker( worker );
-            queue.notifyAll();
-        }
+	if( Settings.traceWorkerList ) {
+	    System.out.println( "unsubscribe of worker " + worker );
+	}
+	synchronized( queue ){
+	    workers.removeWorker( worker );
+	    queue.notifyAll();
+	}
     }
 
     /**
@@ -167,34 +165,35 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private void handleWorkerStatusMessage( TaskCompletedMessage result )
     {
-        if( Settings.traceMasterProgress ){
-            Globals.log.reportProgress( "Received a worker status message " + result );
-        }
-        synchronized( queue ){
-            workers.registerWorkerStatus( result );
-            handledTaskCount++;
-            queue.notifyAll();
-        }
+	if( Settings.traceMasterProgress ){
+	    Globals.log.reportProgress( "Received a worker status message " + result );
+	}
+	synchronized( queue ){
+	    workers.registerWorkerStatus( result );
+	    handledTaskCount++;
+	    queue.notifyAll();
+	}
     }
 
     private void handleResultMessage( JobResultMessage m )
     {
-        node.reportCompletion( m.job, m.result );
+	node.reportCompletion( m.job, m.result );
     }
 
-    private void sendAcceptMessage( Master.WorkerIdentifier workerID )
+    private void sendAcceptMessage( WorkerIdentifier workerID )
     {
-        ReceivePortIdentifier myport = receivePort.identifier();
-        Worker.MasterIdentifier idOnWorker = workers.getMasterIdentifier( workerID );
-        WorkerAcceptMessage msg = new WorkerAcceptMessage( idOnWorker, myport, workerID );
+	ReceivePortIdentifier myport = receivePort.identifier();
+	Worker.MasterIdentifier idOnWorker = workers.getMasterIdentifier( workerID );
+	WorkerAcceptMessage msg = new WorkerAcceptMessage( idOnWorker, myport, workerID );
 
-        long sz = sendPort.tryToSend( workerID.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-        if( sz<0 ){
-            synchronized( queue ) {
-                workers.declareDead( workerID );
-                queue.notifyAll();
-            }
-        }
+	workers.registerPingTime( workerID );
+	long sz = sendPort.tryToSend( workerID.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+	if( sz<0 ){
+	    synchronized( queue ) {
+		workers.declareDead( workerID );
+		queue.notifyAll();
+	    }
+	}
     }
 
     /**
@@ -204,15 +203,13 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private void handleWorkerUpdateMessage( WorkerUpdateMessage m )
     {
-        WorkerIdentifier workerID = m.source;
-        if( Settings.traceMasterProgress ){
-            Globals.log.reportProgress( "Received worker update message " +m + " from worker " + workerID );
-        }
-        synchronized( queue ){
-            workers.registerCompletionInfo( workerID, m.completionInfo );
-            workers.registerWorkerQueueInfo(workerID, m.workerQueueInfo );
-            queue.notifyAll();
-        }
+	if( Settings.traceMasterProgress ){
+	    Globals.log.reportProgress( "Received worker update message " + m );
+	}
+	synchronized( queue ){
+	    workers.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo );
+	    queue.notifyAll();
+	}
     }
 
     /**
@@ -225,22 +222,24 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private void handleRegisterWorkerMessage( RegisterWorkerMessage m )
     {
-        WorkerIdentifier workerID;
-        ReceivePortIdentifier worker = m.port;
+	WorkerIdentifier workerID;
+	ReceivePortIdentifier worker = m.port;
 
-        if( Settings.traceMasterProgress ){
-            Globals.log.reportProgress( "Master: received registration message " + m + " from worker " + worker );
-        }
-        if( m.supportedTypes.length == 0 ) {
-            Globals.log.reportInternalError( "Worker " + worker + " has zero supported types??" );
-        }
-        synchronized( queue ) {
-            boolean local = sendPort.isLocalListener( m.port );
-            workerID = workers.subscribeWorker( receivePort.identifier(), worker, local, m.masterIdentifier, m.supportedTypes );
-            sendPort.registerDestination( worker, workerID.value );
-            workersToAccept.add( workerID );
-            queue.notifyAll();
-        }
+	if( Settings.traceMasterProgress ){
+	    Globals.log.reportProgress( "Master: received registration message " + m + " from worker " + worker );
+	}
+	if( m.supportedTypes.length == 0 ) {
+	    Globals.log.reportInternalError( "Worker " + worker + " has zero supported types??" );
+	}
+	synchronized( queue ) {
+	    boolean local = sendPort.isLocalListener( m.port );
+	    workerID = workers.subscribeWorker( receivePort.identifier(), worker, local, m.masterIdentifier, m.supportedTypes );
+	    sendPort.registerDestination( worker, workerID.value );
+	}
+	sendAcceptMessage( workerID );
+	synchronized( queue ) {
+	    queue.notifyAll();
+	}
     }
 
     /**
@@ -252,7 +251,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     public boolean hasReceivePort( ReceivePortIdentifier port )
     {
 	boolean res = port.equals( receivePort.identifier() );
-        return res;
+	return res;
     }
 
     /**
@@ -262,37 +261,37 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     @Override
     public void messageReceived( WorkerMessage msg )
     {
-        if( Settings.traceMasterProgress ){
-            Globals.log.reportProgress( "Master: received message " + msg );
-        }
-        if( msg instanceof TaskCompletedMessage ) {
-            TaskCompletedMessage result = (TaskCompletedMessage) msg;
+	if( Settings.traceMasterProgress ){
+	    Globals.log.reportProgress( "Master: received message " + msg );
+	}
+	if( msg instanceof TaskCompletedMessage ) {
+	    TaskCompletedMessage result = (TaskCompletedMessage) msg;
 
-            handleWorkerStatusMessage( result );
-        }
-        else if( msg instanceof JobResultMessage ) {
-            JobResultMessage m = (JobResultMessage) msg;
+	    handleWorkerStatusMessage( result );
+	}
+	else if( msg instanceof JobResultMessage ) {
+	    JobResultMessage m = (JobResultMessage) msg;
 
-            handleResultMessage( m );
-        }
-        else if( msg instanceof WorkerUpdateMessage ) {
-            WorkerUpdateMessage m = (WorkerUpdateMessage) msg;
+	    handleResultMessage( m );
+	}
+	else if( msg instanceof WorkerUpdateMessage ) {
+	    WorkerUpdateMessage m = (WorkerUpdateMessage) msg;
 
-            handleWorkerUpdateMessage( m );
-        }
-        else if( msg instanceof RegisterWorkerMessage ) {
-            RegisterWorkerMessage m = (RegisterWorkerMessage) msg;
+	    handleWorkerUpdateMessage( m );
+	}
+	else if( msg instanceof RegisterWorkerMessage ) {
+	    RegisterWorkerMessage m = (RegisterWorkerMessage) msg;
 
-            handleRegisterWorkerMessage( m );
-        }
-        else if( msg instanceof WorkerResignMessage ) {
-            WorkerResignMessage m = (WorkerResignMessage) msg;
+	    handleRegisterWorkerMessage( m );
+	}
+	else if( msg instanceof WorkerResignMessage ) {
+	    WorkerResignMessage m = (WorkerResignMessage) msg;
 
-            unsubscribeWorker( m.source );
-        }
-        else {
-            Globals.log.reportInternalError( "the master should handle message of type " + msg.getClass() );
-        }
+	    unsubscribeWorker( m.source );
+	}
+	else {
+	    Globals.log.reportInternalError( "the master should handle message of type " + msg.getClass() );
+	}
     }
 
     /**
@@ -301,14 +300,14 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     void submit( TaskInstance task )
     {
-        if( Settings.traceMasterProgress ) {
-            System.out.println( "Master: received task " + task );
-        }
-        synchronized ( queue ) {
-            incomingTaskCount++;
-            queue.submit( task );
-            queue.notifyAll();
-        }
+	if( Settings.traceMasterProgress ) {
+	    System.out.println( "Master: received task " + task );
+	}
+	synchronized ( queue ) {
+	    incomingTaskCount++;
+	    queue.submit( task );
+	    queue.notifyAll();
+	}
     }
 
     /**
@@ -317,21 +316,21 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private void submitTaskToWorker( Subjob sub )
     {
-        long taskId;
+	long taskId;
 
-        synchronized( queue ){
-            taskId = nextTaskId++;
-            sub.worker.registerTaskStart( sub.task, taskId );
-        }
-        RunTaskMessage msg = new RunTaskMessage( sub.worker.identifierWithWorker, sub.worker.identifier, sub.task, taskId );
-        long sz = sendPort.tryToSend( sub.worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-        if( sz<0 ){
-            // Try to put the paste back in the tube.
-            synchronized( queue ){
-                sub.worker.retractTask( msg.taskId );
-                queue.submit( msg.task );
-            }
-        }
+	synchronized( queue ){
+	    taskId = nextTaskId++;
+	    sub.worker.registerTaskStart( sub.task, taskId );
+	}
+	RunTaskMessage msg = new RunTaskMessage( sub.worker.identifierWithWorker, sub.worker.identifier, sub.task, taskId );
+	long sz = sendPort.tryToSend( sub.worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+	if( sz<0 ){
+	    // Try to put the paste back in the tube.
+	    synchronized( queue ){
+		sub.worker.retractTask( msg.taskId );
+		queue.submit( msg.task );
+	    }
+	}
     }
 
     /**
@@ -343,78 +342,64 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private boolean submitAllTasks()
     {
-        boolean nowork;
-        Subjob sub = new Subjob();
-        WorkerIdentifier newWorker = null;
+	boolean nowork;
+	Subjob sub = new Subjob();
 
-        boolean keepRunning = true;
-        if( Settings.traceMasterProgress ){
-            System.out.println( "Next round for master" );
-        }
+	boolean keepRunning = true;
+	if( Settings.traceMasterProgress ){
+	    System.out.println( "Next round for master" );
+	}
 
-        while( true ) {
-            synchronized( queue ){
-                nowork = queue.selectSubmisson( sub, workers );
-                if( nowork || sub.worker == null ){
-                    if( !workersToAccept.isEmpty() ) {
-                        // No workers or no work. We have  time to add a new worker.
-                        newWorker = workersToAccept.removeFirst();
-                    }
-                    break;
-                }
-            }
-            if( Settings.traceMasterQueue ) {
-                System.out.println( "Selected " + sub.worker + " as best for task " + sub.task );
-            }
-            submitTaskToWorker( sub );
-        }
-        // There are no tasks in the queue, or there are no workers ready.
-        if( nowork && isFinished() ){
-            // No tasks, and we are stopped; don't try to send new tasks.
-            keepRunning = false;   // We're no longer busy.
-        }
-        else {
-            if( Settings.traceMasterProgress ){
-                System.out.println( "Master: nothing in the queue, or no ready workers; waiting" );
-            }
-            // Since the queue is empty, we can only wait for new tasks.
-            if( newWorker != null ) {
-                if( Settings.traceMasterProgress ){
-                    System.out.println( "Sending accept message to " + newWorker );
-                }
-                sendAcceptMessage( newWorker );
-                newWorker = null;
-            }
-            else {
-                try {
-                    synchronized( queue ){
-                        if( !isFinished() ){
-                            queue.wait();
-                        }
-                    }
-                } catch (InterruptedException e) {
-                    // Not interested.
-                }
-            }
-            keepRunning = true;
-        }
-        return keepRunning; // We're still busy.
+	while( true ) {
+	    synchronized( queue ){
+		nowork = queue.selectSubmisson( sub, workers );
+		if( nowork || sub.worker == null ){
+		    break;
+		}
+	    }
+	    if( Settings.traceMasterQueue ) {
+		System.out.println( "Selected " + sub.worker + " as best for task " + sub.task );
+	    }
+	    submitTaskToWorker( sub );
+	}
+	// There are no tasks in the queue, or there are no workers ready.
+	if( nowork && isFinished() ){
+	    // No tasks, and we are stopped; don't try to send new tasks.
+	    keepRunning = false;   // We're no longer busy.
+	}
+	else {
+	    if( Settings.traceMasterProgress ){
+		System.out.println( "Master: nothing in the queue, or no ready workers; waiting" );
+	    }
+	    // Since the queue is empty, we can only wait for new tasks.
+	    try {
+		synchronized( queue ){
+		    if( !isFinished() ){
+			queue.wait();
+		    }
+		}
+	    } catch (InterruptedException e) {
+		// Not interested.
+	    }
+	    keepRunning = true;
+	}
+	return keepRunning; // We're still busy.
     }
 
     /** Runs this master. */
     @Override
     public void run()
     {
-        boolean active = true;  // Not yet stopped?
+	boolean active = true;  // Not yet stopped?
 
-        if( Settings.traceMasterProgress ){
-            System.out.println( "Starting master thread" );
-        }
-        while( active ){
-            active = submitAllTasks( );
-        }
-        stopTime = System.nanoTime();
-        System.out.println( "End of master thread" );
+	if( Settings.traceMasterProgress ){
+	    System.out.println( "Starting master thread" );
+	}
+	while( active ){
+	    active = submitAllTasks( );
+	}
+	stopTime = System.nanoTime();
+	System.out.println( "End of master thread" );
     }
 
     /**
@@ -424,7 +409,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     void removeIbis( IbisIdentifier theIbis )
     {
-        workers.removeWorker( theIbis );
+	workers.removeWorker( theIbis );
     }
 
     /** Returns the identifier of (the receive port of) this worker.
@@ -433,30 +418,29 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     ReceivePortIdentifier identifier()
     {
-        return receivePort.identifier();
+	return receivePort.identifier();
     }
 
     /** Print some statistics about the entire master run. */
     void printStatistics( PrintStream s )
     {
-        if( stopTime<startTime ) {
-            System.err.println( "Worker didn't stop yet" );
-        }
-        queue.printStatistics( s );
-        long workInterval = stopTime-startTime;
-        s.printf( "Master: # workers          = %5d\n", workers.size() );
-        s.printf( "Master: # inactive workers = %5d\n", workersToAccept.size() );
-        s.printf( "Master: # incoming tasks    = %5d\n", incomingTaskCount );
-        s.printf( "Master: # handled tasks     = %5d\n", handledTaskCount );
-        s.println( "Master: run time           = " + Service.formatNanoseconds( workInterval ) );
-        sendPort.printStats( s, "master send port" );
-        workers.printStatistics( s );
+	if( stopTime<startTime ) {
+	    System.err.println( "Worker didn't stop yet" );
+	}
+	queue.printStatistics( s );
+	long workInterval = stopTime-startTime;
+	s.printf( "Master: # workers          = %5d\n", workers.size() );
+	s.printf( "Master: # incoming tasks    = %5d\n", incomingTaskCount );
+	s.printf( "Master: # handled tasks     = %5d\n", handledTaskCount );
+	s.println( "Master: run time           = " + Service.formatNanoseconds( workInterval ) );
+	sendPort.printStats( s, "master send port" );
+	workers.printStatistics( s );
     }
 
     CompletionInfo[] getCompletionInfo( JobList jobs )
     {
-        synchronized( queue ) {
-            return queue.getCompletionInfo( jobs, workers );
-        }
+	synchronized( queue ) {
+	    return queue.getCompletionInfo( jobs, workers );
+	}
     }
 }

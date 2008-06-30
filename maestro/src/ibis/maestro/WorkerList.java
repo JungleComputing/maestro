@@ -280,17 +280,10 @@ final class WorkerList {
         return res;
     }
 
-    void registerCompletionInfo( WorkerIdentifier workerID, CompletionInfo[] completionInfo )
+    void registerCompletionInfo( WorkerIdentifier workerID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
     {
         WorkerInfo w = workers.get( workerID.value );
-        w.registerCompletionInfo( completionInfo );	
-    }
-
-
-    void registerWorkerQueueInfo( WorkerIdentifier workerID, WorkerQueueInfo[] workerQueueInfo )
-    {
-        WorkerInfo w = workers.get( workerID.value );
-        w.registerWorkerQueueInfo( workerQueueInfo );	
+        w.registerWorkerInfo( workerQueueInfo, completionInfo );	
     }
 
     /** Given a worker, return the identifier of this master on the worker.
@@ -307,4 +300,11 @@ final class WorkerList {
     {
         return workers.size();
     }
+
+    void registerPingTime( WorkerIdentifier workerID )
+    {
+        WorkerInfo w = workers.get( workerID.value );
+        w.registerPingTime( System.nanoTime() );
+    }
+
 }
