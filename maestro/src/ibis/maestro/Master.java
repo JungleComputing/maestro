@@ -318,16 +318,15 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /**
-     * Keep submitting tasks until the queue is empty or all workers are busy.
-     * 
-     * @return True iff we want to keep running.
+     * Submit all work currently in the queues until all workers are busy
+     * or all work has been submitted.
+     * @return True iff there is no work at the moment.
      */
-    private boolean submitAllTasks()
+    private boolean submitAllPossibleTasks()
     {
 	boolean nowork;
 	Subjob sub = new Subjob();
 
-	boolean keepRunning = true;
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Next round for master" );
 	}
@@ -344,28 +343,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    }
 	    submitTaskToWorker( sub );
 	}
-	// There are no tasks in the queue, or there are no workers ready.
-	if( nowork && isFinished() ){
-	    // No tasks, and we are stopped; don't try to send new tasks.
-	    keepRunning = false;   // We're no longer busy.
-	}
-	else {
-	    if( Settings.traceMasterProgress ){
-		System.out.println( "Master: nothing in the queue, or no ready workers; waiting" );
-	    }
-	    // Since the queue is empty, we can only wait for new tasks.
-	    try {
-		synchronized( queue ){
-		    if( !isFinished() ){
-			queue.wait();
-		    }
-		}
-	    } catch (InterruptedException e) {
-		// Not interested.
-	    }
-	    keepRunning = true;
-	}
-	return keepRunning; // We're still busy.
+	return nowork;
     }
 
     /**
@@ -381,20 +359,42 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             incomingTaskCount++;
             queue.submit( task );
         }
-        submitAllTasks();
+        submitAllPossibleTasks();
     }
 
     /** Runs this master. */
     @Override
     public void run()
     {
-	boolean active = true;  // Not yet stopped?
-
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Starting master thread" );
 	}
-	while( active ){
-	    active = submitAllTasks( );
+	while( true ){
+	    boolean nowork = submitAllPossibleTasks();
+
+	    // There are no tasks in the queue, or there are no workers ready.
+	    if( nowork && isFinished() ){
+	        // No tasks, and we are stopped; don't try to send new tasks.
+	        break;
+	    }
+	    if( Settings.traceMasterProgress ){
+		if( nowork ) {
+		    System.out.println( "Master: nothing in the queue; waiting" );
+		}
+		else {
+		    System.out.println( "Master: no ready workers; waiting" );		    
+		}
+	    }
+	    // Since the queue is empty, we can only wait for new tasks.
+	    try {
+		synchronized( queue ){
+		    if( !isFinished() ){
+			queue.wait();
+		    }
+		}
+	    } catch (InterruptedException e) {
+		// Not interested.
+	    }
 	}
 	stopTime = System.nanoTime();
 	System.out.println( "End of master thread" );
