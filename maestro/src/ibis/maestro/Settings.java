@@ -24,7 +24,7 @@ class Settings {
     static final boolean traceTypeHandling = false;
 
     /** Trace the progress of workers? */
-    static final boolean traceWorkerProgress = true;
+    static final boolean traceWorkerProgress = false;
 
     /** Trace the handling or result tasks? */
     static final boolean traceResultTasks = false;
@@ -36,7 +36,7 @@ class Settings {
     static final boolean traceNodes = false;
 
     /** Trace the events in the master queue? */
-    static final boolean traceMasterQueue = true;
+    static final boolean traceMasterQueue = false;
 
     /** Trace the administration of remaining job time. */
     static final boolean traceRemainingJobTime = false;
