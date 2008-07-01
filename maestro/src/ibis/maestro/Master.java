@@ -96,14 +96,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     Master( Ibis ibis, Node node ) throws IOException
     {
 	super( "Master" );
-	// TODO: the master should have priority over the worker since
-	// otherwise it might be starved of cycles. Since the master always
-	// only needs a limited number of cycles, we don't run the risk of
-	// starving the worker.
-	//
-	// Nevertheless, we now rely on the priority handling of threads
-	// in a particular JVM, which might not be a great idea.
-	this.setPriority( Thread.MAX_PRIORITY );
 	this.queue = new MasterQueue();
 	this.node = node;
 	sendPort = new PacketSendPort<MasterMessage>( ibis );
@@ -303,22 +295,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /**
-     * Adds the given task to the work queue of this master.
-     * @param task The task instance to add to the queue.
-     */
-    void submit( TaskInstance task )
-    {
-	if( Settings.traceMasterProgress || Settings.traceMasterQueue) {
-	    System.out.println( "Master: received task " + task + "; queue length is now " + (1+queue.size()) );
-	}
-	synchronized ( queue ) {
-	    incomingTaskCount++;
-	    queue.submit( task );
-	    queue.notifyAll();
-	}
-    }
-
-    /**
      * @param worker The worker to send the task to.
      * @param task The task to send.
      */
@@ -342,9 +318,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /**
-     * Keep submitting tasks until the queue is empty. We occasionally may
-     * have to wait for workers to get ready.
-     * FIXME: better comment, and perhaps better abstraction ordering.
+     * Keep submitting tasks until the queue is empty or all workers are busy.
      * 
      * @return True iff we want to keep running.
      */
@@ -392,6 +366,22 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    keepRunning = true;
 	}
 	return keepRunning; // We're still busy.
+    }
+
+    /**
+     * Adds the given task to the work queue of this master.
+     * @param task The task instance to add to the queue.
+     */
+    void submit( TaskInstance task )
+    {
+        if( Settings.traceMasterProgress || Settings.traceMasterQueue) {
+            System.out.println( "Master: received task " + task + "; queue length is now " + (1+queue.size()) );
+        }
+        synchronized ( queue ) {
+            incomingTaskCount++;
+            queue.submit( task );
+        }
+        submitAllTasks();
     }
 
     /** Runs this master. */
