@@ -96,6 +96,14 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     Master( Ibis ibis, Node node ) throws IOException
     {
 	super( "Master" );
+	// TODO: the master should have priority over the worker since
+	// otherwise it might be starved of cycles. Since the master always
+	// only needs a limited number of cycles, we don't run the risk of
+	// starving the worker.
+	//
+	// Nevertheless, we now rely on the priority handling of threads
+	// in a particular JVM, which might not be a great idea.
+	this.setPriority( Thread.MAX_PRIORITY );
 	this.queue = new MasterQueue();
 	this.node = node;
 	sendPort = new PacketSendPort<MasterMessage>( ibis );
