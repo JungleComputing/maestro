@@ -1,7 +1,8 @@
 package ibis.maestro;
 
 /**
- * An entry in our task queue.
+ * An entry in the list of outstanding tasks of a master.
+ * 
  * @author Kees van Reeuwijk
  *
  */
