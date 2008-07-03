@@ -19,6 +19,7 @@ import java.util.TreeSet;
  */
 public class LabelTracker {
     private static long labelValue = 0L;
+    private static final boolean trace = false;
 
     /** The first label not in the bulk range. */
     private long endOfRange = 0L;
@@ -49,7 +50,11 @@ public class LabelTracker {
     
     Label nextLabel()
     {
-	return new Label( labelValue++ );
+	Label res = new Label( labelValue++ );
+        if( trace ){
+            System.out.println( "nextLabel(): handed out label " + res );
+        }
+        return res;
     }
     
     /**
@@ -60,6 +65,9 @@ public class LabelTracker {
      */
     void returnLabel( Label l )
     {
+        if( trace ){
+            System.out.println( "returnLabel(): got back label " + l );
+        }
 	long val = l.value;
 	if( val<endOfRange ) {
 	    // Already covered by the range. Nothing to do.
@@ -72,9 +80,13 @@ public class LabelTracker {
 	    set.remove( endOfRange );
 	    endOfRange++;
 	}
+        if( trace ){
+            System.out.println( "returnLabel(): endOfRange=" + endOfRange + "; set size: " + set.size() );
+        }
     }
 
-    public boolean allAreReturned() {
+    public boolean allAreReturned()
+    {
 	return endOfRange == labelValue;
     }
 }
