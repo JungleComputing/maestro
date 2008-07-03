@@ -1,7 +1,6 @@
 package ibis.maestro;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 /**
  * A class representing the master work queue.
@@ -14,35 +13,12 @@ import java.util.LinkedList;
  *
  */
 final class WorkerQueue {
-    private final ArrayList<QueueType> queueTypes = new ArrayList<QueueType>();
+    private final ArrayList<WorkerQueueType> queueTypes = new ArrayList<WorkerQueueType>();
     int size = 0;
 
     WorkerQueue()
     {
 	// Empty
-    }
-
-    /**
-     * The information for one type of task in the queue.
-     * 
-     * @author Kees van Reeuwijk
-     *
-     */
-    private static final class QueueType {
-	/** The type of tasks in this queue. */
-	final TaskType type;
-
-	/** The work queue for these tasks. */
-	final LinkedList<RunTaskMessage> queue = new LinkedList<RunTaskMessage>();
-
-	QueueType( TaskType type ){
-	    this.type = type;
-	}
-	
-	WorkerQueueInfo getWorkerQueueInfo()
-	{
-	    return new WorkerQueueInfo( type, queue.size() );
-	}
     }
 
     protected WorkerQueueInfo[] getWorkerQueueInfo()
@@ -69,9 +45,9 @@ final class WorkerQueue {
 	int ix = queueTypes.size();
 	while( ix>0 ) {
 	    ix--;
-	    QueueType x = queueTypes.get( ix );
+	    WorkerQueueType x = queueTypes.get( ix );
 	    if( x.type.equals( t ) ) {
-		x.queue.add( msg );
+		x.add( msg );
 		return;
 	    }
 	}
@@ -83,15 +59,15 @@ final class WorkerQueue {
 	// priority.
 	ix = 0;
 	while( ix<queueTypes.size() ){
-	    QueueType q = queueTypes.get( ix );
+	    WorkerQueueType q = queueTypes.get( ix );
 	    int cmp = t.taskNo-q.type.taskNo;
 	    if( cmp>0 ){
 		break;
 	    }
 	    ix++;
 	}
-	QueueType qt = new QueueType( t );
-	qt.queue.add( msg );
+	WorkerQueueType qt = new WorkerQueueType( t );
+	qt.add( msg );
 	queueTypes.add( ix, qt );
     }
 
@@ -101,8 +77,8 @@ final class WorkerQueue {
      */
     boolean isEmpty()
     {
-	for( QueueType t: queueTypes ) {
-	    if( !t.queue.isEmpty() ) {
+	for( WorkerQueueType t: queueTypes ) {
+	    if( !t.isEmpty() ) {
 		return false;
 	    }
 	}
@@ -125,16 +101,15 @@ final class WorkerQueue {
     RunTaskMessage remove()
     {
 	// Search from highest to lowest priority for a task to execute.
-	for( QueueType t: queueTypes ) {
+	for( WorkerQueueType queue: queueTypes ) {
 	    if( Settings.traceWorkerProgress ){
-		System.out.println( "Worker: trying to select task from " + t.type + " queue" );
+		System.out.println( "Worker: trying to select task from " + queue.type + " queue" );
 	    }
-		LinkedList<RunTaskMessage> queue = t.queue;
 	    if( !queue.isEmpty() ) {
 		RunTaskMessage e = queue.removeFirst();
 		size--;
 		if( Settings.traceWorkerProgress ){
-		    System.out.println( "Worker: found a task of type " + t.type );
+		    System.out.println( "Worker: found a task of type " + queue.type );
 		}
 		return e;
 	    }

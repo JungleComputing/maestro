@@ -52,42 +52,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
     private boolean askMastersForWork = true;
     private final Random rng = new Random();
 
-    private static class TaskStats {
-	private int taskCount = 0;
-	private long workDuration = 0;        
-	private long queueDuration = 0;     // Cumulative queue time of all tasks.
-
-	/**
-	 * Registers the completion of a task of this particular type, with the
-	 * given queue interval and the given work interval.
-	 * @param queueInterval The time this task spent in the queue.
-	 * @param workInterval The time it took to execute this task.
-	 */
-	private void countTask( long queueInterval, long workInterval )
-	{
-	    taskCount++;
-	    queueDuration += queueInterval;
-	    workDuration += workInterval;
-	}
-
-	private void reportStats( PrintStream out, TaskType t, double workInterval )
-	{
-	    double workPercentage = 100.0*(workDuration/workInterval);
-	    if( taskCount>0 ) {
-		out.println( "Worker: " + t + ":" );
-		out.printf( "    # tasks          = %5d\n", taskCount );
-		out.println( "    total work time = " + Service.formatNanoseconds( workDuration ) + String.format( " (%.1f%%)", workPercentage )  );
-		out.println( "    queue time/task  = " + Service.formatNanoseconds( queueDuration/taskCount ) );
-		out.println( "    work time/task   = " + Service.formatNanoseconds( workDuration/taskCount ) );
-		out.println( "    average latency = " + Service.formatNanoseconds( (workDuration+queueDuration)/taskCount ) );
-	    }
-	    else {
-		out.println( "Worker: " + t + " is unused" );
-	    }
-	}
-    }
-
-    private HashMap<TaskType, TaskStats> taskStats = new HashMap<TaskType, TaskStats>();
+    private HashMap<TaskType, WorkerTaskStats> taskStats = new HashMap<TaskType, WorkerTaskStats>();
 
     static final class MasterIdentifier implements Serializable {
 	private static final long serialVersionUID = 7727840589973468928L;
@@ -612,9 +577,9 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 		}
 	    }
 	    if( !taskStats.containsKey( taskType ) ){
-		taskStats.put( taskType, new TaskStats() );
+		taskStats.put( taskType, new WorkerTaskStats() );
 	    }
-	    TaskStats stats = taskStats.get( taskType );
+	    WorkerTaskStats stats = taskStats.get( taskType );
 	    stats.countTask( queueInterval, now-task.message.getRunTime() );
 	    runningTasks--;
 	    if( Settings.traceRemainingJobTime ) {
@@ -677,7 +642,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
 	Set<TaskType> tl = taskStats.keySet();
 	for( TaskType t: tl ){
-	    TaskStats stats = taskStats.get( t );
+	    WorkerTaskStats stats = taskStats.get( t );
 	    stats.reportStats( s, t, workInterval );
 	}
 	s.printf( "Worker: # threads        = %5d\n", workThreads.length );
