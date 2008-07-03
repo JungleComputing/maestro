@@ -90,10 +90,12 @@ class BenchmarkProgram {
 	    UncompressedImage img = RGB24Image.buildGradientImage( frame, DVD_WIDTH, DVD_HEIGHT, (byte) frame, (byte) (frame/10), (byte) (frame/100) );
 	    if( slowScale ) {
 		img.scaleUp(  2 );
+		img.scaleUp(  2 );
 	    }
 	    img = img.scaleUp( 2 );
 	    if( slowSharpen ) {
-		img.sharpen();
+		img = img.sharpen();
+		img = img.sharpen();
 	    }
 	    img = img.sharpen();
 	    try {
@@ -182,6 +184,7 @@ class BenchmarkProgram {
 
 	    if( slow ) {
 		img.scaleUp( factor );
+		img.scaleUp( factor );
 	    }
 	    Object res = img.scaleUp( factor );
 	    return res;
@@ -228,7 +231,8 @@ class BenchmarkProgram {
 	    UncompressedImage img = (UncompressedImage) in;
 
 	    if( slow ) {
-		img.sharpen();
+		img = img.sharpen();
+		img = img.sharpen();
 	    }
 	    return img.sharpen();
 	}
@@ -331,7 +335,7 @@ class BenchmarkProgram {
     private boolean slowScale = false;
     private boolean allowSharpen = true;
     private boolean allowScale = true;
-    private boolean oneJob = false;
+    private boolean oneTask = false;
 
     private static void printUsage()
     {
@@ -351,8 +355,14 @@ class BenchmarkProgram {
 	    if( arg.equalsIgnoreCase( "-save" ) ) {
 		saveFrames = true;
 	    }
-	    else if( arg.equalsIgnoreCase( "-onejob" ) ) {
-		oneJob = true;
+	    else if( arg.equalsIgnoreCase( "-onetask" ) ) {
+		oneTask = true;
+	    }
+	    else if( arg.equalsIgnoreCase( "-nosharpen" ) ) {
+		allowSharpen = false;
+	    }
+	    else if( arg.equalsIgnoreCase( "-noscale" ) ) {
+		allowScale = false;
 	    }
 	    else if( arg.equalsIgnoreCase( "-slowsharpen" ) ) {
 		slowSharpen = true;
@@ -398,13 +408,17 @@ class BenchmarkProgram {
 	    System.err.println( "Parsing command line failed. Goodbye!" );
 	    System.exit( 1 );
 	}
-	System.out.println( "frames=" + frames + " goForMaestro=" + goForMaestro + " saveFrames=" + saveFrames + " oneJob=" + oneJob + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale  );
+	System.out.println( "frames=" + frames + " goForMaestro=" + goForMaestro + " saveFrames=" + saveFrames + " oneTask=" + oneTask + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale  );
 	JobList tasks = new JobList();
 	Job convertTask;
 	Listener listener = new Listener();
 	File dir = saveFrames?outputDir:null;
-	if( oneJob ) {
-	    System.out.println( "One-job benchmark" );
+	if( oneTask ) {
+	    if( !allowScale || !allowSharpen ){
+                System.err.println( "Disabling steps is meaningless in a one-task benchmark" );
+                System.exit( 1 );
+	    }
+	    System.out.println( "One-task benchmark" );
 	    convertTask = tasks.createJob(
 		    "benchmark",
 		    new ProcessFrameTask( slowScale, slowSharpen, dir )

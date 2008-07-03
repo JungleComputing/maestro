@@ -54,7 +54,7 @@ public class LabelTracker {
     {
 	Label res = new Label( labelValue++ );
         if( trace ){
-            System.out.println( "nextLabel(): handed out label " + res );
+            System.out.println( "nextLabel(): handed out " + res );
         }
         return res;
     }
@@ -69,7 +69,7 @@ public class LabelTracker {
     void returnLabel( Label l )
     {
         if( trace ){
-            System.out.println( "returnLabel(): got back label " + l );
+            System.out.println( "returnLabel(): got back " + l );
         }
 	long val = l.value;
 	if( val<endOfRange ) {
