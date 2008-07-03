@@ -117,14 +117,14 @@ final class WorkerList {
      * Register a task result in the info of the worker that handled it.
      * @param result The task result.
      */
-    void registerWorkerStatus( TaskCompletedMessage result )
+    void registerTaskCompleted( TaskCompletedMessage result )
     {
         WorkerInfo w = searchWorker( workers, result.source );
         if( w == null ) {
             System.err.println( "Worker status message from unknown worker " + result.source );
             return;
         }
-        w.registerWorkerStatus( result );
+        w.registerTaskCompleted( result );
     }
 
     /**

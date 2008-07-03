@@ -163,16 +163,16 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * A worker has sent use a status message for a task. Process it.
      * @param result The status message.
      */
-    private void handleWorkerStatusMessage( TaskCompletedMessage result )
+    private void handleTaskCompletedMessage( TaskCompletedMessage result )
     {
 	if( Settings.traceMasterProgress ){
-	    Globals.log.reportProgress( "Received a worker status message " + result );
+	    Globals.log.reportProgress( "Received a worker task completed message " + result );
 	}
 	synchronized( queue ){
-	    workers.registerWorkerStatus( result );
+	    workers.registerTaskCompleted( result );
 	    handledTaskCount++;
-	    queue.notifyAll();
 	}
+        submitAllPossibleTasks();
     }
 
     private void handleResultMessage( JobResultMessage m )
@@ -267,7 +267,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	if( msg instanceof TaskCompletedMessage ) {
 	    TaskCompletedMessage result = (TaskCompletedMessage) msg;
 
-	    handleWorkerStatusMessage( result );
+	    handleTaskCompletedMessage( result );
 	}
 	else if( msg instanceof JobResultMessage ) {
 	    JobResultMessage m = (JobResultMessage) msg;
@@ -328,7 +328,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	Subjob sub = new Subjob();
 
 	if( Settings.traceMasterProgress ){
-	    System.out.println( "Next round for master" );
+	    System.out.println( "Master: submitting all possible tasks" );
 	}
 
 	while( true ) {

@@ -133,7 +133,7 @@ final class WorkerInfo {
      * Register a task result for an outstanding task.
      * @param result The task result message that tells about this task.
      */
-    void registerWorkerStatus( TaskCompletedMessage result )
+    void registerTaskCompleted( TaskCompletedMessage result )
     {
 	final long id = result.taskId;    // The identifier of the task, as handed out by us.
 
