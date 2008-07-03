@@ -1,5 +1,6 @@
 package ibis.videoplayer;
 
+import java.io.Serializable;
 import java.util.TreeSet;
 
 /**
@@ -29,8 +30,9 @@ public class LabelTracker {
     /**
      * A label as handed out by the tracker. It is entirely opaque.
      */
-    static class Label {
-	private final long value;
+    static class Label implements Serializable {
+        private static final long serialVersionUID = 1L;
+        private final long value;
 
 	Label( long value )
 	{
@@ -63,6 +65,7 @@ public class LabelTracker {
      * or out of order.
      * @param l The label we return.
      */
+    @SuppressWarnings("synthetic-access")
     void returnLabel( Label l )
     {
         if( trace ){
