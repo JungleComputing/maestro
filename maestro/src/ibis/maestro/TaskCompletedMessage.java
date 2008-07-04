@@ -22,6 +22,10 @@ final class TaskCompletedMessage extends WorkerMessage {
     /** For each type of task we know, the worker queue length. */
     final WorkerQueueInfo[] workerQueueInfo;
 
+    /** The time in ns this task spent on the worker, from arrival of work to transmission
+     * of this message.
+     */
+    final long workerDwellTime;
     /**
      * Constructs a task-completed message for the master of a task.
      * @param src The worker that handled the task.
@@ -30,10 +34,11 @@ final class TaskCompletedMessage extends WorkerMessage {
      *     worker to complete the remaining tasks of this job.
      * @param workerQueueInfo The queue length for the different types of task.
      */
-    TaskCompletedMessage( Master.WorkerIdentifier src, long taskId, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
+    TaskCompletedMessage( Master.WorkerIdentifier src, long taskId, long workerDwellTime, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
     {
 	super( src );
         this.taskId = taskId;
+        this.workerDwellTime = workerDwellTime;
         this.completionInfo = completionInfo;
         this.workerQueueInfo = workerQueueInfo;
     }
