@@ -28,10 +28,6 @@ class BenchmarkProgram {
 	private final LabelTracker labelTracker = new LabelTracker();
 	private boolean sentFinal = false;
 
-	Listener()
-	{
-	}
-
 	/** Handle the completion of task 'j': the result is 'result'.
 	 * @param id The task that was completed.
 	 * @param result The result of the task.
@@ -45,7 +41,7 @@ class BenchmarkProgram {
 	    }
 	    labelTracker.returnLabel( (LabelTracker.Label) id );
 	    if( sentFinal && labelTracker.allAreReturned() ) {
-		System.out.println( "I got all task results back; stopping test program" );
+		System.out.println( "I got all job results back; stopping test program" );
 		node.setStopped();
 	    }
 	}

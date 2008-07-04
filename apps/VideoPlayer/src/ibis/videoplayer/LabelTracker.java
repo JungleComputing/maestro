@@ -41,7 +41,7 @@ public class LabelTracker {
 	
 	/**
 	 * Returns a string representation of this label.
-	 * @return
+	 * @return The string representation of this label.
 	 */
 	@Override
 	public String toString()
@@ -88,6 +88,10 @@ public class LabelTracker {
         }
     }
 
+    /**
+     *  Returns true iff all labels we handed out have been returned.
+     * @return True iff all handed out labels have been returned.
+     */
     public boolean allAreReturned()
     {
 	return endOfRange == labelValue;
