@@ -29,6 +29,7 @@ class Logger {
     void reportProgress( String msg )
     {
         logfile.println( msg );
+        logfile.flush();
     }
     
     /** Given an error message,

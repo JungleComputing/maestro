@@ -124,6 +124,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 
     void setStopped()
     {
+	if( Settings.traceMasterProgress ){
+	    Globals.log.reportProgress( "Master is set to stopped state" );
+	}
 	synchronized( queue ) {
 	    stopped = true;
 	    queue.notifyAll();
