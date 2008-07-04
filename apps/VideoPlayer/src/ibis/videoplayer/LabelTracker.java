@@ -50,7 +50,7 @@ public class LabelTracker {
 	}
     }
     
-    Label nextLabel()
+    synchronized Label nextLabel()
     {
 	Label res = new Label( labelValue++ );
         if( trace ){
@@ -66,7 +66,7 @@ public class LabelTracker {
      * @param l The label we return.
      */
     @SuppressWarnings("synthetic-access")
-    void returnLabel( Label l )
+    synchronized void returnLabel( Label l )
     {
         if( trace ){
             System.out.println( "returnLabel(): got back " + l );
@@ -92,7 +92,7 @@ public class LabelTracker {
      *  Returns true iff all labels we handed out have been returned.
      * @return True iff all handed out labels have been returned.
      */
-    public boolean allAreReturned()
+    synchronized public boolean allAreReturned()
     {
 	return endOfRange == labelValue;
     }
