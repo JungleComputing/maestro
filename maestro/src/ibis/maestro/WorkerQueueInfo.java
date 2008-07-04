@@ -12,6 +12,7 @@ class WorkerQueueInfo implements Serializable
     private static final long serialVersionUID = 1L;
     TaskType type;
     final int queueLength;
+    final long workerDwellTime;
 
     // TODO: instead of storing the info per type, use an array for a job
     // and just mark the unknown values.
@@ -19,10 +20,11 @@ class WorkerQueueInfo implements Serializable
      * @param type The type of task.
      * @param queueLength The worker queue length.
      */
-    WorkerQueueInfo(TaskType type, int queueLength )
+    WorkerQueueInfo( TaskType type, int queueLength, long dwellTime )
     {
 	this.type = type;
 	this.queueLength = queueLength;
+	this.workerDwellTime = dwellTime;
     }
 
     /**

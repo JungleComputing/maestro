@@ -8,6 +8,7 @@ package ibis.maestro;
 class TimeEstimate
 {
     private long average;
+    private boolean initial = true;
 
     TimeEstimate( long initial )
     {
@@ -38,6 +39,22 @@ class TimeEstimate
      */
     void addSample( long val )
     {
-        average = (2*average+val)/3;
+        if( initial ) {
+            average = val;
+            initial = false;
+        }
+        else {
+            average = (2*average+val)/3;
+        }
+    }
+
+    /** If we don't have a better estimate, use this one.
+     * @param v The new time estimate.
+     */
+    public void setInitialEstimate( long v )
+    {
+        if( initial ) {
+            average = v;
+        }
     }
 }

@@ -12,8 +12,8 @@ final class WorkerQueueType extends QueueType<RunTaskMessage> {
 	super( type );
     }
     
-    WorkerQueueInfo getWorkerQueueInfo()
+    WorkerQueueInfo getWorkerQueueInfo( long dwellTime )
     {
-        return new WorkerQueueInfo( type, queue.size() );
+        return new WorkerQueueInfo( type, queue.size(), dwellTime );
     }
 }

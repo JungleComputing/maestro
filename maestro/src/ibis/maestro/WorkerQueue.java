@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * A class representing the master work queue.
@@ -21,12 +22,14 @@ final class WorkerQueue {
 	// Empty
     }
 
-    protected WorkerQueueInfo[] getWorkerQueueInfo()
+    protected WorkerQueueInfo[] getWorkerQueueInfo(HashMap<TaskType, WorkerTaskStats> taskStats)
     {
 	WorkerQueueInfo res[] = new WorkerQueueInfo[queueTypes.size()];
-	
+
 	for( int i=0; i<res.length; i++ ) {
-	    res[i] = queueTypes.get( i ).getWorkerQueueInfo();
+	    WorkerQueueType workerQueueType = queueTypes.get( i );
+	    WorkerTaskStats stats = taskStats.get( workerQueueType.type );
+	    res[i] = workerQueueType.getWorkerQueueInfo( stats.getEstimatedDwellTime() );
 	}
 	return res;
     }

@@ -316,7 +316,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
     private void sendUpdate( MasterInfo master )
     {
 	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );
-	WorkerQueueInfo[] workerQueueInfo = queue.getWorkerQueueInfo();
+	WorkerQueueInfo[] workerQueueInfo = queue.getWorkerQueueInfo( taskStats );
 	WorkerUpdateMessage msg = new WorkerUpdateMessage( master.getIdentifierOnMaster(), completionInfo, workerQueueInfo );
 
 	long sz = sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
@@ -588,7 +588,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    queue.notifyAll();
 	}
 	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );
-	WorkerQueueInfo[] workerQueueInfo = queue.getWorkerQueueInfo();
+	WorkerQueueInfo[] workerQueueInfo = queue.getWorkerQueueInfo( taskStats );
 	long workerDwellTime = System.nanoTime()-task.message.getQueueTime();
 	WorkerMessage msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );

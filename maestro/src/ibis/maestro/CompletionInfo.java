@@ -17,9 +17,11 @@ class CompletionInfo implements Serializable
     // and just mark the unknown values.
     /**
      * @param type The type of task.
+     * @param workerDwellTime The time this task will dwell on this worker for queueing and computation.
      * @param completionInterval The completion interval.
      */
-    CompletionInfo(TaskType type, long completionInterval) {
+    CompletionInfo( TaskType type, long completionInterval )
+    {
 	this.type = type;
 	this.completionInterval = completionInterval;
     }

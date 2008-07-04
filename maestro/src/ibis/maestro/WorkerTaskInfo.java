@@ -7,7 +7,7 @@ final class WorkerTaskInfo {
     /** label of this worker/task combination in traces. */
     private final String label;
 
-    private final TimeEstimate roundTripEstimate;
+    private final TimeEstimate transmissionTimeEstimate;
 
     /** How many instances of this task does this worker currently have? */
     private int outstandingTasks = 0;
@@ -21,6 +21,9 @@ final class WorkerTaskInfo {
     /** How many outstanding instances of this task should this worker maximally have? */
     private int maximalAllowance;
 
+    /** How long in ns the job is estimated to dwell on the worker for queuing and execution. */
+    private long workerDwellTime;
+
     /** How long in ns it takes to complete the rest of the job this task belongs to. */
     private long remainingJobTime;
 
@@ -30,39 +33,38 @@ final class WorkerTaskInfo {
     @Override
     public String toString()
     {
-	return "[" + label + ": roundTripEstimate=" + roundTripEstimate + ",remainingJobTime=" + Service.formatNanoseconds(remainingJobTime) + ",outstandingTasks=" + outstandingTasks + ",maximalAllowance=" + maximalAllowance + "]";
+	return "[" + label + ": roundTripEstimate=" + transmissionTimeEstimate + ",remainingJobTime=" + Service.formatNanoseconds(remainingJobTime) + ",outstandingTasks=" + outstandingTasks + ",maximalAllowance=" + maximalAllowance + "]";
     }
 
     /**
-     * Returns the maximal round-trip interval for this worker and this task type, or
-     * Long.MAX_VALUE if currently there are no task slots.
-     * @return The round-trip interval.
+     * Returns the estimated time this worker will take to transmit this task to this worker,
+     * complete it, and all remaining tasks in the job.
+     * @return The completion time.
      */
-    long estimateJobCompletion()
-    {
-	if( remainingJobTime == Long.MAX_VALUE ) {
-	    return Long.MAX_VALUE;
-	}
-        if( outstandingTasks >= maximalAllowance ){
-            return Long.MAX_VALUE;
-        }
-	long roundTripTime = roundTripEstimate.getAverage();
-	if( roundTripTime == Long.MAX_VALUE ) {
-	    return Long.MAX_VALUE;
-	}
-	return roundTripTime + remainingJobTime;
-    }
-
     long getAverageCompletionTime()
     {
         if( maximalAllowance == 0 || remainingJobTime == Long.MAX_VALUE ) {
             return Long.MAX_VALUE;
         }
-        long average = roundTripEstimate.getAverage();
-        if( average == Long.MAX_VALUE ) {
+        long transmissionTime = transmissionTimeEstimate.getAverage();
+        if( transmissionTime == Long.MAX_VALUE ) {
             return Long.MAX_VALUE;
         }
-        return average + remainingJobTime;
+        return transmissionTime + workerDwellTime + remainingJobTime;
+    }
+
+    /**
+     * Returns the estimated time this worker will take to transmit this task to this worker,
+     * complete it, and all remaining tasks in the job. Return
+     * Long.MAX_VALUE if currently there are no task slots.
+     * @return The completion time.
+     */
+    long estimateJobCompletion()
+    {
+        if( outstandingTasks >= maximalAllowance ){
+            return Long.MAX_VALUE;
+        }
+        return getAverageCompletionTime();
     }
 
     /**
@@ -77,7 +79,8 @@ final class WorkerTaskInfo {
 
         // A totally unfounded guess, but we should learn soon enough what the real value is..
 	long initialEstimate = local?0:10*Service.MILLISECOND_IN_NANOSECONDS;
-	this.roundTripEstimate = new TimeEstimate( initialEstimate );
+	this.transmissionTimeEstimate = new TimeEstimate( initialEstimate );
+	this.workerDwellTime = Service.MILLISECOND_IN_NANOSECONDS;
 	this.remainingJobTime = 2*remainingTasks*initialEstimate;
 	if( Settings.traceWorkerList ) {
 	    Globals.log.reportProgress( "Created new WorkerTaskInfo " + toString() );
@@ -86,21 +89,26 @@ final class WorkerTaskInfo {
 
     /**
      * Registers the completion of a task.
-     * @param theRoundTripInterval The round-trip interval of this task.
+     * @param transmissionTime The transmission time of this task.
      */
-    void registerTaskCompleted( long theRoundTripInterval )
+    void registerTaskCompleted( long transmissionTime )
     {
 	executedTasks++;
-	roundTripEstimate.addSample( theRoundTripInterval );
-	outstandingTasks--;
+        outstandingTasks--;
+	transmissionTimeEstimate.addSample( transmissionTime );
 	if( Settings.traceWorkerProgress || Settings.traceRemainingJobTime ) {
-	    System.out.println( label + ": new roundtrip time estimate: " + roundTripEstimate );
+	    System.out.println( label + ": new transmission time estimate: " + transmissionTimeEstimate );
 	}
     }
 
-    void setCompletionInterval( long interval )
+    void setCompletionTime( long remainingJobTime )
     {
-	this.remainingJobTime = interval;
+	this.remainingJobTime = remainingJobTime;
+    }
+
+    void setDwellTime( long workerDwellTime )
+    {
+        this.workerDwellTime = workerDwellTime;
     }
 
     /** Register a new outstanding task. */
@@ -108,10 +116,10 @@ final class WorkerTaskInfo {
     {
 	outstandingTasks++;
     }
-    
+
     String buildStatisticsString()
     {
-	return " executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", estimated round-trip interval " + roundTripEstimate + ", remaining job time " + Service.formatNanoseconds( remainingJobTime );
+	return " executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", estimated transmission time " + transmissionTimeEstimate + ", worker dwell time " + Service.formatNanoseconds( workerDwellTime )+ ", remaining job time " + Service.formatNanoseconds( remainingJobTime );
     }
 
     /**
@@ -165,10 +173,20 @@ final class WorkerTaskInfo {
     /**
      * @return True iff this worker is ready to handle this task, but isn't doing so yet.
      */
-    public boolean isIdleWorker() {
+    boolean isIdleWorker()
+    {
         if( maximalAllowance>0 || remainingJobTime == Long.MAX_VALUE ) {
             return false;
         }
         return true;
+    }
+
+    /** We now know this worker has the given ping time. Use this as the first estimate
+     * for the transmission time if we don't have anything better.
+     * @param pingTime The time in ns to ping this worker.
+     */
+    void setPingTime( long pingTime )
+    {
+        transmissionTimeEstimate.setInitialEstimate( pingTime );
     }
 }

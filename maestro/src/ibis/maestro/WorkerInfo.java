@@ -39,7 +39,7 @@ final class WorkerInfo {
     private long pingSentTime = 0;
 
     /** The duration of the ping round-trip for this worker. */
-    private long pingDuration = Long.MAX_VALUE;
+    private long pingTime = Long.MAX_VALUE;
 
     /**
      * Returns a string representation of this worker info. (Overrides method in superclass.)
@@ -92,7 +92,7 @@ final class WorkerInfo {
 	    return;
 	}
 	if( completionInfo.completionInterval != Long.MAX_VALUE ) {
-	    workerTaskInfo.setCompletionInterval( completionInfo.completionInterval );
+	    workerTaskInfo.setCompletionTime( completionInfo.completionInterval );
 	}
     }
 
@@ -106,8 +106,23 @@ final class WorkerInfo {
 	if( workerTaskInfo == null ) {
 	    return;
 	}
+	workerTaskInfo.setDwellTime( info.workerDwellTime );
 	workerTaskInfo.controlAllowance( info.queueLength );
+    }
 
+    /** Update all task info to take into account the given ping time.
+     * @param table The task info table to update.
+     * @param pingTime The ping time to this worker.
+     */
+    private static void setPingTime( Hashtable<TaskType,WorkerTaskInfo> table, long pingTime )
+    {
+        Enumeration<TaskType> keys = table.keys();
+        
+        while( keys.hasMoreElements() ){
+            TaskType t = keys.nextElement();
+            WorkerTaskInfo wi = table.get( t );
+            wi.setPingTime( pingTime );
+        }        
     }
 
     void registerWorkerInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
@@ -117,8 +132,9 @@ final class WorkerInfo {
         }
         if( pingSentTime != 0 ) {
             // We are measuring this round-trip time.
-            pingDuration = System.nanoTime()-pingSentTime;
-            pingSentTime = 0L;  // We're no longer measureing a ping time.
+            pingTime = System.nanoTime()-pingSentTime;
+            pingSentTime = 0L;  // We're no longer measuring a ping time.
+            setPingTime( workerTaskInfoTable, pingTime );
         }
         enabled = true;
 	for( WorkerQueueInfo i: workerQueueInfo ) {
@@ -144,12 +160,12 @@ final class WorkerInfo {
 	    return;
 	}
 	ActiveTask task = activeTasks.remove( ix );
-	long newRoundTripInterval = (now-task.startTime); // The time interval to send the task, compute, and report the result.
+	long newTransmissionTime = (now-task.startTime)-result.workerDwellTime; // The time interval to send the task and report the result.
 
 	registerWorkerInfo( result.workerQueueInfo, result.completionInfo );
-	task.workerTaskInfo.registerTaskCompleted( newRoundTripInterval );
+	task.workerTaskInfo.registerTaskCompleted( newTransmissionTime );
 	if( Settings.traceMasterProgress ){
-	    System.out.println( "Master: retired task " + task + "; roundTripTime=" + Service.formatNanoseconds( newRoundTripInterval ) );
+	    System.out.println( "Master: retired task " + task + "; transmission time: " + Service.formatNanoseconds( newTransmissionTime ) );
 	}
     }
 
@@ -331,6 +347,6 @@ final class WorkerInfo {
      */
     long getPingDuration()
     {
-        return pingDuration;
+        return pingTime;
     }
 }

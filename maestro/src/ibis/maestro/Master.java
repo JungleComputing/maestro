@@ -175,7 +175,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         submitAllPossibleTasks();
     }
 
-    private void handleResultMessage( JobResultMessage m )
+    private void handleJobResultMessage( JobResultMessage m )
     {
 	node.reportCompletion( m.job, m.result );
     }
@@ -272,7 +272,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	else if( msg instanceof JobResultMessage ) {
 	    JobResultMessage m = (JobResultMessage) msg;
 
-	    handleResultMessage( m );
+	    handleJobResultMessage( m );
 	}
 	else if( msg instanceof WorkerUpdateMessage ) {
 	    WorkerUpdateMessage m = (WorkerUpdateMessage) msg;
