@@ -427,10 +427,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	}
 	queue.printStatistics( s );
 	long workInterval = stopTime-startTime;
-	s.printf( "Master: # workers          = %5d\n", workers.size() );
-	s.printf( "Master: # incoming tasks    = %5d\n", incomingTaskCount );
-	s.printf( "Master: # handled tasks     = %5d\n", handledTaskCount );
-	s.println( "Master: run time           = " + Service.formatNanoseconds( workInterval ) );
+	s.printf(  "Master: # workers        = %5d\n", workers.size() );
+	s.printf(  "Master: # incoming tasks = %5d\n", incomingTaskCount );
+	s.printf(  "Master: # handled tasks  = %5d\n", handledTaskCount );
+	s.println( "Master: run time         = " + Service.formatNanoseconds( workInterval ) );
 	sendPort.printStats( s, "master send port" );
 	workers.printStatistics( s );
     }

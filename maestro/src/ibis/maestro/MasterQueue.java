@@ -137,7 +137,7 @@ final class MasterQueue {
     {
         return size;
     }
-    
+
     void printStatistics( PrintStream s )
     {
         for( MasterQueueType t: queueTypes ) {

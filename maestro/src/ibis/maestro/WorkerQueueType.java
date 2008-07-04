@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.io.PrintStream;
+
 /**
  * The information for one type of task in the queue.
  * 
@@ -15,5 +17,10 @@ final class WorkerQueueType extends QueueType<RunTaskMessage> {
     WorkerQueueInfo getWorkerQueueInfo( long dwellTime )
     {
         return new WorkerQueueInfo( type, queue.size(), dwellTime );
+    }
+
+    void printStatistics( PrintStream s )
+    {
+        printStatistics( s, "worker" );
     }
 }

@@ -640,16 +640,17 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    activeTime = startTime;
 	}
 	long workInterval = stopTime-activeTime;
+        queue.printStatistics( s );
 	double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
 	Set<TaskType> tl = taskStats.keySet();
 	for( TaskType t: tl ){
 	    WorkerTaskStats stats = taskStats.get( t );
 	    stats.reportStats( s, t, workInterval );
 	}
-	s.printf( "Worker: # threads        = %5d\n", workThreads.length );
-	s.println( "Worker: run time         = " + Service.formatNanoseconds( workInterval ) );
-	s.println( "Worker: activated after  = " + Service.formatNanoseconds( activeTime-startTime ) );
-	s.println( "Worker: total idle time  = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
+	s.printf(  "Worker: # threads       = %5d\n", workThreads.length );
+	s.println( "Worker: run time        = " + Service.formatNanoseconds( workInterval ) );
+	s.println( "Worker: activated after = " + Service.formatNanoseconds( activeTime-startTime ) );
+	s.println( "Worker: total idle time = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
 	sendPort.printStats( s, "worker send port" );
     }
 

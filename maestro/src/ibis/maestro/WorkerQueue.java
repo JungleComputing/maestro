@@ -1,5 +1,6 @@
 package ibis.maestro;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -17,21 +18,23 @@ final class WorkerQueue {
     private final ArrayList<WorkerQueueType> queueTypes = new ArrayList<WorkerQueueType>();
     int size = 0;
 
-    WorkerQueue()
-    {
-	// Empty
-    }
-
     protected WorkerQueueInfo[] getWorkerQueueInfo(HashMap<TaskType, WorkerTaskStats> taskStats)
     {
-	WorkerQueueInfo res[] = new WorkerQueueInfo[queueTypes.size()];
+        WorkerQueueInfo res[] = new WorkerQueueInfo[queueTypes.size()];
 
-	for( int i=0; i<res.length; i++ ) {
-	    WorkerQueueType workerQueueType = queueTypes.get( i );
-	    WorkerTaskStats stats = taskStats.get( workerQueueType.type );
-	    res[i] = workerQueueType.getWorkerQueueInfo( stats.getEstimatedDwellTime() );
-	}
-	return res;
+        for( int i=0; i<res.length; i++ ) {
+            WorkerQueueType workerQueueType = queueTypes.get( i );
+            long dwellTime;
+            WorkerTaskStats stats = taskStats.get( workerQueueType.type );
+            if( stats == null ) {
+                dwellTime = 0L;
+            }
+            else {
+                dwellTime = stats.getEstimatedDwellTime();
+            }
+            res[i] = workerQueueType.getWorkerQueueInfo( dwellTime );
+        }
+        return res;
     }
 
     /**
@@ -41,37 +44,37 @@ final class WorkerQueue {
      */
     void add( RunTaskMessage msg )
     {
-	TaskType t = msg.task.type;
+        TaskType t = msg.task.type;
 
-	size++;
-	// TODO: since we have an ordered list, use binary search.
-	int ix = queueTypes.size();
-	while( ix>0 ) {
-	    ix--;
-	    WorkerQueueType x = queueTypes.get( ix );
-	    if( x.type.equals( t ) ) {
-		x.add( msg );
-		return;
-	    }
-	}
-	if( Settings.traceWorkerProgress ){
-	    System.out.println( "Worker: registering queue for new type " + t );
-	}
-	// This is a new type. Insert it in the right place
-	// to keep the queues ordered from highest to lowest
-	// priority.
-	ix = 0;
-	while( ix<queueTypes.size() ){
-	    WorkerQueueType q = queueTypes.get( ix );
-	    int cmp = t.taskNo-q.type.taskNo;
-	    if( cmp>0 ){
-		break;
-	    }
-	    ix++;
-	}
-	WorkerQueueType qt = new WorkerQueueType( t );
-	qt.add( msg );
-	queueTypes.add( ix, qt );
+        size++;
+        // TODO: since we have an ordered list, use binary search.
+        int ix = queueTypes.size();
+        while( ix>0 ) {
+            ix--;
+            WorkerQueueType x = queueTypes.get( ix );
+            if( x.type.equals( t ) ) {
+                x.add( msg );
+                return;
+            }
+        }
+        if( Settings.traceWorkerProgress ){
+            System.out.println( "Worker: registering queue for new type " + t );
+        }
+        // This is a new type. Insert it in the right place
+        // to keep the queues ordered from highest to lowest
+        // priority.
+        ix = 0;
+        while( ix<queueTypes.size() ){
+            WorkerQueueType q = queueTypes.get( ix );
+            int cmp = t.taskNo-q.type.taskNo;
+            if( cmp>0 ){
+                break;
+            }
+            ix++;
+        }
+        WorkerQueueType qt = new WorkerQueueType( t );
+        qt.add( msg );
+        queueTypes.add( ix, qt );
     }
 
     /**
@@ -80,12 +83,19 @@ final class WorkerQueue {
      */
     boolean isEmpty()
     {
-	for( WorkerQueueType t: queueTypes ) {
-	    if( !t.isEmpty() ) {
-		return false;
-	    }
-	}
-	return true;
+        for( WorkerQueueType t: queueTypes ) {
+            if( !t.isEmpty() ) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    void printStatistics( PrintStream s )
+    {
+        for( WorkerQueueType t: queueTypes ) {
+            t.printStatistics( s );
+        }
     }
 
     /**
@@ -103,20 +113,20 @@ final class WorkerQueue {
      */
     RunTaskMessage remove()
     {
-	// Search from highest to lowest priority for a task to execute.
-	for( WorkerQueueType queue: queueTypes ) {
-	    if( Settings.traceWorkerProgress ){
-		System.out.println( "Worker: trying to select task from " + queue.type + " queue" );
-	    }
-	    if( !queue.isEmpty() ) {
-		RunTaskMessage e = queue.removeFirst();
-		size--;
-		if( Settings.traceWorkerProgress ){
-		    System.out.println( "Worker: found a task of type " + queue.type );
-		}
-		return e;
-	    }
-	}
-	return null;
+        // Search from highest to lowest priority for a task to execute.
+        for( WorkerQueueType queue: queueTypes ) {
+            if( Settings.traceWorkerProgress ){
+                System.out.println( "Worker: trying to select task from " + queue.type + " queue" );
+            }
+            if( !queue.isEmpty() ) {
+                RunTaskMessage e = queue.removeFirst();
+                size--;
+                if( Settings.traceWorkerProgress ){
+                    System.out.println( "Worker: found a task of type " + queue.type );
+                }
+                return e;
+            }
+        }
+        return null;
     }
 }
