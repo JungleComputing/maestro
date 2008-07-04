@@ -119,7 +119,7 @@ final class WorkerTaskInfo {
 
     String buildStatisticsString()
     {
-	return " executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", estimated transmission time " + transmissionTimeEstimate + ", worker dwell time " + Service.formatNanoseconds( workerDwellTime )+ ", remaining job time " + Service.formatNanoseconds( remainingJobTime );
+	return " executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + ", dwell time " + Service.formatNanoseconds( workerDwellTime )+ ", remaining time " + Service.formatNanoseconds( remainingJobTime );
     }
 
     /**

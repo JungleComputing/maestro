@@ -238,8 +238,17 @@ public final class Node {
      */
     public void setStopped()
     {
+        if( Settings.traceNodes ) {
+            Globals.log.reportProgress( "Set node to stopped state. Telling worker..." );
+        }
 	worker.stopAskingForWork();
+        if( Settings.traceNodes ) {
+            Globals.log.reportProgress( "Told worker. Telling master..." );
+        }
 	master.setStopped();
+        if( Settings.traceNodes ) {
+            Globals.log.reportProgress( "Told master." );
+        }
     }
 
     /**

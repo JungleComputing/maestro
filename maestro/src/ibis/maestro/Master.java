@@ -145,10 +145,15 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 		return false;
 	    }
 	    if( !queue.isEmpty() ) {
+                System.out.println( "Master set to stopped, but queue not empty." );
 		return false;
 	    }
-	    return workers.areIdle();
+	    if( !workers.areIdle() ){
+                System.out.println( "Master set to stopped, but workers are still busy." );
+		return false;
+            }
 	}
+        return true;
     }
 
     private void unsubscribeWorker( WorkerIdentifier worker )
@@ -182,7 +187,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             // submitAllPossibleTasks() too, but that may take
             // some time. More importantly, it checks if we can
             // stop.
-            notifyAll();
+            queue.notifyAll();
         }
     }
 

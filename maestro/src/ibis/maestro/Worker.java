@@ -155,7 +155,6 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    stopped = true;
 	    queue.notifyAll();
 	}
-	System.out.println( "Worker is set to stopped" );
     }
 
     /**
@@ -556,6 +555,12 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	int nextTaskNo = taskType.taskNo+1;
         final MasterIdentifier master = task.message.source;
 
+	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );
+	WorkerQueueInfo[] workerQueueInfo = queue.getWorkerQueueInfo( taskStats );
+	long workerDwellTime = System.nanoTime()-task.message.getQueueTime();
+	WorkerMessage msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
+	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+
 	if( nextTaskNo<t.tasks.length ){
 	    // There is a next step to take.
 	    TaskInstance nextTask = new TaskInstance( task.message.task.jobInstance, t.getNextTaskType( taskType ), result );
@@ -587,11 +592,6 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    }
 	    queue.notifyAll();
 	}
-	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );
-	WorkerQueueInfo[] workerQueueInfo = queue.getWorkerQueueInfo( taskStats );
-	long workerDwellTime = System.nanoTime()-task.message.getQueueTime();
-	WorkerMessage msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
-	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( Settings.traceWorkerProgress ) {
 	    System.out.println( "Completed task "  + task.message );
 	}
