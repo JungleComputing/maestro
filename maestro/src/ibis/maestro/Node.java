@@ -101,7 +101,6 @@ public final class Node {
 	{
 	    // Not interested.
 	}
-
     }
 
     private static class JobInstanceInfo {
@@ -248,6 +247,9 @@ public final class Node {
      */
     public void waitToTerminate()
     {
+        if( Settings.traceNodes ) {
+            Globals.log.reportProgress( "Waiting for master to terminate" );
+        }
 	/**
 	 * Everything interesting happens in the master and worker.
 	 * So all we do here is wait for the master and worker to terminate.
@@ -255,10 +257,16 @@ public final class Node {
 	 * for one to terminate, and then the other.
 	 */
 	Service.waitToTerminate( master );
+        if( Settings.traceNodes ) {
+            Globals.log.reportProgress( "master is terminated; waiting for worker to terminate" );
+        }
 
 	/** Once the master has stopped, stop the worker. */
 	worker.setStopped();
 	Service.waitToTerminate( worker );
+        if( Settings.traceNodes ) {
+            Globals.log.reportProgress( "worker is terminated" );
+        }
 	master.printStatistics( System.out );
 	worker.printStatistics( System.out );
 	try {
