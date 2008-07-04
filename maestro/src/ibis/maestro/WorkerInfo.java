@@ -175,7 +175,7 @@ final class WorkerInfo {
      */
     boolean isIdle()
     {
-	return enabled && activeTasks.isEmpty();
+	return activeTasks.isEmpty();
     }
 
     /** Register the start of a new task.

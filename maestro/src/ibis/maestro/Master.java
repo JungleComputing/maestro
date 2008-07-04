@@ -175,7 +175,15 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
 	    workers.registerTaskCompleted( result );
 	    handledTaskCount++;
 	}
+	// Force the queue to drain.
         submitAllPossibleTasks();
+        synchronized( queue ) {
+            // Now notify our thread main loop. It will do a
+            // submitAllPossibleTasks() too, but that may take
+            // some time. More importantly, it checks if we can
+            // stop.
+            notifyAll();
+        }
     }
 
     private void handleJobResultMessage( JobResultMessage m )
