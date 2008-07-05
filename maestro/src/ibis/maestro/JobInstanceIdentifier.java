@@ -47,10 +47,7 @@ class JobInstanceIdentifier implements Serializable
     @Override
     public int hashCode()
     {
-        final int PRIME = 31;
-        int result = 1;
-        result = PRIME * result + (int) (id ^ (id >>> 32));
-        return result;
+        return (int) (id ^ (id >>> 32));
     }
 
     /** Compares this job identifier with the given
@@ -70,10 +67,7 @@ class JobInstanceIdentifier implements Serializable
             return false;
         }
         final JobInstanceIdentifier other = (JobInstanceIdentifier) obj;
-        if (id != other.id) {
-            return false;
-        }
-        return true;
+        return (id == other.id);
     }
 
 }
