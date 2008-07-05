@@ -21,6 +21,7 @@ abstract class QueueType<T> {
     final TimeEstimate dequeueInterval = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
 
     protected long frontChangedTime = 0;
+
     /** The number of tasks entered in this queue. */
     private int taskCount = 0;
 

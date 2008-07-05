@@ -14,7 +14,9 @@ public final class Job
     final JobIdentifier id;
     final String name;
     final Task[] tasks;
+    final TaskType[] taskTypes;
     final TimeEstimate jobTime = new TimeEstimate( 0 );
+    private static int index = 0;
 
     static final class JobIdentifier implements Serializable {
         private static final long serialVersionUID = -5895857432770361027L;
@@ -66,12 +68,22 @@ public final class Job
         }
     }
 
+    private TaskType[] buildTaskTypes( Task[] tasks )
+    {
+	TaskType res[] = new TaskType[tasks.length];
+	for( int i=0; i<tasks.length; i++ ) {
+	    res[i] = new TaskType( id, i, (tasks.length-1)-i, index++ );
+	}
+	return res;
+    }
+
     @SuppressWarnings("synthetic-access")
     Job( int id, String name, Task[] tasks )
     {
         this.id = new JobIdentifier( id );
         this.name = name;
         this.tasks = tasks;
+        this.taskTypes = buildTaskTypes( tasks );
     }
 
     /**
@@ -84,11 +96,6 @@ public final class Job
         return new JobInstanceIdentifier( userIdentifier, node.identifier() );
     }
 
-    private TaskType createTaskType( int taskNo, int remainingTasks )
-    {
-        return new TaskType( id, taskNo, remainingTasks );
-    }
-
     /**
      * Submits a task for execution. 
      * @param tii The job instance this task belongs to.
@@ -97,7 +104,7 @@ public final class Job
      */
     private void submitATask( Node node, JobInstanceIdentifier tii, int taskNo, Object value )
     {
-        TaskType type = createTaskType( taskNo, (tasks.length-1)-taskNo  );
+        TaskType type = taskTypes[taskNo];
         TaskInstance j = new TaskInstance( tii, type, value );
         node.submit( j );
     }
@@ -139,7 +146,7 @@ public final class Job
             return null;
         }
         if( taskType.taskNo>0 ) {
-            return new TaskType( taskType.job, taskType.taskNo-1, taskType.remainingTasks+1 );
+            return new TaskType( taskType.job, taskType.taskNo-1, taskType.remainingTasks+1, taskType.index-1 );
         }
         return null;
     }
@@ -157,7 +164,7 @@ public final class Job
 	    return null;
 	}
 	if( taskType.taskNo<tasks.length-1 ) {
-	    return new TaskType( taskType.job, taskType.taskNo+1, taskType.remainingTasks+1 );
+	    return new TaskType( taskType.job, taskType.taskNo+1, taskType.remainingTasks+1, taskType.index+1 );
 	}
 	return null;
     }

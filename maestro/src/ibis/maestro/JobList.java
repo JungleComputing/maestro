@@ -73,8 +73,10 @@ public final class JobList
 
         for( int i=0; i<tasks.length; i++ ){
             Task j = tasks[i];
+
             if( j.isSupported() ) {
-                final TaskType taskType = new TaskType( id, i, (tasks.length-1)-i );
+        	// FIXME: -1 is wrong!!!!
+                final TaskType taskType = new TaskType( id, i, (tasks.length-1)-i, -1 );
                 if( Settings.traceTypeHandling ) {
                     System.out.println( "Node supports task type " + taskType);
                 }

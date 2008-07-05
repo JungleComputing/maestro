@@ -14,54 +14,153 @@ import java.util.ArrayList;
  *
  */
 final class MasterQueue {
-    private final ArrayList<MasterQueueType> queueTypes = new ArrayList<MasterQueueType>();
-    int size = 0;
+    private final ArrayList<TaskInstance> queue = new ArrayList<TaskInstance>();
+    private final ArrayList<TypeInfo> queueTypes = new ArrayList<TypeInfo>();
 
-    MasterQueue()
+    /**
+     * Statistics per type for the different task types in the queue.
+     * 
+     * @author Kees van Reeuwijk
+     */
+    private static final class TypeInfo {
+	/** The type these statistics are about. */
+	final TaskType type;
+
+	/** The total number of tasks of this type that entered the queue. */
+	private long taskCount = 0;
+
+	/** Current number of elements of this type in the queue. */
+	private int elements = 0;
+
+	/** Maximal ever number of elements in the queue. */
+	private int maxElements = 0;
+
+	private long frontChangedTime = 0;
+
+	/** The estimated time interval between tasks being dequeued. */
+	final TimeEstimate dequeueInterval = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
+
+	TypeInfo( TaskType type  )
+	{
+	    this.type = type;
+	}
+
+	private void printStatistics( PrintStream s )
+	{
+	    s.println( "master queue for " + type + ": " + taskCount + " tasks; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxElements );
+	}
+
+	private void registerAdd()
+	{
+	    elements++;
+	    if( elements>maxElements ) {
+		maxElements = elements;
+	    }
+	    if( frontChangedTime == 0 ) {
+		// This entry is the front of the queue,
+		// record the time it became this.
+		frontChangedTime = System.nanoTime();
+	    }
+	    taskCount++;
+	}
+	
+	private void registerRemove()
+	{
+	    long now = System.nanoTime();
+	    if( frontChangedTime != 0 ) {
+		// We know when this entry became the front of the queue.
+		long i = now - frontChangedTime;
+		dequeueInterval.addSample( i );
+	    }
+	    elements--;
+	    if( elements == 0 ) {
+		// Don't take the next dequeuing into account,
+		// since the queue is now empty.
+		frontChangedTime = 0l;
+	    }
+	    else {
+		frontChangedTime = now;
+	    }
+	}
+
+	/**
+	 * @return The estimated time in ns it will take to drain all
+	 *          current tasks from the queue.
+	 */
+	private long estimateQueueTime()
+	{
+	    long timePerEntry = dequeueInterval.getAverage();
+	    long res = timePerEntry*elements;
+	    return res;
+	}
+
+	private CompletionInfo getCompletionInfo( JobList jobs, WorkerList workers )
+	{
+	    long averageCompletionTime = workers.getAverageCompletionTime( type );
+	    long duration;
+
+	    if( averageCompletionTime == Long.MAX_VALUE ) {
+		duration = Long.MAX_VALUE;
+	    }
+	    else {
+		long queueTime = estimateQueueTime();
+		duration = queueTime + averageCompletionTime;
+	    }
+	    TaskType previousType = jobs.getPreviousTaskType( type );
+	    if( previousType == null ) {
+		return null;
+	    }
+	    return new CompletionInfo( previousType, duration );
+	}
+
+	private int getSize()
+	{
+	    return elements;
+	}
+    }
+    
+    private TypeInfo getTypeInfo( TaskType t )
     {
-        // Empty
+	int ix = t.index;
+	while( queueTypes.size()<ix+1 ) {
+	    queueTypes.add( null );
+	}
+	TypeInfo res = queueTypes.get( ix );
+	if( res == null ) {
+	    res = new TypeInfo( t );
+	    queueTypes.set( ix, res );
+	}
+	return res;
     }
 
     /**
      * Submit a new task, belonging to the job with the given identifier,
      * to the queue.
      * @param j The task to submit.
-     * @return The estimated time in ns this task will linger in the queue.
      */
-    long submit( TaskInstance j )
+    void submit( TaskInstance j )
     {
-        TaskType t = j.type;
-
-        size++;
-        // TODO: since we have an ordered list, use binary search.
-        int ix = queueTypes.size();
-        while( ix>0 ) {
-            ix--;
-            MasterQueueType x = queueTypes.get( ix );
-            if( x.type.equals( t ) ) {
-                x.add( j );
-                return x.estimateQueueTime();
-            }
-        }
-        if( Settings.traceMasterQueue ){
-            System.out.println( "Master queue: registering new type " + t );
-        }
-        // This is a new type. Insert it in the right place
-        // to keep the queues ordered from highest to lowest
-        // priority.
-        ix = 0;
-        while( ix<queueTypes.size() ){
-            MasterQueueType q = queueTypes.get( ix );
-            int cmp = t.taskNo-q.type.taskNo;
-            if( cmp>0 ){
-                break;
-            }
-            ix++;
-        }
-        MasterQueueType qt = new MasterQueueType( t );
-        qt.add( j );
-        queueTypes.add( ix, qt );
-        return 0l;   // We haven't had time to build a time estimate anyway, so don't bother to call estimateQueueTime().
+	int ix = queue.size();
+	TaskType type = j.type;
+	TypeInfo info = getTypeInfo( type );
+	info.registerAdd();
+	queue.add( j );
+	while( ix>0 ) {
+	    TaskInstance first = queue.get( ix-1 );
+	    TaskInstance last = queue.get( ix );
+	    // FIXME: this only works for a single maestro;
+	    // for multiple maestros we also have to
+	    // prioritize maestros. Or just leave it and hope
+	    // for the best?
+	    if( first.jobInstance.id<last.jobInstance.id ) {
+		// Things are in their natural order. We're done.
+		break;
+	    }
+	    // Swap the two elements.
+	    queue.set( ix, first );
+	    queue.set( ix-1, last );
+	    ix--;
+	}
     }
 
     /**
@@ -70,12 +169,7 @@ final class MasterQueue {
      */
     boolean isEmpty()
     {
-        for( MasterQueueType t: queueTypes ) {
-            if( !t.isEmpty() ) {
-                return false;
-            }
-        }
-        return true;
+	return queue.isEmpty();
     }
 
     /**
@@ -93,64 +187,51 @@ final class MasterQueue {
      */
     boolean selectSubmisson( Subjob sub, WorkerList workers )
     {
-        boolean noWork = true;
-        sub.worker = null;
-        sub.task = null;
-        for( MasterQueueType t: queueTypes ) {
-            if( Settings.traceMasterQueue ){
-                System.out.println( "Trying to select task from " + t.type + " queue" );
-            }
-            if( t.isEmpty() ) {
-                if( Settings.traceMasterQueue ){
-                    System.out.println( t.type + " queue is empty" );
-                }
-            }
-            else {
-                WorkerInfo worker = workers.selectBestWorker( t.type, t.size() );
+	int ix = 0;
 
-                noWork = false; // There is at least one queue with work.
-                if( worker == null ) {
-                    if( Settings.traceMasterQueue ){
-                        System.out.println( "No ready worker for task type " + t.type );
-                    }
-                }
-                else {
-                    TaskInstance e = t.removeFirst();
-                    sub.task = e;
-                    sub.worker = worker;
-                    size--;
-                    if( Settings.traceMasterQueue ){
-                        System.out.println( "Found a worker for task type " + t.type );
-                    }
-                    break;
-                }
-            }
-        }
-        return noWork;
-    }
-
-    /**
-     * Returns the number of elements in this work queue.
-     * @return The number of elements in this queue.
-     */
-    int size()
-    {
-        return size;
+	if( queue.isEmpty() ) {
+	    return true;
+	}
+	sub.worker = null;
+	sub.task = null;
+	while( ix<queue.size() ) {
+	    TaskInstance task = queue.get( ix );
+	    TaskType type = task.type;
+	    TypeInfo info = getTypeInfo( type );
+	    WorkerInfo worker = workers.selectBestWorker( type, info.getSize() );
+	    if( worker != null ) {
+		queue.remove( ix );
+		info.registerRemove();
+		sub.task = task;
+		sub.worker = worker;
+		if( Settings.traceMasterQueue ){
+		    System.out.println( "Found a worker for task type " + type );
+		}
+		break;
+	    }
+	    if( Settings.traceMasterQueue ){
+		System.out.println( "No ready worker for task type " + type );
+	    }
+	    ix++;
+	}
+	return false;
     }
 
     void printStatistics( PrintStream s )
     {
-        for( MasterQueueType t: queueTypes ) {
-            t.printStatistics( s );
-        }
+	for( TypeInfo t: queueTypes ) {
+	    if( t != null ) {
+		t.printStatistics( s );
+	    }
+	}
     }
 
     CompletionInfo[] getCompletionInfo( JobList jobs, WorkerList workers )
     {
 	CompletionInfo res[] = new CompletionInfo[queueTypes.size()];
-	
+
 	for( int i=0; i<res.length; i++ ) {
-	    MasterQueueType q = queueTypes.get( i );
+	    TypeInfo q = queueTypes.get( i );
 	    res[i] = q.getCompletionInfo( jobs, workers );
 	}
 	return res;

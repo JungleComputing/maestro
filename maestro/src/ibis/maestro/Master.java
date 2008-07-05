@@ -369,7 +369,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     void submit( TaskInstance task )
     {
         if( Settings.traceMasterProgress || Settings.traceMasterQueue) {
-            System.out.println( "Master: received task " + task + "; queue length is now " + (1+queue.size()) );
+            System.out.println( "Master: received task " + task );
         }
         synchronized ( queue ) {
             incomingTaskCount++;

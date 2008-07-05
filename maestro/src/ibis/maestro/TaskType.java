@@ -15,6 +15,7 @@ final class TaskType implements Serializable
     private static final long serialVersionUID = 13451L;
     final int taskNo;
     final int remainingTasks;
+    final int index;
     final JobIdentifier job;
 
     /** Constructs a new task type.
@@ -23,11 +24,12 @@ final class TaskType implements Serializable
      * @param taskNo The sequence number within the job.
      * @param remainingTasks The number of tasks after this one in the job.
      */
-    TaskType( JobIdentifier id, int taskNo, int remainingTasks )
+    TaskType( JobIdentifier id, int taskNo, int remainingTasks, int index )
     {
         this.job = id;
         this.taskNo = taskNo;
         this.remainingTasks = remainingTasks;
+        this.index = index;
     }
 
     /**
