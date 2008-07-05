@@ -133,6 +133,42 @@ final class MasterQueue {
 	return res;
     }
 
+    private static int findInsertionPoint( ArrayList<TaskInstance> queue, TaskInstance e )
+    {
+        // Good old binary search.
+        int start = 0;
+        int end = queue.size();
+        if( end == 0 ){
+            // The queue is empty. This is the only case where start
+            // points to a non-existent element, so we have to treat
+            // it separately.
+            return 0;
+        }
+        long id = e.jobInstance.id;
+        while( true ){
+            int mid = (start+end)/2;
+            if( mid == start ){
+                break;
+            }
+            long midId = queue.get( mid ).jobInstance.id;
+            if( midId<id ){
+                // Mid should come before us.
+                start = mid;
+            }
+            else {
+                // Mid should come after us.
+                end = mid;
+            }
+        }
+        // This comparison is probably rarely necessary, but corner cases
+        // are a pain, so I'm safe rather than sorry.
+        long startId = queue.get( start ).jobInstance.id;
+        if( startId<id ){
+            return end;
+        }
+        return start;
+    }
+
     /**
      * Submit a new task, belonging to the job with the given identifier,
      * to the queue.
@@ -144,23 +180,8 @@ final class MasterQueue {
 	TaskType type = j.type;
 	TypeInfo info = getTypeInfo( type );
 	info.registerAdd();
-	queue.add( j );
-	while( ix>0 ) {
-	    TaskInstance first = queue.get( ix-1 );
-	    TaskInstance last = queue.get( ix );
-	    // FIXME: this only works for a single maestro;
-	    // for multiple maestros we also have to
-	    // prioritize maestros. Or just leave it and hope
-	    // for the best?
-	    if( first.jobInstance.id<last.jobInstance.id ) {
-		// Things are in their natural order. We're done.
-		break;
-	    }
-	    // Swap the two elements.
-	    queue.set( ix, first );
-	    queue.set( ix-1, last );
-	    ix--;
-	}
+        int pos = findInsertionPoint( queue, j );
+	queue.add( pos, j );
     }
 
     /**
@@ -232,7 +253,9 @@ final class MasterQueue {
 
 	for( int i=0; i<res.length; i++ ) {
 	    TypeInfo q = queueTypes.get( i );
-	    res[i] = q.getCompletionInfo( jobs, workers );
+            if( q != null ){
+                res[i] = q.getCompletionInfo( jobs, workers );
+            }
 	}
 	return res;
     }
