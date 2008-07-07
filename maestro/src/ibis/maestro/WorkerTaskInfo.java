@@ -189,4 +189,9 @@ final class WorkerTaskInfo {
     {
         transmissionTimeEstimate.setInitialEstimate( pingTime );
     }
+
+    protected int getSubmissions()
+    {
+	return executedTasks;
+    }
 }
