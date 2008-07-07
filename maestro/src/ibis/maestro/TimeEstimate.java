@@ -21,7 +21,7 @@ class TimeEstimate
     @Override
     public String toString()
     {
-        return "average=" + Service.formatNanoseconds( average );
+        return Service.formatNanoseconds( average );
     }
 
     /**

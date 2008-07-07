@@ -24,6 +24,10 @@ class TaskInstance implements Serializable {
 	this.input = input;
     }
 
+    String formatJobAndType()
+    {
+	return "(jobId=" + jobInstance.id + ",type=" + type + ")";
+    }
     /**
      * Returns a string representation of this task instance.
      * @return The string representation.

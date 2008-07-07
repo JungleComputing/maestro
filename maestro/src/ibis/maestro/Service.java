@@ -70,13 +70,13 @@ public class Service
 	if( t == 0 ) {
 	    return "0 s";
 	}
-	if( t<2000L && t>-2000L ) {
+	if( t<1000L && t>-1000L ) {
 	    return String.format( "%d ns", t );
 	}
-	if( t<2000000L && t>-2000000L ) {
+	if( t<1000000L && t>-1000000L ) {
 	    return String.format( "%4.2f us", t/1000.0 );
 	}
-	if( t<2000000000L && t>-2000000000L ) {
+	if( t<1000000000L && t>-1000000000L ) {
 	    return String.format( "%4.2f ms", t/1000000.0 );
 	}
 	return String.format( "%4.2f s", t/1000000000.0 );

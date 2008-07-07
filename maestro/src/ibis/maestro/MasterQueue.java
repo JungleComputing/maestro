@@ -166,16 +166,19 @@ final class MasterQueue extends Queue {
     /**
      * Submit a new task, belonging to the job with the given identifier,
      * to the queue.
-     * @param j The task to submit.
+     * @param task The task to submit.
      */
     @SuppressWarnings("synthetic-access")
-    void submit( TaskInstance j )
+    void submit( TaskInstance task )
     {
-	TaskType type = j.type;
+	TaskType type = task.type;
 	TypeInfo info = getTypeInfo( type );
 	info.registerAdd();
-        int pos = findInsertionPoint( queue, j );
-	queue.add( pos, j );
+        int pos = findInsertionPoint( queue, task );
+	queue.add( pos, task );
+        if( Settings.traceQueuing ) {
+            Globals.log.reportProgress( "Adding " + task.formatJobAndType() + " at position " + pos + " of master queue; length is now " + queue.size() );
+        }
     }
 
     /**
@@ -209,6 +212,9 @@ final class MasterQueue extends Queue {
 	    if( worker != null ) {
 		queue.remove( ix );
 		info.registerRemove();
+	        if( Settings.traceQueuing ) {
+	            Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() );
+	        }
 		sub.task = task;
 		sub.worker = worker;
 		if( Settings.traceMasterQueue ){

@@ -49,7 +49,6 @@ class PacketSendPort<T extends Serializable> {
     private static final class DestinationInfo {
         private static final class InfoComparator implements Comparator<DestinationInfo>, Serializable {
             private static final long serialVersionUID = 9141273343902181193L;
-
             /**
              * Compares the two given destination info class instances. This comparator ensures
              * that the class instances are sorted by decreasing sentCount. To provide a
