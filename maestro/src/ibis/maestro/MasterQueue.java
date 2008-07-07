@@ -111,11 +111,6 @@ final class MasterQueue extends Queue {
 	    }
 	    return new CompletionInfo( previousType, duration );
 	}
-
-	private int getSize()
-	{
-	    return elements;
-	}
     }
 
     private TypeInfo getTypeInfo( TaskType t )
@@ -210,7 +205,7 @@ final class MasterQueue extends Queue {
 	    TaskInstance task = queue.get( ix );
 	    TaskType type = task.type;
 	    TypeInfo info = getTypeInfo( type );
-	    WorkerInfo worker = workers.selectBestWorker( type, info.getSize() );
+	    WorkerInfo worker = workers.selectBestWorker( type );
 	    if( worker != null ) {
 		queue.remove( ix );
 		info.registerRemove();

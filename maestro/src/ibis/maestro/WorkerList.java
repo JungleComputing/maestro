@@ -16,21 +16,14 @@ import java.util.List;
  * @author Kees van Reeuwijk
  */
 final class WorkerList {
-    /**
-     * The queue length for a particular type that triggers an attempt
-     * to add a worker.
-     */
-    private static final int ADD_WORKER_THRESHOLD = 4;
-
-    /**
-     * The number of tasks we reserve for a new worker to learn.
-     */
-    private static final int LEARNING_TASK_COUNT = 2;
-
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
+
     /** How many tasks have we reserved to learn about a new worker? */
     private HashMap<TaskType,Integer> reservedTasks = new HashMap<TaskType, Integer>();
 
+    /** How many new workers are we going to try? */
+    private double researchBudget = 2.0;
+    
     private static WorkerInfo searchWorker( List<WorkerInfo> workers, WorkerIdentifier workerIdentifier )
     {
         for( int i=0; i<workers.size(); i++ ) {
@@ -150,10 +143,11 @@ final class WorkerList {
      * @return The info of the best worker for this task, or <code>null</code>
      *         if there currently aren't any workers for this task type.
      */
-    WorkerInfo selectBestWorker( TaskType taskType, int queueLength )
+    WorkerInfo selectBestWorker( TaskType taskType )
     {
         WorkerInfo best = null;
         long bestInterval = Long.MAX_VALUE;
+        long competitors = 0;
 
         for( int i=0; i<workers.size(); i++ ) {
             WorkerInfo wi = workers.get( i );
@@ -164,15 +158,21 @@ final class WorkerList {
                 if( Settings.traceRemainingJobTime ) {
                     System.out.println( "Worker " + wi + ": task type " + taskType + ": estimated completion time " + Service.formatNanoseconds( val ) );
                 }
+                if( val<Long.MAX_VALUE ) {
+                    competitors++;
+                }
                 if( val<bestInterval ) {
                     bestInterval = val;
                     best = wi;
                 }
             }
         }
-        Integer nobj = reservedTasks.get( taskType );
-        int n = (nobj == null)?0:nobj;
-        if( best == null && queueLength>n ) {
+        researchBudget = Math.min( 4.0, researchBudget+1.0/(1<<2*competitors) );
+        if( Settings.traceMasterProgress ) {
+            System.out.println( "Master: research budget is now " + researchBudget );
+        }
+
+        if( best == null || researchBudget>1.0 ) {
             // We can't find a worker for this task. See if there is
             // a disabled worker we can enable.
             long bestPingTime = Long.MAX_VALUE;
@@ -188,15 +188,14 @@ final class WorkerList {
                 }
             }
             if( candidate != null && candidate.activate( taskType ) ) {
-                n += LEARNING_TASK_COUNT;  // Reserve this many tasks for learning about a new worker.
-                reservedTasks.put( taskType, n );
+                researchBudget = Math.max( 0.0, researchBudget-1.0 );
                 if( Settings.traceMasterQueue ) {
-                    Globals.log.reportProgress( "activated worker " + candidate + "; reservedTasks[" + taskType + "]=" + n );
+                    Globals.log.reportProgress( "activated worker " + candidate + "; researchBudget=" + researchBudget );
                 }
                 best = candidate;
             }
         }
-        if( best == null && queueLength>ADD_WORKER_THRESHOLD ) {
+        if( best == null ) {
             if( Settings.traceMasterQueue ){
                 int busy = 0;
                 int notSupported = 0;
@@ -212,9 +211,6 @@ final class WorkerList {
             }
         }
         else {
-            if( n>0 ) {
-                reservedTasks.put( taskType, n-1 );
-            }
             if( Settings.traceMasterQueue ){
         	Globals.log.reportProgress( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) + "; reservedTasks=" + reservedTasks );
             }
