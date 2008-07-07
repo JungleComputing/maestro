@@ -155,16 +155,17 @@ final class WorkerQueue {
 
         for( int i=0; i<res.length; i++ ) {
             TypeInfo q = queueTypes.get( i );
+
             if( q != null ){
-                long dwellTime;
                 WorkerTaskStats stats = taskStats.get( q.type );
+
                 if( stats == null ) {
-                    dwellTime = 0L;
+                    res[i] = null;
                 }
                 else {
-                    dwellTime = stats.getEstimatedDwellTime();
+                    long dwellTime = stats.getEstimatedDwellTime();
+                    res[i] = q.getWorkerQueueInfo( dwellTime );
                 }
-                res[i] = q.getWorkerQueueInfo( dwellTime );
             }
         }
         return res;
