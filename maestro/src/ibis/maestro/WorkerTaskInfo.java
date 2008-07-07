@@ -50,7 +50,11 @@ final class WorkerTaskInfo {
         if( transmissionTime == Long.MAX_VALUE ) {
             return Long.MAX_VALUE;
         }
-        return transmissionTime + workerDwellTime + remainingJobTime;
+        long total = transmissionTime + workerDwellTime + remainingJobTime;
+        if( Settings.traceRemainingJobTime ) {
+            Globals.log.reportProgress( "getAverageCompletionTime(): type=" + label + "; transmissionTime=" + Service.formatNanoseconds( transmissionTime ) + " workerDwellTime=" + Service.formatNanoseconds( workerDwellTime ) + "; remainingJobTime=" + Service.formatNanoseconds( remainingJobTime ) + "; total=;" + Service.formatNanoseconds( total );
+        }
+        return total;
     }
 
     /**
