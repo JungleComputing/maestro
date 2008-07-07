@@ -7,7 +7,6 @@ import ibis.maestro.Worker.MasterIdentifier;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -17,9 +16,6 @@ import java.util.List;
  */
 final class WorkerList {
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
-
-    /** How many tasks have we reserved to learn about a new worker? */
-    private HashMap<TaskType,Integer> reservedTasks = new HashMap<TaskType, Integer>();
 
     /** How many new workers are we going to try? */
     private double researchBudget = 2.0;
@@ -212,7 +208,7 @@ final class WorkerList {
         }
         else {
             if( Settings.traceMasterQueue ){
-        	Globals.log.reportProgress( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) + "; reservedTasks=" + reservedTasks );
+        	Globals.log.reportProgress( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) + "; researchBudget=" + researchBudget );
             }
         }
         return best;

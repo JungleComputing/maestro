@@ -587,7 +587,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    stats.countTask( queueInterval, now-task.message.getRunTime() );
 	    runningTasks--;
 	    if( Settings.traceRemainingJobTime ) {
-		Globals.log.reportProgress( "Completed " + task.message + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
+		Globals.log.reportProgress( "Completed " + task.message.task + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
 	    }
 	    queue.notifyAll();
 	}

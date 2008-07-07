@@ -34,6 +34,6 @@ class WorkerQueueInfo implements Serializable
     @Override
     public String toString()
     {
-        return "queueLength(" + type + ")=" + queueLength;
+        return "WorkerQueueInfo: type " + type + ": queueLength=" + queueLength + "; dwellTime=" + workerDwellTime;
     }
 }

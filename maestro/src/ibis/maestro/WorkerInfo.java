@@ -92,6 +92,9 @@ final class WorkerInfo {
 	if( workerTaskInfo == null ) {
 	    return;
 	}
+        if( Settings.traceRemainingJobTime ) {
+            Globals.log.reportProgress( "Master: worker " + identifier + ":" + completionInfo );
+        }
 	if( completionInfo.completionInterval != Long.MAX_VALUE ) {
 	    workerTaskInfo.setCompletionTime( completionInfo.completionInterval );
 	}
@@ -107,6 +110,9 @@ final class WorkerInfo {
 	if( workerTaskInfo == null ) {
 	    return;
 	}
+        if( Settings.traceRemainingJobTime ) {
+            Globals.log.reportProgress( "Master: worker " + identifier + ":" + info );
+        }
 	workerTaskInfo.setDwellTime( info.workerDwellTime );
 	workerTaskInfo.controlAllowance( info.queueLength );
     }
@@ -136,6 +142,9 @@ final class WorkerInfo {
             pingTime = System.nanoTime()-pingSentTime;
             pingSentTime = 0L;  // We're no longer measuring a ping time.
             setPingTime( workerTaskInfoTable, pingTime );
+            if( Settings.traceRemainingJobTime ) {
+                Globals.log.reportProgress( "Master: ping time to worker " + identifier + " is " + Service.formatNanoseconds( pingTime ) );
+            }
         }
         enabled = true;
 	for( WorkerQueueInfo i: workerQueueInfo ) {
