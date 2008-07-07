@@ -386,13 +386,12 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 
 	msg.setQueueTime( now );
 	synchronized( queue ) {
-	    if( activeTime == 0 ) {
+	    if( activeTime == 0L ) {
 		activeTime = now;
 	    }
-	    if( queueEmptyMoment>0 ){
+	    if( queueEmptyMoment>0L ){
 		// The queue was empty before we entered this
-		// task in it. Register this with this task,
-		// so that we can give feedback to the master.
+		// task in it. Record this for the statistics.
 		long queueEmptyInterval = now - queueEmptyMoment;
 		idleDuration += queueEmptyInterval;
 		queueEmptyMoment = 0L;

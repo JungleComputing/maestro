@@ -13,8 +13,7 @@ import java.util.ArrayList;
  * @author Kees van Reeuwijk
  *
  */
-final class MasterQueue {
-    private final ArrayList<TaskInstance> queue = new ArrayList<TaskInstance>();
+final class MasterQueue extends Queue {
     private final ArrayList<TypeInfo> queueTypes = new ArrayList<TypeInfo>();
 
     /**
@@ -118,7 +117,7 @@ final class MasterQueue {
 	    return elements;
 	}
     }
-    
+
     private TypeInfo getTypeInfo( TaskType t )
     {
 	int ix = t.index;
@@ -174,23 +173,14 @@ final class MasterQueue {
      * to the queue.
      * @param j The task to submit.
      */
+    @SuppressWarnings("synthetic-access")
     void submit( TaskInstance j )
     {
-	int ix = queue.size();
 	TaskType type = j.type;
 	TypeInfo info = getTypeInfo( type );
 	info.registerAdd();
         int pos = findInsertionPoint( queue, j );
 	queue.add( pos, j );
-    }
-
-    /**
-     * Returns true iff the entire queue is empty.
-     * @return
-     */
-    boolean isEmpty()
-    {
-	return queue.isEmpty();
     }
 
     /**
@@ -206,6 +196,7 @@ final class MasterQueue {
      * @param workers The list of workers to choose from.
      * @return True iff there currently is no work.
      */
+    @SuppressWarnings("synthetic-access")
     boolean selectSubmisson( Subjob sub, WorkerList workers )
     {
 	int ix = 0;
@@ -238,6 +229,7 @@ final class MasterQueue {
 	return false;
     }
 
+    @SuppressWarnings("synthetic-access")
     void printStatistics( PrintStream s )
     {
 	for( TypeInfo t: queueTypes ) {
@@ -247,6 +239,7 @@ final class MasterQueue {
 	}
     }
 
+    @SuppressWarnings("synthetic-access")
     CompletionInfo[] getCompletionInfo( JobList jobs, WorkerList workers )
     {
 	CompletionInfo res[] = new CompletionInfo[queueTypes.size()];

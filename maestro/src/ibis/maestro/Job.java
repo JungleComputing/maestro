@@ -68,11 +68,11 @@ public final class Job
         }
     }
 
-    private TaskType[] buildTaskTypes( Task[] tasks )
+    private TaskType[] buildTaskTypes( Task[] taskList )
     {
-	TaskType res[] = new TaskType[tasks.length];
-	for( int i=0; i<tasks.length; i++ ) {
-	    res[i] = new TaskType( id, i, (tasks.length-1)-i, index++ );
+	TaskType res[] = new TaskType[taskList.length];
+	for( int i=0; i<taskList.length; i++ ) {
+	    res[i] = new TaskType( id, i, (taskList.length-1)-i, index++ );
 	}
 	return res;
     }

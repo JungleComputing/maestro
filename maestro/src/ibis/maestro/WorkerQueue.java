@@ -15,24 +15,157 @@ import java.util.HashMap;
  *
  */
 final class WorkerQueue {
-    private final ArrayList<WorkerQueueType> queueTypes = new ArrayList<WorkerQueueType>();
-    int size = 0;
+    protected final ArrayList<RunTaskMessage> queue = new ArrayList<RunTaskMessage>();
+    private final ArrayList<TypeInfo> queueTypes = new ArrayList<TypeInfo>();
 
-    protected WorkerQueueInfo[] getWorkerQueueInfo(HashMap<TaskType, WorkerTaskStats> taskStats)
+    /**
+     * Returns true iff the entire queue is empty.
+     * @return
+     */
+    protected boolean isEmpty()
+    {
+        return queue.isEmpty();
+    }
+
+    /**
+     * Statistics per type for the different task types in the queue.
+     * 
+     * @author Kees van Reeuwijk
+     */
+    private static final class TypeInfo {
+        /** The type these statistics are about. */
+        final TaskType type;
+
+        /** The total number of tasks of this type that entered the queue. */
+        private long taskCount = 0;
+
+        /** Current number of elements of this type in the queue. */
+        private int elements = 0;
+
+        /** Maximal ever number of elements in the queue. */
+        private int maxElements = 0;
+
+        private long frontChangedTime = 0;
+
+        /** The estimated time interval between tasks being dequeued. */
+        final TimeEstimate dequeueInterval = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
+
+        TypeInfo( TaskType type  )
+        {
+            this.type = type;
+        }
+
+        void printStatistics( PrintStream s )
+        {
+            s.println( "worker queue for " + type + ": " + taskCount + " tasks; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxElements );
+        }
+
+        void registerAdd()
+        {
+            elements++;
+            if( elements>maxElements ) {
+                maxElements = elements;
+            }
+            if( frontChangedTime == 0 ) {
+                // This entry is the front of the queue,
+                // record the time it became this.
+                frontChangedTime = System.nanoTime();
+            }
+            taskCount++;
+        }
+
+        void registerRemove()
+        {
+            long now = System.nanoTime();
+            if( frontChangedTime != 0 ) {
+                // We know when this entry became the front of the queue.
+                long i = now - frontChangedTime;
+                dequeueInterval.addSample( i );
+            }
+            elements--;
+            if( elements == 0 ) {
+                // Don't take the next dequeuing into account,
+                // since the queue is now empty.
+                frontChangedTime = 0l;
+            }
+            else {
+                frontChangedTime = now;
+            }
+        }
+
+        WorkerQueueInfo getWorkerQueueInfo( long dwellTime )
+        {
+            return new WorkerQueueInfo( type, elements, dwellTime );
+        }
+    }
+
+    private TypeInfo getTypeInfo( TaskType t )
+    {
+        int ix = t.index;
+        while( queueTypes.size()<ix+1 ) {
+            queueTypes.add( null );
+        }
+        TypeInfo res = queueTypes.get( ix );
+        if( res == null ) {
+            res = new TypeInfo( t );
+            queueTypes.set( ix, res );
+        }
+        return res;
+    }
+
+    private static int findInsertionPoint( ArrayList<RunTaskMessage> queue, RunTaskMessage msg )
+    {
+        // Good old binary search.
+        int start = 0;
+        int end = queue.size();
+        if( end == 0 ){
+            // The queue is empty. This is the only case where start
+            // points to a non-existent element, so we have to treat
+            // it separately.
+            return 0;
+        }
+        long id = msg.task.jobInstance.id;
+        while( true ){
+            int mid = (start+end)/2;
+            if( mid == start ){
+                break;
+            }
+            long midId = queue.get( mid ).task.jobInstance.id;
+            if( midId<id ){
+                // Mid should come before us.
+                start = mid;
+            }
+            else {
+                // Mid should come after us.
+                end = mid;
+            }
+        }
+        // This comparison is probably rarely necessary, but corner cases
+        // are a pain, so I'm safe rather than sorry.
+        long startId = queue.get( start ).task.jobInstance.id;
+        if( startId<id ){
+            return end;
+        }
+        return start;
+    }
+
+    protected WorkerQueueInfo[] getWorkerQueueInfo( HashMap<TaskType, WorkerTaskStats> taskStats )
     {
         WorkerQueueInfo res[] = new WorkerQueueInfo[queueTypes.size()];
 
         for( int i=0; i<res.length; i++ ) {
-            WorkerQueueType workerQueueType = queueTypes.get( i );
-            long dwellTime;
-            WorkerTaskStats stats = taskStats.get( workerQueueType.type );
-            if( stats == null ) {
-                dwellTime = 0L;
+            TypeInfo q = queueTypes.get( i );
+            if( q != null ){
+                long dwellTime;
+                WorkerTaskStats stats = taskStats.get( q.type );
+                if( stats == null ) {
+                    dwellTime = 0L;
+                }
+                else {
+                    dwellTime = stats.getEstimatedDwellTime();
+                }
+                res[i] = q.getWorkerQueueInfo( dwellTime );
             }
-            else {
-                dwellTime = stats.getEstimatedDwellTime();
-            }
-            res[i] = workerQueueType.getWorkerQueueInfo( dwellTime );
         }
         return res;
     }
@@ -44,57 +177,19 @@ final class WorkerQueue {
      */
     void add( RunTaskMessage msg )
     {
-        TaskType t = msg.task.type;
-
-        size++;
-        // TODO: since we have an ordered list, use binary search.
-        int ix = queueTypes.size();
-        while( ix>0 ) {
-            ix--;
-            WorkerQueueType x = queueTypes.get( ix );
-            if( x.type.equals( t ) ) {
-                x.add( msg );
-                return;
-            }
-        }
-        if( Settings.traceWorkerProgress ){
-            System.out.println( "Worker: registering queue for new type " + t );
-        }
-        // This is a new type. Insert it in the right place
-        // to keep the queues ordered from highest to lowest
-        // priority.
-        ix = 0;
-        while( ix<queueTypes.size() ){
-            WorkerQueueType q = queueTypes.get( ix );
-            int cmp = t.taskNo-q.type.taskNo;
-            if( cmp>0 ){
-                break;
-            }
-            ix++;
-        }
-        WorkerQueueType qt = new WorkerQueueType( t );
-        qt.add( msg );
-        queueTypes.add( ix, qt );
-    }
-
-    /**
-     * Returns true iff the entire queue is empty.
-     * @return
-     */
-    boolean isEmpty()
-    {
-        for( WorkerQueueType t: queueTypes ) {
-            if( !t.isEmpty() ) {
-                return false;
-            }
-        }
-        return true;
+        TaskType type = msg.task.type;
+        TypeInfo info = getTypeInfo( type );
+        info.registerAdd();
+        int pos = findInsertionPoint( queue, msg );
+        queue.add( pos, msg );
     }
 
     void printStatistics( PrintStream s )
     {
-        for( WorkerQueueType t: queueTypes ) {
-            t.printStatistics( s );
+        for( TypeInfo t: queueTypes ) {
+            if( t != null ) {
+                t.printStatistics( s );
+            }
         }
     }
 
@@ -113,20 +208,12 @@ final class WorkerQueue {
      */
     RunTaskMessage remove()
     {
-        // Search from highest to lowest priority for a task to execute.
-        for( WorkerQueueType queue: queueTypes ) {
-            if( Settings.traceWorkerProgress ){
-                System.out.println( "Worker: trying to select task from " + queue.type + " queue" );
-            }
-            if( !queue.isEmpty() ) {
-                RunTaskMessage e = queue.removeFirst();
-                size--;
-                if( Settings.traceWorkerProgress ){
-                    System.out.println( "Worker: found a task of type " + queue.type );
-                }
-                return e;
-            }
+        if( queue.isEmpty() ) {
+            return null;
         }
-        return null;
+        RunTaskMessage res = queue.remove( 0 );
+        TypeInfo info = getTypeInfo( res.task.type );
+        info.registerRemove();
+        return res;
     }
 }
