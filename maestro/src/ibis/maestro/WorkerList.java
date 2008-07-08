@@ -18,7 +18,7 @@ final class WorkerList {
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
 
     /** How many new workers are we going to try? */
-    private double researchBudget = 2.0;
+    private double researchBudget = 1.0;
     
     private static WorkerInfo searchWorker( List<WorkerInfo> workers, WorkerIdentifier workerIdentifier )
     {
@@ -143,13 +143,17 @@ final class WorkerList {
     {
         WorkerInfo best = null;
         long bestInterval = Long.MAX_VALUE;
-        long competitors = 0;
+        int competitors = 0;
+        int idleWorkers = 0;
 
         for( int i=0; i<workers.size(); i++ ) {
             WorkerInfo wi = workers.get( i );
 
             if( !wi.isDead() ) {
-                if( !wi.isIdleWorker( taskType) ) {
+                if( wi.isIdleWorker( taskType) ) {
+                    idleWorkers++;
+                }
+                else {
                     competitors++;
                     long val = wi.estimateJobCompletion( taskType );
 
@@ -165,12 +169,12 @@ final class WorkerList {
                 }
             }
         }
-        researchBudget = Math.min( 4.0, researchBudget+1.0/(1<<2*competitors) );
+        researchBudget = Math.min( 4.0, researchBudget+0.3/(1<<3*competitors) );
         if( Settings.traceRemainingJobTime || Settings.traceMasterProgress ) {
             System.out.println( "Master: competitors=" + competitors + "; researchBudget=" + researchBudget );
         }
 
-        if( best == null || researchBudget>1.0 ) {
+        if( best == null || (idleWorkers>0 && researchBudget>1.0) ) {
             // We can't find a worker for this task. See if there is
             // a disabled worker we can enable.
             long bestPingTime = Long.MAX_VALUE;

@@ -150,7 +150,7 @@ final class WorkerTaskInfo {
 		// There are a lot of items in the queue; take a larger step.
 		maximalAllowance -= 2;
 	    }
-	    else if( queueLength>2 ) {
+	    else if( queueLength>1 ) {
 		maximalAllowance--;
 	    }
 	    if( maximalAllowance<0 ) {
