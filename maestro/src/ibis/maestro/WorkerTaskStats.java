@@ -4,34 +4,35 @@ import java.io.PrintStream;
 
 class WorkerTaskStats {
     private int taskCount = 0;
-    private long workDuration = 0;        
-    private long queueDuration = 0;     // Cumulative queue time of all tasks.
-    final TimeEstimate workTime = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
+    private long totalWorkTime = 0;        
+    private long totalQueueTime = 0;     // Cumulative queue time of all tasks.
+    final TimeEstimate averageWorkTime = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
     final TimeEstimate queueTimePerTask = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
 
     /**
      * Registers the completion of a task of this particular type, with the
      * given queue interval and the given work interval.
-     * @param queueInterval The time this task spent in the queue.
-     * @param workInterval The time it took to execute this task.
+     * @param queueTime The time this task spent in the queue.
+     * @param workTime The time it took to execute this task.
      */
-    void countTask( long queueInterval, long workInterval )
+    void countTask( long queueTime, long workTime )
     {
         taskCount++;
-        queueDuration += queueInterval;
-        workDuration += workInterval;
+        totalQueueTime += queueTime;
+        totalWorkTime += workTime;
+        averageWorkTime.addSample( workTime );
     }
 
-    void reportStats( PrintStream out, TaskType t, double workInterval )
+    void reportStats( PrintStream out, TaskType t, double workTime )
     {
-        double workPercentage = 100.0*(workDuration/workInterval);
+        double workPercentage = 100.0*(totalWorkTime/workTime);
         if( taskCount>0 ) {
             out.println( "Worker: " + t + ":" );
             out.printf( "    # tasks          = %5d\n", taskCount );
-            out.println( "    total work time = " + Service.formatNanoseconds( workDuration ) + String.format( " (%.1f%%)", workPercentage )  );
-            out.println( "    queue time/task  = " + Service.formatNanoseconds( queueDuration/taskCount ) );
-            out.println( "    work time/task   = " + Service.formatNanoseconds( workDuration/taskCount ) );
-            out.println( "    aver. dwell time = " + Service.formatNanoseconds( (workDuration+queueDuration)/taskCount ) );
+            out.println( "    total work time = " + Service.formatNanoseconds( totalWorkTime ) + String.format( " (%.1f%%)", workPercentage )  );
+            out.println( "    queue time/task  = " + Service.formatNanoseconds( totalQueueTime/taskCount ) );
+            out.println( "    work time/task   = " + Service.formatNanoseconds( totalWorkTime/taskCount ) );
+            out.println( "    aver. dwell time = " + Service.formatNanoseconds( (totalWorkTime+totalQueueTime)/taskCount ) );
         }
         else {
             out.println( "Worker: " + t + " is unused" );
@@ -44,7 +45,8 @@ class WorkerTaskStats {
      */
     long getEstimatedDwellTime( int queueLength )
     {
-        return workTime.getAverage() + queueTimePerTask.getAverage()*queueLength;
+        long res = averageWorkTime.getAverage() + queueTimePerTask.getAverage()*queueLength;
+        return res;
     }
 
     /**
