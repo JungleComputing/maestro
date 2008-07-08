@@ -82,7 +82,7 @@ final class WorkerTaskInfo {
         this.maximalEverAllowance = maximalAllowance;
 
         // A totally unfounded guess, but we should learn soon enough what the real value is..
-	long initialEstimate = local?0:10*Service.MILLISECOND_IN_NANOSECONDS;
+	long initialEstimate = local?0L:10*Service.MILLISECOND_IN_NANOSECONDS;
 	this.transmissionTimeEstimate = new TimeEstimate( initialEstimate );
 	this.workerDwellTime = Service.MILLISECOND_IN_NANOSECONDS;
 	this.remainingJobTime = 2*remainingTasks*initialEstimate;

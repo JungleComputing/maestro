@@ -6,7 +6,8 @@ class WorkerTaskStats {
     private int taskCount = 0;
     private long workDuration = 0;        
     private long queueDuration = 0;     // Cumulative queue time of all tasks.
-    TimeEstimate dwellTime = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
+    final TimeEstimate workTime = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
+    final TimeEstimate queueTimePerTask = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
 
     /**
      * Registers the completion of a task of this particular type, with the
@@ -19,7 +20,6 @@ class WorkerTaskStats {
         taskCount++;
         queueDuration += queueInterval;
         workDuration += workInterval;
-        dwellTime.addSample(  queueInterval + workInterval );
     }
 
     void reportStats( PrintStream out, TaskType t, double workInterval )
@@ -39,10 +39,20 @@ class WorkerTaskStats {
     }
 
     /**
+     * @param queueLength The current length of the work queue for this type.
      * @return The estimated current dwell time on this worker for this task.
      */
-    long getEstimatedDwellTime()
+    long getEstimatedDwellTime( int queueLength )
     {
-        return dwellTime.getAverage();
+        return workTime.getAverage() + queueTimePerTask.getAverage()*queueLength;
+    }
+
+    /**
+     * Update the estimate for the queue time per task.
+     * @param v The new value for the queue time per task.
+     */
+    public void setQueueTimePerTask( long v )
+    {
+        queueTimePerTask.addSample( v );
     }
 }

@@ -15,8 +15,9 @@ final class RunTaskMessage extends MasterMessage {
     final WorkerIdentifier workerIdentifier;
     final TaskInstance task;
     final long taskId;
-    private transient long queueTime = 0;
-    private transient long runTime = 0;
+    private transient long queueMoment = 0L;
+    private transient int queueLength = 0;
+    private transient long runMoment = 0L;
 
     /**
      * Given a task and its source, constructs a new RunTaskMessage.
@@ -34,34 +35,48 @@ final class RunTaskMessage extends MasterMessage {
 
     /** Set the start time of this task to the given time in ns.
      * @param t The start time.
+     * @param queueLength The length of the work queue at this moment.
      */
-    void setQueueTime(long t) {
-        this.queueTime = t;
+    void setQueueMoment( long t, int queueLength )
+    {
+        this.queueMoment = t;
+        this.queueLength = queueLength;
     }
 
     /**
      * Registers the given time as the moment this task started running.
      * @param t The start time.
      */
-    void setRunTime(long t )
+    void setRunMoment( long t )
     {
-        this.runTime = t;
+        this.runMoment = t;
     }
 
-    /** Returns the registered enqueueing time.
+    /** Returns the registered enqueuing moment.
      * 
-     * @return The registered enqueueing time.
+     * @return The registered enqueuing moment.
      */
-    long getQueueTime() {
-        return queueTime;
+    long getQueueMoment()
+    {
+        return queueMoment;
+    }
+
+    /** Returns the registered queue length at the moment of enqueuing.
+     * 
+     * @return The registered queue length.
+     */
+    int getQueueLength()
+    {
+        return queueLength;
     }
 
     /** Returns the registered start time.
      * 
      * @return The registered start time.
      */
-    long getRunTime() {
-        return runTime;
+    long getRunMoment()
+    {
+        return runMoment;
     }
 
     /**

@@ -60,7 +60,7 @@ final class WorkerQueue {
             s.println( "worker queue for " + type + ": " + taskCount + " tasks; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxElements );
         }
 
-        void registerAdd()
+        int registerAdd()
         {
             elements++;
             if( elements>maxElements ) {
@@ -72,6 +72,7 @@ final class WorkerQueue {
                 frontChangedTime = System.nanoTime();
             }
             taskCount++;
+            return elements;
         }
 
         void registerRemove()
@@ -154,6 +155,7 @@ final class WorkerQueue {
 	}
     }
 
+    @SuppressWarnings("synthetic-access")
     protected WorkerQueueInfo[] getWorkerQueueInfo( HashMap<TaskType, WorkerTaskStats> taskStats )
     {
         WorkerQueueInfo res[] = new WorkerQueueInfo[queueTypes.size()];
@@ -168,7 +170,7 @@ final class WorkerQueue {
                     res[i] = null;
                 }
                 else {
-                    long dwellTime = stats.getEstimatedDwellTime();
+                    long dwellTime = stats.getEstimatedDwellTime( q.elements );
                     res[i] = q.getWorkerQueueInfo( dwellTime );
                 }
             }
@@ -180,17 +182,19 @@ final class WorkerQueue {
      * Submit a new task, belonging to the job with the given identifier,
      * to the queue.
      * @param msg The task to submit.
+     * @return The new queue length.
      */
-    void add( RunTaskMessage msg )
+    int add( RunTaskMessage msg )
     {
         TaskType type = msg.task.type;
         TypeInfo info = getTypeInfo( type );
-        info.registerAdd();
+        int length = info.registerAdd();
         int pos = findInsertionPoint( queue, msg );
         queue.add( pos, msg );
         if( Settings.traceQueuing ) {
-            Globals.log.reportProgress( "Adding " + msg.task.formatJobAndType() + " at position " + pos + " of worker queue; length is now " + queue.size() );
+            Globals.log.reportProgress( "Adding " + msg.task.formatJobAndType() + " at position " + pos + " of worker queue; length is now " + queue.size() + "; " + length + " of type " + type );
         }
+        return length;
     }
 
     void printStatistics( PrintStream s )

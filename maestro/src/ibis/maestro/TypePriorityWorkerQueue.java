@@ -30,7 +30,7 @@ final class TypePriorityWorkerQueue {
                 dwellTime = 0L;
             }
             else {
-                dwellTime = stats.getEstimatedDwellTime();
+                dwellTime = stats.getEstimatedDwellTime( workerQueueType.size() );
             }
             res[i] = workerQueueType.getWorkerQueueInfo( dwellTime );
         }

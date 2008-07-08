@@ -384,7 +384,6 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	long now = System.nanoTime();
 	MasterInfo mi;
 
-	msg.setQueueTime( now );
 	synchronized( queue ) {
 	    if( activeTime == 0L ) {
 		activeTime = now;
@@ -396,7 +395,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 		idleDuration += queueEmptyInterval;
 		queueEmptyMoment = 0L;
 	    }
-	    queue.add( msg );
+	    int length = queue.add( msg );
+            msg.setQueueMoment( now, length );
 	    mi = masters.get( msg.source.value );
 	}
 	if( mi != null ) {
@@ -441,6 +441,11 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    Globals.log.reportInternalError( "FIXME: handle messages of type " + msg.getClass() );
 	}
     }
+    
+    private WorkerTaskStats getWorkerTaskStats( TaskType type )
+    {
+        return taskStats.get( type );
+    }
 
     /** Gets a task to execute.
      * @return The next task to execute.
@@ -473,13 +478,20 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 			}
 		    }
 		    else {
+                        long now = System.nanoTime();
 			runningTasks++;
 			RunTaskMessage message = queue.remove();
-			long now = System.nanoTime();
-			message.setRunTime( now );
+                        TaskType type = message.task.type;
+			message.setRunMoment( now );
+                        long queueTime = now-message.getQueueMoment();
+                        int queueLength = message.getQueueLength();
+                        if( queueLength>0 ) {
+                            WorkerTaskStats stats = getWorkerTaskStats( type );
+                            stats.setQueueTimePerTask( queueTime/queueLength );
+                        }
 			Task task = findTask( message.task.type );
 			if( Settings.traceWorkerProgress ) {
-			    System.out.println( "Worker: handed out task " + message + " of type " + message.task.type + "; it was queued for " + Service.formatNanoseconds( now-message.getQueueTime() ) + "; there are now " + runningTasks + " running tasks" );
+			    System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueTime ) + "; there are now " + runningTasks + " running tasks" );
 			}
 			return new RunTask( task, message );
 		    }
@@ -548,7 +560,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
     public void reportTaskCompletion( RunTask task, Object result )
     {
 	long now = System.nanoTime();
-	long queueInterval = task.message.getRunTime()-task.message.getQueueTime();
+	long queueInterval = task.message.getRunMoment()-task.message.getQueueMoment();
 	TaskType taskType = task.message.task.type;
 	Job t = findJob( taskType );
 	int nextTaskNo = taskType.taskNo+1;
@@ -556,7 +568,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 
 	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );
 	WorkerQueueInfo[] workerQueueInfo = queue.getWorkerQueueInfo( taskStats );
-	long workerDwellTime = System.nanoTime()-task.message.getQueueTime();
+	long workerDwellTime = System.nanoTime()-task.message.getQueueMoment();
 	WorkerMessage msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 
@@ -583,8 +595,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    if( !taskStats.containsKey( taskType ) ){
 		taskStats.put( taskType, new WorkerTaskStats() );
 	    }
-	    WorkerTaskStats stats = taskStats.get( taskType );
-	    stats.countTask( queueInterval, now-task.message.getRunTime() );
+	    WorkerTaskStats stats = getWorkerTaskStats( taskType );
+	    stats.countTask( queueInterval, now-task.message.getRunMoment() );
 	    runningTasks--;
 	    if( Settings.traceRemainingJobTime ) {
 		Globals.log.reportProgress( "Completed " + task.message.task + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
@@ -643,7 +655,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
 	Set<TaskType> tl = taskStats.keySet();
 	for( TaskType t: tl ){
-	    WorkerTaskStats stats = taskStats.get( t );
+	    WorkerTaskStats stats = getWorkerTaskStats( t );
 	    stats.reportStats( s, t, workInterval );
 	}
 	s.printf(  "Worker: # threads       = %5d\n", workThreads.length );
