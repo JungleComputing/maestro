@@ -87,9 +87,13 @@ class BenchmarkProgram {
 	    if( slowScale ) {
 		img.scaleUp(  2 );
 		img.scaleUp(  2 );
+		img.scaleUp(  2 );
+		img.scaleUp(  2 );
 	    }
 	    img = img.scaleUp( 2 );
 	    if( slowSharpen ) {
+		img = img.sharpen();
+		img = img.sharpen();
 		img = img.sharpen();
 		img = img.sharpen();
 	    }
@@ -181,6 +185,8 @@ class BenchmarkProgram {
 	    if( slow ) {
 		img.scaleUp( factor );
 		img.scaleUp( factor );
+		img.scaleUp( factor );
+		img.scaleUp( factor );
 	    }
 	    Object res = img.scaleUp( factor );
 	    return res;
@@ -227,6 +233,8 @@ class BenchmarkProgram {
 	    UncompressedImage img = (UncompressedImage) in;
 
 	    if( slow ) {
+		img = img.sharpen();
+		img = img.sharpen();
 		img = img.sharpen();
 		img = img.sharpen();
 	    }
