@@ -212,6 +212,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
     /**
      * A new ibis has joined the computation.
      * @param theIbis The ibis that has joined.
+     * @param local True iff this is the local master.
      */
     protected void addUnregisteredMaster( IbisIdentifier theIbis, boolean local )
     {
