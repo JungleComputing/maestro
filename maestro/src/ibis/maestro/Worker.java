@@ -444,6 +444,9 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
     
     private WorkerTaskStats getWorkerTaskStats( TaskType type )
     {
+        if( !taskStats.containsKey( type ) ){
+            taskStats.put( type, new WorkerTaskStats() );
+        }
         return taskStats.get( type );
     }
 
@@ -591,9 +594,6 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 		if( !Service.member( taskSources, mi ) ) {
 		    taskSources.add( mi );
 		}
-	    }
-	    if( !taskStats.containsKey( taskType ) ){
-		taskStats.put( taskType, new WorkerTaskStats() );
 	    }
 	    WorkerTaskStats stats = getWorkerTaskStats( taskType );
 	    stats.countTask( queueInterval, now-task.message.getRunMoment() );

@@ -48,7 +48,7 @@ class Settings {
     static final boolean traceSends = false;
 
     /** Trace all queuing and dequeuing. */
-    static final boolean traceQueuing = true;
+    static final boolean traceQueuing = false;
 
     /** We limit the master queue to this many tasks per known worker. */
     static final int TASKS_PER_WORKER = 10;
