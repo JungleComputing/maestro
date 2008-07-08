@@ -488,10 +488,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 			message.setRunMoment( now );
                         long queueTime = now-message.getQueueMoment();
                         int queueLength = message.getQueueLength();
-                        if( queueLength>0 ) {
-                            WorkerTaskStats stats = getWorkerTaskStats( type );
-                            stats.setQueueTimePerTask( queueTime/queueLength );
-                        }
+                        WorkerTaskStats stats = getWorkerTaskStats( type );
+                        stats.setQueueTimePerTask( queueTime/(queueLength+1) );
 			Task task = findTask( message.task.type );
 			if( Settings.traceWorkerProgress ) {
 			    System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueTime ) + "; there are now " + runningTasks + " running tasks" );
