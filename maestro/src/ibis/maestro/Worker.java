@@ -171,7 +171,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
     }
 
     /**
-     * Returns the identifier of the task subjob port of this worker.
+     * Returns the identifier of the receive port of this worker.
      * @return The port identifier.
      */
     ReceivePortIdentifier identifier()
@@ -213,7 +213,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
      * A new ibis has joined the computation.
      * @param theIbis The ibis that has joined.
      */
-    void addUnregisteredMasters( IbisIdentifier theIbis, boolean local )
+    protected void addUnregisteredMaster( IbisIdentifier theIbis, boolean local )
     {
 	synchronized( queue ){
 	    if( local ) {

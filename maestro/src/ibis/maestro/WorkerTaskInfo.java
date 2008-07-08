@@ -1,7 +1,7 @@
 package ibis.maestro;
 
 /**
- * Information about a particular task type on a particular worker.
+ * Information the master has about a particular task type on a particular worker.
  */
 final class WorkerTaskInfo {
     /** label of this worker/task combination in traces. */
@@ -141,7 +141,7 @@ final class WorkerTaskInfo {
     protected void controlAllowance( int queueLength )
     {
 	if( maximalAllowance>0 && maximalAllowance == outstandingTasks ) {
-	    // We can only regulate the allowance if we
+	    // We can only regulate the allowance if we are
 	    // at our current maximal allowance.
 	    if( queueLength<1 ) {
 		maximalAllowance++;
