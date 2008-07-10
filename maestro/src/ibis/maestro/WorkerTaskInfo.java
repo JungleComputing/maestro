@@ -51,14 +51,14 @@ final class WorkerTaskInfo {
          * Don't give an estimate if we have to predict the future too far, or of we just
          * don't have the information.
          */
-        if( tasks>2*maximalAllowance || remainingJobTime == Long.MAX_VALUE  ) {
+        if( maximalAllowance == 0 || tasks>2*maximalAllowance || remainingJobTime == Long.MAX_VALUE  ) {
             return Long.MAX_VALUE;
         }
         long transmissionTime = transmissionTimeEstimate.getAverage();
         if( transmissionTime == Long.MAX_VALUE ) {
             return Long.MAX_VALUE;
         }
-        long total = tasks*((transmissionTime + workerDwellTime)/maximalAllowance) + remainingJobTime;
+        long total = tasks*(transmissionTime+(workerDwellTime/maximalAllowance)) + remainingJobTime;
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "getAverageCompletionTime(): type=" + label + "; maximalAllowance=" + maximalAllowance + "; tasks=" + tasks + "; transmissionTime=" + Service.formatNanoseconds( transmissionTime ) + " workerDwellTime=" + Service.formatNanoseconds( workerDwellTime ) + "; remainingJobTime=" + Service.formatNanoseconds( remainingJobTime ) + "; total=" + Service.formatNanoseconds( total ) );
         }
