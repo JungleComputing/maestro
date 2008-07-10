@@ -45,22 +45,23 @@ final class WorkerTaskInfo {
      * @param tasks The number of tasks currently on the worker.
      * @return The completion time.
      */
-    long getAverageCompletionTime( int tasks )
+    long getAverageCompletionTime( int currentTasks, int futureTasks )
     {
         /**
          * Don't give an estimate if we have to predict the future too far, or of we just
          * don't have the information.
          */
-        if( maximalAllowance == 0 || tasks>2*maximalAllowance || remainingJobTime == Long.MAX_VALUE  ) {
+        if( maximalAllowance == 0 || futureTasks>maximalAllowance || remainingJobTime == Long.MAX_VALUE  ) {
             return Long.MAX_VALUE;
         }
         long transmissionTime = transmissionTimeEstimate.getAverage();
         if( transmissionTime == Long.MAX_VALUE ) {
             return Long.MAX_VALUE;
         }
-        long total = tasks*(transmissionTime+(workerDwellTime/maximalAllowance)) + remainingJobTime;
+        int allTasks = currentTasks+futureTasks;
+        long total = futureTasks*transmissionTime + (allTasks*(workerDwellTime/maximalAllowance)) + remainingJobTime;
         if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "getAverageCompletionTime(): type=" + label + "; maximalAllowance=" + maximalAllowance + "; tasks=" + tasks + "; transmissionTime=" + Service.formatNanoseconds( transmissionTime ) + " workerDwellTime=" + Service.formatNanoseconds( workerDwellTime ) + "; remainingJobTime=" + Service.formatNanoseconds( remainingJobTime ) + "; total=" + Service.formatNanoseconds( total ) );
+            Globals.log.reportProgress( "getAverageCompletionTime(): type=" + label + "; maximalAllowance=" + maximalAllowance + "; currentTasks=" + currentTasks + "; futureTasks=" + futureTasks + "; transmissionTime=" + Service.formatNanoseconds( transmissionTime ) + " workerDwellTime=" + Service.formatNanoseconds( workerDwellTime ) + "; remainingJobTime=" + Service.formatNanoseconds( remainingJobTime ) + "; total=" + Service.formatNanoseconds( total ) );
         }
         return total;
     }
@@ -72,7 +73,7 @@ final class WorkerTaskInfo {
      */
     long getAverageCompletionTime()
     {
-        return getAverageCompletionTime( maximalAllowance/2 );
+        return getAverageCompletionTime( 0, 1 );
     }
 
     /**
@@ -83,7 +84,7 @@ final class WorkerTaskInfo {
      */
     long estimateJobCompletion()
     {
-        return getAverageCompletionTime( outstandingTasks+reservations );
+        return getAverageCompletionTime( outstandingTasks, reservations+1 );
     }
 
     /**
