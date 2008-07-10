@@ -58,7 +58,7 @@ final class WorkerTaskInfo {
         if( transmissionTime == Long.MAX_VALUE ) {
             return Long.MAX_VALUE;
         }
-        int allTasks = currentTasks+futureTasks;
+        int allTasks = currentTasks+2*futureTasks;
         long total = futureTasks*transmissionTime + (allTasks*(workerDwellTime/maximalAllowance)) + remainingJobTime;
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "getAverageCompletionTime(): type=" + label + "; maximalAllowance=" + maximalAllowance + "; currentTasks=" + currentTasks + "; futureTasks=" + futureTasks + "; transmissionTime=" + Service.formatNanoseconds( transmissionTime ) + " workerDwellTime=" + Service.formatNanoseconds( workerDwellTime ) + "; remainingJobTime=" + Service.formatNanoseconds( remainingJobTime ) + "; total=" + Service.formatNanoseconds( total ) );
@@ -73,7 +73,7 @@ final class WorkerTaskInfo {
      */
     long getAverageCompletionTime()
     {
-        return getAverageCompletionTime( 0, 1 );
+        return getAverageCompletionTime( maximalAllowance, 1 );
     }
 
     /**
@@ -94,7 +94,7 @@ final class WorkerTaskInfo {
     WorkerTaskInfo( String label, int remainingTasks, boolean local )
     {
 	this.label = label;
-        this.maximalAllowance = local?2:0;
+        this.maximalAllowance = local?2:1;
         this.maximalEverAllowance = maximalAllowance;
 
         // A totally unfounded guess, but we should learn soon enough what the real value is..
@@ -224,7 +224,7 @@ final class WorkerTaskInfo {
     /**
      * Reserve a slot with this worker if necessary, and return true; or return false
      * if reservations are not necessary.
-     * @return
+     * @return True if we did a reservation.
      */
     protected boolean reserveIfNeeded() {
         if( (maximalAllowance>0) && (outstandingTasks>=maximalAllowance) ) {
