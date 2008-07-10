@@ -42,9 +42,10 @@ final class WorkerTaskInfo {
     /**
      * Returns the estimated time this worker will take to transmit this task to this worker,
      * complete it, and all remaining tasks in the job.
+     * @param tasks The number of tasks currently on the worker.
      * @return The completion time.
      */
-    long getAverageCompletionTime()
+    long getAverageCompletionTime( int tasks )
     {
         if( maximalAllowance == 0 || remainingJobTime == Long.MAX_VALUE ) {
             return Long.MAX_VALUE;
@@ -53,11 +54,21 @@ final class WorkerTaskInfo {
         if( transmissionTime == Long.MAX_VALUE ) {
             return Long.MAX_VALUE;
         }
-        long total = transmissionTime + workerDwellTime + remainingJobTime;
+        long total = tasks*((transmissionTime + workerDwellTime)/maximalAllowance) + remainingJobTime;
         if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "getAverageCompletionTime(): type=" + label + "; transmissionTime=" + Service.formatNanoseconds( transmissionTime ) + " workerDwellTime=" + Service.formatNanoseconds( workerDwellTime ) + "; remainingJobTime=" + Service.formatNanoseconds( remainingJobTime ) + "; total=;" + Service.formatNanoseconds( total ) );
+            Globals.log.reportProgress( "getAverageCompletionTime(): type=" + label + "; tasks=" + tasks + "; transmissionTime=" + Service.formatNanoseconds( transmissionTime ) + " workerDwellTime=" + Service.formatNanoseconds( workerDwellTime ) + "; remainingJobTime=" + Service.formatNanoseconds( remainingJobTime ) + "; total=;" + Service.formatNanoseconds( total ) );
         }
         return total;
+    }
+
+    /**
+     * Returns the estimated time this worker will take to transmit this task to this worker,
+     * complete it, and all remaining tasks in the job.
+     * @return The completion time.
+     */
+    long getAverageCompletionTime()
+    {
+        return getAverageCompletionTime( maximalAllowance/2 );
     }
 
     /**
@@ -68,10 +79,7 @@ final class WorkerTaskInfo {
      */
     long estimateJobCompletion()
     {
-        if( outstandingTasks >= maximalAllowance ){
-            return Long.MAX_VALUE;
-        }
-        return getAverageCompletionTime();
+        return getAverageCompletionTime( outstandingTasks+reservations );
     }
 
     /**
