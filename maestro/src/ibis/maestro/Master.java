@@ -328,9 +328,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             System.out.println( "Master: submitting all possible tasks" );
         }
 
-        workers.resetReservations();
-        while( true ) {
-            synchronized( queue ){
+        synchronized( queue ){
+            workers.resetReservations();
+            while( true ) {
                 if( queue.isEmpty() ) {
                     nowork = true;
                     break;
@@ -343,16 +343,14 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 task = sub.task;
                 taskId = nextTaskId++;
                 worker.registerTaskStart( task, taskId );
-            }
-            if( Settings.traceMasterQueue ) {
-                System.out.println( "Selected " + sub.worker + " as best for task " + sub.task );
-            }
+                if( Settings.traceMasterQueue ) {
+                    System.out.println( "Selected " + worker + " as best for task " + task );
+                }
 
-            RunTaskMessage msg = new RunTaskMessage( worker.identifierWithWorker, worker.identifier, task, taskId );
-            long sz = sendPort.tryToSend( worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-            if( sz<0 ){
-                // Try to put the paste back in the tube.
-                synchronized( queue ){
+                RunTaskMessage msg = new RunTaskMessage( worker.identifierWithWorker, worker.identifier, task, taskId );
+                long sz = sendPort.tryToSend( worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+                if( sz<0 ){
+                    // Try to put the paste back in the tube.
                     worker.retractTask( msg.taskId );
                     queue.add( msg.task );
                 }
