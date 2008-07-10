@@ -48,8 +48,8 @@ final class WorkerTaskInfo {
     long getAverageCompletionTime( int currentTasks, int futureTasks )
     {
         /**
-         * Don't give an estimate if we have to predict the future too far, or of we just
-         * don't have the information.
+         * Don't give an estimate if we have to predict the future too far,
+         * or of we just don't have the information.
          */
         if( maximalAllowance == 0 || futureTasks>maximalAllowance || remainingJobTime == Long.MAX_VALUE  ) {
             return Long.MAX_VALUE;
@@ -58,7 +58,11 @@ final class WorkerTaskInfo {
         if( transmissionTime == Long.MAX_VALUE ) {
             return Long.MAX_VALUE;
         }
-        int allTasks = currentTasks+2*futureTasks;
+        int allTasks = currentTasks+futureTasks;
+        if( allTasks>maximalAllowance ){
+            // FIXME: temporary disable all reservation stuff.
+            return Long.MAX_VALUE;
+        }
         long total = futureTasks*transmissionTime + (allTasks*(workerDwellTime/maximalAllowance)) + remainingJobTime;
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "getAverageCompletionTime(): type=" + label + "; maximalAllowance=" + maximalAllowance + "; currentTasks=" + currentTasks + "; futureTasks=" + futureTasks + "; transmissionTime=" + Service.formatNanoseconds( transmissionTime ) + " workerDwellTime=" + Service.formatNanoseconds( workerDwellTime ) + "; remainingJobTime=" + Service.formatNanoseconds( remainingJobTime ) + "; total=" + Service.formatNanoseconds( total ) );
@@ -94,7 +98,7 @@ final class WorkerTaskInfo {
     WorkerTaskInfo( String label, int remainingTasks, boolean local )
     {
 	this.label = label;
-        this.maximalAllowance = local?2:1;
+        this.maximalAllowance = local?3:0;
         this.maximalEverAllowance = maximalAllowance;
 
         // A totally unfounded guess, but we should learn soon enough what the real value is..
