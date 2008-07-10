@@ -50,6 +50,8 @@ class Settings {
     /** Trace all queuing and dequeuing. */
     static final boolean traceQueuing = false;
 
-    /** We limit the master queue to this many tasks per known worker. */
-    static final int TASKS_PER_WORKER = 10;
+    /** Multiplier of the estimated completion time to
+     * get a deadline for a task.
+     */
+    static final long DEADLINE_MARGIN = 2;
 }

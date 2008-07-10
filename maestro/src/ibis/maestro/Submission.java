@@ -9,4 +9,5 @@ package ibis.maestro;
 class Subtask {
     TaskInstance task = null;
     WorkerInfo worker = null;
+    long deadline = 0L;
 }

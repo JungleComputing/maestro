@@ -42,6 +42,7 @@ final class WorkerInfo {
     /** The duration of the ping round-trip for this worker. */
     private long pingTime = Long.MAX_VALUE;
 
+    private int missedDeadlines = 0;
     /**
      * Returns a string representation of this worker info. (Overrides method in superclass.)
      * @return The worker info.
@@ -170,10 +171,15 @@ final class WorkerInfo {
             return;
         }
         ActiveTask task = activeTasks.remove( ix );
-        long newTransmissionTime = (now-task.startTime)-result.workerDwellTime; // The time interval to send the task and report the result.
+        long roundtripTime = now-task.startTime;
+	long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
 
+        if( task.deadline<now ) {
+            Globals.log.reportError( "Task " + task + " missed deadline by " + Service.formatNanoseconds( now-task.deadline ) );
+            missedDeadlines++;
+        }
         registerWorkerInfo( result.workerQueueInfo, result.completionInfo );
-        task.workerTaskInfo.registerTaskCompleted( newTransmissionTime );
+        task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime );
         if( Settings.traceMasterProgress ){
             System.out.println( "Master: retired task " + task + "; transmission time: " + Service.formatNanoseconds( newTransmissionTime ) );
         }
@@ -195,7 +201,7 @@ final class WorkerInfo {
      * @return If true, this task was added to the reservations, not
      *         to the collection of outstanding tasks.
      */
-    boolean registerTaskStart( TaskInstance task, long id )
+    boolean registerTaskStart( TaskInstance task, long id, long deadline )
     {
         WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( task.type );
         if( workerTaskInfo == null ) {
@@ -203,7 +209,7 @@ final class WorkerInfo {
             return true;
         }
         workerTaskInfo.incrementOutstandingTasks();
-        ActiveTask j = new ActiveTask( task, id, System.nanoTime(), workerTaskInfo );
+        ActiveTask j = new ActiveTask( task, id, System.nanoTime(), workerTaskInfo, deadline );
 
         activeTasks.add( j );
         return false;
@@ -316,6 +322,9 @@ final class WorkerInfo {
         Enumeration<TaskType> keys = workerTaskInfoTable.keys();
         s.println( "Worker " + identifier + (local?" (local)":"") );
 
+        if( missedDeadlines>0 ) {
+            s.println( "  Missed deadlines: " + missedDeadlines );
+        }
         while( keys.hasMoreElements() ){
             TaskType taskType = keys.nextElement();
             WorkerTaskInfo info = workerTaskInfoTable.get( taskType );
@@ -408,5 +417,14 @@ final class WorkerInfo {
             return true;
         }
         return workerTaskInfo.reserveIfNeeded();
+    }
+
+    protected long getRoundtripEstimate(TaskType type) {
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( type );
+        if( workerTaskInfo == null ) {
+            System.err.println( "No worker task info for task type " + type );
+            return Long.MAX_VALUE;
+        }
+	return workerTaskInfo.estimateRoundtripTime();
     }
 }

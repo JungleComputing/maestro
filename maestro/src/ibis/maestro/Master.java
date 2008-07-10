@@ -320,8 +320,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         boolean nowork = false;
         Subtask sub = new Subtask();
         long taskId;
-        WorkerInfo worker;
-        TaskInstance task;
         int reserved = 0;
 
         if( Settings.traceMasterProgress ){
@@ -336,13 +334,14 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                     break;
                 }
                 reserved = queue.selectSubmisson( reserved, sub, workers );
-                if( sub.worker == null ){
+                WorkerInfo worker = sub.worker;
+                TaskInstance task = sub.task;
+                long deadline = sub.deadline;
+                if( worker == null ){
                     break;
                 }
-                worker = sub.worker;
-                task = sub.task;
                 taskId = nextTaskId++;
-                worker.registerTaskStart( task, taskId );
+                worker.registerTaskStart( task, taskId, deadline );
                 if( Settings.traceMasterQueue ) {
                     System.out.println( "Selected " + worker + " as best for task " + task );
                 }

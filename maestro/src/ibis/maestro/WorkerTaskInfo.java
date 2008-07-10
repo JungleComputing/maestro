@@ -9,6 +9,8 @@ final class WorkerTaskInfo {
 
     private final TimeEstimate transmissionTimeEstimate;
 
+    private final TimeEstimate roundtripTimeEstimate;
+
     /** How many instances of this task does this worker currently have? */
     private int outstandingTasks = 0;
 
@@ -36,7 +38,7 @@ final class WorkerTaskInfo {
     @Override
     public String toString()
     {
-	return "[" + label + ": roundTripEstimate=" + transmissionTimeEstimate + ",remainingJobTime=" + Service.formatNanoseconds(remainingJobTime) + ",outstandingTasks=" + outstandingTasks + ",maximalAllowance=" + maximalAllowance + "]";
+	return "[" + label + ": transmissionTimeEstimate=" + transmissionTimeEstimate + ",remainingJobTime=" + Service.formatNanoseconds(remainingJobTime) + ",outstandingTasks=" + outstandingTasks + ",maximalAllowance=" + maximalAllowance + "]";
     }
 
     /**
@@ -104,6 +106,7 @@ final class WorkerTaskInfo {
         // A totally unfounded guess, but we should learn soon enough what the real value is..
 	long initialEstimate = local?0L:10*Service.MILLISECOND_IN_NANOSECONDS;
 	this.transmissionTimeEstimate = new TimeEstimate( initialEstimate );
+	this.roundtripTimeEstimate = new TimeEstimate( Long.MAX_VALUE/4 );
 	this.workerDwellTime = Service.MILLISECOND_IN_NANOSECONDS;
 	this.remainingJobTime = 2*remainingTasks*initialEstimate;
 	if( Settings.traceWorkerList ) {
@@ -114,11 +117,13 @@ final class WorkerTaskInfo {
     /**
      * Registers the completion of a task.
      * @param transmissionTime The transmission time of this task.
+     * @param roundTripTime The total roundtrip time of this task.
      */
-    void registerTaskCompleted( long transmissionTime )
+    void registerTaskCompleted( long transmissionTime, long roundTripTime )
     {
 	executedTasks++;
         outstandingTasks--;
+        roundtripTimeEstimate.addSample(roundTripTime );
 	transmissionTimeEstimate.addSample( transmissionTime );
 	if( Settings.traceWorkerProgress || Settings.traceRemainingJobTime ) {
 	    System.out.println( label + ": new transmission time estimate: " + transmissionTimeEstimate );
@@ -143,7 +148,7 @@ final class WorkerTaskInfo {
 
     String buildStatisticsString()
     {
-	return " executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + ", dwell time " + Service.formatNanoseconds( workerDwellTime )+ ", remaining time " + Service.formatNanoseconds( remainingJobTime );
+	return "executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + ", dwell time " + Service.formatNanoseconds( workerDwellTime )+ ", remaining time " + Service.formatNanoseconds( remainingJobTime );
     }
 
     /**
@@ -236,5 +241,9 @@ final class WorkerTaskInfo {
             return true;
         }
         return false;
+    }
+
+    protected long estimateRoundtripTime() {
+	return roundtripTimeEstimate.getAverage();
     }
 }
