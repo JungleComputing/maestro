@@ -47,7 +47,11 @@ final class WorkerTaskInfo {
      */
     long getAverageCompletionTime( int tasks )
     {
-        if( maximalAllowance == 0 || remainingJobTime == Long.MAX_VALUE ) {
+        /**
+         * Don't give an estimate if we have to predict the future too far, or of we just
+         * don't have the information.
+         */
+        if( tasks>2*maximalAllowance || remainingJobTime == Long.MAX_VALUE  ) {
             return Long.MAX_VALUE;
         }
         long transmissionTime = transmissionTimeEstimate.getAverage();
