@@ -33,6 +33,9 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
     /** The list of masters we should ask for extra work if we are bored. */
     private final ArrayList<MasterInfo> taskSources = new ArrayList<MasterInfo>();
 
+    /** The estimated time it takes to send an administration message. */
+    private final TimeEstimate infoSendTime = new TimeEstimate( Service.MICROSECOND_IN_NANOSECONDS );
+
     private final Node node;
 
     private final JobList jobs;
@@ -333,7 +336,10 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    if( Settings.traceWorkerProgress ){
 		Globals.log.reportProgress( "Worker: registering with master " + newIbis );
 	    }
+            // We record the transmission time as a reasonable estimate of a sleep time.
+            long start = System.nanoTime();
 	    registerWithMaster( newIbis );
+            infoSendTime.addSample( System.nanoTime()-start );
 	    return;
 	}
 
@@ -344,7 +350,9 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    if( Settings.traceWorkerProgress ){
 		Globals.log.reportProgress( "Worker: asking master " + taskSource.localIdentifier + " for work" );
 	    }
+            long start = System.nanoTime();
 	    sendUpdate( taskSource );
+            infoSendTime.addSample( System.nanoTime()-start );
 	    return;
 	}
 
@@ -354,7 +362,9 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    if( Settings.traceWorkerProgress ){
 		Globals.log.reportProgress( "Worker: updating master " + taskSource.localIdentifier );
 	    }
+            long start = System.nanoTime();
 	    sendUpdate( taskSource );
+            infoSendTime.addSample( System.nanoTime()-start );
 	    return;
 	}
     }
@@ -475,7 +485,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 			    if( Settings.traceWorkerProgress ) {
 				System.out.println( "Worker: waiting for new tasks in queue" );
 			    }
-			    queue.wait();
+                            // Wait a little if there is nothing to do.
+			    queue.wait( infoSendTime.getAverage()*2 );
 			}
 			else {
 			    askForWork = true;
