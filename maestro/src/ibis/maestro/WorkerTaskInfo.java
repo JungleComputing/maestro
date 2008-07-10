@@ -212,7 +212,7 @@ final class WorkerTaskInfo {
 
     protected boolean isFullyBookedWorker()
     {
-	return (outstandingTasks>=maximalAllowance);
+	return (maximalAllowance>0) && (outstandingTasks>=maximalAllowance);
     }
     
     protected void resetReservations()
