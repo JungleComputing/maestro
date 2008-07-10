@@ -56,7 +56,7 @@ final class WorkerTaskInfo {
         }
         long total = tasks*((transmissionTime + workerDwellTime)/maximalAllowance) + remainingJobTime;
         if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "getAverageCompletionTime(): type=" + label + "; tasks=" + tasks + "; transmissionTime=" + Service.formatNanoseconds( transmissionTime ) + " workerDwellTime=" + Service.formatNanoseconds( workerDwellTime ) + "; remainingJobTime=" + Service.formatNanoseconds( remainingJobTime ) + "; total=;" + Service.formatNanoseconds( total ) );
+            Globals.log.reportProgress( "getAverageCompletionTime(): type=" + label + "; maximalAllowance=" + maximalAllowance + "; tasks=" + tasks + "; transmissionTime=" + Service.formatNanoseconds( transmissionTime ) + " workerDwellTime=" + Service.formatNanoseconds( workerDwellTime ) + "; remainingJobTime=" + Service.formatNanoseconds( remainingJobTime ) + "; total=" + Service.formatNanoseconds( total ) );
         }
         return total;
     }

@@ -204,6 +204,9 @@ final class WorkerInfo {
 	}
 	if( workerTaskInfo.isFullyBookedWorker() ) {
 	    workerTaskInfo.reserveTask();
+            if( Settings.traceMasterQueue ) {
+                System.out.println( "Worker " + this.identifier + " is fully booked" );
+            }
 	    return true;
 	}
 	workerTaskInfo.incrementOutstandingTasks();
