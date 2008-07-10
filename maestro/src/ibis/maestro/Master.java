@@ -314,21 +314,24 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * @param worker The worker to send the task to.
      * @param task The task to send.
      */
-    private void submitTaskToWorker( Subjob sub )
+    private void submitTaskToWorker( WorkerInfo worker, TaskInstance task )
     {
 	long taskId;
 
 	synchronized( queue ){
 	    taskId = nextTaskId++;
-	    sub.worker.registerTaskStart( sub.task, taskId );
+	    boolean reserved = worker.registerTaskStart( task, taskId );
+	    if( reserved ) {
+		return;
+	    }
 	}
-	RunTaskMessage msg = new RunTaskMessage( sub.worker.identifierWithWorker, sub.worker.identifier, sub.task, taskId );
-	long sz = sendPort.tryToSend( sub.worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+	RunTaskMessage msg = new RunTaskMessage( worker.identifierWithWorker, worker.identifier, task, taskId );
+	long sz = sendPort.tryToSend( worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ){
 	    // Try to put the paste back in the tube.
 	    synchronized( queue ){
-		sub.worker.retractTask( msg.taskId );
-		queue.submit( msg.task );
+		worker.retractTask( msg.taskId );
+		queue.add( msg.task );
 	    }
 	}
     }
@@ -340,24 +343,31 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     private boolean submitAllPossibleTasks()
     {
-	boolean nowork;
-	Subjob sub = new Subjob();
+	boolean nowork = false;
+	Subtask sub = new Subtask();
 
 	if( Settings.traceMasterProgress ){
 	    System.out.println( "Master: submitting all possible tasks" );
 	}
 
+	workers.resetReservations();
 	while( true ) {
 	    synchronized( queue ){
-		nowork = queue.selectSubmisson( sub, workers );
-		if( nowork || sub.worker == null ){
+		if( queue.isEmpty() ) {
+		    nowork = true;
+		    break;
+		}
+		queue.selectSubmisson( sub, workers );
+		if( sub.worker == null ){
 		    break;
 		}
 	    }
 	    if( Settings.traceMasterQueue ) {
 		System.out.println( "Selected " + sub.worker + " as best for task " + sub.task );
 	    }
-	    submitTaskToWorker( sub );
+	    WorkerInfo worker = sub.worker;
+	    TaskInstance task = sub.task;
+	    submitTaskToWorker( worker, task );
 	}
 	return nowork;
     }
@@ -373,7 +383,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
         synchronized ( queue ) {
             incomingTaskCount++;
-            queue.submit( task );
+            queue.add( task );
         }
         submitAllPossibleTasks();
     }

@@ -12,6 +12,9 @@ final class WorkerTaskInfo {
     /** How many instances of this task does this worker currently have? */
     private int outstandingTasks = 0;
 
+    /** How many instance of this task do we reserve for this worker? */
+    private int reservations = 0;
+
     /** How many task instances has this worker executed until now? */
     private int executedTasks = 0;
 
@@ -197,5 +200,20 @@ final class WorkerTaskInfo {
     protected int getSubmissions()
     {
 	return executedTasks;
+    }
+
+    protected boolean isFullyBookedWorker()
+    {
+	return (outstandingTasks>=maximalAllowance);
+    }
+    
+    protected void resetReservations()
+    {
+	reservations = 0;
+    }
+    
+    protected void reserveTask()
+    {
+	reservations++;
     }
 }

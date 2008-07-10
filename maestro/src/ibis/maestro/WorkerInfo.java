@@ -192,18 +192,25 @@ final class WorkerInfo {
      * 
      * @param task The task that was started.
      * @param id The id given to the task.
+     * @return If true, this task was added to the reservations, not
+     *         to the collection of outstanding tasks.
      */
-    void registerTaskStart( TaskInstance task, long id )
+    boolean registerTaskStart( TaskInstance task, long id )
     {
 	WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( task.type );
 	if( workerTaskInfo == null ) {
 	    System.err.println( "No worker task info for task type " + task.type );
-	    return;
+	    return true;
+	}
+	if( workerTaskInfo.isFullyBookedWorker() ) {
+	    workerTaskInfo.reserveTask();
+	    return true;
 	}
 	workerTaskInfo.incrementOutstandingTasks();
 	ActiveTask j = new ActiveTask( task, id, System.nanoTime(), workerTaskInfo );
 
 	activeTasks.add( j );
+	return false;
     }
 
     /** Given a task id, retract it from the administration.
@@ -378,4 +385,15 @@ final class WorkerInfo {
     {
         return pingTime;
     }
-}
+
+    protected void resetReservations()
+    {
+        Enumeration<TaskType> keys = workerTaskInfoTable.keys();
+
+        while( keys.hasMoreElements() ){
+	    TaskType taskType = keys.nextElement();
+	    WorkerTaskInfo info = workerTaskInfoTable.get( taskType );
+	    info.resetReservations();
+	}
+    }
+    }

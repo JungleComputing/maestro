@@ -6,7 +6,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-class Subjob {
+class Subtask {
     TaskInstance task = null;
     WorkerInfo worker = null;
 }

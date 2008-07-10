@@ -310,4 +310,11 @@ final class WorkerList {
         w.registerPingTime( System.nanoTime() );
     }
 
+    protected void resetReservations()
+    {
+	for( WorkerInfo wi: workers ) {
+	    wi.resetReservations();
+	}
+    }
+
 }

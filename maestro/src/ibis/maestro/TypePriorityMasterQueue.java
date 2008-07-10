@@ -91,7 +91,7 @@ final class TypePriorityMasterQueue {
      * @param workers The list of workers to choose from.
      * @return True iff there currently is no work.
      */
-    boolean selectSubmisson( Subjob sub, WorkerList workers )
+    boolean selectSubmisson( Subtask sub, WorkerList workers )
     {
         boolean noWork = true;
         sub.worker = null;

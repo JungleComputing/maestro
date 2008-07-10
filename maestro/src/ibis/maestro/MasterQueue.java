@@ -169,7 +169,7 @@ final class MasterQueue extends Queue {
      * @param task The task to submit.
      */
     @SuppressWarnings("synthetic-access")
-    void submit( TaskInstance task )
+    void add( TaskInstance task )
     {
 	TaskType type = task.type;
 	TypeInfo info = getTypeInfo( type );
@@ -188,20 +188,14 @@ final class MasterQueue extends Queue {
      * If there are tasks in the queue, but no workers to execute the
      * tasks, set the worker field of the subjob to <code>null</code>.
      *
-     * FIXME: see if we can factor out the empty queue test.
-     * 
      * @param sub The subjob structure to fill.
      * @param workers The list of workers to choose from.
-     * @return True iff there currently is no work.
      */
     @SuppressWarnings("synthetic-access")
-    boolean selectSubmisson( Subjob sub, WorkerList workers )
+    void selectSubmisson( Subtask sub, WorkerList workers )
     {
 	int ix = 0;
 
-	if( queue.isEmpty() ) {
-	    return true;
-	}
 	sub.worker = null;
 	sub.task = null;
 	while( ix<queue.size() ) {
@@ -227,7 +221,6 @@ final class MasterQueue extends Queue {
 	    }
 	    ix++;
 	}
-	return false;
     }
 
     @SuppressWarnings("synthetic-access")
