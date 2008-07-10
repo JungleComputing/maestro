@@ -192,9 +192,9 @@ final class MasterQueue extends Queue {
      * @param workers The list of workers to choose from.
      */
     @SuppressWarnings("synthetic-access")
-    void selectSubmisson( Subtask sub, WorkerList workers )
+    int selectSubmisson( int reserved, Subtask sub, WorkerList workers )
     {
-	int ix = 0;
+	int ix = reserved;
 
 	sub.worker = null;
 	sub.task = null;
@@ -204,16 +204,23 @@ final class MasterQueue extends Queue {
 	    TypeInfo info = getTypeInfo( type );
 	    WorkerInfo worker = workers.selectBestWorker( type );
 	    if( worker != null ) {
-		queue.remove( ix );
-		info.registerRemove();
-	        if( Settings.traceQueuing ) {
-	            Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() );
-	        }
-		sub.task = task;
-		sub.worker = worker;
-		if( Settings.traceMasterQueue ){
-		    System.out.println( "Found a worker for task type " + type );
-		}
+                if( worker.reserveIfNeeded( type ) ) {
+                    if( Settings.traceMasterQueue ){
+                        System.out.println( "Reserved a task of type " + type + " for worker " + worker );
+                    }
+                }
+                else {
+                    queue.remove( ix );
+                    info.registerRemove();
+                    if( Settings.traceQueuing ) {
+                        Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() );
+                    }
+                    sub.task = task;
+                    sub.worker = worker;
+                    if( Settings.traceMasterQueue ){
+                        System.out.println( "Found a worker for task type " + type );
+                    }
+                }
 		break;
 	    }
 	    if( Settings.traceMasterQueue ){
@@ -221,6 +228,7 @@ final class MasterQueue extends Queue {
 	    }
 	    ix++;
 	}
+        return reserved;
     }
 
     @SuppressWarnings("synthetic-access")

@@ -210,18 +210,22 @@ final class WorkerTaskInfo {
 	return executedTasks;
     }
 
-    protected boolean isFullyBookedWorker()
-    {
-	return (maximalAllowance>0) && (outstandingTasks>=maximalAllowance);
-    }
     
     protected void resetReservations()
     {
 	reservations = 0;
     }
-    
-    protected void reserveTask()
-    {
-	reservations++;
+
+    /**
+     * Reserve a slot with this worker if necessary, and return true; or return false
+     * if reservations are not necessary.
+     * @return
+     */
+    protected boolean reserveIfNeeded() {
+        if( (maximalAllowance>0) && (outstandingTasks>=maximalAllowance) ) {
+            reservations++;
+            return true;
+        }
+        return false;
     }
 }
