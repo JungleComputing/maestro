@@ -183,7 +183,7 @@ final class WorkerList {
                 WorkerInfo wi = workers.get( i );
 
                 if( wi.isIdleWorker( taskType ) ) {
-                    long pingTime = wi.getPingDuration();
+                    long pingTime = wi.getPingTime();
                     if( pingTime<bestPingTime ) {
                         candidate = wi;
                     }
@@ -304,10 +304,10 @@ final class WorkerList {
         return workers.size();
     }
 
-    void registerPingTime( WorkerIdentifier workerID )
+    void setPingStartMoment( WorkerIdentifier workerID )
     {
         WorkerInfo w = workers.get( workerID.value );
-        w.registerPingTime( System.nanoTime() );
+        w.setPingStartMoment( System.nanoTime() );
     }
 
     protected void resetReservations()

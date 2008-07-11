@@ -57,17 +57,29 @@ final class WorkerTaskInfo {
             return Long.MAX_VALUE;
         }
         long transmissionTime = transmissionTimeEstimate.getAverage();
-        if( transmissionTime == Long.MAX_VALUE ) {
-            return Long.MAX_VALUE;
-        }
         int allTasks = currentTasks+futureTasks;
-        if( allTasks>maximalAllowance ){
-            // FIXME: temporary disable all reservation stuff.
-            return Long.MAX_VALUE;
+        long total;
+        if( transmissionTime == Long.MAX_VALUE ) {
+            total = Long.MAX_VALUE;
         }
-        long total = futureTasks*transmissionTime + (allTasks*(workerDwellTime/maximalAllowance)) + remainingJobTime;
+        else if( allTasks>maximalAllowance ){
+            // FIXME: temporary disabled all reservation stuff.
+            total = Long.MAX_VALUE;
+        }
+        else {
+            total = futureTasks*transmissionTime + (allTasks*(workerDwellTime/maximalAllowance)) + remainingJobTime;
+        }
         if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "getAverageCompletionTime(): type=" + label + "; maximalAllowance=" + maximalAllowance + "; currentTasks=" + currentTasks + "; futureTasks=" + futureTasks + "; transmissionTime=" + Service.formatNanoseconds( transmissionTime ) + " workerDwellTime=" + Service.formatNanoseconds( workerDwellTime ) + "; remainingJobTime=" + Service.formatNanoseconds( remainingJobTime ) + "; total=" + Service.formatNanoseconds( total ) );
+            Globals.log.reportProgress(
+                "getAverageCompletionTime(): " + label
+                + " maximalAllowance=" + maximalAllowance
+                + " currentTasks=" + currentTasks
+                + " futureTasks=" + futureTasks
+                + " xmitTime=" + Service.formatNanoseconds( transmissionTime )
+                + " workerDwellTime=" + Service.formatNanoseconds( workerDwellTime )
+                + " remainingJobTime=" + Service.formatNanoseconds( remainingJobTime )
+                + " total=" + Service.formatNanoseconds( total )
+            );
         }
         return total;
     }
@@ -79,7 +91,7 @@ final class WorkerTaskInfo {
      */
     long getAverageCompletionTime()
     {
-        return getAverageCompletionTime( maximalAllowance, 1 );
+        return getAverageCompletionTime( maximalAllowance, 0 );
     }
 
     /**
@@ -94,22 +106,25 @@ final class WorkerTaskInfo {
     }
 
     /**
+     * @param label The label of this worker/task combination.
+     * @param remainingTasks How many tasks there are in this job after the current task.
+     * @param local True iff this is the local worker.
+     * @param pingTime The ping time of this worker.
      * Constructs a new information class for a particular task type
      * for a particular worker.
      */
-    WorkerTaskInfo( String label, int remainingTasks, boolean local )
+    WorkerTaskInfo( String label, int remainingTasks, boolean local, long pingTime )
     {
 	this.label = label;
         this.maximalAllowance = local?3:0;
         this.maximalEverAllowance = maximalAllowance;
 
-        // A totally unfounded guess, but we should learn soon enough what the real value is..
-	long initialEstimate = local?0L:10*Service.MILLISECOND_IN_NANOSECONDS;
-	this.transmissionTimeEstimate = new TimeEstimate( initialEstimate );
-	this.roundtripTimeEstimate = new TimeEstimate( Long.MAX_VALUE/4 );
-	this.workerDwellTime = Service.MILLISECOND_IN_NANOSECONDS;
-	this.remainingJobTime = 2*remainingTasks*initialEstimate;
-	if( Settings.traceWorkerList ) {
+        // Totally unfounded guesses, but we should learn soon enough what the real values are...
+	this.transmissionTimeEstimate = new TimeEstimate( pingTime );
+	this.roundtripTimeEstimate = new TimeEstimate( Long.MAX_VALUE/4 ); // Pessimistic guess, since it is used for deadlines.
+	this.workerDwellTime = 2*pingTime;
+	this.remainingJobTime = remainingTasks*(workerDwellTime+pingTime);
+	if( Settings.traceWorkerList || Settings.traceRemainingJobTime ) {
 	    Globals.log.reportProgress( "Created new WorkerTaskInfo " + toString() );
 	}
     }

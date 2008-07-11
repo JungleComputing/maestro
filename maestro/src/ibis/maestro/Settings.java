@@ -9,10 +9,10 @@ package ibis.maestro;
 class Settings {
     // Timeout values.
     
-    /** Message transjob timeout in ms on optional communication. */
+    /** Message transmission timeout in ms on optional communication. */
     static final int OPTIONAL_COMMUNICATION_TIMEOUT = 30000;
     
-    /** Message transjob timeout in ms on essential communications. */
+    /** Message transmission timeout in ms on essential communications. */
     static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 5*OPTIONAL_COMMUNICATION_TIMEOUT;
 
     /** The number of connections we maximally keep open. */
@@ -53,5 +53,5 @@ class Settings {
     /** Multiplier of the estimated completion time to
      * get a deadline for a task.
      */
-    static final long DEADLINE_MARGIN = 2;
+    static final long DEADLINE_MARGIN = 3;
 }

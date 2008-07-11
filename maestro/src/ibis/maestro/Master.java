@@ -202,7 +202,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         Worker.MasterIdentifier idOnWorker = workers.getMasterIdentifier( workerID );
         WorkerAcceptMessage msg = new WorkerAcceptMessage( idOnWorker, myport, workerID );
 
-        workers.registerPingTime( workerID );
+        workers.setPingStartMoment( workerID );
         long sz = sendPort.tryToSend( workerID.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( sz<0 ){
             synchronized( queue ) {

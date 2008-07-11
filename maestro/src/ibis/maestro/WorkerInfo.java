@@ -40,7 +40,7 @@ final class WorkerInfo {
     private long pingSentTime = 0;
 
     /** The duration of the ping round-trip for this worker. */
-    private long pingTime = Long.MAX_VALUE;
+    private long pingTime;
 
     private int missedDeadlines = 0;
     /**
@@ -59,6 +59,8 @@ final class WorkerInfo {
         this.identifier = identifier;
         this.identifierWithWorker = identifierForWorker;
         this.local = local;
+        // Initial, totally unfounded, guess for the ping time.
+        this.pingTime = local?Service.MICROSECOND_IN_NANOSECONDS:Service.MILLISECOND_IN_NANOSECONDS;
         for( TaskType t: types ) {
             registerTaskType( t );
         }
@@ -148,6 +150,32 @@ final class WorkerInfo {
             }
         }
         enabled = true;
+        if( Settings.traceRemainingJobTime ) {
+            String s = "workerQueueInfo=[";
+            boolean first = true;
+            for( WorkerQueueInfo i: workerQueueInfo ) {
+                if( first ) {
+                    first = false;
+                }
+                else {
+                    s += ",";
+                }
+                s += i;
+            }
+            s += "] completionInfo=[";
+            first = true;
+            for( CompletionInfo i: completionInfo ) {
+                if( first ) {
+                    first = false;
+                }
+                else {
+                    s += ",";
+                }
+                s += i;
+            }
+            s += ']';
+            Globals.log.reportProgress( "Master: got new information from " + identifier + ": " +  s );
+        }
         for( WorkerQueueInfo i: workerQueueInfo ) {
             registerWorkerQueueInfo( i );
         }
@@ -238,7 +266,7 @@ final class WorkerInfo {
         if( Settings.traceTypeHandling ){
             System.out.println( "worker " + identifier + " (" + port + ") can handle " + type + ", local=" + local );
         }
-        WorkerTaskInfo info = new WorkerTaskInfo( toString() + " task type " + type, type.remainingTasks, local );
+        WorkerTaskInfo info = new WorkerTaskInfo( toString() + " task type " + type, type.remainingTasks, local, pingTime );
         workerTaskInfoTable.put( type, info );
     }
 
@@ -369,11 +397,6 @@ final class WorkerInfo {
         return workerTaskInfo.activate();
     }
 
-    void registerPingTime( long t )
-    {
-        this.pingSentTime = t;
-    }
-
     boolean isIdleWorker( TaskType taskType )
     {
         WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
@@ -383,10 +406,15 @@ final class WorkerInfo {
         return workerTaskInfo.isIdleWorker();
     }
 
+    void setPingStartMoment( long t )
+    {
+        this.pingSentTime = t;
+    }
+
     /**
-     * @return Ping duration.
+     * @return Ping time.
      */
-    long getPingDuration()
+    long getPingTime()
     {
         return pingTime;
     }
