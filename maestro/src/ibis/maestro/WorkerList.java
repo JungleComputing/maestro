@@ -18,6 +18,9 @@ final class WorkerList {
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
     private final ArrayList<TaskInfoOnMaster> taskInfoList = new ArrayList<TaskInfoOnMaster>();
 
+    static final double RESEARCH_BUDGET_FOR_NEW_WORKER = 2.0;
+    static final double RESEARCH_BUDGET_PER_TASK = 0.05;
+
     private TaskInfoOnMaster getTaskInfo( TaskType type )
     {
         int ix = type.index;
@@ -26,7 +29,7 @@ final class WorkerList {
         }
         TaskInfoOnMaster res = taskInfoList.get( ix );
         if( res == null ) {
-            res = new TaskInfoOnMaster();
+            res = new TaskInfoOnMaster( workers.size()*RESEARCH_BUDGET_FOR_NEW_WORKER );
             taskInfoList.set( ix, res );
         }
         return res;
@@ -70,6 +73,11 @@ final class WorkerList {
         Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
         WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker, local, types );
 
+        for( TaskInfoOnMaster info: taskInfoList ){
+            if( info != null ){
+                info.addResearchBudget( RESEARCH_BUDGET_FOR_NEW_WORKER );
+            }
+        }
         if( Settings.traceMasterProgress ){
             System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker + "; local=" + local );
         }
@@ -180,7 +188,7 @@ final class WorkerList {
             }
         }
         TaskInfoOnMaster taskInfo = getTaskInfo( taskType );
-        taskInfo.addResearchBudget( 0.05 );
+        taskInfo.addResearchBudget( RESEARCH_BUDGET_PER_TASK );
         if( Settings.traceRemainingJobTime || Settings.traceMasterProgress ) {
             System.out.println( "Master: competitors=" + competitors + "; taskInfo=" + taskInfo );
         }

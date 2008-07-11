@@ -1,13 +1,18 @@
 package ibis.maestro;
 
 /**
- * FIXME.
+ * Information on a task on the master.
  *
  * @author Kees van Reeuwijk.
  */
 public class TaskInfoOnMaster
 {
-    private double researchBudget = 10.0;
+    private double researchBudget;
+
+    TaskInfoOnMaster( double budget )
+    {
+        researchBudget = 2.0 + budget;
+    }
 
     /** Add the given value to the research budget.
      * @param d The value to add.
