@@ -62,8 +62,8 @@ final class WorkerTaskInfo {
         if( transmissionTime == Long.MAX_VALUE ) {
             total = Long.MAX_VALUE;
         }
-        else if( allTasks>maximalAllowance ){
-            // FIXME: temporary disabled all reservation stuff.
+        else if( allTasks>maximalAllowance+1 ){
+            // FIXME: temporary largely disabled all reservation stuff.
             total = Long.MAX_VALUE;
         }
         else {
