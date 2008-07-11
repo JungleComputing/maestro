@@ -153,23 +153,21 @@ final class WorkerList {
                 if( wi.isIdle( taskType ) ) {
                     idleWorkers++;
                 }
-                else {
-                    competitors++;
-                    long val = wi.estimateJobCompletion( taskType );
+                competitors++;
+                long val = wi.estimateJobCompletion( taskType );
 
-                    if( val<Long.MAX_VALUE ) {
-                        if( Settings.traceRemainingJobTime ) {
-                            System.out.println( "Worker " + wi + ": task type " + taskType + ": estimated completion time " + Service.formatNanoseconds( val ) );
-                        }
-                        if( val<bestInterval ) {
-                            bestInterval = val;
-                            best = wi;
-                        }
+                if( val<Long.MAX_VALUE ) {
+                    if( Settings.traceRemainingJobTime ) {
+                        System.out.println( "Worker " + wi + ": task type " + taskType + ": estimated completion time " + Service.formatNanoseconds( val ) );
+                    }
+                    if( val<bestInterval ) {
+                        bestInterval = val;
+                        best = wi;
                     }
                 }
             }
         }
-        researchBudget = Math.min( 10.0, researchBudget+0.1 );
+        researchBudget = Math.min( 10.0, researchBudget+0.05 );
         if( Settings.traceRemainingJobTime || Settings.traceMasterProgress ) {
             System.out.println( "Master: competitors=" + competitors + "; researchBudget=" + researchBudget );
         }
