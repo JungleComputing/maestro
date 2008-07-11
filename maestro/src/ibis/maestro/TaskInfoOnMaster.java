@@ -7,7 +7,7 @@ package ibis.maestro;
  */
 public class TaskInfoOnMaster
 {
-    private double researchBudget = 1.0;
+    private double researchBudget = 10.0;
 
     /** Add the given value to the research budget.
      * @param d The value to add.
