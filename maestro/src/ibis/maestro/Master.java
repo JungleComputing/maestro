@@ -313,11 +313,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     /**
      * Submit all work currently in the queues until all workers are busy
      * or all work has been submitted.
-     * @return True iff there is no work at the moment.
      */
-    private boolean submitAllPossibleTasks()
+    private void submitAllPossibleTasks()
     {
-        boolean nowork = false;
         Subtask sub = new Subtask();
         long taskId;
         int reserved = 0;
@@ -330,7 +328,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             workers.resetReservations();
             while( true ) {
                 if( queue.isEmpty() ) {
-                    nowork = true;
                     break;
                 }
                 reserved = queue.selectSubmisson( reserved, sub, workers );
@@ -355,7 +352,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 }
             }
         }
-        return nowork;
     }
 
     /**
@@ -382,27 +378,18 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             System.out.println( "Starting master thread" );
         }
         while( true ){
-            boolean nowork = submitAllPossibleTasks();
+            submitAllPossibleTasks();
 
-            // There are no tasks in the queue, or there are no workers ready.
-            if( nowork && isFinished() ){
-                // No tasks, and we are stopped; don't try to send new tasks.
-                break;
-            }
-            if( Settings.traceMasterProgress ){
-                if( nowork ) {
-                    System.out.println( "Master: nothing in the queue; waiting" );
-                }
-                else {
-                    System.out.println( "Master: no ready workers; waiting" );		    
-                }
-            }
             // Since the queue is empty, we can only wait for new tasks.
             try {
                 synchronized( queue ){
-                    if( !isFinished() ){
-                        queue.wait();
+                    if( isFinished() ){
+                        break;
                     }
+                    if( Settings.traceMasterProgress ){
+                        System.out.println( "Master: waiting" );                    
+                    }
+                    queue.wait();
                 }
             } catch (InterruptedException e) {
                 // Not interested.

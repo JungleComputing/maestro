@@ -116,43 +116,38 @@ final class WorkerQueue {
 
     private static int findInsertionPoint( ArrayList<RunTaskMessage> queue, RunTaskMessage msg )
     {
-	if( true ) {
-	    // Good old binary search.
-	    int start = 0;
-	    int end = queue.size();
-	    if( end == 0 ){
-		// The queue is empty. This is the only case where start
-		// points to a non-existent element, so we have to treat
-		// it separately.
-		return 0;
-	    }
-	    long id = msg.task.jobInstance.id;
-	    while( true ){
-		int mid = (start+end)/2;
-		if( mid == start ){
-		    break;
-		}
-		long midId = queue.get( mid ).task.jobInstance.id;
-		if( midId<id ){
-		    // Mid should come before us.
-		    start = mid;
-		}
-		else {
-		    // Mid should come after us.
-		    end = mid;
-		}
-	    }
-	    // This comparison is probably rarely necessary, but corner cases
-	    // are a pain, so I'm safe rather than sorry.
-	    long startId = queue.get( start ).task.jobInstance.id;
-	    if( startId<id ){
-		return end;
-	    }
-	    return start;
-	}
-	else {
-	    return queue.size();
-	}
+        // Good old binary search.
+        int start = 0;
+        int end = queue.size();
+        if( end == 0 ){
+            // The queue is empty. This is the only case where start
+            // points to a non-existent element, so we have to treat
+            // it separately.
+            return 0;
+        }
+        long id = msg.task.jobInstance.id;
+        while( true ){
+            int mid = (start+end)/2;
+            if( mid == start ){
+                break;
+            }
+            long midId = queue.get( mid ).task.jobInstance.id;
+            if( midId<id ){
+                // Mid should come before us.
+                start = mid;
+            }
+            else {
+                // Mid should come after us.
+                end = mid;
+            }
+        }
+        // This comparison is probably rarely necessary, but corner cases
+        // are a pain, so I'm safe rather than sorry.
+        long startId = queue.get( start ).task.jobInstance.id;
+        if( startId<id ){
+            return end;
+        }
+        return start;
     }
 
     @SuppressWarnings("synthetic-access")
