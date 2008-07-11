@@ -200,6 +200,7 @@ final class WorkerInfo {
         }
         ActiveTask task = activeTasks.remove( ix );
         long roundtripTime = now-task.startTime;
+        long roundtripError = Math.abs( task.predictedDuration-roundtripTime );
 	long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
 
         if( task.deadline<now ) {
@@ -207,9 +208,14 @@ final class WorkerInfo {
             missedDeadlines++;
         }
         registerWorkerInfo( result.workerQueueInfo, result.completionInfo );
-        task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime );
+        task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime, roundtripError );
         if( Settings.traceMasterProgress ){
-            System.out.println( "Master: retired task " + task + "; transmission time: " + Service.formatNanoseconds( newTransmissionTime ) );
+            System.out.println(
+                "Master: retired task " + task + 
+                " roundtripTime=" + Service.formatNanoseconds( roundtripTime ) +
+                " roundtripError=" + Service.formatNanoseconds( roundtripError ) +
+                " transmissionTime=" + Service.formatNanoseconds( newTransmissionTime )
+            );
         }
     }
 
@@ -219,17 +225,18 @@ final class WorkerInfo {
      */
     boolean isIdle()
     {
-        return activeTasks.isEmpty();
+        return !dead && enabled && activeTasks.isEmpty();
     }
 
     /** Register the start of a new task.
      * 
      * @param task The task that was started.
      * @param id The id given to the task.
+     * @param predictedDuration FIXME
      * @return If true, this task was added to the reservations, not
      *         to the collection of outstanding tasks.
      */
-    boolean registerTaskStart( TaskInstance task, long id, long deadline )
+    boolean registerTaskStart( TaskInstance task, long id, long predictedDuration, long deadline )
     {
         WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( task.type );
         if( workerTaskInfo == null ) {
@@ -237,7 +244,7 @@ final class WorkerInfo {
             return true;
         }
         workerTaskInfo.incrementOutstandingTasks();
-        ActiveTask j = new ActiveTask( task, id, System.nanoTime(), workerTaskInfo, deadline );
+        ActiveTask j = new ActiveTask( task, id, System.nanoTime(), workerTaskInfo, predictedDuration, deadline );
 
         activeTasks.add( j );
         return false;
@@ -292,6 +299,24 @@ final class WorkerInfo {
             return Long.MAX_VALUE;
         }
         return workerTaskInfo.estimateJobCompletion();
+    }
+
+    long getOptimisticRoundtripTime( TaskType taskType )
+    {
+        if( !enabled ) {
+            if( Settings.traceTypeHandling ){
+                System.out.println( "getOptimisticRoundtripTime(): worker " + identifier + " not yet enabled" );
+            }
+            return Long.MAX_VALUE;
+        }
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
+        if( workerTaskInfo == null ) {
+            if( Settings.traceTypeHandling ){
+                System.out.println( "getOptimisticRoundtripTime(): worker " + identifier + " does not support type " + taskType );
+            }
+            return Long.MAX_VALUE;
+        }
+        return workerTaskInfo.getOptimisticRoundtripTime();
     }
 
     long getAverageCompletionTime( TaskType taskType )
@@ -397,7 +422,7 @@ final class WorkerInfo {
         return workerTaskInfo.activate();
     }
 
-    boolean isIdleWorker( TaskType taskType )
+    boolean isIdle( TaskType taskType )
     {
         WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
         if( !enabled || workerTaskInfo == null ) {

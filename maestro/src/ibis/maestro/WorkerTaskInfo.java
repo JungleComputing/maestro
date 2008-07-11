@@ -11,6 +11,8 @@ final class WorkerTaskInfo {
 
     private final TimeEstimate roundtripTimeEstimate;
 
+    private final TimeEstimate roundtripErrorEstimate;
+
     /** How many instances of this task does this worker currently have? */
     private int outstandingTasks = 0;
 
@@ -105,6 +107,11 @@ final class WorkerTaskInfo {
         return getAverageCompletionTime( outstandingTasks, reservations+1 );
     }
 
+    long getOptimisticRoundtripTime()
+    {
+        return Math.max( 0, roundtripTimeEstimate.getAverage()-roundtripErrorEstimate.getAverage() );
+    }
+
     /**
      * @param label The label of this worker/task combination.
      * @param remainingTasks How many tasks there are in this job after the current task.
@@ -121,7 +128,8 @@ final class WorkerTaskInfo {
 
         // Totally unfounded guesses, but we should learn soon enough what the real values are...
 	this.transmissionTimeEstimate = new TimeEstimate( pingTime );
-	this.roundtripTimeEstimate = new TimeEstimate( Long.MAX_VALUE/4 ); // Pessimistic guess, since it is used for deadlines.
+	this.roundtripTimeEstimate = new TimeEstimate( Service.WEEK_IN_NANOSECONDS ); // Pessimistic guess, since it is used for deadlines.
+        this.roundtripErrorEstimate = new TimeEstimate( Service.WEEK_IN_NANOSECONDS ); // Big error, since we're guessing.
 	this.workerDwellTime = 2*pingTime;
 	this.remainingJobTime = remainingTasks*(workerDwellTime+pingTime);
 	if( Settings.traceWorkerList || Settings.traceRemainingJobTime ) {
@@ -132,13 +140,15 @@ final class WorkerTaskInfo {
     /**
      * Registers the completion of a task.
      * @param transmissionTime The transmission time of this task.
-     * @param roundTripTime The total roundtrip time of this task.
+     * @param roundtripTime The total roundtrip time of this task.
+     * @param roundtripError 
      */
-    void registerTaskCompleted( long transmissionTime, long roundTripTime )
+    void registerTaskCompleted( long transmissionTime, long roundtripTime, long roundtripError )
     {
 	executedTasks++;
         outstandingTasks--;
-        roundtripTimeEstimate.addSample(roundTripTime );
+        roundtripTimeEstimate.addSample(roundtripTime );
+        roundtripErrorEstimate.addSample( roundtripError );
 	transmissionTimeEstimate.addSample( transmissionTime );
 	if( Settings.traceWorkerProgress || Settings.traceRemainingJobTime ) {
 	    System.out.println( label + ": new transmission time estimate: " + transmissionTimeEstimate );

@@ -217,7 +217,8 @@ final class MasterQueue extends Queue {
                     }
                     sub.task = task;
                     sub.worker = worker;
-                    sub.deadline = System.nanoTime()+Settings.DEADLINE_MARGIN*worker.getRoundtripEstimate( type );
+                    sub.predictedDuration = worker.getRoundtripEstimate( type );
+                    sub.deadline = System.nanoTime()+Settings.DEADLINE_MARGIN*sub.predictedDuration;
                     if( Settings.traceMasterQueue ){
                         System.out.println( "Found a worker for task type " + type );
                     }

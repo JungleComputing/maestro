@@ -10,7 +10,7 @@ import java.util.ArrayList;
 
 /**
  *
- * Global helper functions.
+ * Global helper functions and constants.
  * 
  * @author Kees van Reeuwijk.
  */
@@ -18,6 +18,11 @@ public class Service
 {
     static final long MICROSECOND_IN_NANOSECONDS = 1000L;
     static final long MILLISECOND_IN_NANOSECONDS = 1000*MICROSECOND_IN_NANOSECONDS;
+    static final long SECOND_IN_NANOSECONDS = 1000*MILLISECOND_IN_NANOSECONDS;
+    static final long MINUTE_IN_NANOSECONDS = 60*SECOND_IN_NANOSECONDS;
+    static final long HOUR_IN_NANOSECONDS = 60*MINUTE_IN_NANOSECONDS;
+    static final long DAY_IN_NANOSECONDS = 24*HOUR_IN_NANOSECONDS;
+    static final long WEEK_IN_NANOSECONDS = 7*DAY_IN_NANOSECONDS;
 
     /** Prints the platform version that is used. */
     static String getPlatformVersion()

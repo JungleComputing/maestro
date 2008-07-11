@@ -9,5 +9,6 @@ package ibis.maestro;
 class Subtask {
     TaskInstance task = null;
     WorkerInfo worker = null;
+    long predictedDuration = 0L;
     long deadline = 0L;
 }

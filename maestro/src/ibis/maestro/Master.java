@@ -341,7 +341,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                     break;
                 }
                 taskId = nextTaskId++;
-                worker.registerTaskStart( task, taskId, deadline );
+                worker.registerTaskStart( task, taskId, sub.predictedDuration, deadline );
                 if( Settings.traceMasterQueue ) {
                     System.out.println( "Selected " + worker + " as best for task " + task );
                 }

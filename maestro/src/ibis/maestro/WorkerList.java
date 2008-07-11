@@ -150,7 +150,7 @@ final class WorkerList {
             WorkerInfo wi = workers.get( i );
 
             if( !wi.isDead() ) {
-                if( wi.isIdleWorker( taskType) ) {
+                if( wi.isIdle( taskType ) ) {
                     idleWorkers++;
                 }
                 else {
@@ -169,7 +169,7 @@ final class WorkerList {
                 }
             }
         }
-        researchBudget = Math.min( 4.0, researchBudget+0.3/(1<<3*competitors) );
+        researchBudget = Math.min( 10.0, researchBudget+0.1 );
         if( Settings.traceRemainingJobTime || Settings.traceMasterProgress ) {
             System.out.println( "Master: competitors=" + competitors + "; researchBudget=" + researchBudget );
         }
@@ -177,16 +177,15 @@ final class WorkerList {
         if( best == null || (idleWorkers>0 && researchBudget>1.0) ) {
             // We can't find a worker for this task. See if there is
             // a disabled worker we can enable.
-            long bestPingTime = Long.MAX_VALUE;
+            long bestTime = Long.MAX_VALUE;
             WorkerInfo candidate = null;
             for( int i=0; i<workers.size(); i++ ) {
                 WorkerInfo wi = workers.get( i );
 
-                if( wi.isIdleWorker( taskType ) ) {
-                    long pingTime = wi.getPingTime();
-                    if( pingTime<bestPingTime ) {
-                        candidate = wi;
-                    }
+                long t = wi.getOptimisticRoundtripTime( taskType );
+                if( t<bestTime ) {
+                    candidate = wi;
+                    bestTime = t;
                 }
             }
             if( candidate != null && candidate.activate( taskType ) ) {
