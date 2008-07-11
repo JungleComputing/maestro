@@ -204,7 +204,7 @@ final class WorkerInfo {
 	long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
 
         if( task.deadline<now ) {
-            Globals.log.reportError( "Task " + task + " missed deadline by " + Service.formatNanoseconds( now-task.deadline ) );
+            //Globals.log.reportError( "Task " + task + " missed deadline by " + Service.formatNanoseconds( now-task.deadline ) );
             missedDeadlines++;
         }
         registerWorkerInfo( result.workerQueueInfo, result.completionInfo );

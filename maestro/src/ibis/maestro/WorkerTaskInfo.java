@@ -123,7 +123,7 @@ final class WorkerTaskInfo {
     WorkerTaskInfo( String label, int remainingTasks, boolean local, long pingTime )
     {
 	this.label = label;
-        this.maximalAllowance = local?3:0;
+        this.maximalAllowance = local?3:1;
         this.maximalEverAllowance = maximalAllowance;
 
         // Totally unfounded guesses, but we should learn soon enough what the real values are...
