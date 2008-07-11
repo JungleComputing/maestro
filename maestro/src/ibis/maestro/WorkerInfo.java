@@ -407,28 +407,13 @@ final class WorkerInfo {
         }
     }
 
-    protected boolean activate( TaskType taskType )
-    {
-        if( !enabled ) {
-            return false;
-        }
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
-        if( workerTaskInfo == null ) {
-            if( Settings.traceTypeHandling ){
-                System.out.println( "estimateJobCompletion(): worker " + identifier + " does not support type " + taskType );
-            }
-            return false;
-        }
-        return workerTaskInfo.activate();
-    }
-
     boolean isIdle( TaskType taskType )
     {
         WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
         if( !enabled || workerTaskInfo == null ) {
             return false;
         }
-        return workerTaskInfo.isIdleWorker();
+        return workerTaskInfo.isIdle();
     }
 
     void setPingStartMoment( long t )

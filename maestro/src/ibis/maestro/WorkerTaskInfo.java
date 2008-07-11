@@ -107,6 +107,11 @@ final class WorkerTaskInfo {
         return getAverageCompletionTime( outstandingTasks, reservations+1 );
     }
 
+    /**
+     * Returns an extremely optimistic estimate of the roundtrip time, based
+     * on the average time and average error on that time.
+     * @return The estimate.
+     */
     long getOptimisticRoundtripTime()
     {
         return Math.max( 0, roundtripTimeEstimate.getAverage()-roundtripErrorEstimate.getAverage() );
@@ -215,21 +220,12 @@ final class WorkerTaskInfo {
 	}
     }
 
-    protected boolean activate()
-    {
-        if( maximalAllowance>0 || remainingJobTime == Long.MAX_VALUE ) {
-            return false;
-        }
-        maximalAllowance = 1;
-	return true;
-    }
-
     /**
      * @return True iff this worker is ready to handle this task, but isn't doing so yet.
      */
-    boolean isIdleWorker()
+    boolean isIdle()
     {
-        if( maximalAllowance>0 || remainingJobTime == Long.MAX_VALUE ) {
+        if( outstandingTasks>0 || remainingJobTime == Long.MAX_VALUE ) {
             return false;
         }
         return true;

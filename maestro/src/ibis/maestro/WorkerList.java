@@ -179,19 +179,22 @@ final class WorkerList {
             // a disabled worker we can enable.
             long bestTime = Long.MAX_VALUE;
             WorkerInfo candidate = null;
+
             for( int i=0; i<workers.size(); i++ ) {
                 WorkerInfo wi = workers.get( i );
 
-                long t = wi.getOptimisticRoundtripTime( taskType );
-                if( t<bestTime ) {
-                    candidate = wi;
-                    bestTime = t;
+                if( wi.isIdle( taskType ) ) {
+                    long t = wi.getOptimisticRoundtripTime( taskType );
+                    if( t<bestTime ) {
+                        candidate = wi;
+                        bestTime = t;
+                    }
                 }
             }
-            if( candidate != null && candidate.activate( taskType ) ) {
+            if( candidate != null ) {
                 researchBudget = Math.max( 0.0, researchBudget-1.0 );
                 if( Settings.traceMasterQueue ) {
-                    Globals.log.reportProgress( "activated worker " + candidate + "; researchBudget=" + researchBudget );
+                    Globals.log.reportProgress( "Trying worker " + candidate + "; researchBudget=" + researchBudget );
                 }
                 best = candidate;
             }
