@@ -16,9 +16,21 @@ import java.util.List;
  */
 final class WorkerList {
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
+    private final ArrayList<TaskInfoOnMaster> taskInfoList = new ArrayList<TaskInfoOnMaster>();
 
-    /** How many new workers are we going to try? */
-    private double researchBudget = 1.0;
+    private TaskInfoOnMaster getTaskInfo( TaskType type )
+    {
+        int ix = type.index;
+        while( ix+1>taskInfoList.size() ) {
+            taskInfoList.add( null );
+        }
+        TaskInfoOnMaster res = taskInfoList.get( ix );
+        if( res == null ) {
+            res = new TaskInfoOnMaster();
+            taskInfoList.set( ix, res );
+        }
+        return res;
+    }
     
     private static WorkerInfo searchWorker( List<WorkerInfo> workers, WorkerIdentifier workerIdentifier )
     {
@@ -167,12 +179,13 @@ final class WorkerList {
                 }
             }
         }
-        researchBudget = Math.min( 10.0, researchBudget+0.05 );
+        TaskInfoOnMaster taskInfo = getTaskInfo( taskType );
+        taskInfo.addResearchBudget( 0.05 );
         if( Settings.traceRemainingJobTime || Settings.traceMasterProgress ) {
-            System.out.println( "Master: competitors=" + competitors + "; researchBudget=" + researchBudget );
+            System.out.println( "Master: competitors=" + competitors + "; taskInfo=" + taskInfo );
         }
 
-        if( best == null || (idleWorkers>0 && researchBudget>1.0) ) {
+        if( best == null || (idleWorkers>0 && taskInfo.canResearch()) ) {
             // We can't find a worker for this task. See if there is
             // a disabled worker we can enable.
             long bestTime = Long.MAX_VALUE;
@@ -189,10 +202,10 @@ final class WorkerList {
                     }
                 }
             }
-            if( candidate != null ) {
-                researchBudget = Math.max( 0.0, researchBudget-1.0 );
+            if( candidate != null && candidate!=best ) {
+                taskInfo.useResearchBudget();
                 if( Settings.traceMasterQueue ) {
-                    Globals.log.reportProgress( "Trying worker " + candidate + "; researchBudget=" + researchBudget );
+                    Globals.log.reportProgress( "Trying worker " + candidate + "; taskInfo=" + taskInfo );
                 }
                 best = candidate;
             }
@@ -214,7 +227,7 @@ final class WorkerList {
         }
         else {
             if( Settings.traceMasterQueue ){
-        	Globals.log.reportProgress( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) + "; researchBudget=" + researchBudget );
+        	Globals.log.reportProgress( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) + "; taskInfo=" + taskInfo );
             }
         }
         return best;
