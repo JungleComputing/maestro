@@ -220,19 +220,19 @@ final class WorkerInfo {
     }
 
     /**
-     * Returns true iff this worker is idle.
-     * @return True iff this worker is idle.
+     * Returns true iff this worker is in a state where the master can finish.
+     * @return True iff the master is allowed to finish.
      */
-    boolean isIdle()
+    boolean allowsMasterToFinish()
     {
-        return !dead && enabled && activeTasks.isEmpty();
+        return activeTasks.isEmpty();
     }
 
     /** Register the start of a new task.
      * 
      * @param task The task that was started.
      * @param id The id given to the task.
-     * @param predictedDuration FIXME
+     * @param predictedDuration The predicted duration in ns of the task.
      * @return If true, this task was added to the reservations, not
      *         to the collection of outstanding tasks.
      */

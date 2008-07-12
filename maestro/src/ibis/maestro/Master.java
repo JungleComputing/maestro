@@ -148,7 +148,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 System.out.println( "Master set to stopped, but queue not empty." );
                 return false;
             }
-            if( !workers.areIdle() ){
+            if( !workers.allowMasterToFinish() ){
                 System.out.println( "Master set to stopped, but workers are still busy." );
                 return false;
             }

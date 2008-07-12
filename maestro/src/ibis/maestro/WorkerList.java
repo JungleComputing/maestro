@@ -137,13 +137,13 @@ final class WorkerList {
     }
 
     /**
-     * Returns true iff all workers in our list are idle.
-     * @return True iff all workers in our list are idle.
+     * Returns true iff all workers are in a state that allow this master to finish.
+     * @return True iff the master can finish.
      */
-    boolean areIdle()
+    boolean allowMasterToFinish()
     {
         for( WorkerInfo w: workers ) {
-            if( !w.isIdle() ) {
+            if( !w.allowsMasterToFinish() ) {
                 return false;
             }
         }
