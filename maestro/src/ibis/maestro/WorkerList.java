@@ -18,8 +18,8 @@ final class WorkerList {
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
     private final ArrayList<TaskInfoOnMaster> taskInfoList = new ArrayList<TaskInfoOnMaster>();
 
-    static final double RESEARCH_BUDGET_FOR_NEW_WORKER = 2.0;
-    static final double RESEARCH_BUDGET_PER_TASK = 0.05;
+    static final double RESEARCH_BUDGET_FOR_NEW_WORKER = 0.8;
+    static final double RESEARCH_BUDGET_PER_TASK = 0.08;
 
     private TaskInfoOnMaster getTaskInfo( TaskType type )
     {

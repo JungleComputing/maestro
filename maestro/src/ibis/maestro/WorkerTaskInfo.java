@@ -55,7 +55,7 @@ final class WorkerTaskInfo {
          * Don't give an estimate if we have to predict the future too far,
          * or of we just don't have the information.
          */
-        if( maximalAllowance == 0 || futureTasks>maximalAllowance || remainingJobTime == Long.MAX_VALUE  ) {
+        if( maximalAllowance == 0 || remainingJobTime == Long.MAX_VALUE  ) {
             return Long.MAX_VALUE;
         }
         long transmissionTime = transmissionTimeEstimate.getAverage();
@@ -63,6 +63,9 @@ final class WorkerTaskInfo {
         long total;
         if( transmissionTime == Long.MAX_VALUE ) {
             total = Long.MAX_VALUE;
+        }
+        else if( allTasks>maximalAllowance+1 ){
+            return Long.MAX_VALUE;
         }
         else {
             total = futureTasks*transmissionTime + (allTasks*(workerDwellTime/maximalAllowance)) + remainingJobTime;
