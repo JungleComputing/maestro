@@ -33,7 +33,7 @@ final class WorkerTaskInfo {
 
     /** How long in ns it takes to complete the rest of the job this task belongs to. */
     private long remainingJobTime;
-    
+
     private final boolean traceStats;
 
     private final long startTime = System.nanoTime();
@@ -178,10 +178,6 @@ final class WorkerTaskInfo {
     void setDwellTime( long workerDwellTime )
     {
         this.workerDwellTime = workerDwellTime;
-        if( traceStats ) {
-            double now = 1e-9*(System.nanoTime()-startTime);
-            System.out.println( "TRACE:newWorkerDwellTime " + label + " " + now + " " + workerDwellTime );
-        }
     }
 
     /** Register a new outstanding task. */

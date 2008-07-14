@@ -55,6 +55,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
     private boolean askMastersForWork = true;
     private final Random rng = new Random();
 
+    private final boolean traceStats;
+
     private HashMap<TaskType, WorkerTaskStats> taskStats = new HashMap<TaskType, WorkerTaskStats>();
 
     static final class MasterIdentifier implements Serializable {
@@ -117,6 +119,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	super( "Worker" );   // Create a thread with a name.
 	this.node = node;
 	this.jobs = jobs;
+        this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
 	receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
 	sendPort = new PacketSendPort<WorkerMessage>( ibis );
 	for( int i=0; i<numberOfProcessors; i++ ) {
@@ -581,6 +584,10 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	CompletionInfo[] completionInfo = node.getCompletionInfo( jobs );
 	WorkerQueueInfo[] workerQueueInfo = queue.getWorkerQueueInfo( taskStats );
 	long workerDwellTime = taskCompletionMoment-task.message.getQueueMoment();
+        if( traceStats ) {
+            double now = 1e-9*(System.nanoTime()-startTime);
+            System.out.println( "TRACE:workerDwellTime " + node.identifier() + " " + now + " " + 1e-9*workerDwellTime );
+        }
 	WorkerMessage msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 
