@@ -586,7 +586,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	long workerDwellTime = taskCompletionMoment-task.message.getQueueMoment();
         if( traceStats ) {
             double now = 1e-9*(System.nanoTime()-startTime);
-            System.out.println( "TRACE:workerDwellTime " + node.identifier() + " " + now + " " + 1e-9*workerDwellTime );
+            System.out.println( "TRACE:workerDwellTime " + taskType + " " + now + " " + 1e-9*workerDwellTime );
         }
 	WorkerMessage msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
