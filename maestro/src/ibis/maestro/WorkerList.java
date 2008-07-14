@@ -79,7 +79,7 @@ final class WorkerList {
             }
         }
         // FIXME: enable this again.
-        if( false ) {
+        if( true ) {
             for( TaskType t: types ) {
         	TaskInfoOnMaster info = getTaskInfo( t );
         	info.addWorker( worker );
