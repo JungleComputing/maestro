@@ -10,6 +10,10 @@ class TimeEstimate
     private long average;
     private boolean initial = true;
 
+    /**
+     * Constructs a new time estimate with the given initial value.
+     * @param initial The initial value of the time estimate.
+     */
     TimeEstimate( long initial )
     {
         average = initial;

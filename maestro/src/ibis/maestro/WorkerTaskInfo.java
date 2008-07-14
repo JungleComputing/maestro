@@ -36,6 +36,7 @@ final class WorkerTaskInfo {
     
     private final boolean traceStats;
 
+    private final long startTime = System.nanoTime();
     /**
      * @return A string representation of this class instance.
      */
@@ -135,8 +136,8 @@ final class WorkerTaskInfo {
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
         // Totally unfounded guesses, but we should learn soon enough what the real values are...
 	this.transmissionTimeEstimate = new TimeEstimate( pingTime );
-	this.roundtripTimeEstimate = new TimeEstimate( Service.WEEK_IN_NANOSECONDS ); // Pessimistic guess, since it is used for deadlines.
-        this.roundtripErrorEstimate = new TimeEstimate( Service.WEEK_IN_NANOSECONDS ); // Big error, since we're guessing.
+	this.roundtripTimeEstimate = new TimeEstimate( 2*pingTime );
+        this.roundtripErrorEstimate = new TimeEstimate( 2*pingTime );
 	this.workerDwellTime = 2*pingTime;
 	this.remainingJobTime = remainingTasks*(workerDwellTime+pingTime);
 	if( Settings.traceWorkerList || Settings.traceRemainingJobTime ) {
@@ -161,9 +162,10 @@ final class WorkerTaskInfo {
 	    Globals.log.reportProgress( label + ": roundTripTimeEstimate=" + roundtripTimeEstimate + " roundTripErrorEstimate=" + roundtripErrorEstimate + " transimssionTimeEstimate=" + transmissionTimeEstimate );
 	}
 	if( traceStats ) {
-	    System.out.println( "TRACE:roundtripTime " + label + " " + roundtripTimeEstimate );
-            System.out.println( "TRACE:roundtripError " + label + " " + roundtripErrorEstimate );
-            System.out.println( "TRACE:transmissionTime " + label + " " + transmissionTimeEstimate );
+	    long now = System.nanoTime()-startTime;
+	    System.out.println( "TRACE:roundtripTime " + label + " " + now + " " + roundtripTimeEstimate.getAverage() );
+            System.out.println( "TRACE:roundtripError " + label + " " + now + " " + roundtripErrorEstimate.getAverage() );
+            System.out.println( "TRACE:transmissionTime " + label + " " + now + " " + transmissionTimeEstimate.getAverage() );
 	}
     }
 
