@@ -188,14 +188,14 @@ final class WorkerInfo {
      * Register a task result for an outstanding task.
      * @param result The task result message that tells about this task.
      */
-    void registerTaskCompleted( TaskCompletedMessage result, long arrivalMoment )
+    TaskType registerTaskCompleted( TaskCompletedMessage result, long arrivalMoment )
     {
         final long id = result.taskId;    // The identifier of the task, as handed out by us.
 
         int ix = searchActiveTask( id );
         if( ix<0 ) {
             Globals.log.reportInternalError( "Master: ignoring reported result from task with unknown id " + id );
-            return;
+            return null;
         }
         ActiveTask task = activeTasks.remove( ix );
         long roundtripTime = arrivalMoment-task.startTime;
@@ -216,6 +216,7 @@ final class WorkerInfo {
                 " transmissionTime=" + Service.formatNanoseconds( newTransmissionTime )
             );
         }
+        return task.task.type;
     }
 
     /**
@@ -409,6 +410,7 @@ final class WorkerInfo {
     boolean isIdle( TaskType taskType )
     {
         WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
+        // FIXME: also return false on dead.
         if( !enabled || workerTaskInfo == null ) {
             return false;
         }

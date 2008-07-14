@@ -78,6 +78,13 @@ final class WorkerList {
                 info.addResearchBudget( RESEARCH_BUDGET_FOR_NEW_WORKER );
             }
         }
+        // FIXME: enable this again.
+        if( false ) {
+            for( TaskType t: types ) {
+        	TaskInfoOnMaster info = getTaskInfo( t );
+        	info.addWorker( worker );
+            }
+        }
         if( Settings.traceMasterProgress ){
             System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker + "; local=" + local );
         }
@@ -116,7 +123,7 @@ final class WorkerList {
      * @param identifier The identifier to search for.
      * @return True iff we know the given worker.
      */
-    boolean contains( WorkerIdentifier identifier )
+    private boolean contains( WorkerIdentifier identifier )
     {
         WorkerInfo i = searchWorker( workers, identifier );
         return i != null;
@@ -155,11 +162,11 @@ final class WorkerList {
      * free slot. In this context 'best' is simply the worker with the
      * shortest round-trip interval.
      *  
-     * @param taskType The type of task we want to execute.
+     * @param type The type of task we want to execute.
      * @return The info of the best worker for this task, or <code>null</code>
      *         if there currently aren't any workers for this task type.
      */
-    WorkerInfo selectBestWorker( TaskType taskType )
+    WorkerInfo selectBestWorker( TaskType type )
     {
         WorkerInfo best = null;
         long bestInterval = Long.MAX_VALUE;
@@ -170,15 +177,15 @@ final class WorkerList {
             WorkerInfo wi = workers.get( i );
 
             if( !wi.isDead() ) {
-                if( wi.isIdle( taskType ) ) {
+                if( wi.isIdle( type ) ) {
                     idleWorkers++;
                 }
                 competitors++;
-                long val = wi.estimateJobCompletion( taskType );
+                long val = wi.estimateJobCompletion( type );
 
                 if( val<Long.MAX_VALUE ) {
                     if( Settings.traceRemainingJobTime ) {
-                        System.out.println( "Worker " + wi + ": task type " + taskType + ": estimated completion time " + Service.formatNanoseconds( val ) );
+                        System.out.println( "Worker " + wi + ": task type " + type + ": estimated completion time " + Service.formatNanoseconds( val ) );
                     }
                     if( val<bestInterval ) {
                         bestInterval = val;
@@ -187,7 +194,7 @@ final class WorkerList {
                 }
             }
         }
-        TaskInfoOnMaster taskInfo = getTaskInfo( taskType );
+        TaskInfoOnMaster taskInfo = getTaskInfo( type );
         taskInfo.addResearchBudget( RESEARCH_BUDGET_PER_TASK );
         if( Settings.traceRemainingJobTime || Settings.traceMasterProgress ) {
             System.out.println( "Master: competitors=" + competitors + "; taskInfo=" + taskInfo );
@@ -202,8 +209,8 @@ final class WorkerList {
             for( int i=0; i<workers.size(); i++ ) {
                 WorkerInfo wi = workers.get( i );
 
-                if( wi.isIdle( taskType ) ) {
-                    long t = wi.getOptimisticRoundtripTime( taskType );
+                if( wi.isIdle( type ) ) {
+                    long t = wi.getOptimisticRoundtripTime( type );
                     if( t<bestTime ) {
                         candidate = wi;
                         bestTime = t;
@@ -223,19 +230,19 @@ final class WorkerList {
                 int busy = 0;
                 int notSupported = 0;
                 for( WorkerInfo wi: workers ){
-                    if( wi.supportsType( taskType ) ){
+                    if( wi.supportsType( type ) ){
                         busy++;
                     }
                     else {
                         notSupported++;
                     }
                 }
-                Globals.log.reportProgress( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for task of type " + taskType );
+                Globals.log.reportProgress( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for task of type " + type );
             }
         }
         else {
             if( Settings.traceMasterQueue ){
-        	Globals.log.reportProgress( "Selected " + best + " for task of type " + taskType + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) + "; taskInfo=" + taskInfo );
+        	Globals.log.reportProgress( "Selected " + best + " for task of type " + type + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) + "; taskInfo=" + taskInfo );
             }
         }
         return best;
