@@ -23,11 +23,21 @@ class JobInstanceIdentifier implements Serializable
      * @param userId The user identifier to include.
      * @param receivePortIdentifier The receive port to send the result to.
      */
-    JobInstanceIdentifier( Object userId, ReceivePortIdentifier receivePortIdentifier )
+    JobInstanceIdentifier( long id, Object userId, ReceivePortIdentifier receivePortIdentifier )
     {
-        this.id = serialNo++;
+        this.id = id;
         this.userId = userId;
         this.receivePort = receivePortIdentifier;
+    }
+
+    /**
+     * Constructs a new identifier.
+     * @param userId The user identifier to include.
+     * @param receivePortIdentifier The receive port to send the result to.
+     */
+    JobInstanceIdentifier( Object userId, ReceivePortIdentifier receivePortIdentifier )
+    {
+	this( serialNo++, userId, receivePortIdentifier );
     }
 
     /**
