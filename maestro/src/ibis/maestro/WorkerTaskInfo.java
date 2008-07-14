@@ -163,10 +163,10 @@ final class WorkerTaskInfo {
 	}
 	if( traceStats ) {
 	    double now = 1e-9*(System.nanoTime()-startTime);
-	    System.out.println( "TRACE:newRoundtripTime " + label + " " + now + " " + roundtripTime );
-	    System.out.println( "TRACE:newTransmissionTime " + label + " " + now + " " + transmissionTime );
-	    System.out.println( "TRACE:roundtripTime " + label + " " + now + " " + roundtripTimeEstimate.getAverage() + " " + roundtripErrorEstimate.getAverage() );
-            System.out.println( "TRACE:transmissionTime " + label + " " + now + " " + transmissionTimeEstimate.getAverage() );
+	    System.out.println( "TRACE:newRoundtripTime " + label + " " + now + " " + 1e-9*roundtripTime );
+	    System.out.println( "TRACE:newTransmissionTime " + label + " " + now + " " + 1e-9*transmissionTime );
+	    System.out.println( "TRACE:roundtripTime " + label + " " + now + " " + 1e-9*roundtripTimeEstimate.getAverage() + " " + 1e-9*roundtripErrorEstimate.getAverage() );
+            System.out.println( "TRACE:transmissionTime " + label + " " + now + " " + 1e-9*transmissionTimeEstimate.getAverage() );
 	}
     }
 
