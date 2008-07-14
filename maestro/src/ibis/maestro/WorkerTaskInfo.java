@@ -33,6 +33,8 @@ final class WorkerTaskInfo {
 
     /** How long in ns it takes to complete the rest of the job this task belongs to. */
     private long remainingJobTime;
+    
+    private final boolean traceStats;
 
     /**
      * @return A string representation of this class instance.
@@ -130,6 +132,7 @@ final class WorkerTaskInfo {
         this.maximalAllowance = local?3:1;
         this.maximalEverAllowance = maximalAllowance;
 
+        this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
         // Totally unfounded guesses, but we should learn soon enough what the real values are...
 	this.transmissionTimeEstimate = new TimeEstimate( pingTime );
 	this.roundtripTimeEstimate = new TimeEstimate( Service.WEEK_IN_NANOSECONDS ); // Pessimistic guess, since it is used for deadlines.
@@ -155,7 +158,12 @@ final class WorkerTaskInfo {
         roundtripErrorEstimate.addSample( roundtripError );
 	transmissionTimeEstimate.addSample( transmissionTime );
 	if( Settings.traceWorkerProgress || Settings.traceRemainingJobTime ) {
-	    System.out.println( label + ": new transmission time estimate: " + transmissionTimeEstimate );
+	    Globals.log.reportProgress( label + ": roundTripTimeEstimate=" + roundtripTimeEstimate + " roundTripErrorEstimate=" + roundtripErrorEstimate + " transimssionTimeEstimate=" + transmissionTimeEstimate );
+	}
+	if( traceStats ) {
+	    System.out.println( "TRACE:roundtripTime " + label + " " + roundtripTimeEstimate );
+            System.out.println( "TRACE:roundtripError " + label + " " + roundtripErrorEstimate );
+            System.out.println( "TRACE:transmissionTime " + label + " " + transmissionTimeEstimate );
 	}
     }
 
