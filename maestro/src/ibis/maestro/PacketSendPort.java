@@ -223,7 +223,7 @@ class PacketSendPort<T extends Serializable> {
         if( info.local ) {
             // This is the local destination. Use the back door to get
             // the info to the destination.
-            localListener.messageReceived( data );
+            localListener.messageReceived( data, System.nanoTime() );
             len = 0;
             synchronized( this ) {
                 localSentCount++;

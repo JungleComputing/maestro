@@ -126,14 +126,14 @@ final class WorkerList {
      * Register a task result in the info of the worker that handled it.
      * @param result The task result.
      */
-    void registerTaskCompleted( TaskCompletedMessage result )
+    void registerTaskCompleted( TaskCompletedMessage result, long arrivalMoment )
     {
         WorkerInfo w = searchWorker( workers, result.source );
         if( w == null ) {
             System.err.println( "Worker status message from unknown worker " + result.source );
             return;
         }
-        w.registerTaskCompleted( result );
+        w.registerTaskCompleted( result, arrivalMoment );
     }
 
     /**
@@ -304,10 +304,10 @@ final class WorkerList {
         return res;
     }
 
-    void registerCompletionInfo( WorkerIdentifier workerID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
+    void registerCompletionInfo( WorkerIdentifier workerID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
     {
         WorkerInfo w = workers.get( workerID.value );
-        w.registerWorkerInfo( workerQueueInfo, completionInfo );	
+        w.registerWorkerInfo( workerQueueInfo, completionInfo, arrivalMoment );	
     }
 
     /** Given a worker, return the identifier of this master on the worker.

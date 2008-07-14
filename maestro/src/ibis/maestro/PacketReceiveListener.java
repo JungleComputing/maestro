@@ -15,8 +15,9 @@ interface PacketReceiveListener<T extends Serializable> {
     /**
      * Handle the reception of packet <code>packet</code>.
      * @param packet The packet that was received.
+     * @param arrivalMoment TODO
      */
-    void messageReceived( T packet );
+    void messageReceived( T packet, long arrivalMoment );
 
     /**
      * Returns true iff this listener is associated with the given port.

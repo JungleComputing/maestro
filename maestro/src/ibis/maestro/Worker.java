@@ -389,25 +389,25 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
      * Handle a message containing a new task to run.
      * 
      * @param msg The message to handle.
+     * @param arrivalMoment The moment in ns this message arrived.
      */
-    private void handleRunTaskMessage( RunTaskMessage msg )
+    private void handleRunTaskMessage( RunTaskMessage msg, long arrivalMoment )
     {
-	long now = System.nanoTime();
 	MasterInfo mi;
 
 	synchronized( queue ) {
 	    if( activeTime == 0L ) {
-		activeTime = now;
+		activeTime = arrivalMoment;
 	    }
 	    if( queueEmptyMoment>0L ){
 		// The queue was empty before we entered this
 		// task in it. Record this for the statistics.
-		long queueEmptyInterval = now - queueEmptyMoment;
+		long queueEmptyInterval = arrivalMoment - queueEmptyMoment;
 		idleDuration += queueEmptyInterval;
 		queueEmptyMoment = 0L;
 	    }
 	    int length = queue.add( msg );
-            msg.setQueueMoment( now, length );
+            msg.setQueueMoment( arrivalMoment, length );
 	    mi = masters.get( msg.source.value );
 	}
 	if( mi != null ) {
@@ -433,7 +433,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
      * Handles task request message <code>msg</code>.
      * @param msg The task we received and will put in the queue.
      */
-    public void messageReceived( MasterMessage msg )
+    public void messageReceived( MasterMessage msg, long arrivalMoment )
     {
 	if( Settings.traceWorkerProgress ){
 	    Globals.log.reportProgress( "Worker: received message " + msg );
@@ -441,7 +441,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	if( msg instanceof RunTaskMessage ){
 	    RunTaskMessage runTaskMessage = (RunTaskMessage) msg;
 
-	    handleRunTaskMessage( runTaskMessage );
+	    handleRunTaskMessage( runTaskMessage, arrivalMoment );
 	}
 	else if( msg instanceof WorkerAcceptMessage ) {
 	    WorkerAcceptMessage am = (WorkerAcceptMessage) msg;
@@ -572,8 +572,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
     @Override
     public void reportTaskCompletion( RunTask task, Object result )
     {
-	long now = System.nanoTime();
-	long queueInterval = task.message.getRunMoment()-task.message.getQueueMoment();
+	long taskCompletionMoment = System.nanoTime();
 	TaskType taskType = task.message.task.type;
 	Job t = findJob( taskType );
 	int nextTaskNo = taskType.taskNo+1;
@@ -606,7 +605,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 		}
 	    }
 	    WorkerTaskStats stats = getWorkerTaskStats( taskType );
-	    stats.countTask( queueInterval, now-task.message.getRunMoment() );
+	    long queueInterval = task.message.getRunMoment()-task.message.getQueueMoment();
+	    stats.countTask( queueInterval, taskCompletionMoment-task.message.getRunMoment() );
 	    runningTasks--;
 	    if( Settings.traceRemainingJobTime ) {
 		Globals.log.reportProgress( "Completed " + task.message.task + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );

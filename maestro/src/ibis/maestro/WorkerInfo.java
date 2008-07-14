@@ -135,14 +135,14 @@ final class WorkerInfo {
         }        
     }
 
-    void registerWorkerInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
+    void registerWorkerInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
     {
         if( Settings.traceWorkerList && !enabled ){
             System.out.println( "Enabled worker " + identifier + " (" + port + ")" );
         }
         if( pingSentTime != 0 ) {
             // We are measuring this round-trip time.
-            pingTime = System.nanoTime()-pingSentTime;
+            pingTime = arrivalMoment-pingSentTime;
             pingSentTime = 0L;  // We're no longer measuring a ping time.
             setPingTime( workerTaskInfoTable, pingTime );
             if( Settings.traceRemainingJobTime ) {
@@ -188,26 +188,25 @@ final class WorkerInfo {
      * Register a task result for an outstanding task.
      * @param result The task result message that tells about this task.
      */
-    void registerTaskCompleted( TaskCompletedMessage result )
+    void registerTaskCompleted( TaskCompletedMessage result, long arrivalMoment )
     {
         final long id = result.taskId;    // The identifier of the task, as handed out by us.
 
-        long now = System.nanoTime();
         int ix = searchActiveTask( id );
         if( ix<0 ) {
             Globals.log.reportInternalError( "Master: ignoring reported result from task with unknown id " + id );
             return;
         }
         ActiveTask task = activeTasks.remove( ix );
-        long roundtripTime = now-task.startTime;
+        long roundtripTime = arrivalMoment-task.startTime;
         long roundtripError = Math.abs( task.predictedDuration-roundtripTime );
 	long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
 
-        if( task.deadline<now ) {
+        if( task.deadline<arrivalMoment ) {
             //Globals.log.reportError( "Task " + task + " missed deadline by " + Service.formatNanoseconds( now-task.deadline ) );
             missedDeadlines++;
         }
-        registerWorkerInfo( result.workerQueueInfo, result.completionInfo );
+        registerWorkerInfo( result.workerQueueInfo, result.completionInfo, arrivalMoment );
         task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime, roundtripError );
         if( Settings.traceMasterProgress ){
             System.out.println(

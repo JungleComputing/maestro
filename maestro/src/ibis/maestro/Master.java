@@ -171,13 +171,13 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * A worker has sent use a status message for a task. Process it.
      * @param result The status message.
      */
-    private void handleTaskCompletedMessage( TaskCompletedMessage result )
+    private void handleTaskCompletedMessage( TaskCompletedMessage result, long arrivalMoment )
     {
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Received a worker task completed message " + result );
         }
         synchronized( queue ){
-            workers.registerTaskCompleted( result );
+            workers.registerTaskCompleted( result, arrivalMoment );
             handledTaskCount++;
         }
         // Force the queue to drain.
@@ -216,14 +216,15 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * A worker has sent us a message with its current status, handle it.
      * 
      * @param m The update message.
+     * @param arrivalMoment TODO
      */
-    private void handleWorkerUpdateMessage( WorkerUpdateMessage m )
+    private void handleWorkerUpdateMessage( WorkerUpdateMessage m, long arrivalMoment )
     {
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Received worker update message " + m );
         }
         synchronized( queue ){
-            workers.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo );
+            workers.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo, arrivalMoment );
             queue.notifyAll();
         }
     }
@@ -275,7 +276,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * @param msg The message we received.
      */
     @Override
-    public void messageReceived( WorkerMessage msg )
+    public void messageReceived( WorkerMessage msg, long arrivalMoment )
     {
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Master: received message " + msg );
@@ -283,7 +284,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( msg instanceof TaskCompletedMessage ) {
             TaskCompletedMessage result = (TaskCompletedMessage) msg;
 
-            handleTaskCompletedMessage( result );
+            handleTaskCompletedMessage( result, arrivalMoment );
         }
         else if( msg instanceof JobResultMessage ) {
             JobResultMessage m = (JobResultMessage) msg;
@@ -293,7 +294,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         else if( msg instanceof WorkerUpdateMessage ) {
             WorkerUpdateMessage m = (WorkerUpdateMessage) msg;
 
-            handleWorkerUpdateMessage( m );
+            handleWorkerUpdateMessage( m, arrivalMoment );
         }
         else if( msg instanceof RegisterWorkerMessage ) {
             RegisterWorkerMessage m = (RegisterWorkerMessage) msg;
