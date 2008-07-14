@@ -25,10 +25,13 @@ public class WorkerQueueTest extends TestCase
     private static void removeFromQueue( WorkerQueue queue, Integer... ids )
     {
 	for( Integer id: ids ) {
+            if( queue.isEmpty() ) {
+                fail( "Queue is empty, while I expected " + id );
+            }
 	    RunTaskMessage msg = queue.remove();
 	    
 	    if( msg.task.jobInstance.id != id ) {
-		fail( "Unexpected task from worker queue: " + msg.taskId + " instead of " + id );
+		fail( "Unexpected task from worker queue: " + msg.task.jobInstance.id + " instead of " + id );
 	    }
 	}
     }
@@ -43,10 +46,23 @@ public class WorkerQueueTest extends TestCase
 
 	addToQueue( type, queue, 0 );
 	removeFromQueue( queue, 0 );
+        if( !queue.isEmpty() ) {
+            fail( "Queue should be empty" );
+        }
 
 	addToQueue( type, queue, 1, 0 );
 	removeFromQueue( queue, 0, 1 );
+        if( !queue.isEmpty() ) {
+            fail( "Queue should be empty" );
+        }
 
+        addToQueue( type, queue, 4, 3, 2 );
+        removeFromQueue( queue, 2 );
+        addToQueue( type, queue, 0, 1, 5, 6 );
+        removeFromQueue( queue, 0, 1, 3, 4, 5, 6 );
+        if( !queue.isEmpty() ) {
+            fail( "Queue should be empty" );
+        }
     }
 
 }

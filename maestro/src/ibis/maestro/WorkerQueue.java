@@ -216,9 +216,6 @@ final class WorkerQueue {
      */
     RunTaskMessage remove()
     {
-        if( queue.isEmpty() ) {
-            return null;
-        }
         RunTaskMessage res = queue.remove( 0 );
         TypeInfo info = getTypeInfo( res.task.type );
         info.registerRemove();

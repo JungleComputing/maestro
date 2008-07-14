@@ -180,6 +180,11 @@ final class MasterQueue extends Queue {
             Globals.log.reportProgress( "Adding " + task.formatJobAndType() + " at position " + pos + " of master queue; length is now " + queue.size() );
         }
     }
+    
+    protected TaskInstance remove()
+    {
+        return queue.remove( 0 );
+    }
 
     /**
      * Given a list of workers and a subjob structure to fill,
