@@ -1,7 +1,5 @@
 package ibis.maestro;
 
-import ibis.maestro.Job.JobIdentifier;
-
 import java.io.PrintStream;
 import java.util.ArrayList;
 
@@ -68,15 +66,13 @@ public final class JobList
      */
     void registerJob( Job job )
     {
-        JobIdentifier id = job.id;
         Task tasks[] = job.tasks;
 
         for( int i=0; i<tasks.length; i++ ){
             Task j = tasks[i];
 
             if( j.isSupported() ) {
-        	// FIXME: -1 is wrong!!!!
-                final TaskType taskType = new TaskType( id, i, (tasks.length-1)-i, -1 );
+                final TaskType taskType = taskTypes.get( i );
                 if( Settings.traceTypeHandling ) {
                     System.out.println( "Node supports task type " + taskType);
                 }

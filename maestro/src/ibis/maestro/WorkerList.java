@@ -118,17 +118,6 @@ final class WorkerList {
         }
     }
 
-    /** Returns true iff we have a worker on our list with the
-     * given identifier.
-     * @param identifier The identifier to search for.
-     * @return True iff we know the given worker.
-     */
-    private boolean contains( WorkerIdentifier identifier )
-    {
-        WorkerInfo i = searchWorker( workers, identifier );
-        return i != null;
-    }
-
     /**
      * Register a task result in the info of the worker that handled it.
      * @param result The task result.
