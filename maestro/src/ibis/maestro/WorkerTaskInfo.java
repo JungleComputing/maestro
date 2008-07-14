@@ -178,6 +178,10 @@ final class WorkerTaskInfo {
     void setDwellTime( long workerDwellTime )
     {
         this.workerDwellTime = workerDwellTime;
+        if( traceStats ) {
+            double now = 1e-9*(System.nanoTime()-startTime);
+            System.out.println( "TRACE:newWorkerDwellTime " + label + " " + now + " " + workerDwellTime );
+        }
     }
 
     /** Register a new outstanding task. */
