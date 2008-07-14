@@ -162,9 +162,8 @@ final class WorkerTaskInfo {
 	    Globals.log.reportProgress( label + ": roundTripTimeEstimate=" + roundtripTimeEstimate + " roundTripErrorEstimate=" + roundtripErrorEstimate + " transimssionTimeEstimate=" + transmissionTimeEstimate );
 	}
 	if( traceStats ) {
-	    long now = System.nanoTime()-startTime;
-	    System.out.println( "TRACE:roundtripTime " + label + " " + now + " " + roundtripTimeEstimate.getAverage() );
-            System.out.println( "TRACE:roundtripError " + label + " " + now + " " + roundtripErrorEstimate.getAverage() );
+	    double now = 1e-9*(System.nanoTime()-startTime);
+	    System.out.println( "TRACE:roundtripTime " + label + " " + now + " " + roundtripTimeEstimate.getAverage() + " " + roundtripErrorEstimate.getAverage() );
             System.out.println( "TRACE:transmissionTime " + label + " " + now + " " + transmissionTimeEstimate.getAverage() );
 	}
     }

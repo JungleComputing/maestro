@@ -48,7 +48,7 @@ class TimeEstimate
             initial = false;
         }
         else {
-            average = (2*average+val)/3;
+            average = (9*average+val)/10;
         }
     }
 
