@@ -146,7 +146,7 @@ public final class Job
             return null;
         }
         if( taskType.taskNo>0 ) {
-            return new TaskType( taskType.job, taskType.taskNo-1, taskType.remainingTasks+1, taskType.index-1 );
+            return taskTypes[taskType.taskNo-1];
         }
         return null;
     }
@@ -164,7 +164,7 @@ public final class Job
 	    return null;
 	}
 	if( taskType.taskNo<tasks.length-1 ) {
-	    return new TaskType( taskType.job, taskType.taskNo+1, taskType.remainingTasks+1, taskType.index+1 );
+	    return taskTypes[taskType.taskNo+1];
 	}
 	return null;
     }
