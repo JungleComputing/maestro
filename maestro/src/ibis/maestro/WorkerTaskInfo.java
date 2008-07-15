@@ -235,10 +235,7 @@ final class WorkerTaskInfo {
      */
     boolean isIdle()
     {
-        if( outstandingTasks>0 || remainingJobTime == Long.MAX_VALUE ) {
-            return false;
-        }
-        return true;
+        return ( outstandingTasks==0 && remainingJobTime != Long.MAX_VALUE );
     }
 
     /**

@@ -58,16 +58,6 @@ final class WorkerList {
         return null;
     }
 
-    private static int searchWorker( List<WorkerInfo> workers, ReceivePortIdentifier id ) {
-        for( int i=0; i<workers.size(); i++ ) {
-            WorkerInfo w = workers.get(i);
-            if( w.port.equals( id ) ) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
     WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, MasterIdentifier identifierForWorker, TaskType[] types )
     {
         Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
@@ -157,6 +147,7 @@ final class WorkerList {
         if( true ){
             TaskInfoOnMaster taskInfo = getTaskInfo( type );
             WorkerInfo worker = taskInfo.getReadyWorker( type );
+            taskInfo.addResearchBudget( RESEARCH_BUDGET_PER_TASK );
             return worker;
         }
         else {
@@ -239,17 +230,6 @@ final class WorkerList {
             }
             return best;
         }
-    }
-
-    /**
-     * Given a worker, return true iff we know about this worker.
-     * @param worker The worker we want to know about.
-     * @return True iff this is a known worker.
-     */
-    boolean isKnownWorker( ReceivePortIdentifier worker )
-    {
-        int ix = searchWorker( workers, worker );
-        return ix>=0;
     }
 
     /** Given a worker identifier, declare it dead.

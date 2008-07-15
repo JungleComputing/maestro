@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 import ibis.maestro.Master.WorkerIdentifier;
 import ibis.maestro.Worker.MasterIdentifier;
@@ -389,32 +388,13 @@ final class WorkerInfo {
         }
     }
 
-    /**
-     * Given a print stream, print some statistics about this worker.
-     * @param s The stream to print to.
-     */
-    private void printParsableStatistics( PrintStream s, IbisIdentifier me )
-    {
-        Enumeration<TaskType> keys = workerTaskInfoTable.keys();
-        IbisIdentifier other = port.ibisIdentifier();
-
-        while( keys.hasMoreElements() ){
-            TaskType taskType = keys.nextElement();
-            WorkerTaskInfo info = workerTaskInfoTable.get( taskType );
-            if( info.didWork() ) {
-                int submissions = info.getSubmissions();
-                s.println( "SUBMISSIONS " + taskType.toString() + " FROM " + me + " TO " + other + " ARE " + submissions );
-            }
-        }
-    }
-
     boolean isIdle( TaskType taskType )
     {
         WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
         if( !enabled || dead || workerTaskInfo == null ) {
             return false;
         }
-        return workerTaskInfo.isReady();
+        return workerTaskInfo.isIdle();
     }
 
     boolean isReady( TaskType taskType )

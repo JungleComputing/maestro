@@ -222,22 +222,22 @@ final class MasterQueue extends Queue {
                     if( Settings.traceMasterQueue ){
                         System.out.println( "Reserved a task of type " + type + " for worker " + worker );
                     }
+                    ix++;
+                    continue;
                 }
-                else {
-                    queue.remove( ix );
-                    info.registerRemove();
-                    if( Settings.traceQueuing ) {
-                        Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() );
-                    }
-                    sub.task = task;
-                    sub.worker = worker;
-                    sub.predictedDuration = worker.getRoundtripEstimate( type );
-                    sub.deadline = System.nanoTime()+Settings.DEADLINE_MARGIN*sub.predictedDuration;
-                    if( Settings.traceMasterQueue ){
-                        System.out.println( "Found a worker for task type " + type );
-                    }
+                queue.remove( ix );
+                info.registerRemove();
+                if( Settings.traceQueuing ) {
+                    Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() );
                 }
-		break;
+                sub.task = task;
+                sub.worker = worker;
+                sub.predictedDuration = worker.getRoundtripEstimate( type );
+                sub.deadline = System.nanoTime()+Settings.DEADLINE_MARGIN*sub.predictedDuration;
+                if( Settings.traceMasterQueue ){
+                    System.out.println( "Found a worker for task type " + type );
+                }
+                break;
 	    }
 	    noReadyWorkers.add( type );
 	    if( Settings.traceMasterQueue ){
@@ -245,7 +245,7 @@ final class MasterQueue extends Queue {
 	    }
 	    ix++;
 	}
-        return reserved;
+        return ix;
     }
 
     @SuppressWarnings("synthetic-access")
