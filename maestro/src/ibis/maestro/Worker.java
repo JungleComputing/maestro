@@ -485,7 +485,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 			}
 			if( taskSources.isEmpty() && unregisteredMasters.isEmpty() ){
 			    // There was no master to subscribe to, update, or ask for work.
-			    if( Settings.traceWorkerProgress ) {
+			    if( Settings.traceWorkerProgress || Settings.traceWaits ) {
 				System.out.println( "Worker: waiting for new tasks in queue" );
 			    }
                             // Wait a little if there is nothing to do.

@@ -50,6 +50,9 @@ class Settings {
     /** Trace all queuing and dequeuing. */
     static final boolean traceQueuing = false;
 
+    /** Print a reason for every wait() that we do. */
+    static final boolean traceWaits = false;
+
     /** Multiplier of the estimated completion time to
      * get a deadline for a task.
      */

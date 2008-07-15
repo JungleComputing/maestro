@@ -315,12 +315,14 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     /**
      * Submit all work currently in the queues until all workers are busy
      * or all work has been submitted.
+     * @return True if we stop because all workers are busy, otherwise we stop because there is no work to dispatch.
      */
-    private void submitAllPossibleTasks()
+    private boolean submitAllPossibleTasks()
     {
         Subtask sub = new Subtask();
         long taskId;
         int reserved = 0;
+        boolean stopBecauseBusy;
         HashSet<TaskType> noReadyWorkers = new HashSet<TaskType>();
 
         if( Settings.traceMasterProgress ){
@@ -331,6 +333,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             workers.resetReservations();
             while( true ) {
                 if( queue.isEmpty() ) {
+                    stopBecauseBusy = false;
                     break;
                 }
                 reserved = queue.selectSubmisson( reserved, sub, workers, noReadyWorkers );
@@ -338,6 +341,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 TaskInstance task = sub.task;
                 long deadline = sub.deadline;
                 if( worker == null ){
+                    stopBecauseBusy = true;
                     break;
                 }
                 taskId = nextTaskId++;
@@ -355,6 +359,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 }
             }
         }
+        return stopBecauseBusy;
     }
 
     /**
@@ -381,7 +386,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             System.out.println( "Starting master thread" );
         }
         while( true ){
-            submitAllPossibleTasks();
+            boolean everyoneBusy = submitAllPossibleTasks();
 
             // Since the queue is empty, we can only wait for new tasks.
             try {
@@ -389,8 +394,13 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                     if( isFinished() ){
                         break;
                     }
-                    if( Settings.traceMasterProgress ){
-                        System.out.println( "Master: waiting" );                    
+                    if( Settings.traceMasterProgress || Settings.traceWaits ){
+                        if( everyoneBusy ) {
+                            System.out.println( "Master: all workers busy; waiting");
+                        }
+                        else {
+                            System.out.println( "Master: no work to distribute; waiting" );
+                        }
                     }
                     queue.wait();
                 }
