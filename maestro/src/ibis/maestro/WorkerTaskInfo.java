@@ -241,6 +241,14 @@ final class WorkerTaskInfo {
         return true;
     }
 
+    /**
+     * @return True iff this worker is ready to handle this task, but isn't doing so yet.
+     */
+    boolean isReady()
+    {
+        return outstandingTasks<maximalAllowance;
+    }
+
     /** We now know this worker has the given ping time. Use this as the first estimate
      * for the transmission time if we don't have anything better.
      * @param pingTime The time in ns to ping this worker.

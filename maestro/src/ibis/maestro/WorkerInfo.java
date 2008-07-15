@@ -410,11 +410,19 @@ final class WorkerInfo {
     boolean isIdle( TaskType taskType )
     {
         WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
-        // FIXME: also return false on dead.
-        if( !enabled || workerTaskInfo == null ) {
+        if( !enabled || dead || workerTaskInfo == null ) {
             return false;
         }
-        return workerTaskInfo.isIdle();
+        return workerTaskInfo.isReady();
+    }
+
+    boolean isReady( TaskType taskType )
+    {
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
+        if( !enabled || dead || workerTaskInfo == null ) {
+            return false;
+        }
+        return workerTaskInfo.isReady();
     }
 
     void setPingStartMoment( long t )

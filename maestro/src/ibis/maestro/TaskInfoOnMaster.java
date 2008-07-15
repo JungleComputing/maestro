@@ -59,7 +59,7 @@ public class TaskInfoOnMaster
     protected WorkerInfo getReadyWorker( TaskType type )
     {
 	for( WorkerInfo wi: workers ) {
-	    if( wi.isIdle( type ) ) {
+	    if( wi.isReady( type ) ) {
 		return wi;
 	    }
 	}
