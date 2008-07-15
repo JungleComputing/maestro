@@ -2,6 +2,7 @@ package ibis.maestro;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 /**
  * A class representing the master work queue.
@@ -197,7 +198,7 @@ final class MasterQueue extends Queue {
      * @param workers The list of workers to choose from.
      */
     @SuppressWarnings("synthetic-access")
-    int selectSubmisson( int reserved, Subtask sub, WorkerList workers )
+    int selectSubmisson( int reserved, Subtask sub, WorkerList workers, HashSet<TaskType> noReadyWorkers )
     {
 	int ix = reserved;
 
@@ -206,6 +207,14 @@ final class MasterQueue extends Queue {
 	while( ix<queue.size() ) {
 	    TaskInstance task = queue.get( ix );
 	    TaskType type = task.type;
+	    if( noReadyWorkers.contains( type ) ) {
+	        // There are no ready workers for this type, don't bother trying.
+	        if( Settings.traceMasterQueue ){
+	            System.out.println( "Skipping task of type " + type );
+	        }
+	        ix++;
+	        continue;
+	    }
 	    TypeInfo info = getTypeInfo( type );
 	    WorkerInfo worker = workers.selectBestWorker( type );
 	    if( worker != null ) {
@@ -230,6 +239,7 @@ final class MasterQueue extends Queue {
                 }
 		break;
 	    }
+	    noReadyWorkers.add( type );
 	    if( Settings.traceMasterQueue ){
 		System.out.println( "No ready worker for task type " + type );
 	    }

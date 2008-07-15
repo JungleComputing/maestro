@@ -7,6 +7,7 @@ import ibis.ipl.ReceivePortIdentifier;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.HashSet;
 
 /**
  * A master in the Maestro flow graph framework.
@@ -320,6 +321,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         Subtask sub = new Subtask();
         long taskId;
         int reserved = 0;
+        HashSet<TaskType> noReadyWorkers = new HashSet<TaskType>();
 
         if( Settings.traceMasterProgress ){
             System.out.println( "Master: submitting all possible tasks" );
@@ -331,7 +333,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 if( queue.isEmpty() ) {
                     break;
                 }
-                reserved = queue.selectSubmisson( reserved, sub, workers );
+                reserved = queue.selectSubmisson( reserved, sub, workers, noReadyWorkers );
                 WorkerInfo worker = sub.worker;
                 TaskInstance task = sub.task;
                 long deadline = sub.deadline;

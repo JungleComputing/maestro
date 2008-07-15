@@ -20,6 +20,7 @@ final class WorkerInfo {
     /** The active tasks of this worker. */
     private final ArrayList<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
 
+    // FIXME: use ArrayList.
     private final Hashtable<TaskType,WorkerTaskInfo> workerTaskInfoTable = new Hashtable<TaskType, WorkerTaskInfo>();
 
     /** Our local identifier of this worker. */
