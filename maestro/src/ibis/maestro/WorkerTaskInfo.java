@@ -149,7 +149,7 @@ final class WorkerTaskInfo {
      * Registers the completion of a task.
      * @param transmissionTime The transmission time of this task.
      * @param roundtripTime The total roundtrip time of this task.
-     * @param roundtripError 
+     * @param roundtripError The error in the previously predicted roundtrip time of this task.
      */
     void registerTaskCompleted( long transmissionTime, long roundtripTime, long roundtripError )
     {
@@ -158,7 +158,7 @@ final class WorkerTaskInfo {
         roundtripTimeEstimate.addSample(roundtripTime );
         roundtripErrorEstimate.addSample( roundtripError );
 	transmissionTimeEstimate.addSample( transmissionTime );
-	if( Settings.traceWorkerProgress || Settings.traceRemainingJobTime ) {
+	if( Settings.traceMasterProgress || Settings.traceRemainingJobTime ) {
 	    Globals.log.reportProgress( label + ": roundTripTimeEstimate=" + roundtripTimeEstimate + " roundTripErrorEstimate=" + roundtripErrorEstimate + " transimssionTimeEstimate=" + transmissionTimeEstimate );
 	}
 	if( traceStats ) {

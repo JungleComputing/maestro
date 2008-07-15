@@ -113,7 +113,7 @@ final class WorkerList {
     {
         WorkerInfo w = searchWorker( workers, result.source );
         if( w == null ) {
-            System.err.println( "Worker status message from unknown worker " + result.source );
+            Globals.log.reportError( "Worker status message from unknown worker " + result.source );
             return;
         }
         w.registerTaskCompleted( result, arrivalMoment );
