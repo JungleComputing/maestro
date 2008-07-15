@@ -489,7 +489,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 				System.out.println( "Worker: waiting for new tasks in queue" );
 			    }
                             // Wait a little if there is nothing to do.
-			    queue.wait( infoSendTime.getAverage()*2 );
+			    queue.wait( (infoSendTime.getAverage()*2)/Service.MILLISECOND_IN_NANOSECONDS );
 			}
 			else {
 			    askForWork = true;
