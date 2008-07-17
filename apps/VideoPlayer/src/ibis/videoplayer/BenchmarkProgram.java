@@ -3,6 +3,7 @@ package ibis.videoplayer;
 import ibis.maestro.CompletionListener;
 import ibis.maestro.Job;
 import ibis.maestro.JobList;
+import ibis.maestro.LabelTracker;
 import ibis.maestro.Node;
 import ibis.maestro.Service;
 import ibis.maestro.Task;
@@ -413,8 +414,8 @@ class BenchmarkProgram {
 	    System.exit( 1 );
 	}
 	System.out.println( "frames=" + frames + " goForMaestro=" + goForMaestro + " saveFrames=" + saveFrames + " oneTask=" + oneTask + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale  );
-	JobList tasks = new JobList();
-	Job convertTask;
+	JobList jobs = new JobList();
+	Job convertJob;
 	Listener listener = new Listener();
 	File dir = saveFrames?outputDir:null;
 	if( oneTask ) {
@@ -423,14 +424,14 @@ class BenchmarkProgram {
                 System.exit( 1 );
 	    }
 	    System.out.println( "One-task benchmark" );
-	    convertTask = tasks.createJob(
+	    convertJob = jobs.createJob(
 		    "benchmark",
 		    new ProcessFrameTask( slowScale, slowSharpen, dir )
 	    );
 	}
 	else {
 	    if( saveFrames ){
-		convertTask = tasks.createJob(
+		convertJob = jobs.createJob(
 			"benchmark",
 			new GenerateFrameTask(),
 			new ScaleUpFrameTask( 2, slowScale, allowScale ),
@@ -440,7 +441,7 @@ class BenchmarkProgram {
 		);
 	    }
 	    else {
-		convertTask = tasks.createJob(
+		convertJob = jobs.createJob(
 			"benchmark",
 			new GenerateFrameTask(),
 			new ScaleUpFrameTask( 2, slowScale, allowScale ),
@@ -450,7 +451,7 @@ class BenchmarkProgram {
 		);
 	    }
 	}
-	Node node = new Node( tasks, goForMaestro );
+	Node node = new Node( jobs, goForMaestro );
 
 	removeDirectory( dir );
 
@@ -459,7 +460,7 @@ class BenchmarkProgram {
 	if( node.isMaestro() ) {
 	    for( int frame=0; frame<frames; frame++ ){
 		Object label = listener.getLabel();
-		convertTask.submit( node, frame, label, listener );
+		convertJob.submit( node, frame, label, listener );
 	    }
 	    listener.setFinished();
 	    System.out.println( "Jobs submitted" );
