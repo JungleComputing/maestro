@@ -71,7 +71,7 @@ public class TaskInfoOnMaster
      * of ready workers.
      * @param w The worker that completed a task.
      */
-    protected void registerWorkerCompleted(WorkerInfo w)
+    protected void registerWorkerCompleted( WorkerInfo w )
     {
 	workers.remove( w );
 	workers.add( 0, w );
