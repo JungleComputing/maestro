@@ -48,7 +48,7 @@ class Settings {
     static final boolean traceSends = false;
 
     /** Trace all queuing and dequeuing. */
-    static final boolean traceQueuing = true;
+    static final boolean traceQueuing = false;
 
     /** Print a reason for every wait() that we do. */
     static final boolean traceWaits = false;

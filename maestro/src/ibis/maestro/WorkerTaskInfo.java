@@ -71,6 +71,11 @@ final class WorkerTaskInfo {
         if( transmissionTime == Long.MAX_VALUE ) {
             total = Long.MAX_VALUE;
         }
+        else if( futureTasks>(executedTasks/2+1) ){
+            // Don't venture to predict about more future jobs
+            // than you've already handled.
+            total = Long.MAX_VALUE;
+        }
         else {
             total = futureTasks*transmissionTime + this.dequeueTime*allTasks + this.computeTime + remainingJobTime;
         }
@@ -235,6 +240,12 @@ final class WorkerTaskInfo {
                 // we will increase its allowance again.
 		maximalAllowance = 0;
 	    }
+            if( maximalAllowance>10 ){
+                // We arbitrarily limit the maximal allowance to
+                // 10 since larger than that doesn't seem useful.
+                // FIXME: try to base the limit on something reasoned.
+                maximalAllowance = 10;
+            }
 	    if( maximalEverAllowance<maximalAllowance ) {
 		maximalEverAllowance = maximalAllowance;
 	    }

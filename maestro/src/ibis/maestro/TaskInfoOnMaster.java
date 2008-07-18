@@ -58,7 +58,7 @@ public class TaskInfoOnMaster
                 if( !worker.isDead() ) {
                     long val = wi.estimateJobCompletion();
 
-                    if( !wi.isReady() ) {
+                    if( wi.isReady() ) {
                         readyWorker = true;
                     }
                     if( val<Long.MAX_VALUE ) {
