@@ -47,7 +47,7 @@ final class WorkerInfo {
     @Override
     public String toString()
     {
-        return "Worker " + identifier;
+        return identifier.toString();
     }
 
     WorkerInfo( WorkerList wl, ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local, TaskType[] types )

@@ -64,9 +64,6 @@ public class TaskInfoOnMaster
                     long val = wi.estimateJobCompletion();
 
                     if( val<Long.MAX_VALUE ) {
-                        if( Settings.traceRemainingJobTime ) {
-                            System.out.println( "Worker " + wi + ": task type " + type + ": estimated completion time " + Service.formatNanoseconds( val ) );
-                        }
                         if( val<bestInterval ) {
                             bestInterval = val;
                             best = wi;
@@ -74,8 +71,23 @@ public class TaskInfoOnMaster
                     }
                 }
             }
-            if( Settings.traceRemainingJobTime || Settings.traceMasterProgress ) {
-                System.out.println( "Master: competitors=" + competitors + "; taskInfo=" + this );
+            if( Settings.traceRemainingJobTime || Settings.traceMasterProgress || Settings.traceWorkerSelection ) {
+                for( WorkerTaskInfo wi: workers ) {
+                    System.out.print( "Worker for " + type + ":" );
+                    WorkerInfo worker = wi.worker;
+                    System.out.print( " " + worker + ":" );
+                    if( worker.isDead() ) {
+                        System.out.print( "DEAD" );
+                    }
+                    else {
+                        long val = wi.estimateJobCompletion();
+                        System.out.print( Service.formatNanoseconds( val ) );
+                    }
+                    if( wi == best ) {
+                        System.out.print( "<=" );
+                    }
+                }
+                System.out.println();
             }
 
             if( best == null ) {

@@ -64,7 +64,7 @@ public final class Job
         @Override
         public String toString()
         {
-            return "id=" + id;
+            return "job=" + id;
         }
     }
 
