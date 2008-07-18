@@ -273,65 +273,10 @@ final class WorkerInfo {
         WorkerTaskInfo info = new WorkerTaskInfo( taskInfoOnMaster, this, local, pingTime );
         workerTaskInfoList.set( ix, info );
     }
-
-    /** Given a task type, estimate the completion time of this task type,
-     * or Long.MAX_VALUE if the task type is not allowed on this worker,
-     * or the worker is currently using its entire allowance.
-     * @param taskType The task type for which we want to know the round-trip interval.
-     * @return The interval, or Long.MAX_VALUE if this type of task is not allowed.
-     */
-    private long estimateJobCompletion( TaskType taskType )
-    {
-        if( !enabled ) {
-            if( Settings.traceTypeHandling ){
-                System.out.println( "estimateJobCompletion(): worker " + identifier + " not yet enabled" );
-            }
-            return Long.MAX_VALUE;
-        }
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoList.get( taskType.index );
-        if( workerTaskInfo == null ) {
-            if( Settings.traceTypeHandling ){
-                System.out.println( "estimateJobCompletion(): worker " + identifier + " does not support type " + taskType );
-            }
-            return Long.MAX_VALUE;
-        }
-        return workerTaskInfo.estimateJobCompletion();
-    }
-
-    private long getOptimisticRoundtripTime( TaskType taskType )
-    {
-        if( !enabled ) {
-            if( Settings.traceTypeHandling ){
-                System.out.println( "getOptimisticRoundtripTime(): worker " + identifier + " not yet enabled" );
-            }
-            return Long.MAX_VALUE;
-        }
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoList.get( taskType.index );
-        if( workerTaskInfo == null ) {
-            if( Settings.traceTypeHandling ){
-                System.out.println( "getOptimisticRoundtripTime(): worker " + identifier + " does not support type " + taskType );
-            }
-            return Long.MAX_VALUE;
-        }
-        return workerTaskInfo.getOptimisticRoundtripTime();
-    }
     
     WorkerTaskInfo getTaskInfo( TaskType taskType )
     {
         return workerTaskInfoList.get( taskType.index );
-    }
-
-    private long getAverageCompletionTime( TaskType taskType )
-    {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoList.get( taskType.index );
-
-        if( workerTaskInfo == null ) {
-            if( Settings.traceTypeHandling ){
-                Globals.log.reportProgress( "getAverageCompletionTime(): worker " + identifier + " does not support type " + taskType );
-            }
-            return Long.MAX_VALUE;
-        }
-        return workerTaskInfo.getAverageCompletionTime();
     }
 
     /**
@@ -352,23 +297,6 @@ final class WorkerInfo {
     }
 
     /**
-     * Given a task type, return true iff this worker
-     * supports the task type.
-     * @param type The task type we're looking for.
-     * @return True iff this worker supports the type.
-     */
-    private boolean supportsType( TaskType type )
-    {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoList.get( type.index );
-        final boolean res = workerTaskInfo != null;
-
-        if( Settings.traceTypeHandling ){
-            System.out.println( "Worker " + identifier + " supports type " + type + "? Answer: " + res );
-        }
-        return res;
-    }
-
-    /**
      * Given a print stream, print some statistics about this worker.
      * @param s The stream to print to.
      */
@@ -385,24 +313,6 @@ final class WorkerInfo {
                 s.println( "  " + info + ": " + stats );
             }
         }
-    }
-
-    private boolean isIdle( TaskType taskType )
-    {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoList.get( taskType.index );
-        if( !enabled || dead || workerTaskInfo == null ) {
-            return false;
-        }
-        return workerTaskInfo.isIdle();
-    }
-
-    private boolean isReady( TaskType taskType )
-    {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoList.get( taskType.index );
-        if( !enabled || dead || workerTaskInfo == null ) {
-            return false;
-        }
-        return workerTaskInfo.isReady();
     }
 
     void setPingStartMoment( long t )
@@ -427,29 +337,4 @@ final class WorkerInfo {
         }
     }
 
-    /**
-     * We want to run or reserve a job. Returns false if the job can be run
-     * immediately; returns <code>true</code> and adds a reservation if the
-     * worker is fully booked.
-     * @param type The type of job we migth have to do a reservation for.
-     * @return There is a reservation for this task (otherwise it can be submitted immediately).
-     */
-    private boolean reserveIfNeeded( TaskType type )
-    {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoList.get( type.index );
-        if( workerTaskInfo == null ) {
-            System.err.println( "No worker task info for task type " + type );
-            return true;
-        }
-        return workerTaskInfo.reserveIfNeeded();
-    }
-
-    private long getRoundtripEstimate(TaskType type) {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoList.get( type.index );
-        if( workerTaskInfo == null ) {
-            System.err.println( "No worker task info for task type " + type );
-            return Long.MAX_VALUE;
-        }
-	return workerTaskInfo.estimateRoundtripTime();
-    }
 }
