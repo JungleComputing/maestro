@@ -25,7 +25,7 @@ final class WorkerList {
      * @param type The type we want info for.
      * @return The info structure for the given type.
      */
-    private TaskInfoOnMaster getTaskInfo( TaskType type )
+    TaskInfoOnMaster getTaskInfo( TaskType type )
     {
         int ix = type.index;
         while( ix+1>taskInfoList.size() ) {
@@ -65,11 +65,12 @@ final class WorkerList {
     WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, MasterIdentifier identifierForWorker, TaskType[] types )
     {
         Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
-        WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker, local, types );
+        WorkerInfo worker = new WorkerInfo( this, workerPort, workerID, identifierForWorker, local, types );
 
         for( TaskType t: types ) {
             TaskInfoOnMaster info = getTaskInfo( t );
-            info.addWorker( worker );
+            WorkerTaskInfo wti = worker.getTaskInfo( t );
+            info.addWorker( wti );
         }
         if( Settings.traceMasterProgress ){
             System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker + "; local=" + local );
@@ -141,10 +142,10 @@ final class WorkerList {
      * @return The info of the best worker for this task, or <code>null</code>
      *         if there currently aren't any workers for this task type.
      */
-    WorkerInfo selectBestWorker( TaskType type )
+    WorkerTaskInfo selectBestWorker( TaskType type )
     {
         TaskInfoOnMaster taskInfo = getTaskInfo( type );
-        WorkerInfo worker = taskInfo.getBestWorker();
+        WorkerTaskInfo worker = taskInfo.getBestWorker();
         return worker;
     }
 
@@ -188,16 +189,8 @@ final class WorkerList {
      */
     long getAverageCompletionTime( TaskType taskType )
     {
-        long res = Long.MAX_VALUE;
-
-        for( WorkerInfo wi: workers ) {
-            long val = wi.getAverageCompletionTime( taskType );
-
-            if( val<res ) {
-                res = val;
-            }
-        }
-        return res;
+        TaskInfoOnMaster taskInfo = getTaskInfo( taskType );
+        return taskInfo.getAverageCompletionTime();
     }
 
     void registerCompletionInfo( WorkerIdentifier workerID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )

@@ -9,7 +9,7 @@ import java.util.LinkedList;
  */
 public class TaskInfoOnMaster
 {
-    private LinkedList<WorkerInfo> workers = new LinkedList<WorkerInfo>();
+    private LinkedList<WorkerTaskInfo> workers = new LinkedList<WorkerTaskInfo>();
     final TaskType type;
 
     TaskInfoOnMaster( TaskType type )
@@ -32,35 +32,36 @@ public class TaskInfoOnMaster
      * We place it in front of the list to give it a chance to do work.
      * @param worker The worker to add.
      */
-    protected void addWorker( WorkerInfo worker )
+    protected void addWorker( WorkerTaskInfo worker )
     {
 	workers.add( 0, worker );
     }
 
-    protected WorkerInfo getBestWorker()
+    protected WorkerTaskInfo getBestWorker()
     {
         if( Settings.useShuffleRouting ) {
-            for( WorkerInfo wi: workers ) {
-                if( wi.isReady( type ) ) {
+            for( WorkerTaskInfo wi: workers ) {
+                if( wi.isReady() ) {
                     return wi;
                 }
             }
         }
         else {
-            WorkerInfo best = null;
+            WorkerTaskInfo best = null;
             long bestInterval = Long.MAX_VALUE;
             int competitors = 0;
             int idleWorkers = 0;
 
             for( int i=0; i<workers.size(); i++ ) {
-                WorkerInfo wi = workers.get( i );
+                WorkerTaskInfo wi = workers.get( i );
+                WorkerInfo worker = wi.worker;
 
-                if( !wi.isDead() ) {
-                    if( wi.isIdle( type ) ) {
+                if( !worker.isDead() ) {
+                    if( wi.isIdle() ) {
                         idleWorkers++;
                     }
                     competitors++;
-                    long val = wi.estimateJobCompletion( type );
+                    long val = wi.estimateJobCompletion();
 
                     if( val<Long.MAX_VALUE ) {
                         if( Settings.traceRemainingJobTime ) {
@@ -81,13 +82,13 @@ public class TaskInfoOnMaster
                 // We can't find a worker for this task. See if there is
                 // a disabled worker we can enable.
                 long bestTime = Long.MAX_VALUE;
-                WorkerInfo candidate = null;
+                WorkerTaskInfo candidate = null;
 
                 for( int i=0; i<workers.size(); i++ ) {
-                    WorkerInfo wi = workers.get( i );
+                    WorkerTaskInfo wi = workers.get( i );
 
-                    if( wi.isIdle( type ) ) {
-                        long t = wi.getOptimisticRoundtripTime( type );
+                    if( wi.isIdle() ) {
+                        long t = wi.getOptimisticRoundtripTime();
                         if( t<bestTime ) {
                             candidate = wi;
                             bestTime = t;
@@ -104,16 +105,10 @@ public class TaskInfoOnMaster
             if( best == null ) {
                 if( Settings.traceMasterQueue ){
                     int busy = 0;
-                    int notSupported = 0;
-                    for( WorkerInfo wi: workers ){
-                        if( wi.supportsType( type ) ){
-                            busy++;
-                        }
-                        else {
-                            notSupported++;
-                        }
+                    for( WorkerTaskInfo wi: workers ){
+                        busy++;
                     }
-                    Globals.log.reportProgress( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for task of type " + type );
+                    Globals.log.reportProgress( "No best worker (" + busy + " busy) for task of type " + type );
                 }
             }
             else {
@@ -131,9 +126,28 @@ public class TaskInfoOnMaster
      * of ready workers.
      * @param w The worker that completed a task.
      */
-    protected void registerWorkerCompleted( WorkerInfo w )
+    protected void registerWorkerCompleted( WorkerTaskInfo w )
     {
 	workers.remove( w );
 	workers.add( 0, w );
+    }
+
+    /**
+     * Returns the best average completion time for this task.
+     * We compute this by taking the minimum over all our workers.
+     * @return The best average completion time of our workers.
+     */
+    long getAverageCompletionTime()
+    {
+        long res = Long.MAX_VALUE;
+
+        for( WorkerTaskInfo wi: workers ) {
+            long val = wi.getAverageCompletionTime();
+
+            if( val<res ) {
+                res = val;
+            }
+        }
+        return res;
     }
 }

@@ -335,13 +335,14 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                     break;
                 }
                 reserved = queue.selectSubmisson( reserved, sub, workers, noReadyWorkers );
-                WorkerInfo worker = sub.worker;
+                WorkerTaskInfo wti = sub.worker;
                 TaskInstance task = sub.task;
                 long deadline = sub.deadline;
-                if( worker == null ){
+                if( wti == null ){
                     stopBecauseBusy = true;
                     break;
                 }
+                WorkerInfo worker = wti.worker;
                 taskId = nextTaskId++;
                 worker.registerTaskStart( task, taskId, sub.predictedDuration, deadline );
                 if( Settings.traceMasterQueue ) {

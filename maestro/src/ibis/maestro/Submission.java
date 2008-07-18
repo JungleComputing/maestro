@@ -8,7 +8,7 @@ package ibis.maestro;
  */
 class Subtask {
     TaskInstance task = null;
-    WorkerInfo worker = null;
-    long predictedDuration = 0L;
+    WorkerTaskInfo worker = null;
+    long predictedDuration = 0L;   // FIXME: remove this.
     long deadline = 0L;
 }
