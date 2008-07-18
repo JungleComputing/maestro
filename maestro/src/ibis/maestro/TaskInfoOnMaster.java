@@ -49,20 +49,18 @@ public class TaskInfoOnMaster
         else {
             WorkerTaskInfo best = null;
             long bestInterval = Long.MAX_VALUE;
-            int competitors = 0;
-            int idleWorkers = 0;
+            boolean readyWorker = false;   // Is there any worker prepared to do work right now?
 
             for( int i=0; i<workers.size(); i++ ) {
                 WorkerTaskInfo wi = workers.get( i );
                 WorkerInfo worker = wi.worker;
 
                 if( !worker.isDead() ) {
-                    if( wi.isIdle() ) {
-                        idleWorkers++;
-                    }
-                    competitors++;
                     long val = wi.estimateJobCompletion();
 
+                    if( !wi.isReady() ) {
+                        readyWorker = true;
+                    }
                     if( val<Long.MAX_VALUE ) {
                         if( val<bestInterval ) {
                             bestInterval = val;
@@ -92,45 +90,30 @@ public class TaskInfoOnMaster
                         }
                     }
                 }
-                System.out.println();
-            }
-
-            if( best == null ) {
-                // We can't find a worker for this task. See if there is
-                // a disabled worker we can enable.
-                long bestTime = Long.MAX_VALUE;
-                WorkerTaskInfo candidate = null;
-
-                for( int i=0; i<workers.size(); i++ ) {
-                    WorkerTaskInfo wi = workers.get( i );
-
-                    if( wi.isIdle() ) {
-                        long t = wi.getOptimisticRoundtripTime();
-                        if( t<bestTime ) {
-                            candidate = wi;
-                            bestTime = t;
-                        }
-                    }
+                if( readyWorker ) {
+                    System.out.println();
                 }
-                if( candidate != null ) {
-                    if( Settings.traceMasterQueue ) {
-                        Globals.log.reportProgress( "Trying worker " + candidate + "; taskInfo=" + this );
-                    }
-                    best = candidate;
+                else {
+                    System.out.println( "  no worker ready" );
                 }
             }
+
             if( best == null ) {
                 if( Settings.traceMasterQueue ){
-                    int busy = 0;
-                    for( WorkerTaskInfo wi: workers ){
-                        busy++;
-                    }
-                    Globals.log.reportProgress( "No best worker (" + busy + " busy) for task of type " + type );
+                    Globals.log.reportProgress( "No workers AT ALL for task of type " + type );
                 }
             }
             else {
-                if( Settings.traceMasterQueue ){
-                    Globals.log.reportProgress( "Selected " + best + " for task of type " + type + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) + "; taskInfo=" + this );
+                if( !readyWorker ) {
+                    best = null;
+                    if( Settings.traceMasterQueue ){
+                        Globals.log.reportProgress( "All workers for task of type " + type + " are busy" );
+                    }
+                }
+                else {
+                    if( Settings.traceMasterQueue ){
+                        Globals.log.reportProgress( "Selected " + best + " for task of type " + type + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) + "; taskInfo=" + this );
+                    }
                 }
             }
             return best;            
