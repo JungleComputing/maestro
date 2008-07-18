@@ -33,7 +33,7 @@ final class WorkerList {
         }
         TaskInfoOnMaster res = taskInfoList.get( ix );
         if( res == null ) {
-            res = new TaskInfoOnMaster( workers.size()*Settings.RESEARCH_BUDGET_FOR_NEW_WORKER );
+            res = new TaskInfoOnMaster( type );
             taskInfoList.set( ix, res );
         }
         return res;
@@ -67,11 +67,6 @@ final class WorkerList {
         Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
         WorkerInfo worker = new WorkerInfo( workerPort, workerID, identifierForWorker, local, types );
 
-        for( TaskInfoOnMaster info: taskInfoList ){
-            if( info != null ){
-                info.addResearchBudget( Settings.RESEARCH_BUDGET_FOR_NEW_WORKER );
-            }
-        }
         for( TaskType t: types ) {
             TaskInfoOnMaster info = getTaskInfo( t );
             info.addWorker( worker );
@@ -149,7 +144,7 @@ final class WorkerList {
     WorkerInfo selectBestWorker( TaskType type )
     {
         TaskInfoOnMaster taskInfo = getTaskInfo( type );
-        WorkerInfo worker = taskInfo.getBestWorker( type );
+        WorkerInfo worker = taskInfo.getBestWorker();
         return worker;
     }
 

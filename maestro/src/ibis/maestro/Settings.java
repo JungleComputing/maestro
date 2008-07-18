@@ -18,10 +18,6 @@ class Settings {
     /** The number of connections we maximally keep open. */
     static final int CONNECTION_CACHE_SIZE = 80;
 
-    static final double RESEARCH_BUDGET_FOR_NEW_WORKER = 0.8;
-    static final double RESEARCH_BUDGET_PER_TASK = 0.08;
-
-
     // Debugging flags.
     
     /** Trace type handling? */

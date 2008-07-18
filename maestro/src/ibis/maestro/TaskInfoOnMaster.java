@@ -10,31 +10,13 @@ import java.util.LinkedList;
 public class TaskInfoOnMaster
 {
     private LinkedList<WorkerInfo> workers = new LinkedList<WorkerInfo>();
-    private double researchBudget;
+    final TaskType type;
 
-    TaskInfoOnMaster( double budget )
+    TaskInfoOnMaster( TaskType type )
     {
-        researchBudget = 2.0 + budget;
+        this.type = type;
     }
 
-    /** Add the given value to the research budget.
-     * @param d The value to add.
-     */
-    void addResearchBudget( double d )
-    {
-        researchBudget = Math.min( 10, researchBudget+d );
-    }
-    
-    boolean canResearch()
-    {
-        return researchBudget>=1.0;
-    }
-    
-    void useResearchBudget()
-    {
-        researchBudget = Math.max( 0.0, researchBudget-1.0 );
-    }
-    
     /**
      * Returns a string representation of this task info. (Overrides method in superclass.)
      * @return The string representation.
@@ -42,7 +24,7 @@ public class TaskInfoOnMaster
     @Override
     public String toString()
     {
-        return String.format( "researchBudget=%2.3f", researchBudget );
+        return String.format( "type=" + type + " workers: ", workers.size() );
     }
 
     /**
@@ -55,9 +37,8 @@ public class TaskInfoOnMaster
 	workers.add( 0, worker );
     }
 
-    protected WorkerInfo getBestWorker( TaskType type )
+    protected WorkerInfo getBestWorker()
     {
-        addResearchBudget( Settings.RESEARCH_BUDGET_PER_TASK );
         if( Settings.useShuffleRouting ) {
             for( WorkerInfo wi: workers ) {
                 if( wi.isReady( type ) ) {
@@ -96,7 +77,7 @@ public class TaskInfoOnMaster
                 System.out.println( "Master: competitors=" + competitors + "; taskInfo=" + this );
             }
 
-            if( best == null || (idleWorkers>0 && canResearch()) ) {
+            if( best == null ) {
                 // We can't find a worker for this task. See if there is
                 // a disabled worker we can enable.
                 long bestTime = Long.MAX_VALUE;
@@ -113,8 +94,7 @@ public class TaskInfoOnMaster
                         }
                     }
                 }
-                if( candidate != null && candidate!=best ) {
-                    useResearchBudget();
+                if( candidate != null ) {
                     if( Settings.traceMasterQueue ) {
                         Globals.log.reportProgress( "Trying worker " + candidate + "; taskInfo=" + this );
                     }
