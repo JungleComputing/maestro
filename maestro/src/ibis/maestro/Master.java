@@ -73,9 +73,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             if (getClass() != obj.getClass())
                 return false;
             final WorkerIdentifier other = (WorkerIdentifier) obj;
-            if (value != other.value)
-                return false;
-            return true;
+            return (value == other.value);
         }
 
         /** Returns a string representation of this worker.
@@ -217,7 +215,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      * A worker has sent us a message with its current status, handle it.
      * 
      * @param m The update message.
-     * @param arrivalMoment TODO
+     * @param arrivalMoment The time in ns the message arrived.
      */
     private void handleWorkerUpdateMessage( WorkerUpdateMessage m, long arrivalMoment )
     {

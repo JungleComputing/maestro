@@ -21,6 +21,13 @@ final class WorkerList {
     static final double RESEARCH_BUDGET_FOR_NEW_WORKER = 0.8;
     static final double RESEARCH_BUDGET_PER_TASK = 0.08;
 
+    /**
+     * Returns the TaskInfoOnMaster instance for the given task type. If
+     * necessary, extend the taskInfoList to cover this type. If necessary,
+     * create a new class instance for this type.
+     * @param type The type we want info for.
+     * @return The info structure for the given type.
+     */
     private TaskInfoOnMaster getTaskInfo( TaskType type )
     {
         int ix = type.index;

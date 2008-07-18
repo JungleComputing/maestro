@@ -4,8 +4,9 @@ package ibis.maestro;
  * Information the master has about a particular task type on a particular worker.
  */
 final class WorkerTaskInfo {
-    /** label of this worker/task combination in traces. */
-    private final String label;
+    final TaskType type;
+    
+    final WorkerInfo worker;
 
     private final TimeEstimate transmissionTimeEstimate;
 
@@ -43,7 +44,7 @@ final class WorkerTaskInfo {
     @Override
     public String toString()
     {
-	return "[" + label + ": transmissionTimeEstimate=" + transmissionTimeEstimate + ",remainingJobTime=" + Service.formatNanoseconds(remainingJobTime) + ",outstandingTasks=" + outstandingTasks + ",maximalAllowance=" + maximalAllowance + "]";
+	return "[type=" + type + " worker=" + worker + " transmissionTimeEstimate=" + transmissionTimeEstimate + " remainingJobTime=" + Service.formatNanoseconds(remainingJobTime) + ",outstandingTasks=" + outstandingTasks + ",maximalAllowance=" + maximalAllowance + "]";
     }
 
     /**
@@ -75,7 +76,8 @@ final class WorkerTaskInfo {
         }
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress(
-                "getAverageCompletionTime(): " + label
+                "getAverageCompletionTime(): type=" + type
+                + " worker=" + worker
                 + " maximalAllowance=" + maximalAllowance
                 + " currentTasks=" + currentTasks
                 + " futureTasks=" + futureTasks
@@ -120,16 +122,17 @@ final class WorkerTaskInfo {
     }
 
     /**
-     * @param label The label of this worker/task combination.
-     * @param remainingTasks How many tasks there are in this job after the current task.
+     * @param type The type of task we have administration for.
+     * @param worker The worker we have administration for.
      * @param local True iff this is the local worker.
      * @param pingTime The ping time of this worker.
      * Constructs a new information class for a particular task type
      * for a particular worker.
      */
-    WorkerTaskInfo( String label, int remainingTasks, boolean local, long pingTime )
+    WorkerTaskInfo( TaskType type, WorkerInfo worker, boolean local, long pingTime )
     {
-	this.label = label;
+        this.type = type;
+        this.worker = worker;
         this.maximalAllowance = local?3:1;
         this.maximalEverAllowance = maximalAllowance;
 
@@ -139,7 +142,7 @@ final class WorkerTaskInfo {
 	this.roundtripTimeEstimate = new TimeEstimate( 2*pingTime );
         this.roundtripErrorEstimate = new TimeEstimate( 2*pingTime );
 	this.workerDwellTime = 2*pingTime;
-	this.remainingJobTime = remainingTasks*(workerDwellTime+pingTime);
+	this.remainingJobTime = type.remainingTasks*(workerDwellTime+pingTime);
 	if( Settings.traceWorkerList || Settings.traceRemainingJobTime ) {
 	    Globals.log.reportProgress( "Created new WorkerTaskInfo " + toString() );
 	}
@@ -158,6 +161,7 @@ final class WorkerTaskInfo {
         roundtripTimeEstimate.addSample(roundtripTime );
         roundtripErrorEstimate.addSample( roundtripError );
 	transmissionTimeEstimate.addSample( transmissionTime );
+	String label = "type=" + type + " worker=" + worker;
 	if( Settings.traceMasterProgress || Settings.traceRemainingJobTime ) {
 	    Globals.log.reportProgress( label + ": roundTripTimeEstimate=" + roundtripTimeEstimate + " roundTripErrorEstimate=" + roundtripErrorEstimate + " transimssionTimeEstimate=" + transmissionTimeEstimate );
 	}

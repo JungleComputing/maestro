@@ -6,8 +6,6 @@ import ibis.maestro.Worker.MasterIdentifier;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Enumeration;
-import java.util.Hashtable;
 
 /**
  * Information about a worker in the list of a master.
@@ -19,8 +17,7 @@ final class WorkerInfo {
     /** The active tasks of this worker. */
     private final ArrayList<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
 
-    // FIXME: use ArrayList.
-    private final Hashtable<TaskType,WorkerTaskInfo> workerTaskInfoTable = new Hashtable<TaskType, WorkerTaskInfo>();
+    private final ArrayList<WorkerTaskInfo> workerTaskInfoTable = new ArrayList<WorkerTaskInfo>();
 
     /** Our local identifier of this worker. */
     final Master.WorkerIdentifier identifier;
@@ -90,7 +87,7 @@ final class WorkerInfo {
         if( completionInfo == null ) {
             return;
         }
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( completionInfo.type );
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( completionInfo.type.index );
 
         if( workerTaskInfo == null ) {
             return;
@@ -108,7 +105,7 @@ final class WorkerInfo {
         if( info == null ) {
             return;
         }
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( info.type );
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( info.type.index );
 
         if( workerTaskInfo == null ) {
             return;
@@ -121,16 +118,12 @@ final class WorkerInfo {
     }
 
     /** Update all task info to take into account the given ping time.
-     * @param table The task info table to update.
+     * @param l The task info table to update.
      * @param pingTime The ping time to this worker.
      */
-    private static void setPingTime( Hashtable<TaskType,WorkerTaskInfo> table, long pingTime )
+    private static void setPingTime( ArrayList<WorkerTaskInfo> l, long pingTime )
     {
-        Enumeration<TaskType> keys = table.keys();
-
-        while( keys.hasMoreElements() ){
-            TaskType t = keys.nextElement();
-            WorkerTaskInfo wi = table.get( t );
+        for( WorkerTaskInfo wi: l ) {
             wi.setPingTime( pingTime );
         }        
     }
@@ -238,7 +231,7 @@ final class WorkerInfo {
      */
     boolean registerTaskStart( TaskInstance task, long id, long predictedDuration, long deadline )
     {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( task.type );
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( task.type.index );
         if( workerTaskInfo == null ) {
             System.err.println( "No worker task info for task type " + task.type );
             return true;
@@ -273,8 +266,12 @@ final class WorkerInfo {
         if( Settings.traceTypeHandling ){
             System.out.println( "worker " + identifier + " (" + port + ") can handle " + type + ", local=" + local );
         }
-        WorkerTaskInfo info = new WorkerTaskInfo( toString() + " task " + type, type.remainingTasks, local, pingTime );
-        workerTaskInfoTable.put( type, info );
+        int ix = type.index;
+        while( ix+1>workerTaskInfoTable.size() ) {
+            workerTaskInfoTable.add( null );
+        }
+        WorkerTaskInfo info = new WorkerTaskInfo( type, this, local, pingTime );
+        workerTaskInfoTable.set( ix, info );
     }
 
     /** Given a task type, estimate the completion time of this task type,
@@ -291,7 +288,7 @@ final class WorkerInfo {
             }
             return Long.MAX_VALUE;
         }
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType.index );
         if( workerTaskInfo == null ) {
             if( Settings.traceTypeHandling ){
                 System.out.println( "estimateJobCompletion(): worker " + identifier + " does not support type " + taskType );
@@ -309,7 +306,7 @@ final class WorkerInfo {
             }
             return Long.MAX_VALUE;
         }
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType.index );
         if( workerTaskInfo == null ) {
             if( Settings.traceTypeHandling ){
                 System.out.println( "getOptimisticRoundtripTime(): worker " + identifier + " does not support type " + taskType );
@@ -321,7 +318,7 @@ final class WorkerInfo {
 
     long getAverageCompletionTime( TaskType taskType )
     {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType.index );
 
         if( workerTaskInfo == null ) {
             if( Settings.traceTypeHandling ){
@@ -357,7 +354,7 @@ final class WorkerInfo {
      */
     boolean supportsType( TaskType type )
     {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( type );
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( type.index );
         final boolean res = workerTaskInfo != null;
 
         if( Settings.traceTypeHandling ){
@@ -372,25 +369,22 @@ final class WorkerInfo {
      */
     void printStatistics( PrintStream s )
     {
-        Enumeration<TaskType> keys = workerTaskInfoTable.keys();
         s.println( "Worker " + identifier + (local?" (local)":"") );
 
         if( missedDeadlines>0 ) {
             s.println( "  Missed deadlines: " + missedDeadlines );
         }
-        while( keys.hasMoreElements() ){
-            TaskType taskType = keys.nextElement();
-            WorkerTaskInfo info = workerTaskInfoTable.get( taskType );
-            if( info.didWork() ) {
+        for( WorkerTaskInfo info: workerTaskInfoTable ) {
+            if( info != null && info.didWork() ) {
                 String stats = info.buildStatisticsString();
-                s.println( "  " + taskType.toString() + ": " + stats );
+                s.println( "  " + info.type.toString() + ": " + stats );
             }
         }
     }
 
     boolean isIdle( TaskType taskType )
     {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType.index );
         if( !enabled || dead || workerTaskInfo == null ) {
             return false;
         }
@@ -399,7 +393,7 @@ final class WorkerInfo {
 
     boolean isReady( TaskType taskType )
     {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType );
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( taskType.index );
         if( !enabled || dead || workerTaskInfo == null ) {
             return false;
         }
@@ -421,12 +415,10 @@ final class WorkerInfo {
 
     protected void resetReservations()
     {
-        Enumeration<TaskType> keys = workerTaskInfoTable.keys();
-
-        while( keys.hasMoreElements() ){
-            TaskType taskType = keys.nextElement();
-            WorkerTaskInfo info = workerTaskInfoTable.get( taskType );
-            info.resetReservations();
+        for( WorkerTaskInfo info: workerTaskInfoTable ) {
+            if( info != null ) {
+                info.resetReservations();
+            }
         }
     }
 
@@ -439,7 +431,7 @@ final class WorkerInfo {
      */
     protected boolean reserveIfNeeded( TaskType type )
     {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( type );
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( type.index );
         if( workerTaskInfo == null ) {
             System.err.println( "No worker task info for task type " + type );
             return true;
@@ -448,7 +440,7 @@ final class WorkerInfo {
     }
 
     protected long getRoundtripEstimate(TaskType type) {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( type );
+        WorkerTaskInfo workerTaskInfo = workerTaskInfoTable.get( type.index );
         if( workerTaskInfo == null ) {
             System.err.println( "No worker task info for task type " + type );
             return Long.MAX_VALUE;
