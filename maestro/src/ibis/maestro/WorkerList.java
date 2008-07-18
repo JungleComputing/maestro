@@ -18,9 +18,6 @@ final class WorkerList {
     private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
     private final ArrayList<TaskInfoOnMaster> taskInfoList = new ArrayList<TaskInfoOnMaster>();
 
-    static final double RESEARCH_BUDGET_FOR_NEW_WORKER = 0.8;
-    static final double RESEARCH_BUDGET_PER_TASK = 0.08;
-
     /**
      * Returns the TaskInfoOnMaster instance for the given task type. If
      * necessary, extend the taskInfoList to cover this type. If necessary,
@@ -36,7 +33,7 @@ final class WorkerList {
         }
         TaskInfoOnMaster res = taskInfoList.get( ix );
         if( res == null ) {
-            res = new TaskInfoOnMaster( workers.size()*RESEARCH_BUDGET_FOR_NEW_WORKER );
+            res = new TaskInfoOnMaster( workers.size()*Settings.RESEARCH_BUDGET_FOR_NEW_WORKER );
             taskInfoList.set( ix, res );
         }
         return res;
@@ -72,7 +69,7 @@ final class WorkerList {
 
         for( TaskInfoOnMaster info: taskInfoList ){
             if( info != null ){
-                info.addResearchBudget( RESEARCH_BUDGET_FOR_NEW_WORKER );
+                info.addResearchBudget( Settings.RESEARCH_BUDGET_FOR_NEW_WORKER );
             }
         }
         for( TaskType t: types ) {
@@ -151,92 +148,9 @@ final class WorkerList {
      */
     WorkerInfo selectBestWorker( TaskType type )
     {
-        if( true ){
-            TaskInfoOnMaster taskInfo = getTaskInfo( type );
-            WorkerInfo worker = taskInfo.getReadyWorker( type );
-            taskInfo.addResearchBudget( RESEARCH_BUDGET_PER_TASK );
-            return worker;
-        }
-        else {
-            WorkerInfo best = null;
-            long bestInterval = Long.MAX_VALUE;
-            int competitors = 0;
-            int idleWorkers = 0;
-
-            for( int i=0; i<workers.size(); i++ ) {
-                WorkerInfo wi = workers.get( i );
-
-                if( !wi.isDead() ) {
-                    if( wi.isIdle( type ) ) {
-                        idleWorkers++;
-                    }
-                    competitors++;
-                    long val = wi.estimateJobCompletion( type );
-
-                    if( val<Long.MAX_VALUE ) {
-                        if( Settings.traceRemainingJobTime ) {
-                            System.out.println( "Worker " + wi + ": task type " + type + ": estimated completion time " + Service.formatNanoseconds( val ) );
-                        }
-                        if( val<bestInterval ) {
-                            bestInterval = val;
-                            best = wi;
-                        }
-                    }
-                }
-            }
-            TaskInfoOnMaster taskInfo = getTaskInfo( type );
-            taskInfo.addResearchBudget( RESEARCH_BUDGET_PER_TASK );
-            if( Settings.traceRemainingJobTime || Settings.traceMasterProgress ) {
-                System.out.println( "Master: competitors=" + competitors + "; taskInfo=" + taskInfo );
-            }
-
-            if( best == null || (idleWorkers>0 && taskInfo.canResearch()) ) {
-                // We can't find a worker for this task. See if there is
-                // a disabled worker we can enable.
-                long bestTime = Long.MAX_VALUE;
-                WorkerInfo candidate = null;
-
-                for( int i=0; i<workers.size(); i++ ) {
-                    WorkerInfo wi = workers.get( i );
-
-                    if( wi.isIdle( type ) ) {
-                        long t = wi.getOptimisticRoundtripTime( type );
-                        if( t<bestTime ) {
-                            candidate = wi;
-                            bestTime = t;
-                        }
-                    }
-                }
-                if( candidate != null && candidate!=best ) {
-                    taskInfo.useResearchBudget();
-                    if( Settings.traceMasterQueue ) {
-                        Globals.log.reportProgress( "Trying worker " + candidate + "; taskInfo=" + taskInfo );
-                    }
-                    best = candidate;
-                }
-            }
-            if( best == null ) {
-                if( Settings.traceMasterQueue ){
-                    int busy = 0;
-                    int notSupported = 0;
-                    for( WorkerInfo wi: workers ){
-                        if( wi.supportsType( type ) ){
-                            busy++;
-                        }
-                        else {
-                            notSupported++;
-                        }
-                    }
-                    Globals.log.reportProgress( "No best worker (" + busy + " busy, " + notSupported + " not supporting) for task of type " + type );
-                }
-            }
-            else {
-                if( Settings.traceMasterQueue ){
-                    Globals.log.reportProgress( "Selected " + best + " for task of type " + type + "; estimated job completion time " + Service.formatNanoseconds( bestInterval ) + "; taskInfo=" + taskInfo );
-                }
-            }
-            return best;
-        }
+        TaskInfoOnMaster taskInfo = getTaskInfo( type );
+        WorkerInfo worker = taskInfo.getBestWorker( type );
+        return worker;
     }
 
     /** Given a worker identifier, declare it dead.

@@ -18,6 +18,10 @@ class Settings {
     /** The number of connections we maximally keep open. */
     static final int CONNECTION_CACHE_SIZE = 80;
 
+    static final double RESEARCH_BUDGET_FOR_NEW_WORKER = 0.8;
+    static final double RESEARCH_BUDGET_PER_TASK = 0.08;
+
+
     // Debugging flags.
     
     /** Trace type handling? */
@@ -60,4 +64,7 @@ class Settings {
      * get a deadline for a task.
      */
     static final long DEADLINE_MARGIN = 3;
+
+    /** If set, routes tasks based on worker list shuffling instead of measured times. */
+    static final boolean useShuffleRouting = false;
 }
