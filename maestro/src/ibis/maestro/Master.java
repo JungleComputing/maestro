@@ -355,11 +355,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                     // Try to put the paste back in the tube.
                     worker.retractTask( msg.taskId );
                     queue.add( msg.task );
+                    // TODO: register as suspect.
                 }
             }
         }
         if( Settings.traceWorkerSelection ){
-            System.out.println( "-- end of submitAllPossibleTasks() --" );
+            System.out.println( "-- end of submitAllPossibleTasks() -- stopBecauseBusy=" + stopBecauseBusy );
         }
         return stopBecauseBusy;
     }
