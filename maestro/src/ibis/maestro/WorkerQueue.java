@@ -75,7 +75,7 @@ final class WorkerQueue {
             return elements;
         }
 
-        void registerRemove()
+        int registerRemove()
         {
             long now = System.nanoTime();
             if( frontChangedTime != 0 ) {
@@ -92,6 +92,7 @@ final class WorkerQueue {
             else {
                 frontChangedTime = now;
             }
+            return elements;
         }
 
         WorkerQueueInfo getWorkerQueueInfo( long dwellTime )
@@ -218,9 +219,9 @@ final class WorkerQueue {
     {
         RunTaskMessage res = queue.remove( 0 );
         TypeInfo info = getTypeInfo( res.task.type );
-        info.registerRemove();
+        int length = info.registerRemove();
         if( Settings.traceQueuing ) {
-            Globals.log.reportProgress( "Removing " + res.task.formatJobAndType() + " from worker queue; length is now " + queue.size() );
+            Globals.log.reportProgress( "Removing " + res.task.formatJobAndType() + " from worker queue; length is now " + queue.size() + "; " + length + " of type " + res.task.type );
         }
         return res;
     }

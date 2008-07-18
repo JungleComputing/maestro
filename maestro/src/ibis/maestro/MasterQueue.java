@@ -50,7 +50,7 @@ final class MasterQueue extends Queue {
 	    s.println( "master queue for " + type + ": " + taskCount + " tasks; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxElements );
 	}
 
-	private void registerAdd()
+	private int registerAdd()
 	{
 	    elements++;
 	    if( elements>maxElements ) {
@@ -62,9 +62,10 @@ final class MasterQueue extends Queue {
 		frontChangedTime = System.nanoTime();
 	    }
 	    taskCount++;
+	    return elements;
 	}
 	
-	private void registerRemove()
+	int registerRemove()
 	{
 	    long now = System.nanoTime();
 	    if( frontChangedTime != 0 ) {
@@ -81,6 +82,7 @@ final class MasterQueue extends Queue {
 	    else {
 		frontChangedTime = now;
 	    }
+	    return elements;
 	}
 
 	/**
@@ -174,11 +176,11 @@ final class MasterQueue extends Queue {
     {
 	TaskType type = task.type;
 	TypeInfo info = getTypeInfo( type );
-	info.registerAdd();
+	int length = info.registerAdd();
         int pos = findInsertionPoint( queue, task );
 	queue.add( pos, task );
         if( Settings.traceQueuing ) {
-            Globals.log.reportProgress( "Adding " + task.formatJobAndType() + " at position " + pos + " of master queue; length is now " + queue.size() );
+            Globals.log.reportProgress( "Adding " + task.formatJobAndType() + " at position " + pos + " of master queue; length is now " + queue.size() + "; " + length + " of type " + type );
         }
     }
     
@@ -226,9 +228,9 @@ final class MasterQueue extends Queue {
                     continue;
                 }
                 queue.remove( ix );
-                info.registerRemove();
+                int length = info.registerRemove();
                 if( Settings.traceQueuing ) {
-                    Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() );
+                    Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type );
                 }
                 sub.task = task;
                 sub.worker = worker;
