@@ -30,11 +30,6 @@ final class TaskType implements Serializable
         this.taskNo = taskNo;
         this.remainingTasks = remainingTasks;
         this.index = index;
-        if( index<0 ) {
-            Exception x = new Exception( "Negative index " + index + "???" );
-            x.printStackTrace();
-            index = 0;
-        }
     }
 
     /**
