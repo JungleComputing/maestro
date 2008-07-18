@@ -125,7 +125,9 @@ final class WorkerInfo {
     private static void setPingTime( ArrayList<WorkerTaskInfo> l, long pingTime )
     {
         for( WorkerTaskInfo wi: l ) {
-            wi.setPingTime( pingTime );
+            if( wi != null ) {
+                wi.setPingTime( pingTime );
+            }
         }        
     }
 

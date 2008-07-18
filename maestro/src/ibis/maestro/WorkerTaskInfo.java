@@ -286,7 +286,7 @@ final class WorkerTaskInfo {
      * @return True if we did a reservation.
      */
     protected boolean reserveIfNeeded() {
-        if( (maximalAllowance>0) && (outstandingTasks>=maximalAllowance) ) {
+        if( outstandingTasks>=maximalAllowance ) {
             reservations++;
             return true;
         }
