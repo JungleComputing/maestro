@@ -34,7 +34,7 @@ public class TaskInfoOnMaster
      */
     protected void addWorker( WorkerTaskInfo worker )
     {
-	workers.add( 0, worker );
+	workers.add( worker );
     }
 
     protected WorkerTaskInfo getBestWorker()
@@ -72,8 +72,8 @@ public class TaskInfoOnMaster
                 }
             }
             if( Settings.traceRemainingJobTime || Settings.traceMasterProgress || Settings.traceWorkerSelection ) {
+                System.out.print( "Worker for " + type + ":" );
                 for( WorkerTaskInfo wi: workers ) {
-                    System.out.print( "Worker for " + type + ":" );
                     WorkerInfo worker = wi.worker;
                     System.out.print( " " + worker + ":" );
                     if( worker.isDead() ) {
@@ -84,7 +84,12 @@ public class TaskInfoOnMaster
                         System.out.print( Service.formatNanoseconds( val ) );
                     }
                     if( wi == best ) {
-                        System.out.print( "<=" );
+                        if( wi.isReady() ){
+                            System.out.print( "(submit)" );
+                        }
+                        else {
+                            System.out.print( "(reserve)" );
+                        }
                     }
                 }
                 System.out.println();
@@ -140,8 +145,6 @@ public class TaskInfoOnMaster
      */
     protected void registerWorkerCompleted( WorkerTaskInfo w )
     {
-	workers.remove( w );
-	workers.add( 0, w );
     }
 
     /**

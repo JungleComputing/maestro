@@ -358,6 +358,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 }
             }
         }
+        if( Settings.traceWorkerSelection ){
+            System.out.println( "-- end of submitAllPossibleTasks() --" );
+        }
         return stopBecauseBusy;
     }
 

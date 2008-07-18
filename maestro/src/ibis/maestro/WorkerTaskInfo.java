@@ -68,7 +68,7 @@ final class WorkerTaskInfo {
         if( transmissionTime == Long.MAX_VALUE ) {
             total = Long.MAX_VALUE;
         }
-        else if( allTasks>maximalAllowance+1 ){
+        else if( allTasks>maximalAllowance+2 ){
             return Long.MAX_VALUE;
         }
         else {
@@ -97,7 +97,7 @@ final class WorkerTaskInfo {
      */
     long getAverageCompletionTime()
     {
-        return getAverageCompletionTime( maximalAllowance, 0 );
+        return getAverageCompletionTime( maximalAllowance-1, 1 );
     }
 
     /**
@@ -209,7 +209,7 @@ final class WorkerTaskInfo {
      */
     protected void controlAllowance( int queueLength )
     {
-	if( maximalAllowance>0 && maximalAllowance == outstandingTasks ) {
+	if( maximalAllowance == outstandingTasks ) {
 	    // We can only regulate the allowance if we are
 	    // at our current maximal allowance.
 	    if( queueLength<1 ) {
@@ -224,8 +224,8 @@ final class WorkerTaskInfo {
 	    }
 	    if( maximalAllowance<0 ) {
 		// Yes, we are prepared to cut off a worker entirely.
-		// However, if our work queue gets too large, we will
-		// enable this worker again.
+		// However, if a worker reports it has room its queue
+                // we will increase its allowance again.
 		maximalAllowance = 0;
 	    }
 	    if( maximalEverAllowance<maximalAllowance ) {
