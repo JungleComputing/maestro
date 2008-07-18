@@ -71,9 +71,6 @@ final class WorkerTaskInfo {
         if( transmissionTime == Long.MAX_VALUE ) {
             total = Long.MAX_VALUE;
         }
-        else if( allTasks>maximalAllowance+2 ){
-            return Long.MAX_VALUE;
-        }
         else {
             total = futureTasks*transmissionTime + this.dequeueTime*allTasks + this.computeTime + remainingJobTime;
         }
@@ -202,7 +199,7 @@ final class WorkerTaskInfo {
 
     String buildStatisticsString()
     {
-	return "executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + "dequeueTime=" + Service.formatNanoseconds( dequeueTime )+ " computeTime=" + Service.formatNanoseconds( computeTime )+ ", remaining time " + Service.formatNanoseconds( remainingJobTime );
+	return "executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + " dequeueTime=" + Service.formatNanoseconds( dequeueTime )+ " computeTime=" + Service.formatNanoseconds( computeTime )+ ", remaining time " + Service.formatNanoseconds( remainingJobTime );
     }
 
     /**

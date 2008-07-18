@@ -75,7 +75,7 @@ public class TaskInfoOnMaster
                 System.out.print( "Worker for " + type + ":" );
                 for( WorkerTaskInfo wi: workers ) {
                     WorkerInfo worker = wi.worker;
-                    System.out.print( " " + worker + ":" );
+                    System.out.print( " " + worker + "=" );
                     if( worker.isDead() ) {
                         System.out.print( "DEAD" );
                     }

@@ -48,13 +48,13 @@ class Settings {
     static final boolean traceSends = false;
 
     /** Trace all queuing and dequeuing. */
-    static final boolean traceQueuing = false;
+    static final boolean traceQueuing = true;
 
     /** Print a reason for every wait() that we do. */
     static final boolean traceWaits = false;
 
     /** Print the reason a particular worker was selected. */
-    static final boolean traceWorkerSelection = true;
+    static final boolean traceWorkerSelection = false;
 
     /** Multiplier of the estimated completion time to
      * get a deadline for a task.
