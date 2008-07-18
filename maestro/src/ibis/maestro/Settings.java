@@ -57,9 +57,14 @@ class Settings {
     static final boolean traceWorkerSelection = false;
 
     /** Multiplier of the estimated completion time to
-     * get a deadline for a task.
+     * get an allowance deadline for a task.
      */
-    static final long DEADLINE_MARGIN = 3;
+    static final long ALLOWANCE_DEADLINE_MARGIN = 2;
+
+    /** Multiplier of the estimated completion time to
+     * get a reschedule deadline for a task.
+     */
+    static final long RESCHEDULE_DEADLINE_MARGIN = 4;
 
     /** If set, routes tasks based on worker list shuffling instead of measured times. */
     static final boolean useShuffleRouting = false;

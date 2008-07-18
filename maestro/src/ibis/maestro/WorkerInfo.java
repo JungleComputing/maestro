@@ -39,7 +39,9 @@ final class WorkerInfo {
     /** The duration of the ping round-trip for this worker. */
     private long pingTime;
 
-    private int missedDeadlines = 0;
+    private int missedAllowanceDeadlines = 0;
+    private int missedRescheduleDeadlines = 0;
+
     /**
      * Returns a string representation of this worker info. (Overrides method in superclass.)
      * @return The worker info.
@@ -198,9 +200,11 @@ final class WorkerInfo {
         long roundtripError = Math.abs( task.predictedDuration-roundtripTime );
 	long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
 
-        if( task.deadline<arrivalMoment ) {
-            //Globals.log.reportError( "Task " + task + " missed deadline by " + Service.formatNanoseconds( now-task.deadline ) );
-            missedDeadlines++;
+        if( task.allowanceDeadline<arrivalMoment ) {
+            missedAllowanceDeadlines++;
+        }
+        if( task.rescheduleDeadline<arrivalMoment ) {
+            missedRescheduleDeadlines++;
         }
         registerWorkerInfo( result.workerQueueInfo, result.completionInfo, arrivalMoment );
         task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime, roundtripError );
@@ -232,7 +236,7 @@ final class WorkerInfo {
      * @return If true, this task was added to the reservations, not
      *         to the collection of outstanding tasks.
      */
-    boolean registerTaskStart( TaskInstance task, long id, long predictedDuration, long deadline )
+    boolean registerTaskStart( TaskInstance task, long id, long predictedDuration, long allowanceDeadline, long rescheduleDeadline )
     {
         WorkerTaskInfo workerTaskInfo = workerTaskInfoList.get( task.type.index );
         if( workerTaskInfo == null ) {
@@ -240,7 +244,7 @@ final class WorkerInfo {
             return true;
         }
         workerTaskInfo.incrementOutstandingTasks();
-        ActiveTask j = new ActiveTask( task, id, System.nanoTime(), workerTaskInfo, predictedDuration, deadline );
+        ActiveTask j = new ActiveTask( task, id, System.nanoTime(), workerTaskInfo, predictedDuration, allowanceDeadline, rescheduleDeadline );
 
         activeTasks.add( j );
         return false;
@@ -307,8 +311,8 @@ final class WorkerInfo {
     {
         s.println( "Worker " + identifier + (local?" (local)":"") );
 
-        if( missedDeadlines>0 ) {
-            s.println( "  Missed deadlines: " + missedDeadlines );
+        if( missedAllowanceDeadlines>0 ) {
+            s.println( "  Missed deadlines: " + missedAllowanceDeadlines );
         }
         for( WorkerTaskInfo info: workerTaskInfoList ) {
             if( info != null && info.didWork() ) {

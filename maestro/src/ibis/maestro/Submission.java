@@ -10,5 +10,4 @@ class Subtask {
     TaskInstance task = null;
     WorkerTaskInfo worker = null;
     long predictedDuration = 0L;   // FIXME: remove this.
-    long deadline = 0L;
 }

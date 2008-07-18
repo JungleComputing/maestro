@@ -337,14 +337,15 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 reserved = queue.selectSubmisson( reserved, sub, workers, noReadyWorkers );
                 WorkerTaskInfo wti = sub.worker;
                 TaskInstance task = sub.task;
-                long deadline = sub.deadline;
                 if( wti == null ){
                     stopBecauseBusy = true;
                     break;
                 }
                 WorkerInfo worker = wti.worker;
                 taskId = nextTaskId++;
-                worker.registerTaskStart( task, taskId, sub.predictedDuration, deadline );
+                long allowanceDeadline = sub.predictedDuration*Settings.ALLOWANCE_DEADLINE_MARGIN;
+                long rescheduleDeadline = sub.predictedDuration*Settings.RESCHEDULE_DEADLINE_MARGIN;
+                worker.registerTaskStart( task, taskId, sub.predictedDuration, allowanceDeadline, rescheduleDeadline );
                 if( Settings.traceMasterQueue ) {
                     System.out.println( "Selected " + worker + " as best for task " + task );
                 }
