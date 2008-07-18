@@ -29,9 +29,12 @@ final class WorkerTaskInfo {
     /** How many outstanding instances of this task should this worker maximally have? */
     private int maximalAllowance;
 
-    /** How long in ns the job is estimated to dwell on the worker for queuing and execution. */
-    private long workerDwellTime;
+    /** How long in ns between dequeueings. */
+    private long dequeueTime;
 
+    /** How long in ns is a task estimated to compute. */
+    private long computeTime;
+    
     /** How long in ns it takes to complete the rest of the job this task belongs to. */
     private long remainingJobTime;
 
@@ -72,7 +75,7 @@ final class WorkerTaskInfo {
             return Long.MAX_VALUE;
         }
         else {
-            total = futureTasks*transmissionTime + (allTasks*(workerDwellTime/maximalAllowance)) + remainingJobTime;
+            total = futureTasks*transmissionTime + this.dequeueTime*allTasks + this.computeTime + remainingJobTime;
         }
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress(
@@ -82,7 +85,8 @@ final class WorkerTaskInfo {
                 + " currentTasks=" + currentTasks
                 + " futureTasks=" + futureTasks
                 + " xmitTime=" + Service.formatNanoseconds( transmissionTime )
-                + " workerDwellTime=" + Service.formatNanoseconds( workerDwellTime )
+                + " dequeueTime=" + Service.formatNanoseconds( dequeueTime )
+                + " computeTime=" + Service.formatNanoseconds( computeTime )
                 + " remainingJobTime=" + Service.formatNanoseconds( remainingJobTime )
                 + " total=" + Service.formatNanoseconds( total )
             );
@@ -141,8 +145,9 @@ final class WorkerTaskInfo {
 	this.transmissionTimeEstimate = new TimeEstimate( pingTime );
 	this.roundtripTimeEstimate = new TimeEstimate( 2*pingTime );
         this.roundtripErrorEstimate = new TimeEstimate( 2*pingTime );
-	this.workerDwellTime = 2*pingTime;
-	this.remainingJobTime = taskInfo.type.remainingTasks*(workerDwellTime+pingTime);
+        this.computeTime = 2*pingTime;
+        this.dequeueTime = 1*pingTime;
+	this.remainingJobTime = taskInfo.type.remainingTasks*(computeTime+dequeueTime+pingTime);
 	if( Settings.traceWorkerList || Settings.traceRemainingJobTime ) {
 	    Globals.log.reportProgress( "Created new WorkerTaskInfo " + toString() );
 	}
@@ -179,9 +184,14 @@ final class WorkerTaskInfo {
 	this.remainingJobTime = remainingJobTime;
     }
 
-    void setDwellTime( long workerDwellTime )
+    void setComputeTime( long computeTime )
     {
-        this.workerDwellTime = workerDwellTime;
+        this.computeTime = computeTime;
+    }
+    
+    void setDequeueTime( long dequeueTime )
+    {
+        this.dequeueTime = dequeueTime;
     }
 
     /** Register a new outstanding task. */
@@ -192,7 +202,7 @@ final class WorkerTaskInfo {
 
     String buildStatisticsString()
     {
-	return "executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + ", dwell time " + Service.formatNanoseconds( workerDwellTime )+ ", remaining time " + Service.formatNanoseconds( remainingJobTime );
+	return "executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + "dequeueTime=" + Service.formatNanoseconds( dequeueTime )+ " computeTime=" + Service.formatNanoseconds( computeTime )+ ", remaining time " + Service.formatNanoseconds( remainingJobTime );
     }
 
     /**

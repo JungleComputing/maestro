@@ -96,7 +96,7 @@ final class WorkerQueue {
 
         WorkerQueueInfo getWorkerQueueInfo( long dwellTime )
         {
-            return new WorkerQueueInfo( type, elements, dwellTime );
+            return new WorkerQueueInfo( type, elements, dequeueInterval.getAverage(), dwellTime );
         }
     }
 
@@ -165,8 +165,8 @@ final class WorkerQueue {
                     res[i] = null;
                 }
                 else {
-                    long dwellTime = stats.getEstimatedDwellTime( q.elements );
-                    res[i] = q.getWorkerQueueInfo( dwellTime );
+                    long computeTime = stats.getEstimatedComputeTime();
+                    res[i] = q.getWorkerQueueInfo( computeTime );
                 }
             }
         }

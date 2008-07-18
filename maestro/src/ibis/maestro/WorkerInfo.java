@@ -113,7 +113,8 @@ final class WorkerInfo {
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "Master: worker " + identifier + ":" + info );
         }
-        workerTaskInfo.setDwellTime( info.workerDwellTime );
+        workerTaskInfo.setDequeueTime( info.dequeueTime );
+        workerTaskInfo.setComputeTime( info.computeTime );
         workerTaskInfo.controlAllowance( info.queueLength );
     }
 

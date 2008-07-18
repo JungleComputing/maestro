@@ -57,4 +57,12 @@ class WorkerTaskStats {
     {
         queueTimePerTask.addSample( v );
     }
+
+    /** FIXME.
+     * @return
+     */
+    long getEstimatedComputeTime()
+    {
+        return averageWorkTime.getAverage();
+    }
 }
