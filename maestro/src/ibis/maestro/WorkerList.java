@@ -62,10 +62,10 @@ final class WorkerList {
         return null;
     }
 
-    WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, MasterIdentifier identifierForWorker, TaskType[] types )
+    WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, int workThreads, MasterIdentifier identifierForWorker, TaskType[] types )
     {
         Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
-        WorkerInfo worker = new WorkerInfo( this, workerPort, workerID, identifierForWorker, local, types );
+        WorkerInfo worker = new WorkerInfo( this, workerPort, workerID, identifierForWorker, local, workThreads, types );
 
         for( TaskType t: types ) {
             TaskInfoOnMaster info = getTaskInfo( t );
@@ -73,7 +73,7 @@ final class WorkerList {
             info.addWorker( wti );
         }
         if( Settings.traceMasterProgress ){
-            System.out.println( "Master " + me + ": subscribing worker " + workerID + "; identifierForWorker=" + identifierForWorker + "; local=" + local );
+            System.out.println( "Master " + me + ": subscribing worker " + workerID + " identifierForWorker=" + identifierForWorker + " local=" + local + " workThreads=" + workThreads );
         }
         workers.add( worker );
         return workerID;

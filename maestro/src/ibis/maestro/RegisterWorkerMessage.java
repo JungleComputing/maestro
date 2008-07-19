@@ -19,6 +19,9 @@ final class RegisterWorkerMessage extends WorkerMessage {
 
     final TaskType[] supportedTypes;
 
+    /** How many work threads does this worker have? */
+    final int workThreads;
+    
     /** Our identifier for the master. */
     final MasterIdentifier masterIdentifier;
 
@@ -27,12 +30,13 @@ final class RegisterWorkerMessage extends WorkerMessage {
      * @param port The receive port to use to submit tasks.
      * @param masterID The identifier to use.
      */
-    RegisterWorkerMessage( ReceivePortIdentifier port, MasterIdentifier masterID, TaskType[] taskTypes )
+    RegisterWorkerMessage( ReceivePortIdentifier port, TaskType[] supportedTypes, int workThreads, MasterIdentifier masterID )
     {
 	super( null );
 	this.port = port;
+	this.workThreads = workThreads;
 	this.masterIdentifier = masterID;
-	this.supportedTypes = taskTypes;
+	this.supportedTypes = supportedTypes;
     }
 
     /**

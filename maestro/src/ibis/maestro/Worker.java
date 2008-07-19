@@ -311,7 +311,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    masters.add( info );
 	}
 	TaskType taskTypes[] = jobs.getSupportedTaskTypes();
-	RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), masterID, taskTypes );
+	RegisterWorkerMessage msg = new RegisterWorkerMessage( receivePort.identifier(), taskTypes, numberOfProcessors, masterID );
 	long sz = sendPort.tryToSend( ibis, Globals.masterReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ) {
 	    System.err.println( "Cannot register with master " + ibis );

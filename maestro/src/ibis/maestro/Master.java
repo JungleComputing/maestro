@@ -249,7 +249,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
         synchronized( queue ) {
             boolean local = sendPort.isLocalListener( m.port );
-            workerID = workers.subscribeWorker( receivePort.identifier(), worker, local, m.masterIdentifier, m.supportedTypes );
+            workerID = workers.subscribeWorker( receivePort.identifier(), worker, local, m.workThreads, m.masterIdentifier, m.supportedTypes );
             sendPort.registerDestination( worker, workerID.value );
         }
         sendAcceptMessage( workerID );

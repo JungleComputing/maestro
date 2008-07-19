@@ -27,6 +27,8 @@ final class WorkerInfo {
 
     final boolean local;
 
+    final int workerThreads;
+
     private boolean enabled = false;
 
     private boolean dead = false;
@@ -52,12 +54,13 @@ final class WorkerInfo {
         return identifier.toString();
     }
 
-    WorkerInfo( WorkerList wl, ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local, TaskType[] types )
+    WorkerInfo( WorkerList wl, ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local, int workerThreads, TaskType[] types )
     {
         this.port = port;
         this.identifier = identifier;
         this.identifierWithWorker = identifierForWorker;
         this.local = local;
+        this.workerThreads = workerThreads;
         // Initial, totally unfounded, guess for the ping time.
         this.pingTime = local?Service.MICROSECOND_IN_NANOSECONDS:Service.MILLISECOND_IN_NANOSECONDS;
         for( TaskType t: types ) {
@@ -277,7 +280,7 @@ final class WorkerInfo {
         while( ix+1>workerTaskInfoList.size() ) {
             workerTaskInfoList.add( null );
         }
-        WorkerTaskInfo info = new WorkerTaskInfo( taskInfoOnMaster, this, local, pingTime );
+        WorkerTaskInfo info = new WorkerTaskInfo( taskInfoOnMaster, this, local, workerThreads, pingTime );
         workerTaskInfoList.set( ix, info );
     }
     
