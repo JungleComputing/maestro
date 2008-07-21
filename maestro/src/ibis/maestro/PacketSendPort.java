@@ -25,6 +25,7 @@ import java.util.HashMap;
 class PacketSendPort<T extends Serializable> {
     static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
     private final Ibis ibis;
+    private final Node node;  // The node this runs on.
     private long sentBytes = 0;
     private long sendTime = 0;
     private long adminTime = 0;
@@ -113,9 +114,10 @@ class PacketSendPort<T extends Serializable> {
         SendPort port;
     }
 
-    PacketSendPort( Ibis ibis )
+    PacketSendPort( Ibis ibis, Node node )
     {
         this.ibis = ibis;
+        this.node = node;
     }
 
     void setLocalListener( PacketReceiveListener<T> localListener )
@@ -211,7 +213,7 @@ class PacketSendPort<T extends Serializable> {
      * Sends the given data to the given port.
      * @param destination The port to send it to.
      * @param data The data to send.
-     * @param timeout The timeout of the transjob.
+     * @param timeout The timeout of the transmission.
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
@@ -355,6 +357,7 @@ class PacketSendPort<T extends Serializable> {
         try {
             sz = send( theIbis, portName, msg, timeout );
         } catch (IOException e) {
+            node.declareIbisSuspect( theIbis );
             Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to ibis " + theIbis );
             e.printStackTrace( Globals.log.getPrintStream() );
         }
@@ -366,7 +369,7 @@ class PacketSendPort<T extends Serializable> {
      * Sends the given data to the given port.
      * @param msg The data to send.
      * @param destination The port to send it to.
-     * @param timeout The timeout of the transjob.
+     * @param timeout The timeout of the transmission.
      * @return The length of the transmitted data, or -1 if nothing could be transmitted.
      */
     long tryToSend( int destination, T msg, int timeout ) {
@@ -374,6 +377,8 @@ class PacketSendPort<T extends Serializable> {
         try {
             sz = send( destination, msg, timeout );
         } catch (IOException e) {
+            DestinationInfo info = destinations.get( destination );
+            node.declareIbisSuspect( info.portIdentifier.ibisIdentifier() );
             Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to master " + destination );
             e.printStackTrace( Globals.log.getPrintStream() );
         }
@@ -385,7 +390,7 @@ class PacketSendPort<T extends Serializable> {
      * @param port The port to send the message to.
      * @param data The message to send.
      * @param timeout The timeout value to use.
-     * @return The size of the transmitted message, or -1 if the transjob failed.
+     * @return The size of the transmitted message, or -1 if the transmission failed.
      */
     long tryToSend( ReceivePortIdentifier port, T data, int timeout )
     {

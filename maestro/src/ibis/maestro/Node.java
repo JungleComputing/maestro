@@ -339,21 +339,6 @@ public final class Node {
 	return worker.sendResultMessage( receivePort, id, result );
     }
 
-    /** Try to tell the cooperating ibises that this one is
-     * dead.
-     * @param theIbis The Ibis we think is dead.
-     */
-    public void declareIbisDead(IbisIdentifier theIbis)
-    {
-	try {
-	    ibis.registry().assumeDead( theIbis );
-	}
-	catch( IOException e )
-	{
-	    // Nothing we can do about it.
-	}
-    }
-
     ReceivePortIdentifier identifier()
     {
 	return master.identifier();
@@ -365,9 +350,26 @@ public final class Node {
     }
 
     /**
-     * @return
+     * @return The ibis identifier of this node.
      */
     IbisIdentifier ibisIdentifier() {
         return ibis.identifier();
+    }
+
+    /** This ibis was reported as 'may be dead'. Try
+     * not to communicate with it.
+     * @param theIbis The ibis that may be dead.
+     */
+    public void declareIbisSuspect( IbisIdentifier theIbis )
+    {
+	try {
+	    ibis.registry().assumeDead( theIbis );
+	}
+	catch( IOException e )
+	{
+	    // Nothing we can do about it.
+	}
+	master.declareIbisSuspect( theIbis );
+	worker.declareIbisSuspect( theIbis );
     }
 }

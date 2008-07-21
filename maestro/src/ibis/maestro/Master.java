@@ -98,7 +98,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         super( "Master" );
         this.queue = new MasterQueue();
         this.node = node;
-        sendPort = new PacketSendPort<MasterMessage>( ibis );
+        sendPort = new PacketSendPort<MasterMessage>( ibis, node );
         receivePort = new PacketUpcallReceivePort<WorkerMessage>( ibis, Globals.masterReceivePortName, this );
         startTime = System.nanoTime();
     }
@@ -462,5 +462,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         synchronized( queue ) {
             return queue.getCompletionInfo( jobs, workers );
         }
+    }
+
+    /** This ibis is suspect; don't try to talk to it for the moment. */
+    void declareIbisSuspect(IbisIdentifier ibisIdentifier)
+    {
     }
 }

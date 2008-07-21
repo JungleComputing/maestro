@@ -121,7 +121,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	this.jobs = jobs;
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
 	receivePort = new PacketUpcallReceivePort<MasterMessage>( ibis, Globals.workerReceivePortName, this );
-	sendPort = new PacketSendPort<WorkerMessage>( ibis );
+	sendPort = new PacketSendPort<WorkerMessage>( ibis, node );
 	for( int i=0; i<numberOfProcessors; i++ ) {
 	    WorkThread t = new WorkThread( this, node );
 	    workThreads[i] = t;
@@ -140,7 +140,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
     {
 	receivePort.enable();           // We're open for business.
 	super.start();                  // Start the thread
-	registerWithMaster( node.ibisIdentifier() );
+	boolean ok = registerWithMaster( node.ibisIdentifier() );
     }
 
     /**
@@ -297,9 +297,10 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	}
     }
 
-    private void registerWithMaster( IbisIdentifier ibis )
+    private boolean registerWithMaster( IbisIdentifier ibis )
     {
 	MasterIdentifier masterID;
+	boolean ok = true;
 
 	if( Settings.traceWorkerList ) {
 	    Globals.log.reportProgress( "Worker " + node.ibisIdentifier() + ": sending registration message to ibis " + ibis );
@@ -315,8 +316,10 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	long sz = sendPort.tryToSend( ibis, Globals.masterReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ) {
 	    System.err.println( "Cannot register with master " + ibis );
-	    node.declareIbisDead( ibis );
+	    node.declareIbisSuspect( ibis );
+	    ok = false;
 	}
+	return ok;
     }
 
     private void sendUpdate( MasterInfo master )
@@ -341,7 +344,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    }
             // We record the transmission time as a reasonable estimate of a sleep time.
             long start = System.nanoTime();
-	    registerWithMaster( newIbis );
+	    boolean ok = registerWithMaster( newIbis );
             infoSendTime.addSample( System.nanoTime()-start );
 	    return;
 	}
@@ -695,5 +698,14 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    Object result ) {
 	WorkerMessage msg = new JobResultMessage( id, result );
 	return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+    }
+
+    /**
+     * This ibis is suspect. Try not to talk to it for the moment.
+     * @param ibisIdentifier
+     */
+    void declareIbisSuspect(IbisIdentifier ibisIdentifier)
+    {
+	
     }
 }
