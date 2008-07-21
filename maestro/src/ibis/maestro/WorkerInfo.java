@@ -29,8 +29,6 @@ final class WorkerInfo {
 
     final int workerThreads;
 
-    private boolean enabled = false;
-
     private boolean dead = false;
 
     /** The time the accept message was sent to this worker.
@@ -138,9 +136,6 @@ final class WorkerInfo {
 
     void registerWorkerInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
     {
-        if( Settings.traceWorkerList && !enabled ){
-            System.out.println( "Enabled worker " + identifier + " (" + port + ")" );
-        }
         if( pingSentTime != 0 ) {
             // We are measuring this round-trip time.
             pingTime = arrivalMoment-pingSentTime;
@@ -150,7 +145,6 @@ final class WorkerInfo {
                 Globals.log.reportProgress( "Master: ping time to worker " + identifier + " is " + Service.formatNanoseconds( pingTime ) );
             }
         }
-        enabled = true;
         if( Settings.traceRemainingJobTime ) {
             String s = "workerQueueInfo=[";
             boolean first = true;
