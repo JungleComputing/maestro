@@ -435,6 +435,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
     /**
      * Handles task request message <code>msg</code>.
      * @param msg The task we received and will put in the queue.
+     * @param arrivalMoment The moment in ns this message arrived.
      */
     public void messageReceived( MasterMessage msg, long arrivalMoment )
     {

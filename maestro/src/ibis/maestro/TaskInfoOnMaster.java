@@ -121,15 +121,6 @@ public class TaskInfoOnMaster
 	return null;
     }
 
-    /** Register the fact that the given worker has completed
-     * its task. To reward it, place in the front of the list
-     * of ready workers.
-     * @param w The worker that completed a task.
-     */
-    protected void registerWorkerCompleted( WorkerTaskInfo w )
-    {
-    }
-
     /**
      * Returns the best average completion time for this task.
      * We compute this by taking the minimum over all our workers.

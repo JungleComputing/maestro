@@ -292,12 +292,21 @@ final class WorkerInfo {
         return dead;
     }
 
-    /** Mark this worker as dead.
-     * 
+    /** Mark this worker as dead, and return a list of active tasks
+     * of this worker.
+     * @return The list of task instances that were outstanding on this worker,
+     *    and should be re-submitted.
      */
-    void setDead()
+    ArrayList<TaskInstance> setDead()
     {
         dead = true;
+        ArrayList<TaskInstance> orphans = new ArrayList<TaskInstance>();
+        for( ActiveTask t: activeTasks ) {
+            orphans.add( t.task );
+        }
+        activeTasks.clear(); // Don't let those orphans take up memory.
+        System.out.println( "Rescued " + orphans.size() + " orphans from dead worker " + identifier );
+        return orphans;
     }
 
     /**

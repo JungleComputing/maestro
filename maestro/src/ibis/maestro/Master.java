@@ -7,6 +7,7 @@ import ibis.ipl.ReceivePortIdentifier;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
 
 /**
@@ -423,7 +424,12 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     void removeIbis( IbisIdentifier theIbis )
     {
-        workers.removeWorker( theIbis );
+	synchronized( queue ) {
+	    ArrayList<TaskInstance> orphans = workers.removeWorker( theIbis );
+	    for( TaskInstance ti: orphans ) {
+		queue.add( ti );
+	    }
+	}
     }
 
     /** Returns the identifier of (the receive port of) this worker.

@@ -84,12 +84,15 @@ final class WorkerList {
      * Remove any workers on that ibis.
      * @param theIbis The ibis that was gone.
      */
-    void removeWorker( IbisIdentifier theIbis )
+    ArrayList<TaskInstance> removeWorker( IbisIdentifier theIbis )
     {
+	ArrayList<TaskInstance> orphans = null;
         WorkerInfo wi = searchWorker( workers, theIbis );
+
         if( wi != null ) {
-            wi.setDead();
+            orphans = wi.setDead();
         }
+        return orphans;
     }
 
     /**
