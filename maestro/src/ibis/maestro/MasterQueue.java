@@ -14,8 +14,10 @@ import java.util.HashSet;
  * @author Kees van Reeuwijk
  *
  */
-final class MasterQueue extends Queue {
+final class MasterQueue
+{
     private final ArrayList<TypeInfo> queueTypes = new ArrayList<TypeInfo>();
+    protected final ArrayList<TaskInstance> queue = new ArrayList<TaskInstance>();
 
     /**
      * Statistics per type for the different task types in the queue.
@@ -271,5 +273,14 @@ final class MasterQueue extends Queue {
             }
 	}
 	return res;
+    }
+
+    /**
+     * Returns true iff the entire queue is empty.
+     * @return
+     */
+    protected boolean isEmpty()
+    {
+        return queue.isEmpty();
     }
 }
