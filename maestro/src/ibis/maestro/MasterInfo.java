@@ -19,7 +19,9 @@ final class MasterInfo {
     /** The last time we sent this master an update. */
     private long lastUpdate = 0;
     
-    private boolean dead = false;
+    private boolean suspect = false;  // This master may be dead.
+
+    private boolean dead = false;     // This master is known to be dead.
 
     /** The ibis this master lives on. */
     final IbisIdentifier ibis;
@@ -57,22 +59,25 @@ final class MasterInfo {
     /**
      * @return The lastUpdate.
      */
-    long getLastUpdate() {
+    long getLastUpdate()
+    {
         return lastUpdate;
     }
 
     /**
      * @param lastUpdate the lastUpdate to set
      */
-    void setLastUpdate(long lastUpdate) {
+    void setLastUpdate(long lastUpdate)
+    {
         this.lastUpdate = lastUpdate;
     }
 
     /**
      * Declares this master dead.
      */
-    public void declareDead()
+    void setDead()
     {
+	suspect = true;
 	dead = true;
     }
 
@@ -80,8 +85,18 @@ final class MasterInfo {
      * Returns true iff this master is dead.
      * @return Is this master dead?
      */
-    public boolean isDead()
+    boolean isDead()
     {
 	return dead;
+    }
+
+    boolean isSuspect()
+    {
+	return suspect;
+    }
+
+    protected void setSuspect()
+    {
+	suspect = true;
     }
 }

@@ -100,12 +100,14 @@ final class WorkerList {
      * Remove any workers on that ibis.
      * @param theIbis The worker that is gone.
      */
-    void removeWorker( WorkerIdentifier identifier )
+    ArrayList<TaskInstance> removeWorker( WorkerIdentifier identifier )
     {
         WorkerInfo wi = searchWorker( workers, identifier );
+	ArrayList<TaskInstance> orphans = null;
         if( wi != null ) {
-            wi.setDead();
+            orphans = wi.setDead();
         }
+        return orphans;
     }
 
     /**
@@ -150,15 +152,6 @@ final class WorkerList {
         TaskInfoOnMaster taskInfo = getTaskInfo( type );
         WorkerTaskInfo worker = taskInfo.getBestWorker();
         return worker;
-    }
-
-    /** Given a worker identifier, declare it dead.
-     * @param workerID The worker to declare dead.
-     */
-    void declareDead( WorkerIdentifier workerID )
-    {
-        WorkerInfo w = workers.get( workerID.value );
-        w.setDead();
     }
 
     /**
@@ -227,6 +220,15 @@ final class WorkerList {
     {
 	for( WorkerInfo wi: workers ) {
 	    wi.resetReservations();
+	}
+    }
+    
+    protected void setSuspect( IbisIdentifier theIbis )
+    {
+	WorkerInfo wi = searchWorker( workers, theIbis );
+
+	if( wi != null ) {
+	    wi.setSuspect();
 	}
     }
 

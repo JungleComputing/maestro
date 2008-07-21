@@ -9,6 +9,7 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 
 /**
  * A master in the Maestro flow graph framework.
@@ -22,6 +23,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final Node node;
     private final WorkerList workers = new WorkerList();
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
+    private final LinkedList<WorkerIdentifier> acceptList = new LinkedList<WorkerIdentifier>();
     private final PacketSendPort<MasterMessage> sendPort;
     private final MasterQueue queue;
 
@@ -162,7 +164,8 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             System.out.println( "unsubscribe of worker " + worker );
         }
         synchronized( queue ){
-            workers.removeWorker( worker );
+            ArrayList<TaskInstance> orphans = workers.removeWorker( worker );
+            queue.add( orphans );
             queue.notifyAll();
         }
     }
@@ -196,20 +199,22 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         node.reportCompletion( m.job, m.result );
     }
 
-    private void sendAcceptMessage( WorkerIdentifier workerID )
+    private boolean sendAcceptMessage( WorkerIdentifier workerID )
     {
         ReceivePortIdentifier myport = receivePort.identifier();
         Worker.MasterIdentifier idOnWorker = workers.getMasterIdentifier( workerID );
         WorkerAcceptMessage msg = new WorkerAcceptMessage( idOnWorker, myport, workerID );
+        boolean ok = true;
 
         workers.setPingStartMoment( workerID );
         long sz = sendPort.tryToSend( workerID.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( sz<0 ){
             synchronized( queue ) {
-                workers.declareDead( workerID );
                 queue.notifyAll();
             }
+            ok = false;
         }
+        return ok;
     }
 
     /**
@@ -252,9 +257,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             boolean local = sendPort.isLocalListener( m.port );
             workerID = workers.subscribeWorker( receivePort.identifier(), worker, local, m.workThreads, m.masterIdentifier, m.supportedTypes );
             sendPort.registerDestination( worker, workerID.value );
-        }
-        sendAcceptMessage( workerID );
-        synchronized( queue ) {
+            acceptList.add( workerID );
             queue.notifyAll();
         }
     }
@@ -270,6 +273,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         boolean res = port.equals( receivePort.identifier() );
         return res;
     }
+    
+    private void setUnsuspect( WorkerIdentifier worker )
+    {
+	
+    }
 
     /**
      * Handles message <code>msg</code> from worker.
@@ -281,6 +289,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Master: received message " + msg );
         }
+        setUnsuspect( msg.source );
         if( msg instanceof TaskCompletedMessage ) {
             TaskCompletedMessage result = (TaskCompletedMessage) msg;
 
@@ -321,6 +330,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         Subtask sub = new Subtask();
         long taskId;
         int reserved = 0;
+        WorkerIdentifier workerToAccept = null;
         boolean stopBecauseBusy;
         HashSet<TaskType> noReadyWorkers = new HashSet<TaskType>();
 
@@ -357,8 +367,19 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                     // Try to put the paste back in the tube.
                     worker.retractTask( msg.taskId );
                     queue.add( msg.task );
-                    // TODO: register as suspect.
                 }
+            }
+            if( !acceptList.isEmpty() ) {
+        	workerToAccept = acceptList.remove();
+            }
+        }
+        if( workerToAccept != null ) {
+            boolean ok = sendAcceptMessage( workerToAccept );
+            if( !ok ) {
+        	// Couldn't send an accept message, back on the queue.
+        	synchronized( queue ) {
+        	    acceptList.add(workerToAccept);
+        	}
             }
         }
         if( Settings.traceWorkerSelection ){
@@ -426,9 +447,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     {
 	synchronized( queue ) {
 	    ArrayList<TaskInstance> orphans = workers.removeWorker( theIbis );
-	    for( TaskInstance ti: orphans ) {
-		queue.add( ti );
-	    }
+	    queue.add( orphans );
 	}
     }
 
@@ -465,7 +484,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /** This ibis is suspect; don't try to talk to it for the moment. */
-    void declareIbisSuspect(IbisIdentifier ibisIdentifier)
+    void declareIbisSuspect( IbisIdentifier ibisIdentifier )
     {
+	synchronized( queue ){
+	    workers.setSuspect( ibisIdentifier );
+	}
     }
 }

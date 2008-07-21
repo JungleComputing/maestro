@@ -141,6 +141,10 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	receivePort.enable();           // We're open for business.
 	super.start();                  // Start the thread
 	boolean ok = registerWithMaster( node.ibisIdentifier() );
+	if( !ok ) {
+	    System.err.println( "Internal error: cannot register worker with local master" );
+	    System.exit( 1 ); // Don't know how to handle this in a more refined manner.
+	}
     }
 
     /**
@@ -207,10 +211,10 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 		// draw a random one.
 		int ix = rng.nextInt( size );
 		res = taskSources.remove( ix );
-		if( !res.isDead() ){
+		if( !res.isSuspect() ){
 		    return res;
 		}
-		// The master we drew from the lottery is dead. Try again.
+		// The master we drew from the lottery is suspect or dead. Try again.
 	    }
 	}
     }
@@ -244,7 +248,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 
     /**
      * Returns a random registered master.
-     * @return The task source, or null if there isn't one.
+     * @return The task source, or <code>null</code> if there isn't one.
      */
     private MasterInfo getRandomRegisteredMaster()
     {
@@ -268,7 +272,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 		// We only try 'n' times, since the list may consist entirely of duds.
 		// (And yes, these duds skew the probabilities, we don't care.)
 		res = masters.get( ix );
-		if( !res.isDead() && res.isRegistered() ) {
+		if( !res.isSuspect() && res.isRegistered() ) {
 		    return res;
 		}
 		ix++;
@@ -328,10 +332,9 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	WorkerQueueInfo[] workerQueueInfo = queue.getWorkerQueueInfo( taskStats );
 	WorkerUpdateMessage msg = new WorkerUpdateMessage( master.getIdentifierOnMaster(), completionInfo, workerQueueInfo );
 
-	long sz = sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
-	if( sz<0 ) {
-	    master.declareDead();
-	}
+	// We ignore the result because we don't care about the message size,
+	// and if the update failed, it failed.
+	sendPort.tryToSend( master.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
     }
 
     private void askMoreWork()
@@ -345,7 +348,13 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
             // We record the transmission time as a reasonable estimate of a sleep time.
             long start = System.nanoTime();
 	    boolean ok = registerWithMaster( newIbis );
-            infoSendTime.addSample( System.nanoTime()-start );
+	    if( ok ) {
+		infoSendTime.addSample( System.nanoTime()-start );
+	    }
+	    else {
+		// We couldn't reach this master. Put it back on the list.
+		unregisteredMasters.add( newIbis );
+	    }
 	    return;
 	}
 
@@ -595,6 +604,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	WorkerMessage msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
 	long sz = sendPort.tryToSend( master.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 
+	// FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
+
 	if( nextTaskNo<t.tasks.length ){
 	    // There is a next step to take.
 	    TaskInstance nextTask = new TaskInstance( task.message.task.jobInstance, t.getNextTaskType( taskType ), result );
@@ -640,7 +651,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	    for( MasterInfo master: masters ){
 		if( master.ibis.equals( theIbis ) ){
 		    // This ibis is now dead. Make it official.
-		    master.declareDead();
+		    master.setDead();
 		    break;   // There's supposed to be only one entry, so don't bother searching for more.
 		}
 	    }
@@ -692,7 +703,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
      * @param port The port to send the result to.
      * @param id The job instance identifier.
      * @param result The result to send.
-     * @return The size of the sent message, or -1 if the transjob failed.
+     * @return The size of the sent message, or -1 if the transmission failed.
      */
     long sendResultMessage( ReceivePortIdentifier port, JobInstanceIdentifier id,
 	    Object result ) {
@@ -704,8 +715,18 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
      * This ibis is suspect. Try not to talk to it for the moment.
      * @param ibisIdentifier
      */
-    void declareIbisSuspect(IbisIdentifier ibisIdentifier)
+    void declareIbisSuspect( IbisIdentifier theIbis )
     {
-	
+	synchronized( queue ) {
+	    for( MasterInfo master: masters ){
+		if( master.ibis.equals( theIbis ) ){
+		    // This ibis is now dead. Make it official.
+		    master.setSuspect();
+		    break;   // There's supposed to be only one entry, so don't bother searching for more.
+		}
+	    }
+	    // This is a good reason to wake up the queue.
+	    queue.notifyAll();
+	}	
     }
 }

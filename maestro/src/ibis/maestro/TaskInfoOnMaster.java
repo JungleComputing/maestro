@@ -55,7 +55,7 @@ public class TaskInfoOnMaster
                 WorkerTaskInfo wi = workers.get( i );
                 WorkerInfo worker = wi.worker;
 
-                if( !worker.isDead() ) {
+                if( !worker.isSuspect() ) {
                     long val = wi.estimateJobCompletion();
 
                     if( wi.isReady() ) {

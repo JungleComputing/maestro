@@ -29,7 +29,9 @@ final class WorkerInfo {
 
     final int workerThreads;
 
-    private boolean dead = false;
+    private boolean suspect = false;  // This worker <em>may</em> be dead.
+
+    private boolean dead = false;     // This worker is known to be dead.
 
     /** The time the accept message was sent to this worker.
      * The roundtrip time determines the ping duration of this worker.
@@ -291,6 +293,15 @@ final class WorkerInfo {
     {
         return dead;
     }
+    
+    /**
+     * Returns true iff this worker is suspect.
+     * @return Is this worker suspect?
+     */
+    boolean isSuspect()
+    {
+	return suspect;
+    }
 
     /** Mark this worker as dead, and return a list of active tasks
      * of this worker.
@@ -299,6 +310,7 @@ final class WorkerInfo {
      */
     ArrayList<TaskInstance> setDead()
     {
+	suspect = true;
         dead = true;
         ArrayList<TaskInstance> orphans = new ArrayList<TaskInstance>();
         for( ActiveTask t: activeTasks ) {
@@ -348,6 +360,14 @@ final class WorkerInfo {
                 info.resetReservations();
             }
         }
+    }
+
+    /**
+     * This worker is suspect because it got a communication timeout.
+     */
+    protected void setSuspect()
+    {
+	suspect = true;
     }
 
 }

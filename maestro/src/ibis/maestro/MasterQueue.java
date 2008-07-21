@@ -3,6 +3,7 @@ package ibis.maestro;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * A class representing the master work queue.
@@ -282,5 +283,19 @@ final class MasterQueue
     protected boolean isEmpty()
     {
         return queue.isEmpty();
+    }
+
+    /**
+     * Adds all the task instances in the given list to the queue.
+     * The list may be <code>null</code>.
+     * @param l The list of task instances to add.
+     */
+    protected void add( List<TaskInstance> l )
+    {
+	if( l != null ) {
+	    for( TaskInstance ti: l ) {
+		add( ti );
+	    }
+	}
     }
 }
