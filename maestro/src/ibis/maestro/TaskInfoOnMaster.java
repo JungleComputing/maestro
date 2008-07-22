@@ -41,7 +41,9 @@ public class TaskInfoOnMaster
     {
         if( Settings.useShuffleRouting ) {
             for( WorkerTaskInfo wi: workers ) {
-                if( wi.isReady() ) {
+                WorkerInfo worker = wi.worker;
+                
+                if( worker.isReady() && wi.canProcessNow() ) {
                     return wi;
                 }
             }
@@ -55,10 +57,10 @@ public class TaskInfoOnMaster
                 WorkerTaskInfo wi = workers.get( i );
                 WorkerInfo worker = wi.worker;
 
-                if( !worker.isSuspect() ) {
+                if( worker.isReady() ) {
                     long val = wi.estimateJobCompletion();
 
-                    if( wi.isReady() ) {
+                    if( wi.canProcessNow() ) {
                         readyWorker = true;
                     }
                     if( val<Long.MAX_VALUE ) {
@@ -82,7 +84,7 @@ public class TaskInfoOnMaster
                         System.out.print( Service.formatNanoseconds( val ) );
                     }
                     if( wi == best ) {
-                        if( wi.isReady() ){
+                        if( wi.canProcessNow() ){
                             System.out.print( "(submit)" );
                         }
                         else {

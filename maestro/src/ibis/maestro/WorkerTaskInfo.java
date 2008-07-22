@@ -253,9 +253,9 @@ final class WorkerTaskInfo {
     /**
      * @return True iff this worker is ready to handle this task.
      */
-    boolean isReady()
+    boolean canProcessNow()
     {
-        return !worker.isReady() && outstandingTasks<maximalAllowance;
+        return outstandingTasks<maximalAllowance;
     }
 
     /** We now know this worker has the given ping time. Use this as the first estimate

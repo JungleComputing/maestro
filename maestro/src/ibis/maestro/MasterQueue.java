@@ -215,7 +215,7 @@ final class MasterQueue
 	    if( noReadyWorkers.contains( type ) ) {
 	        // There are no ready workers for this type, don't bother trying.
 	        if( Settings.traceMasterQueue ){
-	            System.out.println( "Skipping task of type " + type );
+	            System.out.println( "Skipping task of type " + type + ": no ready workers" );
 	        }
 	        ix++;
 	        continue;
