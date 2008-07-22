@@ -80,7 +80,6 @@ final class MasterInfo {
      */
     void setDead()
     {
-        System.out.println( "Master " + localIdentifier + " is dead" );
 	suspect = true;
 	dead = true;
     }

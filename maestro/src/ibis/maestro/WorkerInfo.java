@@ -327,7 +327,9 @@ final class WorkerInfo {
             orphans.add( t.task );
         }
         activeTasks.clear(); // Don't let those orphans take up memory.
-        System.out.println( "Rescued " + orphans.size() + " orphans from dead worker " + identifier );
+        if( !orphans.isEmpty() ) {
+            System.out.println( "Rescued " + orphans.size() + " orphans from dead worker " + identifier );
+        }
         return orphans;
     }
 
