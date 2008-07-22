@@ -351,9 +351,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 }
                 WorkerInfo worker = wti.worker;
                 taskId = nextTaskId++;
-                long allowanceDeadline = sub.predictedDuration*Settings.ALLOWANCE_DEADLINE_MARGIN;
-                long rescheduleDeadline = sub.predictedDuration*Settings.RESCHEDULE_DEADLINE_MARGIN;
-                worker.registerTaskStart( task, taskId, sub.predictedDuration, allowanceDeadline, rescheduleDeadline );
+                worker.registerTaskStart( task, taskId, sub.predictedDuration );
                 if( Settings.traceMasterQueue ) {
                     System.out.println( "Selected " + worker + " as best for task " + task );
                 }

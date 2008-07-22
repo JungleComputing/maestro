@@ -255,7 +255,7 @@ final class WorkerInfo {
      * @return If true, this task was added to the reservations, not
      *         to the collection of outstanding tasks.
      */
-    boolean registerTaskStart( TaskInstance task, long id, long predictedDuration, long allowanceDeadline, long rescheduleDeadline )
+    boolean registerTaskStart( TaskInstance task, long id, long predictedDuration )
     {
         WorkerTaskInfo workerTaskInfo = workerTaskInfoList.get( task.type.index );
         if( workerTaskInfo == null ) {
@@ -263,8 +263,10 @@ final class WorkerInfo {
             return true;
         }
         workerTaskInfo.incrementOutstandingTasks();
-        ActiveTask j = new ActiveTask( task, id, System.nanoTime(), workerTaskInfo, predictedDuration, allowanceDeadline, rescheduleDeadline );
-
+        long now = System.nanoTime();
+        long allowanceDeadline = now + predictedDuration*Settings.ALLOWANCE_DEADLINE_MARGIN;
+        long rescheduleDeadline = now + predictedDuration*Settings.RESCHEDULE_DEADLINE_MARGIN;
+        ActiveTask j = new ActiveTask( task, id, now, workerTaskInfo, predictedDuration, allowanceDeadline, rescheduleDeadline );
         activeTasks.add( j );
         return false;
     }
