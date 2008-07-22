@@ -53,7 +53,7 @@ final class WorkerTaskInfo {
     {
         this.taskInfo = taskInfo;
         this.worker = worker;
-        this.maximalAllowance = workerThreads + (local?3:1);
+        this.maximalAllowance = local?(1+workerThreads):1;
         this.maximalEverAllowance = maximalAllowance;
     
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;

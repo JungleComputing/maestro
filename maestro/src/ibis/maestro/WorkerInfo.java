@@ -214,16 +214,25 @@ final class WorkerInfo {
             missedAllowanceDeadlines++;
         }
         if( task.rescheduleDeadline<arrivalMoment ) {
+            if( Settings.traceMissedDeadlines ){
+                Globals.log.reportProgress(
+                    "Missed allowance deadline for " + task.task.type + " task: "
+                    + " predictedDuration=" + Service.formatNanoseconds( task.predictedDuration )
+                    + " allowanceDuration=" + Service.formatNanoseconds( task.allowanceDeadline-task.startTime )
+                    + " rescheduleDuration=" + Service.formatNanoseconds( task.rescheduleDeadline-task.startTime )
+                    + " realDuration=" + Service.formatNanoseconds( roundtripTime )
+                );
+            }
             missedRescheduleDeadlines++;
         }
         registerWorkerInfo( result.workerQueueInfo, result.completionInfo, arrivalMoment );
         task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime, roundtripError );
         if( Settings.traceMasterProgress ){
-            System.out.println(
-                "Master: retired task " + task + 
-                " roundtripTime=" + Service.formatNanoseconds( roundtripTime ) +
-                " roundtripError=" + Service.formatNanoseconds( roundtripError ) +
-                " transmissionTime=" + Service.formatNanoseconds( newTransmissionTime )
+            Globals.log.reportProgress(
+                "Master: retired task " + task
+                + " roundtripTime=" + Service.formatNanoseconds( roundtripTime )
+                + " roundtripError=" + Service.formatNanoseconds( roundtripError )
+                + " transmissionTime=" + Service.formatNanoseconds( newTransmissionTime )
             );
         }
         return task.task.type;

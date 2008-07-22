@@ -47,6 +47,9 @@ class Settings {
     /** Trace all send events. */
     static final boolean traceSends = false;
 
+    /** Trace all missed deadlines. */
+    static final boolean traceMissedDeadlines = true;
+
     /** Trace all queuing and dequeuing. */
     static final boolean traceQueuing = false;
 

@@ -247,6 +247,9 @@ final class WorkerList {
      */
     protected void setUnsuspect( WorkerIdentifier workerID, Node node )
     {
+        if( workerID == null ){
+            return;
+        }
         WorkerInfo w = workers.get( workerID.value );
         if( w != null ) {
             w.setUnsuspect( node );
