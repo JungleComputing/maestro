@@ -62,12 +62,12 @@ class Settings {
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.
      */
-    static final long ALLOWANCE_DEADLINE_MARGIN = 2;
+    static final long ALLOWANCE_DEADLINE_MARGIN = 3;
 
     /** Multiplier of the estimated completion time to
      * get a reschedule deadline for a task.
      */
-    static final long RESCHEDULE_DEADLINE_MARGIN = 4;
+    static final long RESCHEDULE_DEADLINE_MARGIN = 6;
 
     /** If set, routes tasks based on worker list shuffling instead of measured times. */
     static final boolean useShuffleRouting = false;

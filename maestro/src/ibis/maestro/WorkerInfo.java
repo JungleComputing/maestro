@@ -212,13 +212,20 @@ final class WorkerInfo {
 
         if( task.allowanceDeadline<arrivalMoment ) {
             missedAllowanceDeadlines++;
-        }
-        if( task.rescheduleDeadline<arrivalMoment ) {
             if( Settings.traceMissedDeadlines ){
                 Globals.log.reportProgress(
                     "Missed allowance deadline for " + task.task.type + " task: "
                     + " predictedDuration=" + Service.formatNanoseconds( task.predictedDuration )
                     + " allowanceDuration=" + Service.formatNanoseconds( task.allowanceDeadline-task.startTime )
+                    + " realDuration=" + Service.formatNanoseconds( roundtripTime )
+                );
+            }
+        }
+        if( task.rescheduleDeadline<arrivalMoment ) {
+            if( Settings.traceMissedDeadlines ){
+                Globals.log.reportProgress(
+                    "Missed reschedule deadline for " + task.task.type + " task: "
+                    + " predictedDuration=" + Service.formatNanoseconds( task.predictedDuration )
                     + " rescheduleDuration=" + Service.formatNanoseconds( task.rescheduleDeadline-task.startTime )
                     + " realDuration=" + Service.formatNanoseconds( roundtripTime )
                 );
@@ -353,7 +360,13 @@ final class WorkerInfo {
         s.println( "Worker " + identifier + (local?" (local)":"") );
 
         if( missedAllowanceDeadlines>0 ) {
-            s.println( "  Missed deadlines: " + missedAllowanceDeadlines );
+            int total = 0;
+            for( WorkerTaskInfo wti: workerTaskInfoList ){
+                if( wti != null ){
+                    total += wti.getSubmissions();
+                }
+            }
+            s.println( "  Missed deadlines: allowance: " + missedAllowanceDeadlines  + " reschedule: " + missedRescheduleDeadlines + " of " + total );
         }
         for( WorkerTaskInfo info: workerTaskInfoList ) {
             if( info != null && info.didWork() ) {
