@@ -101,6 +101,10 @@ final class MasterQueue
 
 	private CompletionInfo getCompletionInfo( JobList jobs, WorkerList workers )
 	{
+            TaskType previousType = jobs.getPreviousTaskType( type );
+            if( previousType == null ) {
+                return null;
+            }
 	    long averageCompletionTime = workers.getAverageCompletionTime( type );
 	    long duration;
 
@@ -110,10 +114,6 @@ final class MasterQueue
 	    else {
 		long queueTime = estimateQueueTime();
 		duration = queueTime + averageCompletionTime;
-	    }
-	    TaskType previousType = jobs.getPreviousTaskType( type );
-	    if( previousType == null ) {
-		return null;
 	    }
 	    return new CompletionInfo( previousType, duration );
 	}

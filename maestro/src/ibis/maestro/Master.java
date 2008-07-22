@@ -230,6 +230,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
         synchronized( queue ){
             workers.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo, arrivalMoment );
+        }
+        submitAllPossibleTasks();
+        synchronized( queue ) {
             queue.notifyAll();
         }
     }
@@ -367,6 +370,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         	workerToAccept = acceptList.remove();
             }
         }
+        if( Settings.traceWorkerSelection ){
+            System.out.println( "-- end of submitAllPossibleTasks() -- stopBecauseBusy=" + stopBecauseBusy );
+        }
         if( workerToAccept != null ) {
             boolean ok = sendAcceptMessage( workerToAccept );
             if( !ok ) {
@@ -375,9 +381,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         	    acceptList.add(workerToAccept);
         	}
             }
-        }
-        if( Settings.traceWorkerSelection ){
-            System.out.println( "-- end of submitAllPossibleTasks() -- stopBecauseBusy=" + stopBecauseBusy );
         }
         return stopBecauseBusy;
     }
