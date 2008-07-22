@@ -193,17 +193,17 @@ final class MasterQueue
     }
 
     /**
-     * Given a list of workers and a subjob structure to fill,
+     * Given a list of workers and a submission structure to fill,
      * try to select a task and a worker to execute the task.
      * If there are no tasks in the queue, return false.
      * If there are tasks in the queue, but no workers to execute the
-     * tasks, set the worker field of the subjob to <code>null</code>.
+     * tasks, set the worker field of the submission to <code>null</code>.
      *
-     * @param sub The subjob structure to fill.
+     * @param sub The submission structure to fill.
      * @param workers The list of workers to choose from.
      */
     @SuppressWarnings("synthetic-access")
-    int selectSubmisson( int reserved, Subtask sub, WorkerList workers, HashSet<TaskType> noReadyWorkers )
+    int selectSubmisson( int reserved, Submission sub, WorkerList workers, HashSet<TaskType> noReadyWorkers )
     {
 	int ix = reserved;
 
@@ -224,6 +224,7 @@ final class MasterQueue
 	    WorkerTaskInfo worker = workers.selectBestWorker( type );
 	    if( worker != null ) {
                 if( worker.reserveIfNeeded() ) {
+                    // Reserved for this worker. Don't submit it now.
                     if( Settings.traceMasterQueue ){
                         System.out.println( "Reserved a task of type " + type + " for worker " + worker );
                     }

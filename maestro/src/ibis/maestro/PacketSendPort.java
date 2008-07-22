@@ -196,7 +196,7 @@ class PacketSendPort<T extends Serializable> {
      * @param identifier The identifier we will use for it.
      */
     @SuppressWarnings("synthetic-access")
-    void registerDestination( ReceivePortIdentifier port, int identifier )
+    synchronized void registerDestination( ReceivePortIdentifier port, int identifier )
     {
         while( destinations.size()<=identifier ) {
             destinations.add( null );

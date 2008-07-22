@@ -9,7 +9,6 @@ import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 
 /**
  * A master in the Maestro flow graph framework.
@@ -23,7 +22,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     private final Node node;
     private final WorkerList workers = new WorkerList();
     private final PacketUpcallReceivePort<WorkerMessage> receivePort;
-    private final LinkedList<WorkerIdentifier> acceptList = new LinkedList<WorkerIdentifier>();
+    private final AcceptList acceptList = new AcceptList();
     private final PacketSendPort<MasterMessage> sendPort;
     private final MasterQueue queue;
 
@@ -182,15 +181,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         synchronized( queue ){
             workers.registerTaskCompleted( result, arrivalMoment );
             handledTaskCount++;
-        }
-        // Force the queue to drain.
-        submitAllPossibleTasks();
-        synchronized( queue ) {
-            // Now notify our thread main loop. It will do a
-            // submitAllPossibleTasks() too, but it may take
-            // some time before thread scheduler fires it off.
-            //
-            // However, the main look checks if we can stop.
             queue.notifyAll();
         }
     }
@@ -228,9 +218,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
         synchronized( queue ){
             workers.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo, arrivalMoment );
-        }
-        submitAllPossibleTasks();
-        synchronized( queue ) {
+            drainQueue();
             queue.notifyAll();
         }
     }
@@ -257,10 +245,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         synchronized( queue ) {
             boolean local = sendPort.isLocalListener( m.port );
             workerID = workers.subscribeWorker( receivePort.identifier(), worker, local, m.workThreads, m.masterIdentifier, m.supportedTypes );
-            sendPort.registerDestination( worker, workerID.value );
-            acceptList.add( workerID );
         }
-        submitAllPossibleTasks();
+        sendPort.registerDestination( worker, workerID.value );
+        acceptList.add( workerID );
         synchronized( queue ) {
             queue.notifyAll();
         }
@@ -319,70 +306,45 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         }
     }
 
-    /**
-     * Submit all work currently in the queues until all workers are busy
-     * or all work has been submitted.
-     * @return True if we stop because all workers are busy, otherwise we stop because there is no work to dispatch.
-     */
-    private boolean submitAllPossibleTasks()
+    /** On a locked queue, try to send out as many task as we can. */
+    private void drainQueue()
     {
-        Subtask sub = new Subtask();
+        Submission sub = new Submission();
         long taskId;
-        int reserved = 0;
-        WorkerIdentifier workerToAccept = null;
-        boolean stopBecauseBusy;
+        int reserved = 0;  // How many tasks are reserved for future submission.
         HashSet<TaskType> noReadyWorkers = new HashSet<TaskType>();
 
         if( Settings.traceMasterProgress ){
             System.out.println( "Master: submitting all possible tasks" );
         }
+        workers.resetReservations();
+        while( true ) {
+            if( queue.isEmpty() ) {
+                // Mission accomplished.
+                return;
+            }
+            reserved = queue.selectSubmisson( reserved, sub, workers, noReadyWorkers );
+            WorkerTaskInfo wti = sub.worker;
+            TaskInstance task = sub.task;
+            if( wti == null ){
+                break;
+            }
+            WorkerInfo worker = wti.worker;
+            taskId = nextTaskId++;
+            worker.registerTaskStart( task, taskId, sub.predictedDuration );
+            if( Settings.traceMasterQueue ) {
+                System.out.println( "Selected " + worker + " as best for task " + task );
+            }
 
-        synchronized( queue ){
-            workers.resetReservations();
-            while( true ) {
-                if( queue.isEmpty() ) {
-                    stopBecauseBusy = false;
-                    break;
-                }
-                reserved = queue.selectSubmisson( reserved, sub, workers, noReadyWorkers );
-                WorkerTaskInfo wti = sub.worker;
-                TaskInstance task = sub.task;
-                if( wti == null ){
-                    stopBecauseBusy = true;
-                    break;
-                }
-                WorkerInfo worker = wti.worker;
-                taskId = nextTaskId++;
-                worker.registerTaskStart( task, taskId, sub.predictedDuration );
-                if( Settings.traceMasterQueue ) {
-                    System.out.println( "Selected " + worker + " as best for task " + task );
-                }
-
-                RunTaskMessage msg = new RunTaskMessage( worker.identifierWithWorker, worker.identifier, task, taskId );
-                long sz = sendPort.tryToSend( worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-                if( sz<0 ){
-                    // Try to put the paste back in the tube.
-                    worker.retractTask( msg.taskId );
-                    queue.add( msg.task );
-                }
-            }
-            if( !acceptList.isEmpty() ) {
-        	workerToAccept = acceptList.remove();
+            RunTaskMessage msg = new RunTaskMessage( worker.identifierWithWorker, worker.identifier, task, taskId );
+            long sz = sendPort.tryToSend( worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+            if( sz<0 ){
+                // Try to put the paste back in the tube.
+                // The sendport has already reported the trouble with the worker.
+                worker.retractTask( msg.taskId );
+                queue.add( msg.task );
             }
         }
-        if( Settings.traceWorkerSelection ){
-            System.out.println( "-- end of submitAllPossibleTasks() -- stopBecauseBusy=" + stopBecauseBusy );
-        }
-        if( workerToAccept != null ) {
-            boolean ok = sendAcceptMessage( workerToAccept );
-            if( !ok ) {
-        	// Couldn't send an accept message, back on the list.
-        	synchronized( queue ) {
-        	    acceptList.add( workerToAccept );
-        	}
-            }
-        }
-        return stopBecauseBusy;
     }
 
     /**
@@ -391,14 +353,15 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
      */
     void submit( TaskInstance task )
     {
-        if( Settings.traceMasterProgress || Settings.traceMasterQueue) {
+        if( Settings.traceMasterProgress || Settings.traceMasterQueue ) {
             System.out.println( "Master: received task " + task );
         }
         synchronized ( queue ) {
             incomingTaskCount++;
             queue.add( task );
+            drainQueue();
+            queue.notifyAll();
         }
-        submitAllPossibleTasks();
     }
 
     /** Runs this master. */
@@ -409,7 +372,21 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             System.out.println( "Starting master thread" );
         }
         while( true ){
-            boolean everyoneBusy = submitAllPossibleTasks();
+            WorkerIdentifier workerToAccept = null;
+            boolean queueEmpty;
+            
+            synchronized( queue ){
+                drainQueue();
+                queueEmpty = queue.isEmpty();
+            }
+            workerToAccept = acceptList.remove();
+            if( workerToAccept != null ) {
+                boolean ok = sendAcceptMessage( workerToAccept );
+                if( !ok ) {
+            	// Couldn't send an accept message: back on the list.
+                    acceptList.add( workerToAccept );
+                }
+            }
 
             // Since the queue is empty, we can only wait for new tasks.
             try {
@@ -418,11 +395,11 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                         break;
                     }
                     if( Settings.traceMasterProgress || Settings.traceWaits ){
-                        if( everyoneBusy ) {
-                            System.out.println( "Master: all workers busy; waiting");
+                        if( queueEmpty ) {
+                            System.out.println( "Master: no work to distribute; waiting" );
                         }
                         else {
-                            System.out.println( "Master: no work to distribute; waiting" );
+                            System.out.println( "Master: all workers busy; waiting");
                         }
                     }
                     queue.wait();

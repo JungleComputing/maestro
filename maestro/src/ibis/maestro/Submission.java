@@ -6,7 +6,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-class Subtask {
+class Submission {
     TaskInstance task = null;
     WorkerTaskInfo worker = null;
     long predictedDuration = 0L;   // FIXME: remove this.
