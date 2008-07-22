@@ -187,9 +187,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         submitAllPossibleTasks();
         synchronized( queue ) {
             // Now notify our thread main loop. It will do a
-            // submitAllPossibleTasks() too, but that may take
-            // some time. More importantly, it checks if we can
-            // stop.
+            // submitAllPossibleTasks() too, but it may take
+            // some time before thread scheduler fires it off.
+            //
+            // However, the main look checks if we can stop.
             queue.notifyAll();
         }
     }
@@ -209,9 +210,6 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         workers.setPingStartMoment( workerID );
         long sz = sendPort.tryToSend( workerID.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( sz<0 ){
-            synchronized( queue ) {
-                queue.notifyAll();
-            }
             ok = false;
         }
         return ok;
@@ -261,6 +259,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
             workerID = workers.subscribeWorker( receivePort.identifier(), worker, local, m.workThreads, m.masterIdentifier, m.supportedTypes );
             sendPort.registerDestination( worker, workerID.value );
             acceptList.add( workerID );
+        }
+        submitAllPossibleTasks();
+        synchronized( queue ) {
             queue.notifyAll();
         }
     }
@@ -286,10 +287,10 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Master: received message " + msg );
         }
-        workers.setUnsuspect( msg.source, node );
         if( msg instanceof TaskCompletedMessage ) {
             TaskCompletedMessage result = (TaskCompletedMessage) msg;
 
+            workers.setUnsuspect( msg.source, node );
             handleTaskCompletedMessage( result, arrivalMoment );
         }
         else if( msg instanceof JobResultMessage ) {
@@ -300,6 +301,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         else if( msg instanceof WorkerUpdateMessage ) {
             WorkerUpdateMessage m = (WorkerUpdateMessage) msg;
 
+            workers.setUnsuspect( msg.source, node );
             handleWorkerUpdateMessage( m, arrivalMoment );
         }
         else if( msg instanceof RegisterWorkerMessage ) {
@@ -374,9 +376,9 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( workerToAccept != null ) {
             boolean ok = sendAcceptMessage( workerToAccept );
             if( !ok ) {
-        	// Couldn't send an accept message, back on the queue.
+        	// Couldn't send an accept message, back on the list.
         	synchronized( queue ) {
-        	    acceptList.add(workerToAccept);
+        	    acceptList.add( workerToAccept );
         	}
             }
         }
