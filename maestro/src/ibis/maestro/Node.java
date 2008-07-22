@@ -360,7 +360,7 @@ public final class Node {
      * not to communicate with it.
      * @param theIbis The ibis that may be dead.
      */
-    public void declareIbisSuspect( IbisIdentifier theIbis )
+    protected void setSuspect( IbisIdentifier theIbis )
     {
 	try {
 	    ibis.registry().assumeDead( theIbis );
@@ -369,7 +369,25 @@ public final class Node {
 	{
 	    // Nothing we can do about it.
 	}
-	master.declareIbisSuspect( theIbis );
-	worker.declareIbisSuspect( theIbis );
+	master.setSuspect( theIbis );
+	worker.setSuspect( theIbis );
+    }
+
+    /**
+     * Set the given ibis as unsuspect on the master.
+     * @param theIbis The now unsuspect ibis.
+     */
+    protected void setUnsuspectOnMaster( IbisIdentifier theIbis )
+    {
+        master.setUnsuspect( theIbis );
+    }
+
+    /**
+     * Set the given ibis as unsuspect on the master.
+     * @param theIbis The now unsuspect ibis.
+     */
+    protected void setUnsuspectOnWorker( IbisIdentifier theIbis )
+    {
+        worker.setUnsuspect( theIbis );
     }
 }

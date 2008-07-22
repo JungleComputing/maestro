@@ -236,7 +236,6 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 		if( Settings.traceWorkerList ) {
 		    Globals.log.reportProgress( "Non-local ibis " + theIbis + " must be added to unregisteredMasters" );
 		}
-		// FIXME: we don't need the notify for the local master.
 		unregisteredMasters.addLast( theIbis );
 	    }
 	    if( activeTime == 0 || queueEmptyMoment != 0 ) {
@@ -321,7 +320,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	long sz = sendPort.tryToSend( ibis, Globals.masterReceivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ) {
 	    System.err.println( "Cannot register with master " + ibis );
-	    node.declareIbisSuspect( ibis );
+	    node.setSuspect( ibis );
 	    ok = false;
 	}
 	return ok;
@@ -449,7 +448,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
     {
         MasterInfo info = masters.get( source.value );
         if( info != null ) {
-            info.unsetSuspect();
+            info.setUnsuspect( node );
         }
     }
 
@@ -723,20 +722,37 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 
     /**
      * This ibis is suspect. Try not to talk to it for the moment.
-     * @param ibisIdentifier
+     * @param ibisIdentifier The suspect ibis.
      */
-    void declareIbisSuspect( IbisIdentifier theIbis )
+    void setSuspect( IbisIdentifier theIbis )
     {
 	synchronized( queue ) {
 	    for( MasterInfo master: masters ){
 		if( master.ibis.equals( theIbis ) ){
-		    // This ibis is now dead. Make it official.
 		    master.setSuspect();
-		    break;   // There's supposed to be only one entry, so don't bother searching for more.
+		    break;
 		}
 	    }
 	    // This is a good reason to wake up the queue.
 	    queue.notifyAll();
 	}	
+    }
+
+    /**
+     * This ibis is no longer suspect.
+     * @param ibisIdentifier The unusupected ibis.
+     */
+    void setUnsuspect( IbisIdentifier theIbis )
+    {
+        synchronized( queue ) {
+            for( MasterInfo master: masters ){
+                if( master.ibis.equals( theIbis ) ){
+                    master.setUnsuspect();
+                    break;
+                }
+            }
+            // This is a good reason to wake up the queue.
+            queue.notifyAll();
+        }       
     }
 }

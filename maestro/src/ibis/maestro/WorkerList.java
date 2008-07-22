@@ -222,7 +222,7 @@ final class WorkerList {
 	    wi.resetReservations();
 	}
     }
-    
+
     protected void setSuspect( IbisIdentifier theIbis )
     {
 	WorkerInfo wi = searchWorker( workers, theIbis );
@@ -232,14 +232,24 @@ final class WorkerList {
 	}
     }
 
+    protected void setUnsuspect( IbisIdentifier theIbis )
+    {
+        WorkerInfo wi = searchWorker( workers, theIbis );
+
+        if( wi != null ) {
+            wi.setUnsuspect();
+        }
+    }
+
     /** Remove any suspect label from the given worker.
      * @param workerID The id of the worker that is no longer suspect.
+     * @param node The node to report any change of state to.
      */
-    protected void unsetSuspect( WorkerIdentifier workerID )
+    protected void setUnsuspect( WorkerIdentifier workerID, Node node )
     {
         WorkerInfo w = workers.get( workerID.value );
         if( w != null ) {
-            w.unsetSuspect();
+            w.setUnsuspect( node );
         }
     }
 

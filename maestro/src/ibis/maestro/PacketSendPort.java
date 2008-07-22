@@ -357,7 +357,7 @@ class PacketSendPort<T extends Serializable> {
         try {
             sz = send( theIbis, portName, msg, timeout );
         } catch (IOException e) {
-            node.declareIbisSuspect( theIbis );
+            node.setSuspect( theIbis );
             Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to ibis " + theIbis );
             e.printStackTrace( Globals.log.getPrintStream() );
         }
@@ -372,13 +372,14 @@ class PacketSendPort<T extends Serializable> {
      * @param timeout The timeout of the transmission.
      * @return The length of the transmitted data, or -1 if nothing could be transmitted.
      */
+    @SuppressWarnings("synthetic-access")
     long tryToSend( int destination, T msg, int timeout ) {
         long sz = -1;
         try {
             sz = send( destination, msg, timeout );
         } catch (IOException e) {
             DestinationInfo info = destinations.get( destination );
-            node.declareIbisSuspect( info.portIdentifier.ibisIdentifier() );
+            node.setSuspect( info.portIdentifier.ibisIdentifier() );
             Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to master " + destination );
             e.printStackTrace( Globals.log.getPrintStream() );
         }

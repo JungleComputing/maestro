@@ -389,11 +389,24 @@ final class WorkerInfo {
     /**
      * This worker is no longer suspect.
      */
-    protected void unsetSuspect()
+    protected void setUnsuspect()
     {
         if( suspect && !dead ) {
             System.out.println( "Restored contact with worker " + identifier );
             suspect = false;
+        }
+    }
+
+    /**
+     * This worker is no longer suspect.
+     * @param node The node to report any change of state to.
+     */
+    protected void setUnsuspect( Node node )
+    {
+        if( suspect && !dead ) {
+            System.out.println( "Restored contact with worker " + identifier );
+            suspect = false;
+            node.setUnsuspectOnWorker( port.ibisIdentifier() );
         }
     }
 

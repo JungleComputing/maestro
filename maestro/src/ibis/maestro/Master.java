@@ -283,7 +283,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Master: received message " + msg );
         }
-        workers.unsetSuspect( msg.source );
+        workers.setUnsuspect( msg.source, node );
         if( msg instanceof TaskCompletedMessage ) {
             TaskCompletedMessage result = (TaskCompletedMessage) msg;
 
@@ -478,10 +478,18 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     }
 
     /** This ibis is suspect; don't try to talk to it for the moment. */
-    void declareIbisSuspect( IbisIdentifier ibisIdentifier )
+    void setSuspect( IbisIdentifier ibisIdentifier )
     {
 	synchronized( queue ){
 	    workers.setSuspect( ibisIdentifier );
 	}
+    }
+
+    /** This ibis is unsuspect. */
+    void setUnsuspect( IbisIdentifier ibisIdentifier )
+    {
+        synchronized( queue ){
+            workers.setUnsuspect( ibisIdentifier );
+        }
     }
 }

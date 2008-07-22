@@ -110,15 +110,25 @@ final class MasterInfo {
         }
     }
 
-    /**
-     * We received a message from a master, so remove any suspect label.
-     * 
-     */
-    protected void unsetSuspect()
+    protected void setUnsuspect()
     {
-        if( suspect && !dead ) {
+        if( !local && suspect && !dead ) {
             System.out.println( "Master " + localIdentifier + " is no longer suspect" );
             suspect = false;
+        }
+    }
+
+    /**
+     * We received a message from a master, so remove any suspect label.
+     * @param node  The node to notify if this is new information.
+     * 
+     */
+    protected void setUnsuspect( Node node )
+    {
+        if( !local && suspect && !dead ) {
+            System.out.println( "Master " + localIdentifier + " is no longer suspect" );
+            suspect = false;
+            node.setUnsuspectOnMaster( ibis );
         }
     }
 }
