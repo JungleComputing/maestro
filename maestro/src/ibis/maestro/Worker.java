@@ -312,7 +312,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	synchronized( queue ){
 	    // Reserve a slot for this master, and get an id.
 	    masterID = new MasterIdentifier( masters.size() );
-	    MasterInfo info = new MasterInfo( masterID, ibis );
+            boolean local = ibis.equals( node.ibisIdentifier() );
+	    MasterInfo info = new MasterInfo( masterID, ibis, local );
 	    masters.add( info );
 	}
 	TaskType taskTypes[] = jobs.getSupportedTaskTypes();
@@ -443,6 +444,14 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	boolean res = port.equals( receivePort.identifier() );
 	return res;
     }
+    
+    private void unsetSuspect( MasterIdentifier source )
+    {
+        MasterInfo info = masters.get( source.value );
+        if( info != null ) {
+            info.unsetSuspect();
+        }
+    }
 
     /**
      * Handles task request message <code>msg</code>.
@@ -454,6 +463,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 	if( Settings.traceWorkerProgress ){
 	    Globals.log.reportProgress( "Worker: received message " + msg );
 	}
+        unsetSuspect( msg.source );
 	if( msg instanceof RunTaskMessage ){
 	    RunTaskMessage runTaskMessage = (RunTaskMessage) msg;
 

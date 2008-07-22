@@ -141,7 +141,7 @@ public class TestProg {
         if( node.isMaestro() ) {
             System.out.println( "I am maestro; submitting " + taskCount + " tasks" );
             for( int i=0; i<taskCount; i++ ){
-                Integer length = new Integer( 12*i );
+                Integer length = 12*i;
                 job.submit( node, length, i, listener );
             }
         }

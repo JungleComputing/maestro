@@ -42,6 +42,34 @@ final class WorkerTaskInfo {
 
     private final long startTime = System.nanoTime();
     /**
+     * @param taskInfo The type of task we have administration for.
+     * @param worker The worker we have administration for.
+     * @param local True iff this is the local worker.
+     * @param pingTime The ping time of this worker.
+     * Constructs a new information class for a particular task type
+     * for a particular worker.
+     */
+    WorkerTaskInfo( TaskInfoOnMaster taskInfo, WorkerInfo worker, boolean local, int workerThreads, long pingTime )
+    {
+        this.taskInfo = taskInfo;
+        this.worker = worker;
+        this.maximalAllowance = workerThreads + (local?3:1);
+        this.maximalEverAllowance = maximalAllowance;
+    
+        this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
+        // Totally unfounded guesses, but we should learn soon enough what the real values are...
+        this.transmissionTimeEstimate = new TimeEstimate( pingTime );
+        this.roundtripTimeEstimate = new TimeEstimate( 2*pingTime );
+        this.roundtripErrorEstimate = new TimeEstimate( 2*pingTime );
+        this.computeTime = 2*pingTime;
+        this.dequeueTime = 1*pingTime;
+        this.remainingJobTime = taskInfo.type.remainingTasks*(computeTime+dequeueTime+pingTime);
+        if( Settings.traceWorkerList || Settings.traceRemainingJobTime ) {
+            Globals.log.reportProgress( "Created new WorkerTaskInfo " + toString() );
+        }
+    }
+
+    /**
      * @return A string representation of this class instance.
      */
     @Override
@@ -56,13 +84,13 @@ final class WorkerTaskInfo {
      * @param tasks The number of tasks currently on the worker.
      * @return The completion time.
      */
-    long getAverageCompletionTime( int currentTasks, int futureTasks )
+    private long getAverageCompletionTime( int currentTasks, int futureTasks )
     {
         /**
          * Don't give an estimate if we have to predict the future too far,
          * or of we just don't have the information.
          */
-        if( maximalAllowance == 0 || remainingJobTime == Long.MAX_VALUE  ) {
+        if( worker.isSuspect() || remainingJobTime == Long.MAX_VALUE  ) {
             return Long.MAX_VALUE;
         }
         long transmissionTime = transmissionTimeEstimate.getAverage();
@@ -115,44 +143,6 @@ final class WorkerTaskInfo {
     long estimateJobCompletion()
     {
         return getAverageCompletionTime( outstandingTasks, reservations+1 );
-    }
-
-    /**
-     * Returns an extremely optimistic estimate of the roundtrip time, based
-     * on the average time and average error on that time.
-     * @return The estimate.
-     */
-    long getOptimisticRoundtripTime()
-    {
-        return Math.max( 0, roundtripTimeEstimate.getAverage()-roundtripErrorEstimate.getAverage() );
-    }
-
-    /**
-     * @param taskInfo The type of task we have administration for.
-     * @param worker The worker we have administration for.
-     * @param local True iff this is the local worker.
-     * @param pingTime The ping time of this worker.
-     * Constructs a new information class for a particular task type
-     * for a particular worker.
-     */
-    WorkerTaskInfo( TaskInfoOnMaster taskInfo, WorkerInfo worker, boolean local, int workerThreads, long pingTime )
-    {
-        this.taskInfo = taskInfo;
-        this.worker = worker;
-        this.maximalAllowance = workerThreads + (local?3:1);
-        this.maximalEverAllowance = maximalAllowance;
-
-        this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
-        // Totally unfounded guesses, but we should learn soon enough what the real values are...
-	this.transmissionTimeEstimate = new TimeEstimate( pingTime );
-	this.roundtripTimeEstimate = new TimeEstimate( 2*pingTime );
-        this.roundtripErrorEstimate = new TimeEstimate( 2*pingTime );
-        this.computeTime = 2*pingTime;
-        this.dequeueTime = 1*pingTime;
-	this.remainingJobTime = taskInfo.type.remainingTasks*(computeTime+dequeueTime+pingTime);
-	if( Settings.traceWorkerList || Settings.traceRemainingJobTime ) {
-	    Globals.log.reportProgress( "Created new WorkerTaskInfo " + toString() );
-	}
     }
 
     /**
@@ -253,19 +243,19 @@ final class WorkerTaskInfo {
     }
 
     /**
-     * @return True iff this worker is ready to handle this task, but isn't doing so yet.
+     * @return True iff this worker is ready to handle this task and is idle.
      */
     boolean isIdle()
     {
-        return ( outstandingTasks==0 && remainingJobTime != Long.MAX_VALUE );
+        return ( !worker.isReady() && outstandingTasks==0 && remainingJobTime != Long.MAX_VALUE );
     }
 
     /**
-     * @return True iff this worker is ready to handle this task, but isn't doing so yet.
+     * @return True iff this worker is ready to handle this task.
      */
     boolean isReady()
     {
-        return outstandingTasks<maximalAllowance;
+        return !worker.isReady() && outstandingTasks<maximalAllowance;
     }
 
     /** We now know this worker has the given ping time. Use this as the first estimate
@@ -293,7 +283,8 @@ final class WorkerTaskInfo {
      * if reservations are not necessary.
      * @return True if we did a reservation.
      */
-    protected boolean reserveIfNeeded() {
+    protected boolean reserveIfNeeded()
+    {
         if( outstandingTasks>=maximalAllowance ) {
             reservations++;
             return true;
@@ -301,7 +292,8 @@ final class WorkerTaskInfo {
         return false;
     }
 
-    protected long estimateRoundtripTime() {
+    protected long estimateRoundtripTime()
+    {
 	return roundtripTimeEstimate.getAverage();
     }
 }

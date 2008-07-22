@@ -270,13 +270,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
     @Override
     public boolean hasReceivePort( ReceivePortIdentifier port )
     {
-        boolean res = port.equals( receivePort.identifier() );
-        return res;
-    }
-    
-    private void setUnsuspect( WorkerIdentifier worker )
-    {
-	
+        return port.equals( receivePort.identifier() );
     }
 
     /**
@@ -289,7 +283,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Master: received message " + msg );
         }
-        setUnsuspect( msg.source );
+        workers.unsetSuspect( msg.source );
         if( msg instanceof TaskCompletedMessage ) {
             TaskCompletedMessage result = (TaskCompletedMessage) msg;
 

@@ -131,7 +131,7 @@ final class WorkerList {
     boolean allowMasterToFinish()
     {
         for( WorkerInfo w: workers ) {
-            if( !w.allowsMasterToFinish() ) {
+            if( !w.allowMasterToFinish() ) {
                 return false;
             }
         }
@@ -230,6 +230,17 @@ final class WorkerList {
 	if( wi != null ) {
 	    wi.setSuspect();
 	}
+    }
+
+    /** Remove any suspect label from the given worker.
+     * @param workerID The id of the worker that is no longer suspect.
+     */
+    protected void unsetSuspect( WorkerIdentifier workerID )
+    {
+        WorkerInfo w = workers.get( workerID.value );
+        if( w != null ) {
+            w.unsetSuspect();
+        }
     }
 
 }

@@ -23,14 +23,17 @@ final class MasterInfo {
 
     private boolean dead = false;     // This master is known to be dead.
 
+    final boolean local;
+
     /** The ibis this master lives on. */
     final IbisIdentifier ibis;
 
-    MasterInfo( MasterIdentifier localIdentifier, IbisIdentifier ibis )
+    MasterInfo( MasterIdentifier localIdentifier, IbisIdentifier ibis, boolean local )
     {
         this.localIdentifier = localIdentifier;
 	this.identifierOnMaster = null;
 	this.ibis = ibis;
+	this.local = local;
     }
 
     boolean isRegistered()
@@ -77,6 +80,7 @@ final class MasterInfo {
      */
     void setDead()
     {
+        System.out.println( "Master " + localIdentifier + " is dead" );
 	suspect = true;
 	dead = true;
     }
@@ -97,6 +101,24 @@ final class MasterInfo {
 
     protected void setSuspect()
     {
-	suspect = true;
+        if( local ) {
+            System.out.println( "Cannot communicate with local master " + localIdentifier + "???" );
+        }
+        else {
+            System.out.println( "Master " + localIdentifier + " is suspect" );
+            suspect = true;
+        }
+    }
+
+    /**
+     * We received a message from a master, so remove any suspect label.
+     * 
+     */
+    protected void unsetSuspect()
+    {
+        if( suspect && !dead ) {
+            System.out.println( "Master " + localIdentifier + " is no longer suspect" );
+            suspect = false;
+        }
     }
 }

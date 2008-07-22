@@ -25,6 +25,9 @@ final class WorkerInfo {
     /** The receive port of the worker. */
     final ReceivePortIdentifier port;
 
+    /** Set to true when we know the worker is ready to talk to us. */
+    private boolean enabled = false;
+
     final boolean local;
 
     final int workerThreads;
@@ -44,16 +47,6 @@ final class WorkerInfo {
     private int missedAllowanceDeadlines = 0;
     private int missedRescheduleDeadlines = 0;
 
-    /**
-     * Returns a string representation of this worker info. (Overrides method in superclass.)
-     * @return The worker info.
-     */
-    @Override
-    public String toString()
-    {
-        return identifier.toString();
-    }
-
     WorkerInfo( WorkerList wl, ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local, int workerThreads, TaskType[] types )
     {
         this.port = port;
@@ -66,6 +59,16 @@ final class WorkerInfo {
         for( TaskType t: types ) {
             registerTaskType( wl.getTaskInfo( t ) );
         }
+    }
+
+    /**
+     * Returns a string representation of this worker info. (Overrides method in superclass.)
+     * @return The worker info.
+     */
+    @Override
+    public String toString()
+    {
+        return identifier.toString();
     }
 
     /**
@@ -123,7 +126,8 @@ final class WorkerInfo {
         workerTaskInfo.controlAllowance( info.queueLength );
     }
 
-    /** Update all task info to take into account the given ping time.
+    /** Update all task info to take into account the given ping time. If somewhere the initial
+     * estimate is used, at least this is a slightly more accurate one.
      * @param l The task info table to update.
      * @param pingTime The ping time to this worker.
      */
@@ -138,6 +142,12 @@ final class WorkerInfo {
 
     void registerWorkerInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
     {
+        if( dead ) {
+            // It is strange to get info from a dead worker, but we're not going to try and
+            // revive the worker.
+            return;
+        }
+        enabled = true;   // The worker now has its administration in order. We can submit jobs.
         if( pingSentTime != 0 ) {
             // We are measuring this round-trip time.
             pingTime = arrivalMoment-pingSentTime;
@@ -184,6 +194,7 @@ final class WorkerInfo {
     /**
      * Register a task result for an outstanding task.
      * @param result The task result message that tells about this task.
+     * @param arrivalMoment The time in ns the message arrived.
      */
     TaskType registerTaskCompleted( TaskCompletedMessage result, long arrivalMoment )
     {
@@ -222,7 +233,7 @@ final class WorkerInfo {
      * Returns true iff this worker is in a state where the master can finish.
      * @return True iff the master is allowed to finish.
      */
-    boolean allowsMasterToFinish()
+    boolean allowMasterToFinish()
     {
         return activeTasks.isEmpty();
     }
@@ -305,8 +316,7 @@ final class WorkerInfo {
 
     /** Mark this worker as dead, and return a list of active tasks
      * of this worker.
-     * @return The list of task instances that were outstanding on this worker,
-     *    and should be re-submitted.
+     * @return The list of task instances that were outstanding on this worker.
      */
     ArrayList<TaskInstance> setDead()
     {
@@ -367,7 +377,33 @@ final class WorkerInfo {
      */
     protected void setSuspect()
     {
-	suspect = true;
+        if( local ) {
+            System.out.println( "Cannot communicate with local worker " + identifier + "???" );
+        }
+        else {
+            System.out.println( "Cannot communicate with worker " + identifier );
+            suspect = true;
+        }
     }
 
+    /**
+     * This worker is no longer suspect.
+     */
+    protected void unsetSuspect()
+    {
+        if( suspect && !dead ) {
+            System.out.println( "Restored contact with worker " + identifier );
+            suspect = false;
+        }
+    }
+
+    /**
+     * Returns true iff this worker is ready to do work. Specifically, if it is not marked
+     * as suspect, and if it is enabled.
+     * @return Whether this worker is ready to do work.
+     */
+    boolean isReady()
+    {
+        return !suspect && enabled;
+    }
 }
