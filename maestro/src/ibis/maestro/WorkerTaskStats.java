@@ -3,11 +3,17 @@ package ibis.maestro;
 import java.io.PrintStream;
 
 class WorkerTaskStats {
+    final TaskType type;
     private int taskCount = 0;
     private long totalWorkTime = 0;        
     private long totalQueueTime = 0;     // Cumulative queue time of all tasks.
     final TimeEstimate averageWorkTime = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
     final TimeEstimate queueTimePerTask = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
+
+    WorkerTaskStats( TaskType type )
+    {
+	this.type = type;
+    }
 
     /**
      * Registers the completion of a task of this particular type, with the
@@ -23,11 +29,11 @@ class WorkerTaskStats {
         averageWorkTime.addSample( workTime );
     }
 
-    void reportStats( PrintStream out, TaskType t, double workTime )
+    void reportStats( PrintStream out, double workTime )
     {
         double workPercentage = 100.0*(totalWorkTime/workTime);
         if( taskCount>0 ) {
-            out.println( "Worker: " + t + ":" );
+            out.println( "Worker: " + type + ":" );
             out.printf( "    # tasks          = %5d\n", taskCount );
             out.println( "    total work time = " + Service.formatNanoseconds( totalWorkTime ) + String.format( " (%.1f%%)", workPercentage )  );
             out.println( "    queue time/task  = " + Service.formatNanoseconds( totalQueueTime/taskCount ) );
@@ -35,7 +41,7 @@ class WorkerTaskStats {
             out.println( "    aver. dwell time = " + Service.formatNanoseconds( (totalWorkTime+totalQueueTime)/taskCount ) );
         }
         else {
-            out.println( "Worker: " + t + " is unused" );
+            out.println( "Worker: " + type + " is unused" );
         }
     }
 

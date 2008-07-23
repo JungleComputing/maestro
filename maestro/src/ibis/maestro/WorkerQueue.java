@@ -2,7 +2,6 @@ package ibis.maestro;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 /**
  * A class representing the master work queue.
@@ -152,7 +151,7 @@ final class WorkerQueue {
     }
 
     @SuppressWarnings("synthetic-access")
-    protected WorkerQueueInfo[] getWorkerQueueInfo( HashMap<TaskType, WorkerTaskStats> taskStats )
+    protected WorkerQueueInfo[] getWorkerQueueInfo( ArrayList<WorkerTaskStats> taskStats )
     {
         WorkerQueueInfo res[] = new WorkerQueueInfo[queueTypes.size()];
 
@@ -160,7 +159,14 @@ final class WorkerQueue {
             TypeInfo q = queueTypes.get( i );
 
             if( q != null ){
-                WorkerTaskStats stats = taskStats.get( q.type );
+        	int ix = q.type.index;
+                WorkerTaskStats stats;
+        	if( ix<taskStats.size() ) {
+        	    stats = taskStats.get( q.type.index );
+        	}
+        	else {
+        	    stats = null;
+        	}
 
                 if( stats == null ) {
                     res[i] = null;

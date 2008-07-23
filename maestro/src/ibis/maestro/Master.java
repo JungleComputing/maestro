@@ -379,7 +379,7 @@ public class Master extends Thread implements PacketReceiveListener<WorkerMessag
                 drainQueue();
                 queueEmpty = queue.isEmpty();
             }
-            workerToAccept = acceptList.remove();
+            workerToAccept = acceptList.removeIfAny();
             if( workerToAccept != null ) {
                 boolean ok = sendAcceptMessage( workerToAccept );
                 if( !ok ) {
