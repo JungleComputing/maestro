@@ -20,7 +20,7 @@ import java.util.TreeSet;
  */
 public class LabelTracker {
 	private long labelValue = 0L;
-	private final boolean trace = false;
+	private final boolean trace = true;
 
 	/** The first label not in the bulk range. */
 	private long endOfRange = 0L;
@@ -78,6 +78,7 @@ public class LabelTracker {
 		long val = l.value;
 		if( val<endOfRange ) {
 			// Already covered by the range. Nothing to do.
+			notifyAll();
 			return;
 		}
 		set.add( val );
@@ -106,7 +107,7 @@ public class LabelTracker {
 		while( true ){
 			synchronized( this ){
 				if( endOfRange == labelValue ){
-					return;
+					break;
 				}			
 				try {
 					if( trace ){
@@ -119,6 +120,9 @@ public class LabelTracker {
 					// Not interested
 				}
 			}
+		}
+		if( trace ){
+			Globals.log.reportProgress( "Got all labels back" );
 		}
 	}
 }
