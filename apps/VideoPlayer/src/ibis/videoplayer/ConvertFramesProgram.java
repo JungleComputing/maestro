@@ -1,10 +1,10 @@
 package ibis.videoplayer;
 
+import ibis.maestro.AtomicTask;
 import ibis.maestro.Job;
 import ibis.maestro.JobList;
 import ibis.maestro.JobWaiter;
 import ibis.maestro.Node;
-import ibis.maestro.Task;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +16,7 @@ import java.io.IOException;
  *
  */
 class ConvertFramesProgram {    
-    private final class FetchImageTask implements Task {
+    private final class FetchImageTask implements AtomicTask {
         private static final long serialVersionUID = -7976035811697720295L;
 
         /**
@@ -47,7 +47,7 @@ class ConvertFramesProgram {
         }
     }
 
-    private final class ColorCorrectTask implements Task
+    private final class ColorCorrectTask implements AtomicTask
     {
         private static final long serialVersionUID = 5452987225377415308L;
         final double rr, rg, rb;
@@ -90,7 +90,7 @@ class ConvertFramesProgram {
         }
     }
 
-    private final class CompressFrameTask implements Task
+    private final class CompressFrameTask implements AtomicTask
     {
         private static final long serialVersionUID = 5452987225377415310L;
 

@@ -1,10 +1,10 @@
 package ibis.videoplayer;
 
+import ibis.maestro.AtomicTask;
 import ibis.maestro.CompletionListener;
 import ibis.maestro.Job;
 import ibis.maestro.JobList;
 import ibis.maestro.Node;
-import ibis.maestro.Task;
 
 import java.io.File;
 import java.io.IOException;
@@ -52,7 +52,7 @@ public class RenderMovieProgram implements CompletionListener
         }
     }
 
-    private final class ColorCorrectTask implements Task
+    private final class ColorCorrectTask implements AtomicTask
     {
         private static final long serialVersionUID = 5452987225377415308L;
         final double rr, rg, rb;
@@ -97,7 +97,7 @@ public class RenderMovieProgram implements CompletionListener
     }
 
 
-    private final class DownsampleTask implements Task
+    private final class DownsampleTask implements AtomicTask
     {
         private static final long serialVersionUID = 5452987225377415308L;
 
@@ -125,7 +125,7 @@ public class RenderMovieProgram implements CompletionListener
         }
     }
 
-    private final class CompressFrameTask implements Task
+    private final class CompressFrameTask implements AtomicTask
     {
         private static final long serialVersionUID = 5452987225377415310L;
 

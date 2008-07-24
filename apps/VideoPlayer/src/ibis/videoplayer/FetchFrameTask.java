@@ -1,7 +1,7 @@
 package ibis.videoplayer;
 
+import ibis.maestro.AtomicTask;
 import ibis.maestro.Node;
-import ibis.maestro.Task;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,7 +12,7 @@ import java.io.IOException;
  * @author Kees van Reeuwijk
  *
  */
-public class FetchFrameTask implements Task
+public class FetchFrameTask implements AtomicTask
 {
     private static final long serialVersionUID = -3938044583266505212L;
 

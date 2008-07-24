@@ -1,10 +1,10 @@
 package ibis.videoplayer;
 
+import ibis.maestro.AtomicTask;
 import ibis.maestro.Job;
 import ibis.maestro.JobList;
 import ibis.maestro.JobWaiter;
 import ibis.maestro.Node;
-import ibis.maestro.Task;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +48,7 @@ class CompareImagesProgram
         JobWaiter waiter = new JobWaiter();
         JobList jobList = new JobList();
 
-        Task jobs[] = new Task[databaseList.length];
+        AtomicTask jobs[] = new AtomicTask[databaseList.length];
         int ix = 0;
         for( String db: databaseList ) {
             File dbf = new File( db );

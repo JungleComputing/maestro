@@ -1,7 +1,7 @@
 package ibis.videoplayer;
 
+import ibis.maestro.AtomicTask;
 import ibis.maestro.Node;
-import ibis.maestro.Task;
 
 /**
  * A task to scale down a frame.
@@ -9,7 +9,7 @@ import ibis.maestro.Task;
  * @author Kees van Reeuwijk
  *
  */
-class ScaleFrameTask implements Task
+class ScaleFrameTask implements AtomicTask
 {
     private static final long serialVersionUID = -3938044583266505212L;
     private final int factor;

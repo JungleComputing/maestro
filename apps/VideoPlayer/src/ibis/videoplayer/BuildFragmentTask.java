@@ -3,17 +3,17 @@
  */
 package ibis.videoplayer;
 
+import ibis.maestro.AtomicTask;
 import ibis.maestro.Job;
 import ibis.maestro.JobList;
 import ibis.maestro.JobWaiter;
 import ibis.maestro.Node;
-import ibis.maestro.Task;
 
 /**
  * @author Kees van Reeuwijk
  *
  */
-public final class BuildFragmentTask implements Task
+public final class BuildFragmentTask implements AtomicTask
 {
     private static final long serialVersionUID = 6769001575637882594L;
     private Job fetchJob;
