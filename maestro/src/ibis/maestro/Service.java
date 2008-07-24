@@ -102,16 +102,6 @@ public class Service
         } while( thread.isAlive() );
     }
 
-    static boolean member( AbstractList<MasterInfo> l, MasterInfo e )
-    {
-        for( MasterInfo mi: l ) {
-            if( mi == e ) {
-        	return true;
-            }
-        }
-        return false;
-    }
-
     static boolean member( ArrayList<TaskType> taskTypes, TaskType taskType )
     {
         for( TaskType t: taskTypes ) {

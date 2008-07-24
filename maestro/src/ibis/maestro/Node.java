@@ -46,10 +46,10 @@ public final class Node {
 	public void joined( IbisIdentifier theIbis )
 	{
 	    registerIbisJoined( theIbis );
-            boolean local = theIbis.equals( ibis.identifier() );
-            if( !local ) {
-        	worker.addUnregisteredMaster( theIbis, local );
-            }
+	    boolean local = theIbis.equals( ibis.identifier() );
+	    if( !local ) {
+		worker.addUnregisteredMaster( theIbis, local );
+	    }
 	}
 
 	/**
@@ -240,17 +240,17 @@ public final class Node {
      */
     public void setStopped()
     {
-        if( Settings.traceNodes ) {
-            Globals.log.reportProgress( "Set node to stopped state. Telling worker..." );
-        }
+	if( Settings.traceNodes ) {
+	    Globals.log.reportProgress( "Set node to stopped state. Telling worker..." );
+	}
 	worker.stopAskingForWork();
-        if( Settings.traceNodes ) {
-            Globals.log.reportProgress( "Told worker. Telling master..." );
-        }
+	if( Settings.traceNodes ) {
+	    Globals.log.reportProgress( "Told worker. Telling master..." );
+	}
 	master.setStopped();
-        if( Settings.traceNodes ) {
-            Globals.log.reportProgress( "Told master." );
-        }
+	if( Settings.traceNodes ) {
+	    Globals.log.reportProgress( "Told master." );
+	}
     }
 
     /**
@@ -258,9 +258,9 @@ public final class Node {
      */
     public void waitToTerminate()
     {
-        if( Settings.traceNodes ) {
-            Globals.log.reportProgress( "Waiting for master to terminate" );
-        }
+	if( Settings.traceNodes ) {
+	    Globals.log.reportProgress( "Waiting for master to terminate" );
+	}
 	/**
 	 * Everything interesting happens in the master and worker.
 	 * So all we do here is wait for the master and worker to terminate.
@@ -268,16 +268,16 @@ public final class Node {
 	 * for one to terminate, and then the other.
 	 */
 	Service.waitToTerminate( master );
-        if( Settings.traceNodes ) {
-            Globals.log.reportProgress( "master is terminated; waiting for worker to terminate" );
-        }
+	if( Settings.traceNodes ) {
+	    Globals.log.reportProgress( "master is terminated; waiting for worker to terminate" );
+	}
 
 	/** Once the master has stopped, stop the worker. */
 	worker.setStopped();
 	Service.waitToTerminate( worker );
-        if( Settings.traceNodes ) {
-            Globals.log.reportProgress( "worker is terminated" );
-        }
+	if( Settings.traceNodes ) {
+	    Globals.log.reportProgress( "worker is terminated" );
+	}
 	master.printStatistics( System.out );
 	worker.printStatistics( System.out );
 	try {
@@ -355,7 +355,7 @@ public final class Node {
      * @return The ibis identifier of this node.
      */
     IbisIdentifier ibisIdentifier() {
-        return ibis.identifier();
+	return ibis.identifier();
     }
 
     /** This ibis was reported as 'may be dead'. Try
@@ -381,7 +381,7 @@ public final class Node {
      */
     protected void setUnsuspectOnMaster( IbisIdentifier theIbis )
     {
-        master.setUnsuspect( theIbis );
+	master.setUnsuspect( theIbis );
     }
 
     /**
@@ -390,15 +390,16 @@ public final class Node {
      */
     protected void setUnsuspectOnWorker( IbisIdentifier theIbis )
     {
-        worker.setUnsuspect( theIbis );
+	worker.setUnsuspect( theIbis );
     }
 
-	WorkThread spawnExtraWorker()
-	{
-		return worker.spawnExtraWorker();
-	}
+    WorkThread spawnExtraWorker()
+    {
+	return worker.spawnExtraWorker();
+    }
 
-	void stopWorker(WorkThread thread) {
-		worker.stopWorker( thread );
-	}
+    void stopWorker( WorkThread thread )
+    {
+	worker.stopWorker( thread );
+    }
 }

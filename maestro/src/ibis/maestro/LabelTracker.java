@@ -19,110 +19,118 @@ import java.util.TreeSet;
  *
  */
 public class LabelTracker {
-	private long labelValue = 0L;
-	private final boolean trace = true;
+    private long labelValue = 0L;
+    private final boolean trace = false;
 
-	/** The first label not in the bulk range. */
-	private long endOfRange = 0L;
+    /** The first label not in the bulk range. */
+    private long endOfRange = 0L;
 
-	private final TreeSet<Long> set = new TreeSet<Long>();
+    private final TreeSet<Long> set = new TreeSet<Long>();
 
-	/**
-	 * A label as handed out by the tracker. It is entirely opaque.
-	 */
-	public static class Label implements Serializable {
-		private static final long serialVersionUID = 1L;
-		private final long value;
+    /**
+     * A label as handed out by the tracker. It is entirely opaque.
+     */
+    public static class Label implements Serializable {
+	private static final long serialVersionUID = 1L;
+	private final long value;
 
-		Label( long value )
-		{
-			this.value = value;
-		}
-
-		/**
-		 * Returns a string representation of this label.
-		 * @return The string representation of this label.
-		 */
-		@Override
-		public String toString()
-		{
-			return "label#" + value;
-		}
-	}
-
-	/**
-	 * Get the next label from the tracker.
-	 * @return The label.
-	 */
-	public synchronized Label nextLabel()
+	Label( long value )
 	{
-		Label res = new Label( labelValue++ );
-		if( trace ){
-			System.out.println( "nextLabel(): handed out " + res );
-		}
-		return res;
+	    this.value = value;
 	}
 
 	/**
-	 * Returns the given label to our administration.
-	 * We're not shocked if the same label is returned more than once,
-	 * or out of order.
-	 * @param l The label we return.
+	 * Returns a string representation of this label.
+	 * @return The string representation of this label.
 	 */
-	@SuppressWarnings("synthetic-access")
-	public synchronized void returnLabel( Label l )
+	@Override
+	public String toString()
 	{
-		if( trace ){
-			System.out.println( "returnLabel(): got back " + l );
-		}
-		long val = l.value;
-		if( val<endOfRange ) {
-			// Already covered by the range. Nothing to do.
-			notifyAll();
-			return;
-		}
-		set.add( val );
+	    return "label#" + value;
+	}
+    }
 
-		// Try to enlarge the range with elements in the set.
-		while( set.contains( endOfRange ) ) {
-			set.remove( endOfRange );
-			endOfRange++;
-		}
-		if( trace ){
-			System.out.println( "returnLabel(): endOfRange=" + endOfRange + "; set size: " + set.size() );
-		}
-		notifyAll();  // Wake any return waiters.
+    /**
+     * Get the next label from the tracker.
+     * @return The label.
+     */
+    public synchronized Label nextLabel()
+    {
+	Label res = new Label( labelValue++ );
+	if( trace ){
+	    System.out.println( "nextLabel(): handed out " + res );
+	}
+	return res;
+    }
+
+    /**
+     * Returns the given label to our administration.
+     * We're not shocked if the same label is returned more than once,
+     * or out of order.
+     * @param l The label we return.
+     */
+    @SuppressWarnings("synthetic-access")
+    public synchronized void returnLabel( Label l )
+    {
+	if( trace ){
+	    System.out.println( "returnLabel(): got back " + l );
+	}
+	long val = l.value;
+	if( val<endOfRange ) {
+	    // Already covered by the range. Nothing to do.
+	    notifyAll();
+	    return;
+	}
+	if( val == endOfRange ) {
+	    // Don't put it in the set and take it out again
+	    // for a (hopefully) common case.
+	    endOfRange++;
+	}
+	else {
+	    set.add( val );
 	}
 
-	/**
-	 *  Returns true iff all labels we handed out have been returned.
-	 * @return True iff all handed out labels have been returned.
-	 */
-	synchronized public boolean allAreReturned()
-	{
-		return endOfRange == labelValue;
+	// Try to enlarge the range with elements in the set.
+	while( set.contains( endOfRange ) ) {
+	    set.remove( endOfRange );
+	    endOfRange++;
 	}
+	if( trace ){
+	    System.out.println( "returnLabel(): endOfRange=" + endOfRange + " labelValue=" + labelValue + " setsize: " + set.size() );
+	}
+	notifyAll();  // Wake any return waiters.
+    }
 
-	public void waitForAllLabels() {
-		while( true ){
-			synchronized( this ){
-				if( endOfRange == labelValue ){
-					break;
-				}			
-				try {
-					if( trace ){
-						Globals.log.reportProgress( "Waiting for labels: endOfRange=" + endOfRange + " labelValue=" + labelValue );
-					}
-					wait();
-				}
-				catch( InterruptedException x )
-				{
-					// Not interested
-				}
-			}
+    /**
+     *  Returns true iff all labels we handed out have been returned.
+     * @return True iff all handed out labels have been returned.
+     */
+    synchronized public boolean allAreReturned()
+    {
+	return endOfRange == labelValue;
+    }
+
+    /**
+     * Wait until all labels have been returned.
+     * The only way of getting this thread back is by returning all labels
+     * that were handed out.
+     * @throws InterruptedException Thrown if an interrupt was sent.
+     */
+    public void waitForAllLabels() throws InterruptedException
+    {
+	while( true ){
+	    synchronized( this ){
+		if( endOfRange == labelValue ){
+		    break;
 		}
 		if( trace ){
-			Globals.log.reportProgress( "Got all labels back" );
+		    Globals.log.reportProgress( "Waiting for labels: endOfRange=" + endOfRange + " labelValue=" + labelValue );
 		}
+		wait();
+	    }
 	}
+	if( trace ){
+	    Globals.log.reportProgress( "Got all labels back" );
+	}
+    }
 }
