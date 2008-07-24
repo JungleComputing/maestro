@@ -14,10 +14,4 @@ public interface AtomicTask extends Task {
      * @return The result of the task run.
      */
     Object run( Object input, Node node );
-
-    /**
-     * Returns true iff this task can run in this context.
-     * @return True iff this task can run.
-     */
-    abstract boolean isSupported();
 }

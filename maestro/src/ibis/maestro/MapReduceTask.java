@@ -13,4 +13,10 @@ public interface MapReduceTask extends Task {
      * @param node The handler.
      */
     void map( Object input, MapReduceHandler handler );
+
+    /** Reports back the result. 
+     * @param id The identifier of this result.
+     * @param result The result. 
+     */
+	void reduce( Object id, Object result );
 }

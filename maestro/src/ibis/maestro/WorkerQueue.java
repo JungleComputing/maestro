@@ -208,19 +208,6 @@ final class WorkerQueue {
         }
     }
 
-    /**
-     * Given a list of workers and a subjob structure to fill,
-     * try to select a task and a worker to execute the task.
-     * If there are no tasks in the queue, return false.
-     * If there are tasks in the queue, but no workers to execute the
-     * tasks, set the worker field of the subjob to <code>null</code>.
-     *
-     * FIXME: see if we can factor out the empty queue test.
-     * 
-     * @param sub The subjob structure to fill.
-     * @param workers The list of workers to choose from.
-     * @return True iff there currently is no work.
-     */
     RunTaskMessage remove()
     {
         RunTaskMessage res = queue.remove( 0 );

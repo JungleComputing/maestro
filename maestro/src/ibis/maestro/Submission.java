@@ -9,5 +9,5 @@ package ibis.maestro;
 class Submission {
     TaskInstance task = null;
     WorkerTaskInfo worker = null;
-    long predictedDuration = 0L;   // FIXME: remove this.
+    long predictedDuration = 0L;
 }

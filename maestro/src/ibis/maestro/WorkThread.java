@@ -1,7 +1,5 @@
 package ibis.maestro;
 
-import java.nio.channels.ScatteringByteChannel;
-
 /**
  * A single worker thread of a Maestro worker.
  *

@@ -12,4 +12,10 @@ interface Task extends Serializable {
      * @return The name.
      */
     String getName();
+
+    /**
+     * Returns true iff this task can run in this context.
+     * @return True iff this task can run.
+     */
+    abstract boolean isSupported();
 }

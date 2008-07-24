@@ -64,8 +64,8 @@ class WorkerTaskStats {
         queueTimePerTask.addSample( v );
     }
 
-    /** FIXME.
-     * @return
+    /** Returns the estimated time to compute this task.
+     * @return The estimated time.
      */
     long getEstimatedComputeTime()
     {

@@ -6,7 +6,7 @@ import junit.framework.TestCase;
 import org.junit.Test;
 
 /**
- * FIXME.
+ * Tests for the master queue.
  *
  * @author Kees van Reeuwijk.
  */
