@@ -392,4 +392,13 @@ public final class Node {
     {
         worker.setUnsuspect( theIbis );
     }
+
+	WorkThread spawnExtraWorker()
+	{
+		return worker.spawnExtraWorker();
+	}
+
+	void stopWorker(WorkThread thread) {
+		worker.stopWorker( thread );
+	}
 }

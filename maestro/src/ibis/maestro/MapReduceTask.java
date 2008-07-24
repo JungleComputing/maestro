@@ -19,4 +19,10 @@ public interface MapReduceTask extends Task {
      * @param result The result. 
      */
 	void reduce( Object id, Object result );
+
+	/**
+	 * Returns the result of the reduction. 
+	 * @return The result.
+	 */
+	Object getResult();
 }

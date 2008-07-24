@@ -76,8 +76,10 @@ class MapReduceHandler implements CompletionListener
 	 * @return The result as reported by the reducer.
 	 */
 	protected Object waitForResult() {
-		// FIXME: really wait for result.
-		return null;
+		WorkThread worker = node.spawnExtraWorker();
+		labeler.waitForAllLabels();
+		node.stopWorker( worker );
+		return reducer.getResult();
 	}
 
 }
