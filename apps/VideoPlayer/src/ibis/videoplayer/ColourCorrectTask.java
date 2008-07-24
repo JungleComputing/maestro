@@ -14,6 +14,16 @@ public class ColourCorrectTask implements AtomicTask
 {
     private static final long serialVersionUID = -3938044583266505212L;
 
+    /**
+     * Returns the name of this task.
+     * @return The name.
+     */
+    @Override
+    public String getName()
+    {
+	return "Colour-correct frame";
+    }
+
     /** Runs this task.
      * @return The decompressed frame.
      */
@@ -21,11 +31,11 @@ public class ColourCorrectTask implements AtomicTask
     public Object run(Object obj, Node node )
     {
 	RGB48Image frame = (RGB48Image) obj;
-        return frame.colourCorrect(
-                0.0, 0.0, 1.0,
-                0.0, 1.0, 0.0,
-                1.0, 0.0, 0.0
-        );
+	return frame.colourCorrect(
+		0.0, 0.0, 1.0,
+		0.0, 1.0, 0.0,
+		1.0, 0.0, 0.0
+	);
 
     }
 

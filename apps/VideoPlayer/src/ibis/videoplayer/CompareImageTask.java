@@ -17,46 +17,56 @@ import java.util.ArrayList;
 class CompareImageTask implements AtomicTask {
     private static final long serialVersionUID = -4202576028676660015L;
     final File imageDirectory;
-    
+
     CompareImageTask( File dir )
     {
 	this.imageDirectory = dir;
+    }
+
+    /**
+     * Returns the name of this task.
+     * @return The name.
+     */
+    @Override
+    public String getName()
+    {
+	return "Compare images";
     }
 
     static class ImageMatches implements Serializable
     {
 	private static final long serialVersionUID = -6824625393338177074L;
 	final UncompressedImage img;
-        final File file;
+	final File file;
 	final ArrayList<File> matches = new ArrayList<File>();
-	
+
 	ImageMatches( UncompressedImage img, File file )
 	{
 	    this.img = img;
-            this.file = file;
+	    this.file = file;
 	}
-	
+
 	/**
 	 * Returns a string representation of this match request.
 	 * @return The string representation.
 	 */
-        @Override
-        public String toString()
-        {
-            String res = "File " + file + " matches";
+	@Override
+	public String toString()
+	{
+	    String res = "File " + file + " matches";
 
-            if( matches.size() == 0 ) {
-                res += " nothing";
-            }
-            else {
-                for( File m: matches ) {
-                    res += " " + m;
-                }
-            }
-            return res;
-        }
+	    if( matches.size() == 0 ) {
+		res += " nothing";
+	    }
+	    else {
+		for( File m: matches ) {
+		    res += " " + m;
+		}
+	    }
+	    return res;
+	}
     }
-    
+
     private static boolean matchesImage( Image img, File f )
     {
 	try {
@@ -68,20 +78,20 @@ class CompareImageTask implements AtomicTask {
 	}
 	return false;
     }
-    
+
     private void matchImages( File file, ImageMatches img )
     {
-        if( file.isDirectory() ) {
-            File files[] = file.listFiles();
-            for( File f: files ) {
-                matchImages( f, img );
-            }
-        }
-        else {
-            if( matchesImage( img.img, file ) ) {
-                img.matches.add( file );
-            }
-        }
+	if( file.isDirectory() ) {
+	    File files[] = file.listFiles();
+	    for( File f: files ) {
+		matchImages( f, img );
+	    }
+	}
+	else {
+	    if( matchesImage( img.img, file ) ) {
+		img.matches.add( file );
+	    }
+	}
     }
 
     /**
@@ -95,7 +105,7 @@ class CompareImageTask implements AtomicTask {
     {
 	ImageMatches img = (ImageMatches) input;
 
-        matchImages( imageDirectory, img );
+	matchImages( imageDirectory, img );
 	return img;
     }
 

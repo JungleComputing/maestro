@@ -8,7 +8,6 @@ import ibis.maestro.Node;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.LinkedList;
 
 /**
  * Construct a movie from a directory full of povray scripts.
@@ -25,31 +24,12 @@ public class RenderMovieProgram implements CompletionListener
     static final double SHOW_INTERVAL = 0.5; // Time in seconds from the first frame submission until planned show. 
     static final int FRAMES_PER_SECOND = 25;
 
-    private final LinkedList<FrameSchedule> queue = new LinkedList<FrameSchedule>();
     private int outstandingJobs = 0;
     private final File outputDir;
 
     RenderMovieProgram( File outputDir )
     {
         this.outputDir = outputDir;
-    }
-
-    private void submitNeededFrames( Node node, long now, Job job )
-    {
-        long renderDeadline = now+(long) (RENDER_TIME*1e9);
-        synchronized( queue ) {
-            while( !queue.isEmpty() ) {
-                FrameSchedule fr = queue.getFirst();
-
-                if( fr.showMoment<renderDeadline ) {
-                    // This one is required soon, put it in the queue.
-                    System.out.println( "Submitting frame " + fr.frameno );
-                    RenderFrameTask.RenderInfo info = new RenderFrameTask.RenderInfo( WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, fr.frameno, fr.scene );
-                    job.submit( node, info, new Integer( fr.frameno ), this );
-                    outstandingJobs++;
-                }
-            }
-        }
     }
 
     private final class ColorCorrectTask implements AtomicTask
@@ -71,6 +51,16 @@ public class RenderMovieProgram implements CompletionListener
             this.bg = bg;
             this.bb = bb;
         }
+
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Colour-correct frame";
+	}
 
         /** Color-convert one image in a Maestro flow.
          * 
@@ -101,6 +91,16 @@ public class RenderMovieProgram implements CompletionListener
     {
         private static final long serialVersionUID = 5452987225377415308L;
 
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Downsample frame";
+	}
+
         /** Downsample one image in a Maestro flow.
          * 
          * @param in The input of the conversion.
@@ -129,6 +129,16 @@ public class RenderMovieProgram implements CompletionListener
     {
         private static final long serialVersionUID = 5452987225377415310L;
 
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Compress frame";
+	}
+
         /**
          * Run a Jpeg conversion Maestro job.
          * @param in The input of this job.
@@ -156,25 +166,6 @@ public class RenderMovieProgram implements CompletionListener
         public boolean isSupported()
         {
             return true;
-        }
-    }
-
-    private static class FrameSchedule {
-        final String scene;
-        final int frameno;
-        final long showMoment;
-
-        /**
-         * Given a scene and show moment, constructs a new FrameSchedule.
-         * @param scene The scene to render
-         * @param frameno The frame number of the frame.
-         * @param showMoment The moment to show the rendered scene.
-         */
-        public FrameSchedule( String scene, int frameno, long showMoment )
-        {
-            this.scene = scene;
-            this.frameno = frameno;
-            this.showMoment = showMoment;
         }
     }
 

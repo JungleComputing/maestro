@@ -16,6 +16,16 @@ public class FetchFrameTask implements AtomicTask
 {
     private static final long serialVersionUID = -3938044583266505212L;
 
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Fetch frame";
+	}
+
     /** Runs this task.
      * @return The frame we have fetched.
      */

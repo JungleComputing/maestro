@@ -22,7 +22,7 @@ class BenchmarkProgram {
     static final int DVD_WIDTH = 720;
     static final int DVD_HEIGHT = 576;
 
-    static final File outputDir = new File("output");
+    static final File outputDir = new File( "output" );
 
     private static class Listener implements CompletionListener
     {
@@ -73,6 +73,16 @@ class BenchmarkProgram {
 	    this.slowScale = slowScale;
 	    this.slowSharpen = slowSharpen;
 	    this.saveDir = saveDir;
+	}
+
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Proces frame";
 	}
 
 	/**
@@ -131,6 +141,16 @@ class BenchmarkProgram {
 	private static final long serialVersionUID = -7976035811697720295L;
 
 	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Generate frame";
+	}
+
+	/**
 	 * @param in The input of this job.
 	 * @param node The node we're running on.
 	 * @return The fetched image.
@@ -171,6 +191,16 @@ class BenchmarkProgram {
 	    else {
 		System.out.println( "Upscaling not allowed" );
 	    }
+	}
+
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Scale up frame";
 	}
 
 	/**Scale up one frame in a Maestro flow.
@@ -223,6 +253,16 @@ class BenchmarkProgram {
 	    }
 	}
 
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Sharpen frame";
+	}
+
 	/** Sharpen one frame in a Maestro flow.
 	 * 
 	 * @param in The input of the conversion.
@@ -257,6 +297,16 @@ class BenchmarkProgram {
 	private static final long serialVersionUID = 5452987225377415310L;
 
 	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Compress frame";
+	}
+
+	/**
 	 * Run a Jpeg conversion Maestro job.
 	 * @param in The input of this job.
 	 * @param node The node this job runs on.
@@ -289,6 +339,16 @@ class BenchmarkProgram {
     {
 	private static final long serialVersionUID = 54529872253774153L;
 	private final File saveDir;
+
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Save frame";
+	}
 
 	SaveFrameTask( File saveDir )
 	{

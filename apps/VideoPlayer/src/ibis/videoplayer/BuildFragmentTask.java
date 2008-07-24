@@ -23,6 +23,16 @@ public final class BuildFragmentTask implements AtomicTask
         this.fetchJob = fetchJob;
     }
 
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Build fragment";
+	}
+
     /**
      * Runs this fragment building job.
      * @param obj The input to this task.

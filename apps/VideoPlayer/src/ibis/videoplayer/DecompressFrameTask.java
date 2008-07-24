@@ -20,6 +20,16 @@ public class DecompressFrameTask implements AtomicTask
      */
     private static final int REPEAT = 2;
 
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Decompress frame";
+	}
+
     /** Runs this job.
      * @return The decompressed frame.
      */

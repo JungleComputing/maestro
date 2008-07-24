@@ -19,6 +19,16 @@ class ConvertFramesProgram {
     private final class FetchImageTask implements AtomicTask {
         private static final long serialVersionUID = -7976035811697720295L;
 
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Fetch frame";
+	}
+
         /**
          *
          * @param in The input of this job.
@@ -67,7 +77,17 @@ class ConvertFramesProgram {
             this.bb = bb;
         }
 
-        /** Color-convert one image in a Maestro flow.
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Colour-correct frame";
+	}
+
+        /** Color-correct one image in a Maestro flow.
          * 
          * @param in The input of the conversion.
          * @param node The node this process runs on.
@@ -93,6 +113,16 @@ class ConvertFramesProgram {
     private final class CompressFrameTask implements AtomicTask
     {
         private static final long serialVersionUID = 5452987225377415310L;
+
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Compress frame";
+	}
 
         /**
          * Run a Jpeg conversion Maestro task.

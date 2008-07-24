@@ -19,6 +19,16 @@ class ScaleFrameTask implements AtomicTask
         this.factor = factor;
     }
 
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Scale frame";
+	}
+
     /**
      * Scales the given input, an image, and returns a scaled version of the image.
      * @param obj The input of this function.
