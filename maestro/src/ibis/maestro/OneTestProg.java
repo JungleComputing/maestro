@@ -41,7 +41,7 @@ public class OneTestProg {
 	private static final long serialVersionUID = 1L;
     }
 
-    private static class CreateArrayTask implements Task
+    private static class CreateArrayTask implements AtomicTask
     {
 	private static final long serialVersionUID = 2347248108353357517L;
 

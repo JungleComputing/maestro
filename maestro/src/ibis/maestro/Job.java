@@ -13,7 +13,7 @@ public final class Job
 {
     final JobIdentifier id;
     final String name;
-    final Task[] tasks;
+    final AtomicTask[] tasks;
     final TaskType[] taskTypes;
     final TimeEstimate jobTime = new TimeEstimate( 0 );
     private static int index = 0;
@@ -68,7 +68,7 @@ public final class Job
         }
     }
 
-    private TaskType[] buildTaskTypes( Task[] taskList )
+    private TaskType[] buildTaskTypes( AtomicTask[] taskList )
     {
 	TaskType res[] = new TaskType[taskList.length];
 	for( int i=0; i<taskList.length; i++ ) {
@@ -78,7 +78,7 @@ public final class Job
     }
 
     @SuppressWarnings("synthetic-access")
-    Job( int id, String name, Task[] tasks )
+    Job( int id, String name, AtomicTask[] tasks )
     {
         this.id = new JobIdentifier( id );
         this.name = name;

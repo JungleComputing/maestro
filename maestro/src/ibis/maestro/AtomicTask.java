@@ -3,11 +3,11 @@ package ibis.maestro;
 import java.io.Serializable;
 
 /**
- * The interface of a task in the Maestro master/worker system.
+ * The interface of an atomic (indivisible) task in the Maestro master/worker system.
  * @author Kees van Reeuwijk
  *
  */
-public interface Task extends Serializable {
+public interface AtomicTask extends Serializable {
     /**
      * Runs the task.
 

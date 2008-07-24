@@ -62,7 +62,7 @@ public class TestProg {
 
     }
 
-    private static class CreateArrayTask implements Task
+    private static class CreateArrayTask implements AtomicTask
     {
         private static final long serialVersionUID = 2347248108353357517L;
 
@@ -95,7 +95,7 @@ public class TestProg {
         }
     }
 
-    private static class AdditionTask implements Task
+    private static class AdditionTask implements AtomicTask
     {
         private static final long serialVersionUID = 7652370809998864296L;
 

@@ -66,10 +66,10 @@ public final class JobList
      */
     void registerJob( Job job )
     {
-        Task tasks[] = job.tasks;
+        AtomicTask tasks[] = job.tasks;
 
         for( int i=0; i<tasks.length; i++ ){
-            Task j = tasks[i];
+            AtomicTask j = tasks[i];
 
             if( j.isSupported() ) {
                 final TaskType taskType = job.taskTypes[i];
@@ -88,7 +88,7 @@ public final class JobList
      * @param tasks The list of tasks of the job.
      * @return A new job instance representing this job.
      */
-    public Job createJob( String name, Task... tasks )
+    public Job createJob( String name, AtomicTask... tasks )
     {
         int jobId = jobCounter++;
         Job job = new Job( jobId, name, tasks );
