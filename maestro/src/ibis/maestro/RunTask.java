@@ -9,7 +9,7 @@ class RunTask {
     final AtomicTask task;
     RunTaskMessage message;
 
-    RunTask(final AtomicTask task, final RunTaskMessage message ) {
+    RunTask( final AtomicTask task, final RunTaskMessage message ) {
         this.task = task;
         this.message = message;
     }

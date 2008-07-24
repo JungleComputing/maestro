@@ -66,7 +66,17 @@ public class TestProg {
     {
         private static final long serialVersionUID = 2347248108353357517L;
 
-        /**
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Create array";
+	}
+
+	/**
          * Runs this task.
          * @param obj The input parameter of this task.
          * @param node The node the task is running on.
@@ -99,7 +109,18 @@ public class TestProg {
     {
         private static final long serialVersionUID = 7652370809998864296L;
 
-        /**
+
+	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Addition";
+	}
+
+	/**
          * @param obj The input parameter of the task.
          * @param node The node the task is running on.
          * @return The result of the task.

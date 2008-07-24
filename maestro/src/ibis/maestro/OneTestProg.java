@@ -46,6 +46,16 @@ public class OneTestProg {
 	private static final long serialVersionUID = 2347248108353357517L;
 
 	/**
+	 * Returns the name of this task.
+	 * @return The name.
+	 */
+	@Override
+	public String getName()
+	{
+	    return "Create array";
+	}
+
+	/**
 	 * Runs this task.
 	 * @param obj The input parameter of this task.
 	 * @param node The node the task is running on.

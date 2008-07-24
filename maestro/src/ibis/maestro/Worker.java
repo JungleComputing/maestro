@@ -535,11 +535,15 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
                         int queueLength = message.getQueueLength();
                         WorkerTaskStats stats = getWorkerTaskStats( type );
                         stats.setQueueTimePerTask( queueTime/(queueLength+1) );
-			AtomicTask task = findTask( message.task.type );
-			if( Settings.traceWorkerProgress ) {
-			    System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueTime ) + "; there are now " + runningTasks + " running tasks" );
+                        Task task = findTask( message.task.type );
+                        if( task instanceof AtomicTask ) {
+                            AtomicTask at = (AtomicTask) task;
+                            if( Settings.traceWorkerProgress ) {
+                        	System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueTime ) + "; there are now " + runningTasks + " running tasks" );
+                            }
+                            return new RunTask( at, message );
 			}
-			return new RunTask( task, message );
+                        Globals.log.reportInternalError( "How did a non-atomic task " + task + " end up in the work queue?? DROPPED" );
 		    }
 		}
 		if( askForWork ){
@@ -592,7 +596,7 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
      * @param type The task type.
      * @return The task.
      */
-    private AtomicTask findTask( TaskType type )
+    private Task findTask( TaskType type )
     {
 	Job t = findJob( type );
 	return t.tasks[type.taskNo];

@@ -66,17 +66,23 @@ public final class JobList
      */
     void registerJob( Job job )
     {
-        AtomicTask tasks[] = job.tasks;
+        Task tasks[] = job.tasks;
 
         for( int i=0; i<tasks.length; i++ ){
-            AtomicTask j = tasks[i];
+            Task t = tasks[i];
 
-            if( j.isSupported() ) {
-                final TaskType taskType = job.taskTypes[i];
-                if( Settings.traceTypeHandling ) {
-                    System.out.println( "Node supports task type " + taskType);
-                }
-                taskTypes.add( taskType );
+            if( t instanceof AtomicTask ) {
+        	AtomicTask at = (AtomicTask) t;
+        	if( at.isSupported() ) {
+        	    final TaskType taskType = job.taskTypes[i];
+        	    if( Settings.traceTypeHandling ) {
+        		System.out.println( "Node supports task type " + taskType);
+        	    }
+        	    taskTypes.add( taskType );
+        	}
+            }
+            else {
+        	Globals.log.reportInternalError( "Unsupported task type " + t.getClass() + " '" + t.getName() + "'" );
             }
         }
     }
@@ -88,7 +94,7 @@ public final class JobList
      * @param tasks The list of tasks of the job.
      * @return A new job instance representing this job.
      */
-    public Job createJob( String name, AtomicTask... tasks )
+    public Job createJob( String name, Task... tasks )
     {
         int jobId = jobCounter++;
         Job job = new Job( jobId, name, tasks );

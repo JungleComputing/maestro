@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.nio.channels.ScatteringByteChannel;
+
 /**
  * A single worker thread of a Maestro worker.
  *
@@ -36,19 +38,34 @@ final class WorkThread extends Thread
     public void run()
     {
         while( !isStopped() ) {
-            RunTask task = source.getTask();
+            RunTask runTask = source.getTask();
+            Object result;
 
-            if( task == null ) {
+            if( runTask == null ) {
                 break;
             }
             if( Settings.traceWorkerProgress ) {
-        	System.out.println( "Work thread: executing " + task.message );
+        	System.out.println( "Work thread: executing " + runTask.message );
             }
-            Object result = task.task.run( task.message.task.input, localNode );
+            Task task = runTask.task;
+            if( task instanceof AtomicTask ) {
+        	AtomicTask at = (AtomicTask) task;
+        	result = at.run( runTask.message.task.input, localNode );
+            }
+            else if( task instanceof MapReduceTask ) {
+        	MapReduceTask mrt = (MapReduceTask) task;
+        	MapReduceHandler handler = new MapReduceHandler( localNode, mrt );
+        	// FIXME: start a new work thread to compensate for this one.
+        	result = handler.waitForResult();
+            }
+            else {
+        	Globals.log.reportInternalError( "Don't know what to do with a task of type " + task.getClass() );
+        	result = null;
+            }
             if( Settings.traceWorkerProgress ) {
-        	System.out.println( "Work thread: completed " + task.message );
+        	System.out.println( "Work thread: completed " + runTask.message );
             }
-            source.reportTaskCompletion( task, result );
+            source.reportTaskCompletion( runTask, result );
         }
     }
 
