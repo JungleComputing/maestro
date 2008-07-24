@@ -6,10 +6,10 @@ package ibis.maestro;
  *
  */
 class RunTask {
-    final AtomicTask task;
-    RunTaskMessage message;
+    final Task task;
+    final RunTaskMessage message;
 
-    RunTask( final AtomicTask task, final RunTaskMessage message ) {
+    RunTask( final Task task, final RunTaskMessage message ) {
         this.task = task;
         this.message = message;
     }

@@ -22,16 +22,23 @@ class MapReduceHandler implements CompletionListener
 	
 	private static final class Id implements Serializable
 	{
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 1L;
+
 		final Object userID;
 		final Label label;
 		public Id(final Object userID, final Label label) {
 			super();
 			this.userID = userID;
 			this.label = label;
+		}
+		
+		/**
+		 * @return A string representation of this id.
+		 */
+		@Override
+		public String toString()
+		{
+			return "label=" + label + " userID=" + userID;
 		}
 	}
 
@@ -48,6 +55,9 @@ class MapReduceHandler implements CompletionListener
 	{
 		Label label = labeler.nextLabel();
 		Object id = new Id( userId, label );
+		if( Settings.traceMapReduce ){
+			Globals.log.reportProgress( "MapReduce: Submitting " + id + " to " + job );
+		}
 		job.submit( node, input, id, this );
 	}
 
@@ -61,6 +71,9 @@ class MapReduceHandler implements CompletionListener
 	@Override
 	public synchronized void jobCompleted( Node node, Object userId, Object result )
 	{
+		if( Settings.traceMapReduce ){
+			Globals.log.reportProgress( "MapReduce: got back " + userId );
+		}
 		if( !(userId instanceof Id) ){
 			Globals.log.reportInternalError( "The identifier is not a MapReduceHandler.Id but a " + userId.getClass() );
 			return;

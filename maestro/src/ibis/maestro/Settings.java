@@ -59,6 +59,9 @@ class Settings {
     /** Print the reason a particular worker was selected. */
     static final boolean traceWorkerSelection = false;
 
+    /** Trace the adventures of the map/reduce handler. */
+	static final boolean traceMapReduce = true;
+
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.
      */

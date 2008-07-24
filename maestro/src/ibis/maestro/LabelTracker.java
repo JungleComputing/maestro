@@ -19,13 +19,13 @@ import java.util.TreeSet;
  *
  */
 public class LabelTracker {
-	private static long labelValue = 0L;
-	private static final boolean trace = false;
+	private long labelValue = 0L;
+	private final boolean trace = false;
 
 	/** The first label not in the bulk range. */
 	private long endOfRange = 0L;
 
-	private static final TreeSet<Long> set = new TreeSet<Long>();
+	private final TreeSet<Long> set = new TreeSet<Long>();
 
 	/**
 	 * A label as handed out by the tracker. It is entirely opaque.
@@ -109,6 +109,9 @@ public class LabelTracker {
 					return;
 				}			
 				try {
+					if( trace ){
+						Globals.log.reportProgress( "Waiting for labels: endOfRange=" + endOfRange + " labelValue=" + labelValue );
+					}
 					wait();
 				}
 				catch( InterruptedException x )

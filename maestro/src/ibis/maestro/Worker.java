@@ -536,14 +536,10 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 						WorkerTaskStats stats = getWorkerTaskStats( type );
 						stats.setQueueTimePerTask( queueTime/(queueLength+1) );
 						Task task = findTask( message.task.type );
-						if( task instanceof AtomicTask ) {
-							AtomicTask at = (AtomicTask) task;
-							if( Settings.traceWorkerProgress ) {
-								System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueTime ) + "; there are now " + runningTasks + " running tasks" );
-							}
-							return new RunTask( at, message );
+						if( Settings.traceWorkerProgress ) {
+							System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueTime ) + "; there are now " + runningTasks + " running tasks" );
 						}
-						Globals.log.reportInternalError( "How did a non-atomic task " + task + " end up in the work queue?? DROPPED" );
+						return new RunTask( task, message );
 					}
 				}
 				if( askForWork ){
@@ -629,7 +625,8 @@ public final class Worker extends Thread implements TaskSource, PacketReceiveLis
 
 		if( nextTaskNo<t.tasks.length ){
 			// There is a next step to take.
-			TaskInstance nextTask = new TaskInstance( task.message.task.jobInstance, t.getNextTaskType( taskType ), result );
+			TaskType nextTaskType = t.getNextTaskType( taskType );
+			TaskInstance nextTask = new TaskInstance( task.message.task.jobInstance, nextTaskType, result );
 			node.submit( nextTask );
 		}
 		else {

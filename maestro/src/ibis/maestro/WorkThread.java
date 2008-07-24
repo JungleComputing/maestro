@@ -46,13 +46,15 @@ final class WorkThread extends Thread
 				System.out.println( "Work thread: executing " + runTask.message );
 			}
 			Task task = runTask.task;
+			Object input = runTask.message.task.input;
 			if( task instanceof AtomicTask ) {
 				AtomicTask at = (AtomicTask) task;
-				result = at.run( runTask.message.task.input, localNode );
+				result = at.run( input, localNode );
 			}
 			else if( task instanceof MapReduceTask ) {
 				MapReduceTask mrt = (MapReduceTask) task;
 				MapReduceHandler handler = new MapReduceHandler( localNode, mrt );
+				mrt.map( input, handler );
 				result = handler.waitForResult();
 			}
 			else {
