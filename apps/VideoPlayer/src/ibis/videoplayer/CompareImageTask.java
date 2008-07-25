@@ -116,7 +116,6 @@ class CompareImageTask implements AtomicTask {
     @Override
     public boolean isSupported()
     {
-	// TODO: a more extensive sanity check would be useful.
 	return imageDirectory.isDirectory();
     }
 
