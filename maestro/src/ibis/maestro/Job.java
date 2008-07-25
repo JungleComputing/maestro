@@ -72,11 +72,11 @@ public final class Job
          * @param worker FIXME
          * @return The index of the job in <code>jobs</code>
          */
-        int searchJob( Worker worker )
+        int searchJob( Node node )
         {
             // FIXME: move this method
-            for( int i=0; i<worker.node.jobs.size(); i++ ) {
-                Job t = worker.node.jobs.get( i );
+            for( int i=0; i<node.jobs.size(); i++ ) {
+                Job t = node.jobs.get( i );
                 if( t.id.equals( this ) ){
             	return i;
                 }

@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import ibis.maestro.Master.WorkerIdentifier;
 
 
 /**
@@ -13,13 +12,13 @@ final class RunTaskMessage extends Message
 {
     /** */
     private static final long serialVersionUID = 1L;
-    final WorkerIdentifier workerIdentifier;
+    final NodeIdentifier workerIdentifier;
     final TaskInstance task;
     final long taskId;
     private transient long queueMoment = 0L;
     private transient int queueLength = 0;
     private transient long runMoment = 0L;
-    final Worker.MasterIdentifier source;
+    final NodeIdentifier source;
 
     /**
      * Given a task and its source, constructs a new RunTaskMessage.
@@ -27,7 +26,7 @@ final class RunTaskMessage extends Message
      * @param task The task to run.
      * @param taskId The identifier of the task.
      */
-    RunTaskMessage( Worker.MasterIdentifier source, WorkerIdentifier workerIdentifier, TaskInstance task, long taskId )
+    RunTaskMessage( NodeIdentifier source, NodeIdentifier workerIdentifier, TaskInstance task, long taskId )
     {
         this.source = source;
 	this.workerIdentifier = workerIdentifier;

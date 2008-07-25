@@ -2,8 +2,6 @@
 package ibis.maestro;
 
 import ibis.ipl.ReceivePortIdentifier;
-import ibis.maestro.Master.WorkerIdentifier;
-import ibis.maestro.Worker.MasterIdentifier;
 
 /**
  * A message from a master to a worker, telling it that it has been accepted and what the receive port of the master is.
@@ -15,8 +13,8 @@ final class NodeAcceptMessage extends Message
     /** Contractual obligation. */
     private static final long serialVersionUID = 141652L;
     final ReceivePortIdentifier port;
-    final Master.WorkerIdentifier identifierOnMaster;
-    final Worker.MasterIdentifier source;
+    final NodeIdentifier identifierOnMaster;
+    final NodeIdentifier source;
 
     /**
      * Given some essential information, constructs a new WorkerAcceptMessage.
@@ -24,7 +22,7 @@ final class NodeAcceptMessage extends Message
      * @param port The receive port of the master.
      * @param workerID The identifier the master uses for this worker.
      */
-    public NodeAcceptMessage( MasterIdentifier idOnWorker, ReceivePortIdentifier port, WorkerIdentifier workerID )
+    public NodeAcceptMessage( NodeIdentifier idOnWorker, ReceivePortIdentifier port, NodeIdentifier workerID )
     {
         source = idOnWorker;
         this.port = port;

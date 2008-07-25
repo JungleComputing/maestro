@@ -2,8 +2,6 @@ package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
-import ibis.maestro.Master.WorkerIdentifier;
-import ibis.maestro.Worker.MasterIdentifier;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -39,7 +37,7 @@ final class WorkerList {
         return res;
     }
     
-    private static WorkerInfo searchWorker( List<WorkerInfo> workers, WorkerIdentifier workerIdentifier )
+    private static WorkerInfo searchWorker( List<WorkerInfo> workers, NodeIdentifier workerIdentifier )
     {
         for( int i=0; i<workers.size(); i++ ) {
             WorkerInfo w = workers.get( i );
@@ -62,9 +60,9 @@ final class WorkerList {
         return null;
     }
 
-    WorkerIdentifier subscribeNode( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, MasterIdentifier identifierForWorker, TaskType[] types )
+    NodeIdentifier subscribeNode( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, NodeIdentifier identifierForWorker, TaskType[] types )
     {
-        Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
+        NodeIdentifier workerID = new NodeIdentifier( workers.size() );
         WorkerInfo worker = new WorkerInfo( this, workerPort, workerID, identifierForWorker, local, types );
 
         for( TaskType t: types ) {
@@ -103,7 +101,7 @@ final class WorkerList {
      * Remove any workers on that ibis.
      * @param theIbis The worker that is gone.
      */
-    ArrayList<TaskInstance> removeWorker( WorkerIdentifier identifier )
+    ArrayList<TaskInstance> removeWorker( NodeIdentifier identifier )
     {
         if( Settings.traceWorkerList ) {
             System.out.println( "remove worker " + identifier );
@@ -195,7 +193,7 @@ final class WorkerList {
         return taskInfo.getAverageCompletionTime();
     }
 
-    void registerCompletionInfo( WorkerIdentifier workerID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
+    void registerCompletionInfo( NodeIdentifier workerID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
     {
         WorkerInfo w = workers.get( workerID.value );
         w.registerWorkerInfo( workerQueueInfo, completionInfo, arrivalMoment );	
@@ -205,7 +203,7 @@ final class WorkerList {
      * @param workerID The worker to get the identifier for.
      * @return The identifier of this master on the worker.
      */
-    MasterIdentifier getMasterIdentifier( WorkerIdentifier workerID )
+    NodeIdentifier getMasterIdentifier( NodeIdentifier workerID )
     {
         WorkerInfo w = workers.get( workerID.value );
         return w.identifierWithWorker;
@@ -216,7 +214,7 @@ final class WorkerList {
         return workers.size();
     }
 
-    void setPingStartMoment( WorkerIdentifier workerID )
+    void setPingStartMoment( NodeIdentifier workerID )
     {
         WorkerInfo w = workers.get( workerID.value );
         w.setPingStartMoment( System.nanoTime() );
@@ -251,7 +249,7 @@ final class WorkerList {
      * @param workerID The id of the worker that is no longer suspect.
      * @param node The node to report any change of state to.
      */
-    protected void setUnsuspect( WorkerIdentifier workerID, Node node )
+    protected void setUnsuspect( NodeIdentifier workerID, Node node )
     {
         if( workerID == null ){
             return;

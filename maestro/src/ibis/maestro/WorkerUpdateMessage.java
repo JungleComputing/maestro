@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import ibis.maestro.Master.WorkerIdentifier;
 
 /**
  * A message from a worker to a master, telling it about its current
@@ -21,13 +20,13 @@ final class WorkerUpdateMessage extends Message {
     /** For each type of task we know, the queue length on this worker. */
     final WorkerQueueInfo[] workerQueueInfo;
 
-    final Master.WorkerIdentifier source;
+    final NodeIdentifier source;
 
     /**
      * Constructs a new work request message.
      * @param identifier The identifier to use.
      */
-    WorkerUpdateMessage( WorkerIdentifier identifier, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
+    WorkerUpdateMessage( NodeIdentifier identifier, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
     {
 	source = identifier;
 	this.completionInfo = completionInfo;

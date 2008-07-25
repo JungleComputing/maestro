@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import ibis.maestro.Master.WorkerIdentifier;
 
 
 /**
@@ -11,9 +10,9 @@ import ibis.maestro.Master.WorkerIdentifier;
 final class NodeResignMessage extends Message {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
-    final Master.WorkerIdentifier source;
+    final NodeIdentifier source;
 
-    NodeResignMessage( WorkerIdentifier worker ){
+    NodeResignMessage( NodeIdentifier worker ){
 	source = worker;
     }
 }

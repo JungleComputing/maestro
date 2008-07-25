@@ -1,8 +1,6 @@
 package ibis.maestro;
 
 import ibis.ipl.ReceivePortIdentifier;
-import ibis.maestro.Master.WorkerIdentifier;
-import ibis.maestro.Worker.MasterIdentifier;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -12,15 +10,12 @@ import java.util.ArrayList;
  */
 final class WorkerInfo {
     /** Our identifier with this worker. */
-    final MasterIdentifier identifierWithWorker;
+    final NodeIdentifier identifierWithWorker;
 
     /** The active tasks of this worker. */
     private final ArrayList<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
 
     private final ArrayList<WorkerTaskInfo> workerTaskInfoList = new ArrayList<WorkerTaskInfo>();
-
-    /** Our local identifier of this worker. */
-    final Master.WorkerIdentifier identifier;
 
     /** The receive port of the worker. */
     final ReceivePortIdentifier port;
@@ -45,7 +40,10 @@ final class WorkerInfo {
     private int missedAllowanceDeadlines = 0;
     private int missedRescheduleDeadlines = 0;
 
-    WorkerInfo( WorkerList wl, ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local, TaskType[] types )
+    /** Our local identifier of this worker. */
+    final NodeIdentifier identifier;
+
+    WorkerInfo( WorkerList wl, ReceivePortIdentifier port, NodeIdentifier identifier, NodeIdentifier identifierForWorker, boolean local, TaskType[] types )
     {
         this.port = port;
         this.identifier = identifier;
@@ -432,7 +430,7 @@ final class WorkerInfo {
         if( suspect && !dead ) {
             System.out.println( "Restored contact with worker " + identifier );
             suspect = false;
-            node.setUnsuspectOnWorker( port.ibisIdentifier() );
+            node.setUnsuspect( port.ibisIdentifier() );
         }
     }
 

@@ -1,8 +1,6 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
-import ibis.maestro.Master.WorkerIdentifier;
-import ibis.maestro.Worker.MasterIdentifier;
 
 /**
  * Information that the worker maintains for a master.
@@ -11,10 +9,10 @@ import ibis.maestro.Worker.MasterIdentifier;
  *
  */
 final class NodeInfo {
-    final MasterIdentifier localIdentifier;
+    final NodeIdentifier localIdentifier;
 
     /** The identifier the master wants to see when we talk to it. */
-    private WorkerIdentifier identifierOnMaster;
+    private NodeIdentifier identifierOnMaster;
 
     /** The last time we sent this master an update. */
     private long lastUpdate = 0;
@@ -28,7 +26,7 @@ final class NodeInfo {
     /** The ibis this master lives on. */
     final IbisIdentifier ibis;
 
-    NodeInfo( MasterIdentifier localIdentifier, IbisIdentifier ibis, boolean local )
+    NodeInfo( NodeIdentifier localIdentifier, IbisIdentifier ibis, boolean local )
     {
         this.localIdentifier = localIdentifier;
 	this.identifierOnMaster = null;
@@ -45,7 +43,7 @@ final class NodeInfo {
      * Sets the identifier that we have on this master to the given value.
      * @param workerIdentifier The identifier on this master.
      */
-    public void setIdentifierOnMaster(WorkerIdentifier workerIdentifier)
+    public void setIdentifierOnMaster( NodeIdentifier workerIdentifier )
     {
         this.identifierOnMaster = workerIdentifier;
     }
@@ -54,7 +52,7 @@ final class NodeInfo {
      * Gets the identifier that we have on this master.
      * @return The identifier.
      */
-    public WorkerIdentifier getIdentifierOnMaster()
+    public NodeIdentifier getIdentifierOnMaster()
     {
         return identifierOnMaster;
     }
@@ -127,7 +125,7 @@ final class NodeInfo {
         if( !local && suspect && !dead ) {
             System.out.println( "Master " + localIdentifier + " is no longer suspect" );
             suspect = false;
-            node.setUnsuspectOnMaster( ibis );
+            node.setUnsuspect( ibis );
         }
     }
 }

@@ -1,7 +1,6 @@
 package ibis.maestro;
 
 import ibis.ipl.ReceivePortIdentifier;
-import ibis.maestro.Worker.MasterIdentifier;
 
 /**
  * A message from a worker to a master, telling it that the worker exists, and which identifier the
@@ -20,7 +19,7 @@ final class RegisterNodeMessage extends Message {
     final TaskType[] supportedTypes;
     
     /** Our identifier for the master. */
-    final MasterIdentifier masterIdentifier;
+    final NodeIdentifier masterIdentifier;
 
     /**
      * Constructs a new worker registration message.
@@ -28,7 +27,7 @@ final class RegisterNodeMessage extends Message {
      * @param supportedTypes The list of supported types of this node worker.
      * @param masterID The identifier to use.
      */
-    RegisterNodeMessage( ReceivePortIdentifier port, TaskType[] supportedTypes, MasterIdentifier masterID )
+    RegisterNodeMessage( ReceivePortIdentifier port, TaskType[] supportedTypes, NodeIdentifier masterID )
     {
 	this.port = port;
 	this.masterIdentifier = masterID;

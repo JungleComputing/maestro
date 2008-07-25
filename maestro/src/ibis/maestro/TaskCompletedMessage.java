@@ -27,7 +27,8 @@ final class TaskCompletedMessage extends Message {
      */
     final long workerDwellTime;
 
-    final Master.WorkerIdentifier source;
+    final NodeIdentifier source;
+
     /**
      * Constructs a task-completed message for the master of a task.
      * @param src The worker that handled the task.
@@ -36,7 +37,7 @@ final class TaskCompletedMessage extends Message {
      *     worker to complete the remaining tasks of this job.
      * @param workerQueueInfo The queue length for the different types of task.
      */
-    TaskCompletedMessage( Master.WorkerIdentifier src, long taskId, long workerDwellTime, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
+    TaskCompletedMessage( NodeIdentifier src, long taskId, long workerDwellTime, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
     {
         source = src;
         this.taskId = taskId;
