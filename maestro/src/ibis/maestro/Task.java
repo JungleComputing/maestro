@@ -7,7 +7,7 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  *
  */
-interface Task extends Serializable {
+public interface Task extends Serializable {
     /** Returns the name of this task, suitable for human consumption.
      * @return The name.
      */

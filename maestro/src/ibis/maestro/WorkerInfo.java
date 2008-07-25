@@ -147,7 +147,10 @@ final class WorkerInfo {
             // revive the worker.
             return;
         }
-        enabled = true;   // The worker now has its administration in order. We can submit jobs.
+        if( !enabled && Settings.traceWorkerList ) {
+            Globals.log.reportProgress( "Worker " + identifier + " is now enabled" );
+            enabled = true;   // The worker now has its administration in order. We can submit jobs.
+        }
         if( pingSentTime != 0 ) {
             // We are measuring this round-trip time.
             pingTime = arrivalMoment-pingSentTime;

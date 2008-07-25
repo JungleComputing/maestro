@@ -60,7 +60,7 @@ class Settings {
     static final boolean traceWorkerSelection = false;
 
     /** Trace the adventures of the map/reduce handler. */
-	static final boolean traceMapReduce = false;
+    static final boolean traceMapReduce = false;
 
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.
