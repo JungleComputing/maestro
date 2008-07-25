@@ -66,6 +66,24 @@ public final class Job
         {
             return "job=" + id;
         }
+
+        /** Given a job identifier, return the index in <code>jobs</code>
+         * of this identifier, or -1 if it doesn't exist.
+         * @param worker FIXME
+         * @return The index of the job in <code>jobs</code>
+         */
+        int searchJob( Worker worker )
+        {
+            // FIXME: move this method
+            for( int i=0; i<worker.node.jobs.size(); i++ ) {
+                Job t = worker.node.jobs.get( i );
+                if( t.id.equals( this ) ){
+            	return i;
+                }
+            }
+            return -1;
+        
+        }
     }
 
     private TaskType[] buildTaskTypes( Task[] taskList )

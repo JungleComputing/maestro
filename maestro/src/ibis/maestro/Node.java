@@ -27,16 +27,33 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private final Ibis ibis;
     final PacketSendPort<Message> sendPort;
     final PacketUpcallReceivePort<Message> receivePort;
+    final long startTime;
+    long stopTime = 0;
     final Master master;
     private final Worker worker;
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
     RegistryEventHandler registryEventHandler;
+
+    private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
+    final ArrayList<WorkThread> workThreads = new ArrayList<WorkThread>();
+
+    /** The estimated time it takes to send an administration message. */
+    final TimeEstimate infoSendTime = new TimeEstimate( Service.MICROSECOND_IN_NANOSECONDS );
+
+    /** The list of all known masters, in the order that they were handed their
+     * id. Thus, element <code>i</code> of the list is guaranteed to have
+     * <code>i</code> as its id.
+     */
+    final ArrayList<NodeInfo> masters = new ArrayList<NodeInfo>();
 
     /** The list of maestro nodes in this computation. */
     private final ArrayList<MaestroInfo> maestros = new ArrayList<MaestroInfo>();
 
     /** The list of running jobs with their completion listeners. */
     private final ArrayList<JobInstanceInfo> runningJobs = new ArrayList<JobInstanceInfo>();
+
+    /** The list of now unsuspect ibises. */
+    final IbisIdentifierList unsuspectNodes = new IbisIdentifierList();
 
     /** The list of nodes we want to accept. */
     final AcceptList acceptList = new AcceptList();
@@ -60,7 +77,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    registerIbisJoined( theIbis );
 	    boolean local = theIbis.equals( ibis.identifier() );
 	    if( !local ) {
-		worker.addUnregisteredMaster( theIbis, local );
+		addUnregisteredMaster( theIbis, local );
 	    }
 	}
 
@@ -73,7 +90,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	public void died( IbisIdentifier theIbis )
 	{
 	    registerIbisLeft( theIbis );
-	    worker.removeIbis( theIbis );
+	    removeIbis( theIbis );
 	    removeIbis( theIbis );
 	}
 
@@ -86,7 +103,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	public void left( IbisIdentifier theIbis )
 	{
 	    registerIbisLeft( theIbis );
-	    worker.removeIbis( theIbis );
+	    removeIbis( theIbis );
 	    removeIbis( theIbis );
 	}
 
@@ -235,11 +252,17 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	if( Settings.traceNodes ) {
 	    Globals.log.reportProgress( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
 	}
+        for( int i=0; i<numberOfProcessors; i++ ) {
+            WorkThread t = new WorkThread( this );
+            workThreads.add( t );
+            t.start();
+        }
         receivePort = new PacketUpcallReceivePort<Message>( ibis, Globals.receivePortName, this );
         sendPort = new PacketSendPort<Message>( ibis, this );
         sendPort.setLocalListener( this );    // FIXME: no longer necessary
 	master = new Master( ibis, this );
 	worker = new Worker( this );
+        startTime = System.nanoTime();
 	start();
 	registry.enableEvents();
 	if( Settings.traceNodes ) {
@@ -281,8 +304,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	// FIXME: do termination properly!!
 
 	/** Once the master has stopped, stop the worker. */
-	worker.setStopped();
-	worker.waitForWorkThreadsToTerminate();
+	waitForWorkThreadsToTerminate();
 	if( Settings.traceNodes ) {
 	    Globals.log.reportProgress( "worker is terminated" );
 	}
@@ -360,7 +382,14 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         synchronized( master.queue ){
             nodes.setSuspect( theIbis );
         }
-        worker.setSuspect( theIbis );
+        synchronized( worker.queue ) {
+            for( NodeInfo theMaster: masters ){
+                if( theMaster.ibis.equals( theIbis ) ){
+                    theMaster.setSuspect();
+                    break;
+                }
+            }
+        }       
     }
 
     /**
@@ -380,17 +409,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      */
     protected void setUnsuspectOnWorker( IbisIdentifier theIbis )
     {
-	worker.setUnsuspect( theIbis );
-    }
-
-    WorkThread spawnExtraWorker()
-    {
-	return worker.spawnExtraWorker();
-    }
-
-    void stopWorker( WorkThread thread )
-    {
-	worker.stopWorker( thread );
+	setUnsuspect( theIbis );
     }
     
     void updateAdministration()
@@ -436,7 +455,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     @Override
     public void start()
     {
-        worker.addUnregisteredMaster( ibisIdentifier(), true );
+        addUnregisteredMaster( ibisIdentifier(), true );
         receivePort.enable();           // We're open for business.
         super.start();                  // Start the thread
     }
@@ -503,6 +522,11 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 
     void printStatistics( java.io.PrintStream s )
     {
+        if( stopTime<startTime ) {
+            System.err.println( "Node didn't stop yet" );
+            stopTime = System.nanoTime();
+        }
+        s.printf(  "# threads       = %5d\n", workThreads.size() );
         nodes.printStatistics( s );
         jobs.printStatistics( s );
         sendPort.printStatistics( s, "send port" );
@@ -619,6 +643,15 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
             ArrayList<TaskInstance> orphans = nodes.removeWorker( theIbis );
             master.queue.add( orphans );
         }
+        synchronized( worker.queue ) {
+            for( NodeInfo theMaster: masters ){
+                if( theMaster.ibis.equals( theIbis ) ){
+                    // This ibis is now dead. Make it official.
+                    theMaster.setDead();
+                    break;   // There's supposed to be only one entry, so don't bother searching for more.
+                }
+            }
+        }
     }
 
     void unsubscribeWorker( WorkerIdentifier theWorker )
@@ -639,7 +672,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         }
         sendPort.registerDestination( msg.port, msg.source.value );
         synchronized( worker.queue ){
-            theMaster = worker.masters.get( msg.source.value );
+            theMaster = masters.get( msg.source.value );
             theMaster.setIdentifierOnMaster( msg.identifierOnMaster );
             if( theMaster.isSuspect() && !theMaster.isDead() ) {
         	theMaster.setUnsuspect();
@@ -652,4 +685,106 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         }
         sendUpdate( theMaster );
     }
+
+    void waitForWorkThreadsToTerminate()
+    {
+        WorkThread t = null;
+        while( true ){
+            synchronized( workThreads ){
+                if( t != null ){
+                    workThreads.remove( t );  // Remove a terminated worker.
+                }
+                if( workThreads.isEmpty() ){
+                    break;
+                }
+                t = workThreads.get( 0 );
+            }
+            Service.waitToTerminate( t );
+        }
+        stopTime = System.nanoTime();
+    }
+
+    void stopWorker( WorkThread thread )
+    {
+        thread.shutdown();
+        // It may linger a bit, we don't care.
+        workThreads.remove( thread );
+    }
+
+    WorkThread spawnExtraWorker()
+    {
+        WorkThread t = new WorkThread( this );
+        workThreads.add( t );
+        t.start();
+        return t;
+    }
+
+    /**
+     * Given a task type, return the job it belongs to, or <code>null</code> if we
+     * cannot find it. Since that is an internal error, report that error.
+     * @param type
+     * @return
+     */
+    Job findJob( TaskType type )
+    {
+        // FIXME: move this method
+        int ix = type.job.searchJob( worker );
+        if( ix<0 ) {
+            Globals.log.reportInternalError( "Unknown job id in task type " + type );
+            return null;
+        }
+        return jobs.get( ix );
+    }
+
+    /**
+     * Given a task type, return the task.
+     * @param type The task type.
+     * @return The task.
+     */
+    Task findTask( TaskType type )
+    {
+        Job t = findJob( type );
+        return t.tasks[type.taskNo];
+    }
+
+    /**
+     * A new ibis has joined the computation.
+     * @param worker FIXME
+     * @param theIbis The ibis that has joined.
+     * @param local True iff this is the local master.
+     */
+    protected void addUnregisteredMaster( IbisIdentifier theIbis, boolean local )
+    {
+        NodeInfo info;
+    
+        synchronized( worker.queue ){
+            // Reserve a slot for this master, and get an id.
+            MasterIdentifier masterID = new MasterIdentifier( masters.size() );
+            info = new NodeInfo( masterID, theIbis, local );
+            masters.add( info );
+        }
+        worker.unregisteredNodes.add( info );
+        if( local ) {
+            if( Settings.traceWorkerList ) {
+        	Globals.log.reportProgress( "Local ibis " + theIbis + " need not be added to unregisteredMasters" );
+            }
+        }
+        else {
+            if( Settings.traceWorkerList ) {
+        	Globals.log.reportProgress( "Non-local ibis " + theIbis + " must be added to unregisteredMasters" );
+            }
+        }
+    }
+
+    /**
+     * This ibis is no longer suspect.
+     * @param theIbis The unusupected ibis.
+     */
+    void setUnsuspect( IbisIdentifier theIbis )
+    {
+        // FIXME: also drain this list somewhere!!!
+        unsuspectNodes.add( theIbis );
+    }
+
+
 }
