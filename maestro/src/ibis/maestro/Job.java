@@ -93,7 +93,7 @@ public final class Job
      */
     private JobInstanceIdentifier buildJobInstanceIdentifier( Node node, Object userIdentifier )
     {
-        return new JobInstanceIdentifier( userIdentifier, node.identifier() );
+        return new JobInstanceIdentifier( userIdentifier, node.receivePort.identifier() );
     }
 
     /**

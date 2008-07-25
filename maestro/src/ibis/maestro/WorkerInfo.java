@@ -30,8 +30,6 @@ final class WorkerInfo {
 
     final boolean local;
 
-    final int workerThreads;
-
     private boolean suspect = false;  // This worker <em>may</em> be dead.
 
     private boolean dead = false;     // This worker is known to be dead.
@@ -47,13 +45,12 @@ final class WorkerInfo {
     private int missedAllowanceDeadlines = 0;
     private int missedRescheduleDeadlines = 0;
 
-    WorkerInfo( WorkerList wl, ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local, int workerThreads, TaskType[] types )
+    WorkerInfo( WorkerList wl, ReceivePortIdentifier port, WorkerIdentifier identifier, MasterIdentifier identifierForWorker, boolean local, TaskType[] types )
     {
         this.port = port;
         this.identifier = identifier;
         this.identifierWithWorker = identifierForWorker;
         this.local = local;
-        this.workerThreads = workerThreads;
         // Initial, totally unfounded, guess for the ping time.
         this.pingTime = local?Service.MICROSECOND_IN_NANOSECONDS:Service.MILLISECOND_IN_NANOSECONDS;
         for( TaskType t: types ) {
@@ -308,7 +305,7 @@ final class WorkerInfo {
         while( ix+1>workerTaskInfoList.size() ) {
             workerTaskInfoList.add( null );
         }
-        WorkerTaskInfo info = new WorkerTaskInfo( taskInfoOnMaster, this, local, workerThreads, pingTime );
+        WorkerTaskInfo info = new WorkerTaskInfo( taskInfoOnMaster, this, local, pingTime );
         workerTaskInfoList.set( ix, info );
     }
     

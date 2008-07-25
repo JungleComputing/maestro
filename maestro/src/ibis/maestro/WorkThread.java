@@ -7,20 +7,18 @@ package ibis.maestro;
  */
 final class WorkThread extends Thread
 {
-    private final TaskSource source;
-    private final Node localNode;
+    private final Node node;
     private boolean stopped = false;
 
     /**
      * Given a work source, constructs a new WorkThread.
      * @param source The work source.
-     * @param localNode The local node.
+     * @param node The local node.
      */
-    WorkThread( TaskSource source, Node localNode )
+    WorkThread( Node node )
     {
 	super( "Work thread" );
-	this.source = source;
-	this.localNode = localNode;
+	this.node = node;
     }
 
     private synchronized boolean isStopped()
@@ -36,12 +34,10 @@ final class WorkThread extends Thread
     public void run()
     {
 	while( !isStopped() ) {
-	    RunTask runTask = source.getTask();
+	    node.updateAdministration();
+	    RunTask runTask = node.getTask();
 	    Object result;
 
-	    if( runTask == null ) {
-		break;
-	    }
 	    if( Settings.traceWorkerProgress ) {
 		System.out.println( "Work thread: executing " + runTask.message );
 	    }
@@ -49,11 +45,11 @@ final class WorkThread extends Thread
 	    Object input = runTask.message.task.input;
 	    if( task instanceof AtomicTask ) {
 		AtomicTask at = (AtomicTask) task;
-		result = at.run( input, localNode );
+		result = at.run( input, node );
 	    }
 	    else if( task instanceof MapReduceTask ) {
 		MapReduceTask mrt = (MapReduceTask) task;
-		MapReduceHandler handler = new MapReduceHandler( localNode, mrt );
+		MapReduceHandler handler = new MapReduceHandler( node, mrt );
 		mrt.map( input, handler );
 		result = handler.waitForResult();
 	    }
@@ -64,7 +60,7 @@ final class WorkThread extends Thread
 	    if( Settings.traceWorkerProgress ) {
 		System.out.println( "Work thread: completed " + runTask.message );
 	    }
-	    source.reportTaskCompletion( runTask, result );
+	    node.reportTaskCompletion( runTask, result );
 	}
     }
 

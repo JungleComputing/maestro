@@ -8,11 +8,12 @@ import ibis.maestro.Master.WorkerIdentifier;
  * 
  * @author Kees van Reeuwijk.
  */
-final class WorkerResignMessage extends WorkerMessage {
+final class NodeResignMessage extends Message {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
+    final Master.WorkerIdentifier source;
 
-    WorkerResignMessage( WorkerIdentifier worker ){
-	super( worker );
+    NodeResignMessage( WorkerIdentifier worker ){
+	source = worker;
     }
 }

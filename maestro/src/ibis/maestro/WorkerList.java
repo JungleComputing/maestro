@@ -62,10 +62,10 @@ final class WorkerList {
         return null;
     }
 
-    WorkerIdentifier subscribeWorker( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, int workThreads, MasterIdentifier identifierForWorker, TaskType[] types )
+    WorkerIdentifier subscribeNode( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, MasterIdentifier identifierForWorker, TaskType[] types )
     {
         Master.WorkerIdentifier workerID = new Master.WorkerIdentifier( workers.size() );
-        WorkerInfo worker = new WorkerInfo( this, workerPort, workerID, identifierForWorker, local, workThreads, types );
+        WorkerInfo worker = new WorkerInfo( this, workerPort, workerID, identifierForWorker, local, types );
 
         for( TaskType t: types ) {
             TaskInfoOnMaster info = getTaskInfo( t );
@@ -73,7 +73,7 @@ final class WorkerList {
             info.addWorker( wti );
         }
         if( Settings.traceMasterProgress ){
-            System.out.println( "Master " + me + ": subscribing worker " + workerID + " identifierForWorker=" + identifierForWorker + " local=" + local + " workThreads=" + workThreads );
+            System.out.println( "Master " + me + ": subscribing worker " + workerID + " identifierForWorker=" + identifierForWorker + " local=" + local );
         }
         workers.add( worker );
         return workerID;
@@ -86,6 +86,9 @@ final class WorkerList {
      */
     ArrayList<TaskInstance> removeWorker( IbisIdentifier theIbis )
     {
+        if( Settings.traceWorkerList ) {
+            System.out.println( "remove worker " + theIbis );
+        }
 	ArrayList<TaskInstance> orphans = null;
         WorkerInfo wi = searchWorker( workers, theIbis );
 
@@ -102,6 +105,9 @@ final class WorkerList {
      */
     ArrayList<TaskInstance> removeWorker( WorkerIdentifier identifier )
     {
+        if( Settings.traceWorkerList ) {
+            System.out.println( "remove worker " + identifier );
+        }
         WorkerInfo wi = searchWorker( workers, identifier );
 	ArrayList<TaskInstance> orphans = null;
         if( wi != null ) {

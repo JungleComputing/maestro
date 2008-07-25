@@ -10,7 +10,7 @@ import ibis.maestro.Worker.MasterIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-final class MasterInfo {
+final class NodeInfo {
     final MasterIdentifier localIdentifier;
 
     /** The identifier the master wants to see when we talk to it. */
@@ -28,7 +28,7 @@ final class MasterInfo {
     /** The ibis this master lives on. */
     final IbisIdentifier ibis;
 
-    MasterInfo( MasterIdentifier localIdentifier, IbisIdentifier ibis, boolean local )
+    NodeInfo( MasterIdentifier localIdentifier, IbisIdentifier ibis, boolean local )
     {
         this.localIdentifier = localIdentifier;
 	this.identifierOnMaster = null;

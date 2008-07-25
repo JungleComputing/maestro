@@ -9,7 +9,7 @@ import ibis.maestro.Master.WorkerIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-final class WorkerUpdateMessage extends WorkerMessage {
+final class WorkerUpdateMessage extends Message {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
@@ -21,13 +21,15 @@ final class WorkerUpdateMessage extends WorkerMessage {
     /** For each type of task we know, the queue length on this worker. */
     final WorkerQueueInfo[] workerQueueInfo;
 
+    final Master.WorkerIdentifier source;
+
     /**
      * Constructs a new work request message.
      * @param identifier The identifier to use.
      */
     WorkerUpdateMessage( WorkerIdentifier identifier, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
     {
-	super( identifier );
+	source = identifier;
 	this.completionInfo = completionInfo;
 	this.workerQueueInfo = workerQueueInfo;
     }

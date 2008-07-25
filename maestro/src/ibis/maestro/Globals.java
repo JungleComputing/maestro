@@ -8,11 +8,8 @@ package ibis.maestro;
  *
  */
 class Globals {
-    /** The name of the master port of a node. */
-    static final String masterReceivePortName = "masterReceivePort";
-    
-    /** The name of the worker port of a node. */
-    static final String workerReceivePortName = "workerReceivePort";
+    /** The name of the receive port of a node. */
+    static final String receivePortName = "receivePort";
     
     /** The logger. */
     final static Logger log = new Logger();

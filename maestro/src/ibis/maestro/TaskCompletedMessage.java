@@ -7,7 +7,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-final class TaskCompletedMessage extends WorkerMessage {
+final class TaskCompletedMessage extends Message {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
     
@@ -26,6 +26,8 @@ final class TaskCompletedMessage extends WorkerMessage {
      * of this message.
      */
     final long workerDwellTime;
+
+    final Master.WorkerIdentifier source;
     /**
      * Constructs a task-completed message for the master of a task.
      * @param src The worker that handled the task.
@@ -36,7 +38,7 @@ final class TaskCompletedMessage extends WorkerMessage {
      */
     TaskCompletedMessage( Master.WorkerIdentifier src, long taskId, long workerDwellTime, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
     {
-	super( src );
+        source = src;
         this.taskId = taskId;
         this.workerDwellTime = workerDwellTime;
         this.completionInfo = completionInfo;

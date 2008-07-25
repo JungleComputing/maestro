@@ -49,11 +49,11 @@ final class WorkerTaskInfo {
 	 * Constructs a new information class for a particular task type
 	 * for a particular worker.
 	 */
-	WorkerTaskInfo( TaskInfoOnMaster taskInfo, WorkerInfo worker, boolean local, int workerThreads, long pingTime )
+	WorkerTaskInfo( TaskInfoOnMaster taskInfo, WorkerInfo worker, boolean local, long pingTime )
 	{
 		this.taskInfo = taskInfo;
 		this.worker = worker;
-		this.maximalAllowance = local?(1+workerThreads):1;
+		this.maximalAllowance = local?3:1;
 		this.maximalEverAllowance = maximalAllowance;
 
 		this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;

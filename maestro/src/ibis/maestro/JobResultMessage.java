@@ -6,7 +6,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-final class JobResultMessage extends WorkerMessage {
+final class JobResultMessage extends Message {
     private static final long serialVersionUID = 5158569253342276404L;
     final JobInstanceIdentifier job;
     final Object result;
@@ -18,7 +18,6 @@ final class JobResultMessage extends WorkerMessage {
      */
     public JobResultMessage( JobInstanceIdentifier job, Object result )
     {
-	super( null );
 	this.job = job;
 	this.result = result;
     }

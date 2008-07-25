@@ -10,7 +10,7 @@ import ibis.maestro.Worker.MasterIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-final class RegisterWorkerMessage extends WorkerMessage {
+final class RegisterNodeMessage extends Message {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
@@ -18,9 +18,6 @@ final class RegisterWorkerMessage extends WorkerMessage {
     final ReceivePortIdentifier port;
 
     final TaskType[] supportedTypes;
-
-    /** How many work threads does this worker have? */
-    final int workThreads;
     
     /** Our identifier for the master. */
     final MasterIdentifier masterIdentifier;
@@ -28,13 +25,12 @@ final class RegisterWorkerMessage extends WorkerMessage {
     /**
      * Constructs a new worker registration message.
      * @param port The receive port to use to submit tasks.
+     * @param supportedTypes The list of supported types of this node worker.
      * @param masterID The identifier to use.
      */
-    RegisterWorkerMessage( ReceivePortIdentifier port, TaskType[] supportedTypes, int workThreads, MasterIdentifier masterID )
+    RegisterNodeMessage( ReceivePortIdentifier port, TaskType[] supportedTypes, MasterIdentifier masterID )
     {
-	super( null );
 	this.port = port;
-	this.workThreads = workThreads;
 	this.masterIdentifier = masterID;
 	this.supportedTypes = supportedTypes;
     }

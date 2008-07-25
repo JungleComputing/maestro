@@ -9,7 +9,8 @@ import ibis.maestro.Master.WorkerIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-final class RunTaskMessage extends MasterMessage {
+final class RunTaskMessage extends Message
+{
     /** */
     private static final long serialVersionUID = 1L;
     final WorkerIdentifier workerIdentifier;
@@ -18,6 +19,7 @@ final class RunTaskMessage extends MasterMessage {
     private transient long queueMoment = 0L;
     private transient int queueLength = 0;
     private transient long runMoment = 0L;
+    final Worker.MasterIdentifier source;
 
     /**
      * Given a task and its source, constructs a new RunTaskMessage.
@@ -27,7 +29,7 @@ final class RunTaskMessage extends MasterMessage {
      */
     RunTaskMessage( Worker.MasterIdentifier source, WorkerIdentifier workerIdentifier, TaskInstance task, long taskId )
     {
-	super( source );
+        this.source = source;
 	this.workerIdentifier = workerIdentifier;
 	this.task = task;
         this.taskId = taskId;

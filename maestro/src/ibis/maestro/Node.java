@@ -8,6 +8,8 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.Registry;
 import ibis.ipl.RegistryEventHandler;
+import ibis.maestro.Master.WorkerIdentifier;
+import ibis.maestro.Worker.MasterIdentifier;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -19,10 +21,13 @@ import java.util.Properties;
  * @author Kees van Reeuwijk
  *
  */
-public final class Node {
+public final class Node extends Thread implements PacketReceiveListener<Message>
+{
     final IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE, IbisCapabilities.ELECTIONS_STRICT );
     private final Ibis ibis;
-    private final Master master;
+    final PacketSendPort<Message> sendPort;
+    final PacketUpcallReceivePort<Message> receivePort;
+    final Master master;
     private final Worker worker;
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
     RegistryEventHandler registryEventHandler;
@@ -33,7 +38,14 @@ public final class Node {
     /** The list of running jobs with their completion listeners. */
     private final ArrayList<JobInstanceInfo> runningJobs = new ArrayList<JobInstanceInfo>();
 
+    /** The list of nodes we want to accept. */
+    final AcceptList acceptList = new AcceptList();
+
+    /** The list of nodes we know about. */
+    final WorkerList nodes = new WorkerList();
+
     private boolean isMaestro;
+    final JobList jobs;
 
     private class NodeRegistryEventHandler implements RegistryEventHandler {
 
@@ -62,7 +74,7 @@ public final class Node {
 	{
 	    registerIbisLeft( theIbis );
 	    worker.removeIbis( theIbis );
-	    master.removeIbis( theIbis );
+	    removeIbis( theIbis );
 	}
 
 	/**
@@ -75,7 +87,7 @@ public final class Node {
 	{
 	    registerIbisLeft( theIbis );
 	    worker.removeIbis( theIbis );
-	    master.removeIbis( theIbis );
+	    removeIbis( theIbis );
 	}
 
 	/**
@@ -196,6 +208,7 @@ public final class Node {
 	Properties ibisProperties = new Properties();
 	IbisIdentifier maestro;
 
+	this.jobs = jobs;
 	ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
 	registryEventHandler = new NodeRegistryEventHandler();
 	ibis = IbisFactory.createIbis(
@@ -222,12 +235,12 @@ public final class Node {
 	if( Settings.traceNodes ) {
 	    Globals.log.reportProgress( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
 	}
+        receivePort = new PacketUpcallReceivePort<Message>( ibis, Globals.receivePortName, this );
+        sendPort = new PacketSendPort<Message>( ibis, this );
+        sendPort.setLocalListener( this );    // FIXME: no longer necessary
 	master = new Master( ibis, this );
-	worker = new Worker( ibis, this, jobs );
-	master.setLocalListener( worker );
-	worker.setLocalListener( master );
-	master.start();
-	worker.start();
+	worker = new Worker( this );
+	start();
 	registry.enableEvents();
 	if( Settings.traceNodes ) {
 	    Globals.log.log( "Started a Maestro node" );
@@ -244,13 +257,6 @@ public final class Node {
 	    Globals.log.reportProgress( "Set node to stopped state. Telling worker..." );
 	}
 	worker.stopAskingForWork();
-	if( Settings.traceNodes ) {
-	    Globals.log.reportProgress( "Told worker. Telling master..." );
-	}
-	master.setStopped();
-	if( Settings.traceNodes ) {
-	    Globals.log.reportProgress( "Told master." );
-	}
     }
 
     /**
@@ -267,19 +273,20 @@ public final class Node {
 	 * We only stop this thread if both are terminated, so we can just wait
 	 * for one to terminate, and then the other.
 	 */
-	Service.waitToTerminate( master );
+	Service.waitToTerminate( this );
 	if( Settings.traceNodes ) {
 	    Globals.log.reportProgress( "master is terminated; waiting for worker to terminate" );
 	}
+	
+	// FIXME: do termination properly!!
 
 	/** Once the master has stopped, stop the worker. */
 	worker.setStopped();
-	Service.waitToTerminate( worker );
+	worker.waitForWorkThreadsToTerminate();
 	if( Settings.traceNodes ) {
 	    Globals.log.reportProgress( "worker is terminated" );
 	}
-	master.printStatistics( System.out );
-	worker.printStatistics( System.out );
+	printStatistics( System.out );
 	try {
 	    ibis.end();
 	}
@@ -330,31 +337,10 @@ public final class Node {
     }
 
     /**
-     * 
-     * @param receivePort The port to send it to.
-     * @param id The identifier of the job.
-     * @param result The result.
-     * @return The size of the transmitted message, or -1 if the transjob failed.
-     */
-    long sendResultMessage( ReceivePortIdentifier receivePort, JobInstanceIdentifier id,
-	    Object result ) {
-	return worker.sendResultMessage( receivePort, id, result );
-    }
-
-    ReceivePortIdentifier identifier()
-    {
-	return master.identifier();
-    }
-
-    CompletionInfo[] getCompletionInfo( JobList jobs )
-    {
-	return master.getCompletionInfo( jobs );
-    }
-
-    /**
      * @return The ibis identifier of this node.
      */
-    IbisIdentifier ibisIdentifier() {
+    IbisIdentifier ibisIdentifier()
+    {
 	return ibis.identifier();
     }
 
@@ -364,15 +350,17 @@ public final class Node {
      */
     protected void setSuspect( IbisIdentifier theIbis )
     {
-	try {
-	    ibis.registry().assumeDead( theIbis );
-	}
-	catch( IOException e )
-	{
-	    // Nothing we can do about it.
-	}
-	master.setSuspect( theIbis );
-	worker.setSuspect( theIbis );
+        try {
+            ibis.registry().assumeDead( theIbis );
+        }
+        catch( IOException e )
+        {
+            // Nothing we can do about it.
+        }
+        synchronized( master.queue ){
+            nodes.setSuspect( theIbis );
+        }
+        worker.setSuspect( theIbis );
     }
 
     /**
@@ -381,7 +369,9 @@ public final class Node {
      */
     protected void setUnsuspectOnMaster( IbisIdentifier theIbis )
     {
-	master.setUnsuspect( theIbis );
+        synchronized( master.queue ){
+            nodes.setUnsuspect( theIbis );
+        }
     }
 
     /**
@@ -401,5 +391,265 @@ public final class Node {
     void stopWorker( WorkThread thread )
     {
 	worker.stopWorker( thread );
+    }
+    
+    void updateAdministration()
+    {
+        WorkerIdentifier workerToAccept = null;
+        
+        master.updateAdministration();
+        workerToAccept = acceptList.removeIfAny();
+        if( workerToAccept != null ) {
+            boolean ok = sendAcceptMessage( workerToAccept );
+            if( !ok ) {
+                // Couldn't send an accept message: back on the list.
+                acceptList.add( workerToAccept );
+            }
+        }
+        worker.updateAdministration();
+    }
+
+    RunTask getTask()
+    {
+        return worker.getTask();
+    }
+    
+    void reportTaskCompletion( RunTask task, Object result )
+    {
+        worker.reportTaskCompletion( task, result );
+    }
+
+    /**
+     * Returns true iff this listener is associated with the given port.
+     * @param port The port it should be associated with.
+     * @return True iff this listener is associated with the port.
+     */
+    public boolean hasReceivePort( ReceivePortIdentifier port )
+    {
+        boolean res = port.equals( receivePort.identifier() );
+        return res;
+    }
+
+    /**
+     * Start this thread.
+     */
+    @Override
+    public void start()
+    {
+        worker.addUnregisteredMaster( ibisIdentifier(), true );
+        receivePort.enable();           // We're open for business.
+        super.start();                  // Start the thread
+    }
+    /**
+     * Handles message <code>msg</code> from worker.
+     * @param msg The message we received.
+     */
+    @Override
+    public void messageReceived( Message msg, long arrivalMoment )
+    {
+        if( Settings.traceMasterProgress ){
+            Globals.log.reportProgress( "Master: received message " + msg );
+        }
+        if( msg instanceof TaskCompletedMessage ) {
+            TaskCompletedMessage result = (TaskCompletedMessage) msg;
+
+            nodes.setUnsuspect( result.source, this );
+            handleTaskCompletedMessage( result, arrivalMoment );
+        }
+        else if( msg instanceof JobResultMessage ) {
+            JobResultMessage m = (JobResultMessage) msg;
+
+            reportCompletion( m.job, m.result );
+        }
+        else if( msg instanceof WorkerUpdateMessage ) {
+            WorkerUpdateMessage m = (WorkerUpdateMessage) msg;
+
+            nodes.setUnsuspect( m.source, this );
+            handleWorkerUpdateMessage( m, arrivalMoment );
+        }
+        else if( msg instanceof RegisterNodeMessage ) {
+            RegisterNodeMessage m = (RegisterNodeMessage) msg;
+
+            handleRegisterNodeMessage( m );
+        }
+        else if( msg instanceof NodeResignMessage ) {
+            NodeResignMessage m = (NodeResignMessage) msg;
+
+            unsubscribeWorker( m.source );
+        }
+        if( msg instanceof RunTaskMessage ){
+            RunTaskMessage runTaskMessage = (RunTaskMessage) msg;
+
+            handleRunTaskMessage( arrivalMoment, runTaskMessage );
+        }
+        else if( msg instanceof NodeAcceptMessage ) {
+            NodeAcceptMessage am = (NodeAcceptMessage) msg;
+
+            handleNodeAcceptMessage( am );
+        }
+        else {
+            Globals.log.reportInternalError( "the master should handle message of type " + msg.getClass() );
+        }
+    }
+
+    /** FIXME.
+     * @param arrivalMoment
+     * @param runTaskMessage
+     */
+    private void handleRunTaskMessage( long arrivalMoment, RunTaskMessage runTaskMessage )
+    {
+        worker.handleRunTaskMessage( runTaskMessage, arrivalMoment );
+    }
+
+    void printStatistics( java.io.PrintStream s )
+    {
+        nodes.printStatistics( s );
+        jobs.printStatistics( s );
+        sendPort.printStatistics( s, "send port" );
+        master.printStatistics( System.out );
+        worker.printStatistics( System.out );
+    }
+
+    boolean registerWithNode( NodeInfo info )
+    {
+        boolean ok = true;
+        if( Settings.traceWorkerList ) {
+            Globals.log.reportProgress( "Node " + ibisIdentifier() + ": sending registration message to ibis " + info );
+        }
+        TaskType taskTypes[] = jobs.getSupportedTaskTypes();
+        RegisterNodeMessage msg = new RegisterNodeMessage( receivePort.identifier(), taskTypes, info.localIdentifier );
+        long sz = sendPort.tryToSend( info.ibis, Globals.receivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        if( sz<0 ) {
+            System.err.println( "Cannot register with node " + info.ibis );
+            setSuspect( info.ibis );
+            ok = false;
+        }
+        return ok;
+    }
+
+    void sendUpdate( NodeInfo node )
+    {
+        CompletionInfo[] completionInfo = master.getCompletionInfo( jobs, nodes );
+        WorkerQueueInfo[] workerQueueInfo = worker.queue.getWorkerQueueInfo( worker.taskStats );
+        WorkerUpdateMessage msg = new WorkerUpdateMessage( node.getIdentifierOnMaster(), completionInfo, workerQueueInfo );
+    
+        // We ignore the result because we don't care about the message size,
+        // and if the update failed, it failed.
+        sendPort.tryToSend( node.localIdentifier.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+    }
+
+    /**
+     * A worker has sent us a message to register itself with us. This is
+     * just to tell us that it's out there. We tell it what our receive port is,
+     * and which handle we have assigned to it, so that it can then inform us
+     * of the types of tasks it supports.
+     * @param m The worker registration message.
+     */
+    void handleRegisterNodeMessage( RegisterNodeMessage m )
+    {
+        WorkerIdentifier workerID;
+        if( Settings.traceMasterProgress ){
+            Globals.log.reportProgress( "Master: received registration message " + m + " from worker " + m.port );
+        }
+        if( m.supportedTypes.length == 0 ) {
+            Globals.log.reportInternalError( "Worker " + m.port + " has zero supported types??" );
+        }
+        boolean local = sendPort.isLocalListener( m.port );
+        synchronized( master.queue ) {
+            workerID = nodes.subscribeNode( receivePort.identifier(), m.port, local, m.masterIdentifier, m.supportedTypes );
+        }
+        sendPort.registerDestination( m.port, workerID.value );
+        acceptList.add( workerID );
+    }
+
+    boolean sendAcceptMessage( WorkerIdentifier workerID )
+    {
+        ReceivePortIdentifier myport = receivePort.identifier();
+        MasterIdentifier idOnWorker = nodes.getMasterIdentifier( workerID );
+        NodeAcceptMessage msg = new NodeAcceptMessage( idOnWorker, myport, workerID );
+        boolean ok = true;
+    
+        nodes.setPingStartMoment( workerID );
+        long sz = sendPort.tryToSend( workerID.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        if( sz<0 ){
+            ok = false;
+        }
+        return ok;
+    }
+
+    /**
+     * A worker has sent use a completion message for a task. Process it.
+     * @param result The status message.
+     * @param arrivalMoment FIXME
+     */
+    void handleTaskCompletedMessage( TaskCompletedMessage result, long arrivalMoment )
+    {
+        if( Settings.traceMasterProgress ){
+            Globals.log.reportProgress( "Received a worker task completed message " + result );
+        }
+        synchronized( master.queue ){
+            nodes.registerTaskCompleted( result, arrivalMoment );
+            master.countHandledTask();
+        }
+    }
+
+    /**
+     * A worker has sent us a message with its current status, handle it.
+     * @param m The update message.
+     * @param arrivalMoment The time in ns the message arrived.
+     */
+    void handleWorkerUpdateMessage( WorkerUpdateMessage m, long arrivalMoment )
+    {
+        if( Settings.traceMasterProgress ){
+            Globals.log.reportProgress( "Received worker update message " + m );
+        }
+        synchronized( master.queue ){
+            nodes.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo, arrivalMoment );
+        }
+    }
+
+    /**
+     * We know the given ibis has disappeared from the computation.
+     * Make sure we don't talk to it.
+     * @param theIbis The ibis that was gone.
+     */
+    void removeIbis( IbisIdentifier theIbis )
+    {
+        synchronized( master.queue ) {
+            ArrayList<TaskInstance> orphans = nodes.removeWorker( theIbis );
+            master.queue.add( orphans );
+        }
+    }
+
+    void unsubscribeWorker( WorkerIdentifier theWorker )
+    {
+        synchronized( master.queue ){
+            ArrayList<TaskInstance> orphans = nodes.removeWorker( theWorker );
+            master.queue.add( orphans );
+        }
+    }
+
+    void handleNodeAcceptMessage( NodeAcceptMessage msg )
+    {
+        NodeInfo theMaster;
+        NodeInfo unsuspect = null;
+    
+        if( Settings.traceWorkerProgress ){
+            Globals.log.reportProgress( "Received a node accept message " + msg );
+        }
+        sendPort.registerDestination( msg.port, msg.source.value );
+        synchronized( worker.queue ){
+            theMaster = worker.masters.get( msg.source.value );
+            theMaster.setIdentifierOnMaster( msg.identifierOnMaster );
+            if( theMaster.isSuspect() && !theMaster.isDead() ) {
+        	theMaster.setUnsuspect();
+        	unsuspect = theMaster;
+            }
+            worker.queue.notifyAll();
+        }
+        if( unsuspect != null ) {
+            setUnsuspectOnMaster( unsuspect.ibis );
+        }
+        sendUpdate( theMaster );
     }
 }

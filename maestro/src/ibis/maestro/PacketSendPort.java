@@ -297,7 +297,7 @@ class PacketSendPort<T extends Serializable> {
      * @param portname The name of the port.
      */
     @SuppressWarnings("synthetic-access")
-    synchronized void printStats( PrintStream s, String portname )
+    synchronized void printStatistics( PrintStream s, String portname )
     {
         s.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " remote messages; " + localSentCount + " local sends; "+ evictions + " evictions" );
         if( sentCount>0 ) {
@@ -431,7 +431,7 @@ class PacketSendPort<T extends Serializable> {
         return len;
     }
 
-    boolean isLocalListener( ReceivePortIdentifier identifier )
+    synchronized boolean isLocalListener( ReceivePortIdentifier identifier )
     {
 	if( localListener == null ) {
 	    return false;

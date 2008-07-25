@@ -10,12 +10,13 @@ import ibis.maestro.Worker.MasterIdentifier;
  *
  * @author Kees van Reeuwijk.
  */
-final class WorkerAcceptMessage extends MasterMessage
+final class NodeAcceptMessage extends Message
 {
     /** Contractual obligation. */
     private static final long serialVersionUID = 141652L;
     final ReceivePortIdentifier port;
     final Master.WorkerIdentifier identifierOnMaster;
+    final Worker.MasterIdentifier source;
 
     /**
      * Given some essential information, constructs a new WorkerAcceptMessage.
@@ -23,9 +24,9 @@ final class WorkerAcceptMessage extends MasterMessage
      * @param port The receive port of the master.
      * @param workerID The identifier the master uses for this worker.
      */
-    public WorkerAcceptMessage( MasterIdentifier idOnWorker, ReceivePortIdentifier port, WorkerIdentifier workerID )
+    public NodeAcceptMessage( MasterIdentifier idOnWorker, ReceivePortIdentifier port, WorkerIdentifier workerID )
     {
-        super( idOnWorker );
+        source = idOnWorker;
         this.port = port;
         this.identifierOnMaster = workerID;
     }
