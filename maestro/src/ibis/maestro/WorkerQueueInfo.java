@@ -15,8 +15,6 @@ class WorkerQueueInfo implements Serializable
     final long dequeueTime;
     final long computeTime;
 
-    // TODO: instead of storing the info per type, use an array for a job
-    // and just mark the unknown values.
     /**
      * @param type The type of task.
      * @param queueLength The worker queue length.

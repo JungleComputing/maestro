@@ -13,8 +13,6 @@ class CompletionInfo implements Serializable
     final TaskType type;
     final long completionInterval;
 
-    // TODO: instead of storing the info per type, use an array for a job
-    // and just mark the unknown values.
     /**
      * @param type The type of task.
      * @param workerDwellTime The time this task will dwell on this worker for queueing and computation.

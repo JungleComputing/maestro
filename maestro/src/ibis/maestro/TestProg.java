@@ -164,12 +164,19 @@ public class TestProg {
 	 * Returns the result of this map/reduce.
 	 * @return The result of this map/reduce.
 	 */
+        @Override
 	public Object getResult()
 	{
 	    // TODO: do something more interesting.
 	    return res[0];
 	}
 
+        /**
+         * Generate jobs to compute different components for this task. (Overrides method in superclass.)
+         * @param input The input
+         * @param handler The handler for this map/reduce task
+         */
+        @Override
 	public void map( Object input, MapReduceHandler handler )
 	{
 	    for( int n=0; n<SIZE; n++ ){
@@ -178,6 +185,12 @@ public class TestProg {
 	    }
 	}
 
+	/**
+	 * Add a given result to the collected result. (Overrides method in superclass.)
+	 * @param id The identifier of the result.
+	 * @param result The result.
+	 */
+	@Override
 	public void reduce( Object id, Object result )
 	{
 	    Integer ix = (Integer) id;
@@ -185,6 +198,11 @@ public class TestProg {
 	    res[ix] = result;
 	}
 
+	/**
+	 * Returns the name of this task. (Overrides method in superclass.)
+	 * @return The name.
+	 */
+        @Override
 	public String getName()
 	{
 	    return "Assemble array";

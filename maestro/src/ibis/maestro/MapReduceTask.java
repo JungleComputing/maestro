@@ -10,7 +10,7 @@ public interface MapReduceTask extends Task {
      * Given an input, submits a number of tasks to the handler.
      *
      * @param input The input value of this map.
-     * @param node The handler.
+     * @param handler The handler.
      */
     void map( Object input, MapReduceHandler handler );
 

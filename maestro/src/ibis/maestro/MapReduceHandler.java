@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 public class MapReduceHandler implements CompletionListener
 {
-    final Node node;
+    final Node localNode;
     final MapReduceTask reducer;
     final LabelTracker labeler = new LabelTracker();
 
@@ -16,7 +16,7 @@ public class MapReduceHandler implements CompletionListener
      */
     MapReduceHandler( Node node, MapReduceTask reducer )
     {
-	this.node = node;
+	this.localNode = node;
 	this.reducer = reducer;
     }
 
@@ -47,9 +47,9 @@ public class MapReduceHandler implements CompletionListener
      * Internally we keep track of the number of submitted jobs so that
      * we can wait for all of them to complete.
      * 
-     * @param node The node this should run on.
      * @param job The job to submit to.
      * @param input Input for the (first task of the) job.
+     * @param userId The identifier the user attaches to this job.
      */
     @SuppressWarnings("synthetic-access")
     public synchronized void submit( Job job, Object input, Object userId )
@@ -59,7 +59,7 @@ public class MapReduceHandler implements CompletionListener
 	if( Settings.traceMapReduce ){
 	    Globals.log.reportProgress( "MapReduce: Submitting " + id + " to " + job );
 	}
-	job.submit( node, input, id, this );
+	job.submit( localNode, input, id, this );
     }
 
     /**
@@ -94,7 +94,7 @@ public class MapReduceHandler implements CompletionListener
 	WorkThread worker = null;
 
 	try {
-	    worker = node.spawnExtraWorker();
+	    worker = localNode.spawnExtraWorker();
 	    labeler.waitForAllLabels();
 	}
 	catch( InterruptedException x ) {
@@ -102,7 +102,7 @@ public class MapReduceHandler implements CompletionListener
 	}
 	finally {
 	    if( worker != null ) {
-		node.stopWorker( worker );
+		localNode.stopWorker( worker );
 	    }
 	}
 	return reducer.getResult();

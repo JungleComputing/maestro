@@ -5,7 +5,6 @@ package ibis.maestro;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.AbstractList;
 import java.util.ArrayList;
 
 /**
