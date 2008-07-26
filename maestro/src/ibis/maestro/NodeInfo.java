@@ -22,7 +22,7 @@ final class NodeInfo {
     /** The active tasks of this worker. */
     private final ArrayList<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
 
-    private final ArrayList<WorkerTaskInfo> workerTaskInfoList = new ArrayList<WorkerTaskInfo>();
+    private final ArrayList<NodeTaskInfo> workerTaskInfoList = new ArrayList<NodeTaskInfo>();
 
     /** The receive port of the worker. */
     private ReceivePortIdentifier port = null;
@@ -109,7 +109,7 @@ final class NodeInfo {
         if( completionInfo == null ) {
             return;
         }
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoList.get( completionInfo.type.index );
+        NodeTaskInfo workerTaskInfo = workerTaskInfoList.get( completionInfo.type.index );
 
         if( workerTaskInfo == null ) {
             return;
@@ -127,7 +127,7 @@ final class NodeInfo {
         if( info == null ) {
             return;
         }
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoList.get( info.type.index );
+        NodeTaskInfo workerTaskInfo = workerTaskInfoList.get( info.type.index );
 
         if( workerTaskInfo == null ) {
             return;
@@ -145,9 +145,9 @@ final class NodeInfo {
      * @param l The task info table to update.
      * @param pingTime The ping time to this worker.
      */
-    private static void setPingTime( ArrayList<WorkerTaskInfo> l, long pingTime )
+    private static void setPingTime( ArrayList<NodeTaskInfo> l, long pingTime )
     {
-        for( WorkerTaskInfo wi: l ) {
+        for( NodeTaskInfo wi: l ) {
             if( wi != null ) {
                 wi.setPingTime( pingTime );
             }
@@ -378,7 +378,7 @@ final class NodeInfo {
      */
     boolean registerTaskStart( TaskInstance task, long id, long predictedDuration )
     {
-        WorkerTaskInfo workerTaskInfo = workerTaskInfoList.get( task.type.index );
+        NodeTaskInfo workerTaskInfo = workerTaskInfoList.get( task.type.index );
         if( workerTaskInfo == null ) {
             System.err.println( "No worker task info for task type " + task.type );
             return true;
@@ -410,7 +410,7 @@ final class NodeInfo {
     /**
      * @param taskInfoOnMaster The task type to register for.
      */
-    private void registerTaskType( TaskInfoOnMaster taskInfoOnMaster )
+    private void registerTaskType( TaskInfo taskInfoOnMaster )
     {
         if( Settings.traceTypeHandling ){
             System.out.println( "worker " + localIdentifier + " (" + port + ") can handle " + taskInfoOnMaster + ", local=" + local );
@@ -419,11 +419,11 @@ final class NodeInfo {
         while( ix+1>workerTaskInfoList.size() ) {
             workerTaskInfoList.add( null );
         }
-        WorkerTaskInfo info = new WorkerTaskInfo( taskInfoOnMaster, this, local, pingTime );
+        NodeTaskInfo info = new NodeTaskInfo( taskInfoOnMaster, this, local, pingTime );
         workerTaskInfoList.set( ix, info );
     }
     
-    WorkerTaskInfo getTaskInfo( TaskType taskType )
+    NodeTaskInfo getTaskInfo( TaskType taskType )
     {
         return workerTaskInfoList.get( taskType.index );
     }
@@ -438,14 +438,14 @@ final class NodeInfo {
 
         if( missedAllowanceDeadlines>0 ) {
             int total = 0;
-            for( WorkerTaskInfo wti: workerTaskInfoList ){
+            for( NodeTaskInfo wti: workerTaskInfoList ){
                 if( wti != null ){
                     total += wti.getSubmissions();
                 }
             }
             s.println( "  Missed deadlines: allowance: " + missedAllowanceDeadlines  + " reschedule: " + missedRescheduleDeadlines + " of " + total );
         }
-        for( WorkerTaskInfo info: workerTaskInfoList ) {
+        for( NodeTaskInfo info: workerTaskInfoList ) {
             if( info != null && info.didWork() ) {
                 String stats = info.buildStatisticsString();
                 s.println( "  " + info + ": " + stats );
@@ -468,7 +468,7 @@ final class NodeInfo {
 
     protected void resetReservations()
     {
-        for( WorkerTaskInfo info: workerTaskInfoList ) {
+        for( NodeTaskInfo info: workerTaskInfoList ) {
             if( info != null ) {
                 info.resetReservations();
             }

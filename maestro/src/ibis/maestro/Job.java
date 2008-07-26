@@ -69,7 +69,7 @@ public final class Job
 
         /** Given a job identifier, return the index in <code>jobs</code>
          * of this identifier, or -1 if it doesn't exist.
-         * @param worker FIXME
+         * @param nodeInfo FIXME
          * @return The index of the job in <code>jobs</code>
          */
         int searchJob( Node node )

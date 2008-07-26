@@ -7,12 +7,12 @@ import java.util.LinkedList;
  *
  * @author Kees van Reeuwijk.
  */
-public class TaskInfoOnMaster
+public class TaskInfo
 {
-    private LinkedList<WorkerTaskInfo> workers = new LinkedList<WorkerTaskInfo>();
+    private LinkedList<NodeTaskInfo> workers = new LinkedList<NodeTaskInfo>();
     final TaskType type;
 
-    TaskInfoOnMaster( TaskType type )
+    TaskInfo( TaskType type )
     {
         this.type = type;
     }
@@ -32,16 +32,16 @@ public class TaskInfoOnMaster
      * We place it in front of the list to give it a chance to do work.
      * @param worker The worker to add.
      */
-    protected void addWorker( WorkerTaskInfo worker )
+    protected void addWorker( NodeTaskInfo worker )
     {
 	workers.add( worker );
     }
 
-    protected WorkerTaskInfo getBestWorker()
+    protected NodeTaskInfo getBestWorker()
     {
         if( Settings.useShuffleRouting ) {
-            for( WorkerTaskInfo wi: workers ) {
-                NodeInfo worker = wi.worker;
+            for( NodeTaskInfo wi: workers ) {
+                NodeInfo worker = wi.nodeInfo;
                 
                 if( worker.isReady() && wi.canProcessNow() ) {
                     return wi;
@@ -49,13 +49,13 @@ public class TaskInfoOnMaster
             }
         }
         else {
-            WorkerTaskInfo best = null;
+            NodeTaskInfo best = null;
             long bestInterval = Long.MAX_VALUE;
             boolean readyWorker = false;   // Is there any worker prepared to do work right now?
 
             for( int i=0; i<workers.size(); i++ ) {
-                WorkerTaskInfo wi = workers.get( i );
-                NodeInfo worker = wi.worker;
+                NodeTaskInfo wi = workers.get( i );
+                NodeInfo worker = wi.nodeInfo;
 
                 if( worker.isReady() ) {
                     long val = wi.estimateJobCompletion();
@@ -73,8 +73,8 @@ public class TaskInfoOnMaster
             }
             if( Settings.traceRemainingJobTime || Settings.traceMasterProgress || Settings.traceWorkerSelection ) {
                 System.out.print( "Worker for " + type + ":" );
-                for( WorkerTaskInfo wi: workers ) {
-                    NodeInfo worker = wi.worker;
+                for( NodeTaskInfo wi: workers ) {
+                    NodeInfo worker = wi.nodeInfo;
                     System.out.print( " " + worker + "=" );
                     if( worker.isDead() ) {
                         System.out.print( "DEAD" );
@@ -132,7 +132,7 @@ public class TaskInfoOnMaster
     {
         long res = Long.MAX_VALUE;
 
-        for( WorkerTaskInfo wi: workers ) {
+        for( NodeTaskInfo wi: workers ) {
             long val = wi.getAverageCompletionTime();
 
             if( val<res ) {

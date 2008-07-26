@@ -8,6 +8,6 @@ package ibis.maestro;
  */
 class Submission {
     TaskInstance task = null;
-    WorkerTaskInfo worker = null;
+    NodeTaskInfo worker = null;
     long predictedDuration = 0L;
 }

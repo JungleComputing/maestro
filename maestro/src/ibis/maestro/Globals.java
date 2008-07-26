@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.util.Random;
+
 
 /**
  * Global variables.
@@ -13,4 +15,7 @@ class Globals {
     
     /** The logger. */
     final static Logger log = new Logger();
+
+    /** A random-number generator. */
+    static final Random rng = new Random();
 }

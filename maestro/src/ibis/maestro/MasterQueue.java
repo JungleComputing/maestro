@@ -221,7 +221,7 @@ final class MasterQueue
 	        continue;
 	    }
 	    TypeInfo info = getTypeInfo( type );
-	    WorkerTaskInfo worker = workers.selectBestWorker( type );
+	    NodeTaskInfo worker = workers.selectBestWorker( type );
 	    if( worker != null ) {
                 if( worker.reserveIfNeeded() ) {
                     // Reserved for this worker. Don't submit it now.
@@ -291,7 +291,7 @@ final class MasterQueue
      * The list may be <code>null</code>.
      * @param l The list of task instances to add.
      */
-    protected void add( List<TaskInstance> l )
+    protected synchronized void add( List<TaskInstance> l )
     {
 	if( l != null ) {
 	    for( TaskInstance ti: l ) {
