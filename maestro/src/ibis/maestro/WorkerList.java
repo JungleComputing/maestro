@@ -42,7 +42,7 @@ final class WorkerList {
         for( int i=0; i<workers.size(); i++ ) {
             WorkerInfo w = workers.get( i );
 
-            if( w.identifier.equals( workerIdentifier ) ) {
+            if( w.localIdentifier.equals( workerIdentifier ) ) {
                 return w;
             }
         }
@@ -206,7 +206,7 @@ final class WorkerList {
     NodeIdentifier getMasterIdentifier( NodeIdentifier workerID )
     {
         WorkerInfo w = workers.get( workerID.value );
-        return w.identifierWithWorker;
+        return w.identifierOnNode;
     }
 
     int size()

@@ -9,9 +9,10 @@ import ibis.ipl.IbisIdentifier;
  *
  */
 final class NodeInfo {
+    /** Our local identifier of this node. */
     final NodeIdentifier localIdentifier;
 
-    /** The identifier the master wants to see when we talk to it. */
+    /** The identifier the node wants to see when we talk to it. */
     private NodeIdentifier identifierOnNode;
 
     /** The last time we sent this master an update. */

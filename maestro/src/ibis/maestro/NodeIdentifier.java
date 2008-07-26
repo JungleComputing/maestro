@@ -48,6 +48,6 @@ final class NodeIdentifier implements Serializable {
     @Override
     public String toString()
     {
-        return "M" + value;
+        return "N" + value;
     }
 }

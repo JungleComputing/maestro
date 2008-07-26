@@ -9,8 +9,11 @@ import java.util.ArrayList;
  * Information about a node in the list of a master.
  */
 final class WorkerInfo {
-    /** Our identifier with this node. */
-    final NodeIdentifier identifierWithWorker;
+    /** Our local identifier of this node. */
+    final NodeIdentifier localIdentifier;
+
+    /** The identifier the node wants to see when we talk to it. */
+    final NodeIdentifier identifierOnNode;
 
     /** The active tasks of this worker. */
     private final ArrayList<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
@@ -40,14 +43,11 @@ final class WorkerInfo {
     private int missedAllowanceDeadlines = 0;
     private int missedRescheduleDeadlines = 0;
 
-    /** Our local identifier of this worker. */
-    final NodeIdentifier identifier;
-
     WorkerInfo( WorkerList wl, ReceivePortIdentifier port, NodeIdentifier identifier, NodeIdentifier identifierForWorker, boolean local, TaskType[] types )
     {
         this.port = port;
-        this.identifier = identifier;
-        this.identifierWithWorker = identifierForWorker;
+        this.localIdentifier = identifier;
+        this.identifierOnNode = identifierForWorker;
         this.local = local;
         // Initial, totally unfounded, guess for the ping time.
         this.pingTime = local?Service.MICROSECOND_IN_NANOSECONDS:Service.MILLISECOND_IN_NANOSECONDS;
@@ -63,7 +63,7 @@ final class WorkerInfo {
     @Override
     public String toString()
     {
-        return identifier.toString();
+        return localIdentifier.toString();
     }
 
     /**
@@ -96,7 +96,7 @@ final class WorkerInfo {
             return;
         }
         if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "Master: worker " + identifier + ":" + completionInfo );
+            Globals.log.reportProgress( "Master: worker " + localIdentifier + ":" + completionInfo );
         }
         if( completionInfo.completionInterval != Long.MAX_VALUE ) {
             workerTaskInfo.setCompletionTime( completionInfo.completionInterval );
@@ -114,7 +114,7 @@ final class WorkerInfo {
             return;
         }
         if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "Master: worker " + identifier + ":" + info );
+            Globals.log.reportProgress( "Master: worker " + localIdentifier + ":" + info );
         }
         workerTaskInfo.setDequeueTime( info.dequeueTime );
         workerTaskInfo.setComputeTime( info.computeTime );
@@ -143,7 +143,7 @@ final class WorkerInfo {
             return;
         }
         if( !enabled && Settings.traceWorkerList ) {
-            Globals.log.reportProgress( "Worker " + identifier + " is now enabled" );
+            Globals.log.reportProgress( "Worker " + localIdentifier + " is now enabled" );
             enabled = true;   // The worker now has its administration in order. We can submit jobs.
         }
         if( pingSentTime != 0 ) {
@@ -152,7 +152,7 @@ final class WorkerInfo {
             pingSentTime = 0L;  // We're no longer measuring a ping time.
             setPingTime( workerTaskInfoList, pingTime );
             if( Settings.traceRemainingJobTime ) {
-                Globals.log.reportProgress( "Master: ping time to worker " + identifier + " is " + Service.formatNanoseconds( pingTime ) );
+                Globals.log.reportProgress( "Master: ping time to worker " + localIdentifier + " is " + Service.formatNanoseconds( pingTime ) );
             }
         }
         if( Settings.traceRemainingJobTime ) {
@@ -179,7 +179,7 @@ final class WorkerInfo {
                 s += i;
             }
             s += ']';
-            Globals.log.reportProgress( "Master: got new information from " + identifier + ": " +  s );
+            Globals.log.reportProgress( "Master: got new information from " + localIdentifier + ": " +  s );
         }
         for( WorkerQueueInfo i: workerQueueInfo ) {
             registerWorkerQueueInfo( i );
@@ -297,7 +297,7 @@ final class WorkerInfo {
     private void registerTaskType( TaskInfoOnMaster taskInfoOnMaster )
     {
         if( Settings.traceTypeHandling ){
-            System.out.println( "worker " + identifier + " (" + port + ") can handle " + taskInfoOnMaster + ", local=" + local );
+            System.out.println( "worker " + localIdentifier + " (" + port + ") can handle " + taskInfoOnMaster + ", local=" + local );
         }
         int ix = taskInfoOnMaster.type.index;
         while( ix+1>workerTaskInfoList.size() ) {
@@ -344,7 +344,7 @@ final class WorkerInfo {
         }
         activeTasks.clear(); // Don't let those orphans take up memory.
         if( !orphans.isEmpty() ) {
-            System.out.println( "Rescued " + orphans.size() + " orphans from dead worker " + identifier );
+            System.out.println( "Rescued " + orphans.size() + " orphans from dead worker " + localIdentifier );
         }
         return orphans;
     }
@@ -355,7 +355,7 @@ final class WorkerInfo {
      */
     void printStatistics( PrintStream s )
     {
-        s.println( "Worker " + identifier + (local?" (local)":"") );
+        s.println( "Worker " + localIdentifier + (local?" (local)":"") );
 
         if( missedAllowanceDeadlines>0 ) {
             int total = 0;
@@ -402,10 +402,10 @@ final class WorkerInfo {
     protected void setSuspect()
     {
         if( local ) {
-            System.out.println( "Cannot communicate with local node " + identifier + "???" );
+            System.out.println( "Cannot communicate with local node " + localIdentifier + "???" );
         }
         else {
-            System.out.println( "Cannot communicate with node " + identifier );
+            System.out.println( "Cannot communicate with node " + localIdentifier );
             suspect = true;
         }
     }
@@ -416,7 +416,7 @@ final class WorkerInfo {
     protected void setUnsuspect()
     {
         if( suspect && !dead ) {
-            System.out.println( "Restored contact with node " + identifier );
+            System.out.println( "Restored contact with node " + localIdentifier );
             suspect = false;
         }
     }
@@ -428,7 +428,7 @@ final class WorkerInfo {
     protected void setUnsuspect( Node node )
     {
         if( suspect && !dead ) {
-            System.out.println( "Restored contact with node " + identifier );
+            System.out.println( "Restored contact with node " + localIdentifier );
             suspect = false;
             node.setUnsuspect( port.ibisIdentifier() );
         }

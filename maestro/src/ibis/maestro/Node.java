@@ -1138,8 +1138,8 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
                 System.out.println( "Selected " + worker + " as best for task " + task );
             }
 
-            RunTaskMessage msg = new RunTaskMessage( worker.identifierWithWorker, worker.identifier, task, taskId );
-            long sz = sendPort.tryToSend( worker.identifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+            RunTaskMessage msg = new RunTaskMessage( worker.identifierOnNode, worker.localIdentifier, task, taskId );
+            long sz = sendPort.tryToSend( worker.localIdentifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
             if( sz<0 ){
                 // Try to put the paste back in the tube.
                 // The sendport has already reported the trouble with the worker.
