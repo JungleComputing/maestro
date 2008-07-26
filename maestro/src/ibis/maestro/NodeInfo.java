@@ -498,4 +498,19 @@ final class NodeInfo {
     {
         port = p;
     }
+
+    /** 
+     * Register that this node is communicating with us. If we had it
+     * suspect, remove that flag.
+     * Return true iff we thing this node is dead. (No we're not resurrecting it.)
+     * @return True iff the node is dead.
+     */
+    synchronized boolean registerAsCommunicating()
+    {
+        if( dead ) {
+            return true;
+        }
+        suspect = false;
+        return false;
+    }
 }

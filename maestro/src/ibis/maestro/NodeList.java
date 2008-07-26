@@ -184,7 +184,8 @@ final class NodeList {
     synchronized void registerCompletionInfo( NodeIdentifier workerID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
     {
         NodeInfo w = nodes.get( workerID.value );
-        w.registerWorkerInfo( workerQueueInfo, completionInfo, arrivalMoment );	
+        w.registerWorkerInfo( workerQueueInfo, completionInfo, arrivalMoment );
+        w.registerAsCommunicating();
     }
 
     /** Given a worker, return the identifier of this master on the worker.
@@ -226,10 +227,10 @@ final class NodeList {
 
     protected synchronized void setUnsuspect( IbisIdentifier theIbis )
     {
-        NodeInfo wi = searchNode( nodes, theIbis );
+        NodeInfo nodeInfo = searchNode( nodes, theIbis );
 
-        if( wi != null ) {
-            wi.setUnsuspect();
+        if( nodeInfo != null ) {
+            nodeInfo.setUnsuspect();
         }
     }
 
@@ -237,14 +238,14 @@ final class NodeList {
      * @param workerID The id of the worker that is no longer suspect.
      * @param node The node to report any change of state to.
      */
-    protected void setUnsuspect( NodeIdentifier workerID, Node node )
+    protected void setUnsuspect( NodeIdentifier workerID )
     {
         if( workerID == null ){
             return;
         }
-        NodeInfo w = nodes.get( workerID.value );
-        if( w != null ) {
-            w.setUnsuspect();
+        NodeInfo nodeInfo = nodes.get( workerID.value );
+        if( nodeInfo != null ) {
+            nodeInfo.setUnsuspect();
         }
     }
 
@@ -253,13 +254,12 @@ final class NodeList {
      * @param port
      * @param identifierOnMaster
      */
-    synchronized NodeInfo registerAccept( NodeIdentifier source, ReceivePortIdentifier port, NodeIdentifier identifierOnMaster )
+    synchronized void registerAccept( NodeIdentifier source, ReceivePortIdentifier port, NodeIdentifier identifierOnMaster )
     {
         NodeInfo wi = getNode( source );
         if( wi.isSuspect() && !wi.isDead() ) {
             wi.setUnsuspect();
         }
-        return wi;
     }
 
     /** Returns a random registered master.
@@ -322,4 +322,12 @@ final class NodeList {
         return info;
     }
 
+    synchronized boolean registerAsCommunicating( NodeIdentifier id )
+    {
+        NodeInfo nodeInfo = getNode( id );
+        if( nodeInfo == null ) {
+            return false;
+        }
+        return nodeInfo.registerAsCommunicating();
+    }
 }

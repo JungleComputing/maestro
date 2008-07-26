@@ -13,7 +13,7 @@ final class NodeAcceptMessage extends Message
     /** Contractual obligation. */
     private static final long serialVersionUID = 141652L;
     final ReceivePortIdentifier port;
-    final NodeIdentifier identifierOnMaster;
+    final NodeIdentifier identifierOnNode;
     final NodeIdentifier source;
 
     /**
@@ -26,7 +26,7 @@ final class NodeAcceptMessage extends Message
     {
         source = idOnWorker;
         this.port = port;
-        this.identifierOnMaster = workerID;
+        this.identifierOnNode = workerID;
     }
     
     /**

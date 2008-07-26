@@ -264,7 +264,7 @@ final class MasterQueue
     }
 
     @SuppressWarnings("synthetic-access")
-    CompletionInfo[] getCompletionInfo( JobList jobs, NodeList workers )
+    synchronized CompletionInfo[] getCompletionInfo( JobList jobs, NodeList workers )
     {
 	CompletionInfo res[] = new CompletionInfo[queueTypes.size()];
 
@@ -281,7 +281,7 @@ final class MasterQueue
      * Returns true iff the entire queue is empty.
      * @return
      */
-    protected boolean isEmpty()
+    synchronized boolean isEmpty()
     {
         return queue.isEmpty();
     }
