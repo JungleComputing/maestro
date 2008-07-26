@@ -24,9 +24,9 @@ import java.util.Random;
  */
 public final class Node extends Thread implements PacketReceiveListener<Message>
 {
-    final IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE, IbisCapabilities.ELECTIONS_STRICT );
+    static final IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE, IbisCapabilities.ELECTIONS_STRICT );
     private final Ibis ibis;
-    final PacketSendPort<Message> sendPort;
+    private final PacketSendPort<Message> sendPort;
     final PacketUpcallReceivePort<Message> receivePort;
     final long startTime;
     private long activeTime = 0L;
@@ -72,7 +72,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private final Random rng = new Random();
 
     /** The list of nodes we know about. */
-    private final WorkerList nodes = new WorkerList();
+    private final NodeList nodes = new NodeList();
 
     private boolean isMaestro;
     private boolean askMastersForWork = true;
@@ -585,15 +585,15 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private void handleRegisterNodeMessage( RegisterNodeMessage m )
     {
         NodeIdentifier workerID;
+
         if( Settings.traceMasterProgress ){
             Globals.log.reportProgress( "Master: received registration message " + m + " from worker " + m.port );
         }
         if( m.supportedTypes.length == 0 ) {
-            Globals.log.reportInternalError( "Worker " + m.port + " has zero supported types??" );
+            Globals.log.reportInternalError( "Node " + m.port + " has zero supported types??" );
         }
-        boolean local = sendPort.isLocalListener( m.port );
         synchronized( masterQueue ) {
-            workerID = nodes.subscribeNode( receivePort.identifier(), m.port, local, m.masterIdentifier, m.supportedTypes );
+            workerID = nodes.subscribeNode( m.port, m.supportedTypes, m.masterIdentifier );
         }
         sendPort.registerDestination( m.port, workerID.value );
         acceptList.add( workerID );
@@ -686,7 +686,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         sendPort.registerDestination( msg.port, msg.source.value );
         synchronized( workerQueue ){
             theMaster = masters.get( msg.source.value );
-            theMaster.setIdentifierOnMaster( msg.identifierOnMaster );
+            theMaster.setIdentifierOnNode( msg.identifierOnMaster );
             if( theMaster.isSuspect() && !theMaster.isDead() ) {
         	theMaster.setUnsuspect();
         	unsuspect = theMaster;
@@ -760,7 +760,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 
     /**
      * A new ibis has joined the computation.
-     * @param worker FIXME
      * @param theIbis The ibis that has joined.
      * @param local True iff this is the local master.
      */
@@ -770,20 +769,20 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     
         synchronized( workerQueue ){
             // Reserve a slot for this master, and get an id.
-            NodeIdentifier masterID = new NodeIdentifier( masters.size() );
-            info = new NodeInfo( masterID, theIbis, local );
+            NodeIdentifier id = NodeIdentifier.getNextIdentifier();
+            info = new NodeInfo( id, theIbis, local );
             masters.add( info );
         }
-        unregisteredNodes.add( info );
         if( local ) {
             if( Settings.traceWorkerList ) {
-        	Globals.log.reportProgress( "Local ibis " + theIbis + " need not be added to unregisteredMasters" );
+        	Globals.log.reportProgress( "Local ibis " + theIbis + " need not be added to unregisteredNodes" );
             }
         }
         else {
             if( Settings.traceWorkerList ) {
-        	Globals.log.reportProgress( "Non-local ibis " + theIbis + " must be added to unregisteredMasters" );
+        	Globals.log.reportProgress( "Non-local ibis " + theIbis + " must be added to unregisteredNodes" );
             }
+            unregisteredNodes.add( info );
         }
     }
 
@@ -1131,14 +1130,14 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
             if( wti == null ){
                 break;
             }
-            WorkerInfo worker = wti.worker;
+            NodeInfo worker = wti.worker;
             taskId = nextTaskId++;
             worker.registerTaskStart( task, taskId, sub.predictedDuration );
             if( Settings.traceMasterQueue ) {
                 System.out.println( "Selected " + worker + " as best for task " + task );
             }
 
-            RunTaskMessage msg = new RunTaskMessage( worker.identifierOnNode, worker.localIdentifier, task, taskId );
+            RunTaskMessage msg = new RunTaskMessage( worker.getIdentifierOnNode(), worker.localIdentifier, task, taskId );
             long sz = sendPort.tryToSend( worker.localIdentifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
             if( sz<0 ){
                 // Try to put the paste back in the tube.
@@ -1165,7 +1164,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         }
     }
 
-    private CompletionInfo[] getCompletionInfo( JobList jobs, WorkerList workers )
+    private CompletionInfo[] getCompletionInfo( JobList jobs, NodeList workers )
     {
         synchronized( masterQueue ) {
             return masterQueue.getCompletionInfo( jobs, workers );

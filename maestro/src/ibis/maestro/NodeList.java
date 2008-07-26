@@ -12,8 +12,8 @@ import java.util.List;
  * 
  * @author Kees van Reeuwijk
  */
-final class WorkerList {
-    private final ArrayList<WorkerInfo> workers = new ArrayList<WorkerInfo>();
+final class NodeList {
+    private final ArrayList<NodeInfo> workers = new ArrayList<NodeInfo>();
     private final ArrayList<TaskInfoOnMaster> taskInfoList = new ArrayList<TaskInfoOnMaster>();
 
     /**
@@ -37,10 +37,10 @@ final class WorkerList {
         return res;
     }
     
-    private static WorkerInfo searchWorker( List<WorkerInfo> workers, NodeIdentifier workerIdentifier )
+    private static NodeInfo searchWorker( List<NodeInfo> workers, NodeIdentifier workerIdentifier )
     {
         for( int i=0; i<workers.size(); i++ ) {
-            WorkerInfo w = workers.get( i );
+            NodeInfo w = workers.get( i );
 
             if( w.localIdentifier.equals( workerIdentifier ) ) {
                 return w;
@@ -49,32 +49,44 @@ final class WorkerList {
         return null;
     }
 
-    private static WorkerInfo searchWorker( List<WorkerInfo> workers, IbisIdentifier id )
+    private static NodeInfo searchWorker( List<NodeInfo> workers, IbisIdentifier id )
     {
-        for( int i=0; i<workers.size(); i++ ) {
-            WorkerInfo w = workers.get(i);
-            if( w.port.ibisIdentifier().equals( id ) ) {
-                return w;
+        for( NodeInfo w: workers ) {
+            if( w != null ) {
+                if( w.hasIbisIdentifier( id ) ) {
+                    return w;
+                }
             }
         }
         return null;
     }
 
-    NodeIdentifier subscribeNode( ReceivePortIdentifier me, ReceivePortIdentifier workerPort, boolean local, NodeIdentifier identifierForWorker, TaskType[] types )
+    /**
+     * Add some registration info to the node info we already have.
+     * @param port
+     * @param types
+     * @param masterIdentifier
+     * @return Our local identifier of this node.
+     */
+    NodeIdentifier subscribeNode( ReceivePortIdentifier port, TaskType[] types,
+        NodeIdentifier masterIdentifier )
     {
-        NodeIdentifier workerID = new NodeIdentifier( workers.size() );
-        WorkerInfo worker = new WorkerInfo( this, workerPort, workerID, identifierForWorker, local, types );
-
+        final IbisIdentifier ibis = port.ibisIdentifier();
+        NodeInfo node = searchWorker( workers, ibis );
+        if( node == null ) {
+            
+        }
+        node.setPort( port );
+        node.setIdentifierOnNode( masterIdentifier );
         for( TaskType t: types ) {
             TaskInfoOnMaster info = getTaskInfo( t );
-            WorkerTaskInfo wti = worker.getTaskInfo( t );
+            WorkerTaskInfo wti = node.getTaskInfo( t );
             info.addWorker( wti );
         }
         if( Settings.traceMasterProgress ){
-            System.out.println( "Master " + me + ": subscribing worker " + workerID + " identifierForWorker=" + identifierForWorker + " local=" + local );
+            System.out.println( "Subscribing node " + masterIdentifier );
         }
-        workers.add( worker );
-        return workerID;
+        return node.localIdentifier;
     }
 
     /**
@@ -88,7 +100,7 @@ final class WorkerList {
             System.out.println( "remove worker " + theIbis );
         }
 	ArrayList<TaskInstance> orphans = null;
-        WorkerInfo wi = searchWorker( workers, theIbis );
+        NodeInfo wi = searchWorker( workers, theIbis );
 
         if( wi != null ) {
             orphans = wi.setDead();
@@ -106,7 +118,7 @@ final class WorkerList {
         if( Settings.traceWorkerList ) {
             System.out.println( "remove worker " + identifier );
         }
-        WorkerInfo wi = searchWorker( workers, identifier );
+        NodeInfo wi = searchWorker( workers, identifier );
 	ArrayList<TaskInstance> orphans = null;
         if( wi != null ) {
             orphans = wi.setDead();
@@ -120,7 +132,7 @@ final class WorkerList {
      */
     void registerTaskCompleted( TaskCompletedMessage result, long arrivalMoment )
     {
-        WorkerInfo w = searchWorker( workers, result.source );
+        NodeInfo w = searchWorker( workers, result.source );
         if( w == null ) {
             Globals.log.reportError( "Worker status message from unknown worker " + result.source );
             return;
@@ -134,7 +146,7 @@ final class WorkerList {
      */
     boolean allowMasterToFinish()
     {
-        for( WorkerInfo w: workers ) {
+        for( NodeInfo w: workers ) {
             if( !w.allowMasterToFinish() ) {
                 return false;
             }
@@ -159,22 +171,13 @@ final class WorkerList {
     }
 
     /**
-     * Return the number of known workers.
-     * @return The number of known workers.
-     */
-    int getWorkerCount()
-    {
-        return workers.size();
-    }
-
-    /**
      * Given a print stream, print some statistics about the workers
      * to this stream.
      * @param out The stream to print to.
      */
     void printStatistics( PrintStream out )
     {
-        for( WorkerInfo wi: workers ) {
+        for( NodeInfo wi: workers ) {
             wi.printStatistics( out );
         }
     }
@@ -195,7 +198,7 @@ final class WorkerList {
 
     void registerCompletionInfo( NodeIdentifier workerID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
     {
-        WorkerInfo w = workers.get( workerID.value );
+        NodeInfo w = workers.get( workerID.value );
         w.registerWorkerInfo( workerQueueInfo, completionInfo, arrivalMoment );	
     }
 
@@ -205,8 +208,9 @@ final class WorkerList {
      */
     NodeIdentifier getMasterIdentifier( NodeIdentifier workerID )
     {
-        WorkerInfo w = workers.get( workerID.value );
-        return w.identifierOnNode;
+        // TODO: rename this method to getIdentifierOnNode
+        NodeInfo w = workers.get( workerID.value );
+        return w.getIdentifierOnNode();
     }
 
     int size()
@@ -216,20 +220,20 @@ final class WorkerList {
 
     void setPingStartMoment( NodeIdentifier workerID )
     {
-        WorkerInfo w = workers.get( workerID.value );
+        NodeInfo w = workers.get( workerID.value );
         w.setPingStartMoment( System.nanoTime() );
     }
 
     protected void resetReservations()
     {
-	for( WorkerInfo wi: workers ) {
+	for( NodeInfo wi: workers ) {
 	    wi.resetReservations();
 	}
     }
 
     protected void setSuspect( IbisIdentifier theIbis )
     {
-	WorkerInfo wi = searchWorker( workers, theIbis );
+	NodeInfo wi = searchWorker( workers, theIbis );
 
 	if( wi != null ) {
 	    wi.setSuspect();
@@ -238,7 +242,7 @@ final class WorkerList {
 
     protected void setUnsuspect( IbisIdentifier theIbis )
     {
-        WorkerInfo wi = searchWorker( workers, theIbis );
+        NodeInfo wi = searchWorker( workers, theIbis );
 
         if( wi != null ) {
             wi.setUnsuspect();
@@ -254,9 +258,9 @@ final class WorkerList {
         if( workerID == null ){
             return;
         }
-        WorkerInfo w = workers.get( workerID.value );
+        NodeInfo w = workers.get( workerID.value );
         if( w != null ) {
-            w.setUnsuspect( node );
+            w.setUnsuspect();
         }
     }
 

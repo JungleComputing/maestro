@@ -41,7 +41,7 @@ public class TaskInfoOnMaster
     {
         if( Settings.useShuffleRouting ) {
             for( WorkerTaskInfo wi: workers ) {
-                WorkerInfo worker = wi.worker;
+                NodeInfo worker = wi.worker;
                 
                 if( worker.isReady() && wi.canProcessNow() ) {
                     return wi;
@@ -55,7 +55,7 @@ public class TaskInfoOnMaster
 
             for( int i=0; i<workers.size(); i++ ) {
                 WorkerTaskInfo wi = workers.get( i );
-                WorkerInfo worker = wi.worker;
+                NodeInfo worker = wi.worker;
 
                 if( worker.isReady() ) {
                     long val = wi.estimateJobCompletion();
@@ -74,7 +74,7 @@ public class TaskInfoOnMaster
             if( Settings.traceRemainingJobTime || Settings.traceMasterProgress || Settings.traceWorkerSelection ) {
                 System.out.print( "Worker for " + type + ":" );
                 for( WorkerTaskInfo wi: workers ) {
-                    WorkerInfo worker = wi.worker;
+                    NodeInfo worker = wi.worker;
                     System.out.print( " " + worker + "=" );
                     if( worker.isDead() ) {
                         System.out.print( "DEAD" );

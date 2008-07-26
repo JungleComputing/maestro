@@ -1,14 +1,20 @@
-// File: $Id: $
-
 package ibis.maestro;
 
 import java.io.Serializable;
 
+/**
+ * 
+ * An identifier of a node.
+ *
+ * @author Kees van Reeuwijk.
+ */
 final class NodeIdentifier implements Serializable {
     private static final long serialVersionUID = 7727840589973468928L;
+    private static int serialNumber = 0;  // The next serial number to hand out.
+
     final int value;
 
-    NodeIdentifier( int value )
+    private NodeIdentifier( int value )
     {
         this.value = value;
     }
@@ -49,5 +55,13 @@ final class NodeIdentifier implements Serializable {
     public String toString()
     {
         return "N" + value;
+    }
+
+    /** Returns the next identifier.
+     * @return The next identifier.
+     */
+    protected static NodeIdentifier getNextIdentifier()
+    {
+        return new NodeIdentifier( serialNumber++ );
     }
 }

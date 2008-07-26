@@ -111,6 +111,7 @@ public final class Job
      */
     private JobInstanceIdentifier buildJobInstanceIdentifier( Node node, Object userIdentifier )
     {
+        // FIXME: don't pass in the node, but just an identifier
         return new JobInstanceIdentifier( userIdentifier, node.receivePort.identifier() );
     }
 

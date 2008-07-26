@@ -6,7 +6,7 @@ package ibis.maestro;
 final class WorkerTaskInfo {
 	final TaskInfoOnMaster taskInfo;
 
-	final WorkerInfo worker;
+	final NodeInfo worker;
 
 	private final TimeEstimate transmissionTimeEstimate;
 
@@ -49,7 +49,7 @@ final class WorkerTaskInfo {
 	 * Constructs a new information class for a particular task type
 	 * for a particular worker.
 	 */
-	WorkerTaskInfo( TaskInfoOnMaster taskInfo, WorkerInfo worker, boolean local, long pingTime )
+	WorkerTaskInfo( TaskInfoOnMaster taskInfo, NodeInfo worker, boolean local, long pingTime )
 	{
 		this.taskInfo = taskInfo;
 		this.worker = worker;

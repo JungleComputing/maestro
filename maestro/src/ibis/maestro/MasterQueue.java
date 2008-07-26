@@ -99,7 +99,7 @@ final class MasterQueue
 	    return res;
 	}
 
-	private CompletionInfo getCompletionInfo( JobList jobs, WorkerList workers )
+	private CompletionInfo getCompletionInfo( JobList jobs, NodeList workers )
 	{
             TaskType previousType = jobs.getPreviousTaskType( type );
             if( previousType == null ) {
@@ -203,7 +203,7 @@ final class MasterQueue
      * @param workers The list of workers to choose from.
      */
     @SuppressWarnings("synthetic-access")
-    int selectSubmisson( int reserved, Submission sub, WorkerList workers, HashSet<TaskType> noReadyWorkers )
+    int selectSubmisson( int reserved, Submission sub, NodeList workers, HashSet<TaskType> noReadyWorkers )
     {
 	int ix = reserved;
 
@@ -264,7 +264,7 @@ final class MasterQueue
     }
 
     @SuppressWarnings("synthetic-access")
-    CompletionInfo[] getCompletionInfo( JobList jobs, WorkerList workers )
+    CompletionInfo[] getCompletionInfo( JobList jobs, NodeList workers )
     {
 	CompletionInfo res[] = new CompletionInfo[queueTypes.size()];
 
