@@ -568,7 +568,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     {
         CompletionInfo[] completionInfo = getCompletionInfo( jobs, nodes );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskStats );
-        WorkerUpdateMessage msg = new WorkerUpdateMessage( node.getIdentifierOnMaster(), completionInfo, workerQueueInfo );
+        WorkerUpdateMessage msg = new WorkerUpdateMessage( node.getIdentifierOnNode(), completionInfo, workerQueueInfo );
     
         // We ignore the result because we don't care about the message size,
         // and if the update failed, it failed.

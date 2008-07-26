@@ -6,10 +6,10 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 
 /**
- * Information about a worker in the list of a master.
+ * Information about a node in the list of a master.
  */
 final class WorkerInfo {
-    /** Our identifier with this worker. */
+    /** Our identifier with this node. */
     final NodeIdentifier identifierWithWorker;
 
     /** The active tasks of this worker. */
@@ -402,10 +402,10 @@ final class WorkerInfo {
     protected void setSuspect()
     {
         if( local ) {
-            System.out.println( "Cannot communicate with local worker " + identifier + "???" );
+            System.out.println( "Cannot communicate with local node " + identifier + "???" );
         }
         else {
-            System.out.println( "Cannot communicate with worker " + identifier );
+            System.out.println( "Cannot communicate with node " + identifier );
             suspect = true;
         }
     }
@@ -416,7 +416,7 @@ final class WorkerInfo {
     protected void setUnsuspect()
     {
         if( suspect && !dead ) {
-            System.out.println( "Restored contact with worker " + identifier );
+            System.out.println( "Restored contact with node " + identifier );
             suspect = false;
         }
     }
@@ -428,7 +428,7 @@ final class WorkerInfo {
     protected void setUnsuspect( Node node )
     {
         if( suspect && !dead ) {
-            System.out.println( "Restored contact with worker " + identifier );
+            System.out.println( "Restored contact with node " + identifier );
             suspect = false;
             node.setUnsuspect( port.ibisIdentifier() );
         }

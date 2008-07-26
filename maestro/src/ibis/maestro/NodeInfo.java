@@ -12,49 +12,49 @@ final class NodeInfo {
     final NodeIdentifier localIdentifier;
 
     /** The identifier the master wants to see when we talk to it. */
-    private NodeIdentifier identifierOnMaster;
+    private NodeIdentifier identifierOnNode;
 
     /** The last time we sent this master an update. */
     private long lastUpdate = 0;
     
-    private boolean suspect = false;  // This master may be dead.
+    private boolean suspect = false;  // This node may be dead.
 
-    private boolean dead = false;     // This master is known to be dead.
+    private boolean dead = false;     // This node is known to be dead.
 
     final boolean local;
 
-    /** The ibis this master lives on. */
+    /** The ibis this nodes lives on. */
     final IbisIdentifier ibis;
 
     NodeInfo( NodeIdentifier localIdentifier, IbisIdentifier ibis, boolean local )
     {
         this.localIdentifier = localIdentifier;
-	this.identifierOnMaster = null;
+	this.identifierOnNode = null;
 	this.ibis = ibis;
 	this.local = local;
     }
 
     boolean isRegistered()
     {
-        return identifierOnMaster != null;
+        return identifierOnNode != null;
     }
 
     /**
-     * Sets the identifier that we have on this master to the given value.
+     * Sets the identifier that we have on this node to the given value.
      * @param workerIdentifier The identifier on this master.
      */
-    public void setIdentifierOnMaster( NodeIdentifier workerIdentifier )
+    void setIdentifierOnMaster( NodeIdentifier workerIdentifier )
     {
-        this.identifierOnMaster = workerIdentifier;
+        this.identifierOnNode = workerIdentifier;
     }
     
     /**
-     * Gets the identifier that we have on this master.
+     * Gets the identifier that we have on this node.
      * @return The identifier.
      */
-    public NodeIdentifier getIdentifierOnMaster()
+    NodeIdentifier getIdentifierOnNode()
     {
-        return identifierOnMaster;
+        return identifierOnNode;
     }
 
     /**
@@ -74,7 +74,7 @@ final class NodeInfo {
     }
 
     /**
-     * Declares this master dead.
+     * Declares this node dead.
      */
     void setDead()
     {
@@ -83,8 +83,8 @@ final class NodeInfo {
     }
 
     /**
-     * Returns true iff this master is dead.
-     * @return Is this master dead?
+     * Returns true iff this node is dead.
+     * @return Is this node dead?
      */
     boolean isDead()
     {
@@ -99,10 +99,10 @@ final class NodeInfo {
     protected void setSuspect()
     {
         if( local ) {
-            System.out.println( "Cannot communicate with local master " + localIdentifier + "???" );
+            System.out.println( "Cannot communicate with local node " + localIdentifier + "???" );
         }
         else {
-            System.out.println( "Master " + localIdentifier + " is suspect" );
+            System.out.println( "Node " + localIdentifier + " is suspect" );
             suspect = true;
         }
     }
@@ -110,22 +110,8 @@ final class NodeInfo {
     protected void setUnsuspect()
     {
         if( !local && suspect && !dead ) {
-            System.out.println( "Master " + localIdentifier + " is no longer suspect" );
+            System.out.println( "Node " + localIdentifier + " is no longer suspect" );
             suspect = false;
-        }
-    }
-
-    /**
-     * We received a message from a master, so remove any suspect label.
-     * @param node  The node to notify if this is new information.
-     * 
-     */
-    protected void setUnsuspect( Node node )
-    {
-        if( !local && suspect && !dead ) {
-            System.out.println( "Master " + localIdentifier + " is no longer suspect" );
-            suspect = false;
-            node.setUnsuspect( ibis );
         }
     }
 }
