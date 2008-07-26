@@ -16,6 +16,8 @@ import java.util.ArrayList;
 final class WorkerQueue {
     protected final ArrayList<RunTaskMessage> queue = new ArrayList<RunTaskMessage>();
     private final ArrayList<TypeInfo> queueTypes = new ArrayList<TypeInfo>();
+    long queueEmptyMoment = System.nanoTime();
+    private long idleDuration = 0;
 
     /**
      * Returns true iff the entire queue is empty.
@@ -151,7 +153,7 @@ final class WorkerQueue {
     }
 
     @SuppressWarnings("synthetic-access")
-    protected WorkerQueueInfo[] getWorkerQueueInfo( ArrayList<WorkerTaskStats> taskStats )
+    protected synchronized WorkerQueueInfo[] getWorkerQueueInfo( ArrayList<WorkerTaskStats> taskStats )
     {
         WorkerQueueInfo res[] = new WorkerQueueInfo[queueTypes.size()];
 
@@ -186,7 +188,7 @@ final class WorkerQueue {
      * @param msg The task to submit.
      * @return The new queue length.
      */
-    int add( RunTaskMessage msg )
+    private int add( RunTaskMessage msg )
     {
         TaskType type = msg.task.type;
         TypeInfo info = getTypeInfo( type );
@@ -199,8 +201,10 @@ final class WorkerQueue {
         return length;
     }
 
-    void printStatistics( PrintStream s )
+    void printStatistics( PrintStream s, long workInterval )
     {
+        double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
+        s.println( "Worker: total idle time = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
         for( TypeInfo t: queueTypes ) {
             if( t != null ) {
                 t.printStatistics( s );
@@ -217,5 +221,23 @@ final class WorkerQueue {
             Globals.log.reportProgress( "Removing " + res.task.formatJobAndType() + " from worker queue; length is now " + queue.size() + "; " + length + " of type " + res.task.type );
         }
         return res;
+    }
+
+    /** 
+     * Add the given task to our queue.
+     * @param msg The task to add to the queue
+     * @param arrivalMoment The moment in ns it arrived/
+     */
+    synchronized void add( RunTaskMessage msg, long arrivalMoment )
+    {
+        if( queueEmptyMoment>0L ){
+            // The queue was empty before we entered this
+            // task in it. Record this for the statistics.
+            long queueEmptyInterval = arrivalMoment - queueEmptyMoment;
+            idleDuration += queueEmptyInterval;
+            queueEmptyMoment = 0L;
+        }
+        int length = add( msg );
+        msg.setQueueMoment( arrivalMoment, length );
     }
 }

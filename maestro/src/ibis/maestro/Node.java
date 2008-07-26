@@ -69,9 +69,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private long nextTaskId = 0;
     private long incomingTaskCount = 0;
     private long handledTaskCount = 0;
-    private long queueEmptyMoment = 0L;
     private boolean stopped = false;
-    private long idleDuration = 0;
     private int runningTasks = 0;
     final JobList jobs;
 
@@ -208,8 +206,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         sendPort = new PacketSendPort<Message>( ibis, this );
         sendPort.setLocalListener( this );    // FIXME: no longer necessary
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
-        long now = System.nanoTime();
-        queueEmptyMoment = now;
         startTime = System.nanoTime();
         start();
         registry.enableEvents();
@@ -389,8 +385,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
             activeTime = startTime;
         }
         long workInterval = stopTime-activeTime;
-        workerQueue.printStatistics( s );
-        double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
+        workerQueue.printStatistics( s, workInterval );
         for( WorkerTaskStats stats: taskStats ) {
             if( stats != null ) {
                 stats.reportStats( s, workInterval );
@@ -398,7 +393,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         }
         s.println( "Worker: run time        = " + Service.formatNanoseconds( workInterval ) );
         s.println( "Worker: activated after = " + Service.formatNanoseconds( activeTime-startTime ) );
-        s.println( "Worker: total idle time = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
         masterQueue.printStatistics( s );
         s.printf(  "Master: # incoming tasks = %5d\n", incomingTaskCount );
         s.printf(  "Master: # handled tasks  = %5d\n", handledTaskCount );
@@ -526,21 +520,10 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      */
     private void handleRunTaskMessage( RunTaskMessage msg, long arrivalMoment )
     {
-    
-        synchronized( workerQueue ) {
-            if( activeTime == 0L ) {
-                activeTime = arrivalMoment;
-            }
-            if( queueEmptyMoment>0L ){
-                // The queue was empty before we entered this
-                // task in it. Record this for the statistics.
-                long queueEmptyInterval = arrivalMoment - queueEmptyMoment;
-                idleDuration += queueEmptyInterval;
-                queueEmptyMoment = 0L;
-            }
-            int length = workerQueue.add( msg );
-            msg.setQueueMoment( arrivalMoment, length );
+        if( activeTime == 0L ) {
+            activeTime = arrivalMoment;
         }
+        workerQueue.add( msg, arrivalMoment );
         boolean isDead = nodes.registerAsCommunicating( msg.source );
         if( !isDead ) {
             sendUpdate( nodes.get( msg.source ) );
@@ -845,8 +828,8 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
             try {
                 synchronized( workerQueue ) {
                     if( workerQueue.isEmpty() ) {
-                        if( queueEmptyMoment == 0 ) {
-                            queueEmptyMoment = System.nanoTime();
+                        if( workerQueue.queueEmptyMoment == 0 ) {
+                            workerQueue.queueEmptyMoment = System.nanoTime();
                         }
                         if( stopped && runningTasks == 0 ) {
                             // No tasks in queue, and worker is stopped. Return null to
