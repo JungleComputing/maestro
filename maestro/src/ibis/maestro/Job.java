@@ -67,23 +67,6 @@ public final class Job
             return "job=" + id;
         }
 
-        /** Given a job identifier, return the index in <code>jobs</code>
-         * of this identifier, or -1 if it doesn't exist.
-         * @param nodeInfo FIXME
-         * @return The index of the job in <code>jobs</code>
-         */
-        int searchJob( Node node )
-        {
-            // FIXME: move this method
-            for( int i=0; i<node.jobs.size(); i++ ) {
-                Job t = node.jobs.get( i );
-                if( t.id.equals( this ) ){
-            	return i;
-                }
-            }
-            return -1;
-        
-        }
     }
 
     private TaskType[] buildTaskTypes( Task[] taskList )
@@ -111,7 +94,6 @@ public final class Job
      */
     private JobInstanceIdentifier buildJobInstanceIdentifier( Node node, Object userIdentifier )
     {
-        // FIXME: don't pass in the node, but just an identifier
         return new JobInstanceIdentifier( userIdentifier, node.receivePort.identifier() );
     }
 

@@ -91,19 +91,12 @@ public class MapReduceHandler implements CompletionListener
      */
     protected Object waitForResult()
     {
-	WorkThread worker = null;
-
 	try {
-	    worker = localNode.spawnExtraWorker();
 	    labeler.waitForAllLabels();
+	    // FIXME: this blocks a worker thread!!!
 	}
 	catch( InterruptedException x ) {
 	    return null;
-	}
-	finally {
-	    if( worker != null ) {
-		localNode.stopWorker( worker );
-	    }
 	}
 	return reducer.getResult();
     }

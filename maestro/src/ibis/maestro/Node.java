@@ -71,7 +71,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private long handledTaskCount = 0;
     private boolean stopped = false;
     private int runningTasks = 0;
-    final JobList jobs;
+    private final JobList jobs;
 
     private class NodeRegistryEventHandler implements RegistryEventHandler {
         /**
@@ -309,7 +309,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      * Do all updates of the node adminstration that we can.
      * 
      */
-    void updateAdministration()
+    private void updateAdministration()
     {
         NodeIdentifier workerToAccept = null;
 
@@ -600,48 +600,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         stopTime = System.nanoTime();
     }
 
-    void stopWorker( WorkThread thread )
-    {
-        thread.shutdown();
-        // It may linger a bit, we don't care.
-        workThreads.remove( thread );
-    }
-
-    WorkThread spawnExtraWorker()
-    {
-        WorkThread t = new WorkThread( this );
-        workThreads.add( t );
-        t.start();
-        return t;
-    }
-
-    /**
-     * Given a task type, return the job it belongs to, or <code>null</code> if we
-     * cannot find it. Since that is an internal error, report that error.
-     * @param type
-     * @return
-     */
-    private Job findJob( TaskType type )
-    {
-        int ix = type.job.searchJob( this );
-        if( ix<0 ) {
-            Globals.log.reportInternalError( "Unknown job id in task type " + type );
-            return null;
-        }
-        return jobs.get( ix );
-    }
-
-    /**
-     * Given a task type, return the task.
-     * @param type The task type.
-     * @return The task.
-     */
-    private Task findTask( TaskType type )
-    {
-        Job t = findJob( type );
-        return t.tasks[type.taskNo];
-    }
-
     /** Removes and returns a random task source from the list of
      * known task sources. Returns null if the list is empty.
      * 
@@ -675,7 +633,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     /**
      * If there is any new master on our list, try to register with it.
      */
-    void registerWithAnyMaster()
+    private void registerWithAnyMaster()
     {
         NodeInfo newIbis = unregisteredNodes.removeIfAny();
         if( newIbis != null ){
@@ -696,7 +654,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         }
     }
 
-    void askMoreWork()
+    private void askMoreWork()
     {
         // Try to tell a known master we want more tasks. We do this by
         // telling it about our current state.
@@ -720,15 +678,15 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         }
     }
 
-    /** Reports the result of the execution of a task. (Overrides method in superclass.)
+    /** Reports the result of the execution of a task.
      * @param task The task that was run.
      * @param result The result coming from the run task.
      */
-    public void reportTaskCompletion( RunTask task, Object result )
+    private void reportTaskCompletion( RunTask task, Object result )
     {
         long taskCompletionMoment = System.nanoTime();
         TaskType taskType = task.message.task.type;
-        Job t = findJob( taskType );
+        Job t = jobs.findJob( taskType );
         int nextTaskNo = taskType.taskNo+1;
         final NodeIdentifier masterId = task.message.source;
 
@@ -789,7 +747,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
     }
 
-    WorkerTaskStats getWorkerTaskStats( TaskType type )
+    private WorkerTaskStats getWorkerTaskStats( TaskType type )
     {
         int ix = type.index;
         WorkerTaskStats res;
@@ -820,7 +778,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     /** Gets a task to execute.
      * @return The next task to execute.
      */
-    RunTask getTask()
+    private RunTask getTask()
     {
         while( true ) {
             boolean askForWork = false;
@@ -858,7 +816,8 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
                         int queueLength = message.getQueueLength();
                         WorkerTaskStats stats = getWorkerTaskStats( type );
                         stats.setQueueTimePerTask( queueTime/(queueLength+1) );
-                        Task task = findTask( message.task.type );
+                        Job job = jobs.findJob( type );
+                        Task task = job.tasks[type.taskNo];
                         if( Settings.traceWorkerProgress ) {
                             System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueTime ) + "; there are now " + runningTasks + " running tasks" );
                         }
@@ -933,6 +892,47 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
             masterQueue.add( task );
         }
         drainQueue();
+    }
+
+    /** FIXME.
+     * @param workThread FIXME
+     * 
+     */
+    void runWorkThread()
+    {
+        while( true ) {
+            updateAdministration();
+            RunTask runTask = getTask();
+            if( runTask == null ) {
+                // No more work. Stop.
+                break;
+            }
+            Object result;
+    
+            if( Settings.traceWorkerProgress ) {
+        	System.out.println( "Work thread: executing " + runTask.message );
+            }
+            Task task = runTask.task;
+            Object input = runTask.message.task.input;
+            if( task instanceof AtomicTask ) {
+        	AtomicTask at = (AtomicTask) task;
+        	result = at.run( input, this );
+            }
+            else if( task instanceof MapReduceTask ) {
+        	MapReduceTask mrt = (MapReduceTask) task;
+        	MapReduceHandler handler = new MapReduceHandler( this, mrt );
+        	mrt.map( input, handler );
+        	result = handler.waitForResult();
+            }
+            else {
+        	Globals.log.reportInternalError( "Don't know what to do with a task of type " + task.getClass() );
+        	result = null;
+            }
+            if( Settings.traceWorkerProgress ) {
+        	System.out.println( "Work thread: completed " + runTask.message );
+            }
+            reportTaskCompletion( runTask, result );
+        }
     }
 
 }

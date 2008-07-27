@@ -8,7 +8,6 @@ package ibis.maestro;
 final class WorkThread extends Thread
 {
     private final Node node;
-    private boolean stopped = false;
 
     /**
      * Given a work source, constructs a new WorkThread.
@@ -21,11 +20,6 @@ final class WorkThread extends Thread
 	this.node = node;
     }
 
-    private synchronized boolean isStopped()
-    {
-	return stopped;
-    }
-
     /**
      * Run this thread: keep getting and executing tasks until a null
      * task is returned.
@@ -33,44 +27,6 @@ final class WorkThread extends Thread
     @Override
     public void run()
     {
-	while( !isStopped() ) {
-	    node.updateAdministration();
-	    RunTask runTask = node.getTask();
-	    Object result;
-
-	    if( Settings.traceWorkerProgress ) {
-		System.out.println( "Work thread: executing " + runTask.message );
-	    }
-	    Task task = runTask.task;
-	    Object input = runTask.message.task.input;
-	    if( task instanceof AtomicTask ) {
-		AtomicTask at = (AtomicTask) task;
-		result = at.run( input, node );
-	    }
-	    else if( task instanceof MapReduceTask ) {
-		MapReduceTask mrt = (MapReduceTask) task;
-		MapReduceHandler handler = new MapReduceHandler( node, mrt );
-		mrt.map( input, handler );
-		result = handler.waitForResult();
-	    }
-	    else {
-		Globals.log.reportInternalError( "Don't know what to do with a task of type " + task.getClass() );
-		result = null;
-	    }
-	    if( Settings.traceWorkerProgress ) {
-		System.out.println( "Work thread: completed " + runTask.message );
-	    }
-	    node.reportTaskCompletion( runTask, result );
-	}
-    }
-
-    /** Tell this work thread to shut down. We don't wait for
-     * it to stop, since it won't run a new task in any case.
-     */
-    void shutdown()
-    {
-	synchronized( this ) {
-	    stopped = true;
-	}
+	node.runWorkThread();
     }
 }
