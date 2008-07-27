@@ -50,9 +50,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     /** The list of maestro nodes in this computation. */
     private final MaestroList maestros = new MaestroList();
 
-    /**
-     * The list of nodes we want to accept. 
-     */
+    /** The list of nodes we want to accept. */
     private final AcceptList acceptList = new AcceptList();
 
     /** The list of running jobs with their completion listeners. */
@@ -62,14 +60,18 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private final NodeList nodes = new NodeList();
 
     private boolean isMaestro;
-    private boolean askMastersForWork = true;
+
+    private Flag askMastersForWork = new Flag( true );
+    
     private final boolean traceStats;
     private final MasterQueue masterQueue = new MasterQueue();
     private final WorkerQueue workerQueue = new WorkerQueue();
     private long nextTaskId = 0;
     private long incomingTaskCount = 0;
     private long handledTaskCount = 0;
+    
     private boolean stopped = false;
+    
     private int runningTasks = 0;
     private final JobList jobs;
 
@@ -313,6 +315,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     {
         NodeIdentifier workerToAccept = null;
 
+        registerWithAnyMaster();
         workerToAccept = acceptList.removeIfAny();
         if( workerToAccept != null ) {
             boolean ok = sendAcceptMessage( workerToAccept );
@@ -370,7 +373,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     }
 
     /** Print some statistics about the entire worker run. */
-    void printStatistics( PrintStream s )
+    synchronized void printStatistics( PrintStream s )
     {
         if( stopTime<startTime ) {
             System.err.println( "Node didn't stop yet" );
@@ -607,10 +610,8 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      */
     private NodeInfo getRandomWorkSource()
     {
-        synchronized( this ) {
-            if( !askMastersForWork ){
-                return null;
-            }
+        if( !askMastersForWork.isSet() ){
+            return null;
         }
         return taskSources.getRandomWorkSource();
     }
@@ -621,12 +622,9 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      */
     private NodeInfo getRandomRegisteredMaster()
     {
-        synchronized( this ) {
-            if( !askMastersForWork ){
-                return null;
-            }
+        if( !askMastersForWork.isSet() ){
+            return null;
         }
-
         return nodes.getRandomRegisteredMaster();
     }
 
@@ -674,62 +672,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
                 Globals.log.reportProgress( "Worker: updating master " + taskSource.localIdentifier );
             }
             sendUpdate( taskSource );
-            return;
-        }
-    }
-
-    /** Reports the result of the execution of a task.
-     * @param task The task that was run.
-     * @param result The result coming from the run task.
-     */
-    private void reportTaskCompletion( RunTask task, Object result )
-    {
-        long taskCompletionMoment = System.nanoTime();
-        TaskType taskType = task.message.task.type;
-        Job t = jobs.findJob( taskType );
-        int nextTaskNo = taskType.taskNo+1;
-        final NodeIdentifier masterId = task.message.source;
-
-        CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes );
-        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskStats );
-        long workerDwellTime = taskCompletionMoment-task.message.getQueueMoment();
-        if( traceStats ) {
-            double now = 1e-9*(System.nanoTime()-startTime);
-            System.out.println( "TRACE:workerDwellTime " + taskType + " " + now + " " + 1e-9*workerDwellTime );
-        }
-        Message msg = new TaskCompletedMessage( task.message.workerIdentifier, task.message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
-        long sz = sendPort.tryToSend( masterId.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-
-        // FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
-
-        if( nextTaskNo<t.tasks.length ){
-            // There is a next step to take.
-            TaskType nextTaskType = t.getNextTaskType( taskType );
-            TaskInstance nextTask = new TaskInstance( task.message.task.jobInstance, nextTaskType, result );
-            submit( nextTask );
-        }
-        else {
-            // This was the final step. Report back the result.
-            JobInstanceIdentifier identifier = task.message.task.jobInstance;
-            sendResultMessage( identifier.receivePort, identifier, result );
-        }
-
-        long queueInterval = task.message.getRunMoment()-task.message.getQueueMoment();
-
-        // Update statistics and notify our own queue waiters that something
-        // has happened.
-        final NodeInfo mi = nodes.get( masterId );
-        taskSources.add( mi );
-        synchronized( workerQueue ) {
-            WorkerTaskStats stats = getWorkerTaskStats( taskType );
-            stats.countTask( queueInterval, taskCompletionMoment-task.message.getRunMoment() );
-        }
-        runningTasks--;
-        if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "Completed " + task.message.task + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
-        }
-        if( Settings.traceWorkerProgress ) {
-            System.out.println( "Completed task "  + task.message );
         }
     }
 
@@ -770,69 +712,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         if( Settings.traceWorkerProgress ) {
             Globals.log.reportProgress( "Worker: don't ask for work" );
         }
-        synchronized( this ){
-            askMastersForWork = false;
-        }
-    }
-
-    /** Gets a task to execute.
-     * @return The next task to execute.
-     */
-    private RunTask getTask()
-    {
-        while( true ) {
-            boolean askForWork = false;
-            registerWithAnyMaster();
-            try {
-                synchronized( workerQueue ) {
-                    if( workerQueue.isEmpty() ) {
-                        if( workerQueue.queueEmptyMoment == 0 ) {
-                            workerQueue.queueEmptyMoment = System.nanoTime();
-                        }
-                        if( stopped && runningTasks == 0 ) {
-                            // No tasks in queue, and worker is stopped. Return null to
-                            // indicate that there won't be further tasks.
-                            break;
-                        }
-                        if( taskSources.isEmpty() ){
-                            // There was no master to subscribe to, update, or ask for work.
-                            if( Settings.traceWorkerProgress || Settings.traceWaits ) {
-                                System.out.println( "Worker: waiting for new tasks in queue" );
-                            }
-                            // Wait a little if there is nothing to do.
-                            workerQueue.wait( (infoSendTime.getAverage()*2)/Service.MILLISECOND_IN_NANOSECONDS );
-                        }
-                        else {
-                            askForWork = true;
-                        }
-                    }
-                    else {
-                        long now = System.nanoTime();
-                        runningTasks++;
-                        RunTaskMessage message = workerQueue.remove();
-                        TaskType type = message.task.type;
-                        message.setRunMoment( now );
-                        long queueTime = now-message.getQueueMoment();
-                        int queueLength = message.getQueueLength();
-                        WorkerTaskStats stats = getWorkerTaskStats( type );
-                        stats.setQueueTimePerTask( queueTime/(queueLength+1) );
-                        Job job = jobs.findJob( type );
-                        Task task = job.tasks[type.taskNo];
-                        if( Settings.traceWorkerProgress ) {
-                            System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueTime ) + "; there are now " + runningTasks + " running tasks" );
-                        }
-                        return new RunTask( task, message );
-                    }
-                }
-                if( askForWork ){
-                    askMoreWork();
-                }
-            }
-            catch( InterruptedException e ){
-                // Not interesting.
-            }
-        }
-        return null;
+        askMastersForWork.set();
     }
 
     /** On a locked queue, try to send out as many task as we can. */
@@ -872,7 +752,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
                     // Try to put the paste back in the tube.
                     // The sendport has already reported the trouble with the worker.
                     worker.retractTask( msg.taskId );
-                    masterQueue.add( msg.task );
+                    masterQueue.add( msg.taskInstance );
                 }
             }
         }
@@ -894,44 +774,109 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         drainQueue();
     }
 
-    /** FIXME.
-     * @param workThread FIXME
-     * 
-     */
+    private synchronized boolean keepRunning()
+    {
+        return !stopped || runningTasks>0;
+    }
+
+    /** Run a work thread. Only return when we want to shut down the node. */
     void runWorkThread()
     {
-        while( true ) {
+        while( keepRunning() ) {
             updateAdministration();
-            RunTask runTask = getTask();
-            if( runTask == null ) {
-                // No more work. Stop.
-                break;
-            }
-            Object result;
-    
-            if( Settings.traceWorkerProgress ) {
-        	System.out.println( "Work thread: executing " + runTask.message );
-            }
-            Task task = runTask.task;
-            Object input = runTask.message.task.input;
-            if( task instanceof AtomicTask ) {
-        	AtomicTask at = (AtomicTask) task;
-        	result = at.run( input, this );
-            }
-            else if( task instanceof MapReduceTask ) {
-        	MapReduceTask mrt = (MapReduceTask) task;
-        	MapReduceHandler handler = new MapReduceHandler( this, mrt );
-        	mrt.map( input, handler );
-        	result = handler.waitForResult();
+            RunTaskMessage message = workerQueue.remove();
+            if( message == null ) {
+                // No work in the worker queue. See if we can get more work.
+                askMoreWork();
+                if( Settings.traceWorkerProgress || Settings.traceWaits ) {
+                    System.out.println( "Worker: waiting for new tasks in queue" );
+                }
+                // Wait a little, there is nothing to do.
+                try{
+                    workerQueue.wait( (infoSendTime.getAverage()*2)/Service.MILLISECOND_IN_NANOSECONDS );
+                }
+                catch( InterruptedException e ){
+                    // Not interesting.
+                }
             }
             else {
-        	Globals.log.reportInternalError( "Don't know what to do with a task of type " + task.getClass() );
-        	result = null;
+                // We have a task to execute.
+                Object result;
+                long runMoment = System.nanoTime();
+                TaskType type = message.taskInstance.type;
+                long queueTime = runMoment-message.getQueueMoment();
+                int queueLength = message.getQueueLength();
+                WorkerTaskStats stats1 = getWorkerTaskStats( type );
+                stats1.setQueueTimePerTask( queueTime/(queueLength+1) );
+                Task task = jobs.getTask( type );
+
+                synchronized( this ) {
+                    runningTasks++;
+                    if( Settings.traceWorkerProgress ) {
+                        System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueTime ) + "; there are now " + runningTasks + " running tasks" );
+                    }
+                }
+                Object input = message.taskInstance.input;
+                if( task instanceof AtomicTask ) {
+                    AtomicTask at = (AtomicTask) task;
+                    result = at.run( input, this );
+                }
+                else if( task instanceof MapReduceTask ) {
+                    MapReduceTask mrt = (MapReduceTask) task;
+                    MapReduceHandler handler = new MapReduceHandler( this, mrt );
+                    mrt.map( input, handler );
+                    result = handler.waitForResult();
+                }
+                else {
+                    Globals.log.reportInternalError( "Don't know what to do with a task of type " + task.getClass() );
+                    result = null;
+                }
+                if( Settings.traceWorkerProgress ) {
+                    System.out.println( "Work thread: completed " + message );
+                }
+                long taskCompletionMoment = System.nanoTime();
+                TaskType taskType = message.taskInstance.type;
+                final NodeIdentifier masterId = message.source;
+
+                CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes );
+                WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskStats );
+                long workerDwellTime = taskCompletionMoment-message.getQueueMoment();
+                if( traceStats ) {
+                    double now = 1e-9*(System.nanoTime()-startTime);
+                    System.out.println( "TRACE:workerDwellTime " + taskType + " " + now + " " + 1e-9*workerDwellTime );
+                }
+                Message msg = new TaskCompletedMessage( message.workerIdentifier, message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
+                long sz = sendPort.tryToSend( masterId.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+
+                // FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
+
+                TaskType nextTaskType = jobs.getNextTaskType( taskType );
+                if( nextTaskType == null ){
+                    // This was the final step. Report back the result.
+                    JobInstanceIdentifier identifier = message.taskInstance.jobInstance;
+                    sendResultMessage( identifier.receivePort, identifier, result );
+                }
+                else {
+                    // There is a next step to take.
+                    TaskInstance nextTask = new TaskInstance( message.taskInstance.jobInstance, nextTaskType, result );
+                    submit( nextTask );
+                }
+
+                // Update statistics and notify our own queue waiters that something
+                // has happened.
+                final NodeInfo mi = nodes.get( masterId );
+                taskSources.add( mi );
+                synchronized( workerQueue ) {
+                    WorkerTaskStats stats = getWorkerTaskStats( taskType );
+                    stats.countTask( queueTime, taskCompletionMoment-runMoment );
+                }
+                synchronized( this ) {
+                    runningTasks--;
+                    if( Settings.traceWorkerProgress || Settings.traceRemainingJobTime ) {
+                        Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueTime ) + "; runningTasks=" + runningTasks );
+                    }
+                }
             }
-            if( Settings.traceWorkerProgress ) {
-        	System.out.println( "Work thread: completed " + runTask.message );
-            }
-            reportTaskCompletion( runTask, result );
         }
     }
 

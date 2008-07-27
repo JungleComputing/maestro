@@ -116,4 +116,25 @@ public final class JobList
     {
         return jobs.get( type.job.id );
     }
+
+    /** FIXME.
+     * @param type
+     * @return
+     */
+    Task getTask( TaskType type )
+    {
+        Job job = findJob( type );
+        Task task = job.tasks[type.taskNo];
+        return task;
+    }
+
+    /** FIXME.
+     * @param type
+     * @return
+     */
+    TaskType getNextTaskType( TaskType type )
+    {
+        Job job = findJob( type );
+        return job.getNextTaskType( type );
+    }
 }

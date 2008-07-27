@@ -30,8 +30,8 @@ public class WorkerQueueTest extends TestCase
             }
 	    RunTaskMessage msg = queue.remove();
 	    
-	    if( msg.task.jobInstance.id != id ) {
-		fail( "Unexpected task from worker queue: " + msg.task.jobInstance.id + " instead of " + id );
+	    if( msg.taskInstance.jobInstance.id != id ) {
+		fail( "Unexpected task from worker queue: " + msg.taskInstance.jobInstance.id + " instead of " + id );
 	    }
 	}
     }

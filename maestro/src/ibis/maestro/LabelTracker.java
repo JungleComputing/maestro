@@ -20,7 +20,7 @@ import java.util.TreeSet;
  */
 public class LabelTracker {
     private long labelValue = 0L;
-    private final boolean trace = false;
+    private static final boolean trace = false;
 
     /** The first label not in the bulk range. */
     private long endOfRange = 0L;

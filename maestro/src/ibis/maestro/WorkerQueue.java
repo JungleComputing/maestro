@@ -127,13 +127,13 @@ final class WorkerQueue {
             // it separately.
             return 0;
         }
-        long id = msg.task.jobInstance.id;
+        long id = msg.taskInstance.jobInstance.id;
         while( true ){
             int mid = (start+end)/2;
             if( mid == start ){
                 break;
             }
-            long midId = queue.get( mid ).task.jobInstance.id;
+            long midId = queue.get( mid ).taskInstance.jobInstance.id;
             if( midId<id ){
                 // Mid should come before us.
                 start = mid;
@@ -145,7 +145,7 @@ final class WorkerQueue {
         }
         // This comparison is probably rarely necessary, but corner cases
         // are a pain, so I'm safe rather than sorry.
-        long startId = queue.get( start ).task.jobInstance.id;
+        long startId = queue.get( start ).taskInstance.jobInstance.id;
         if( startId<id ){
             return end;
         }
@@ -190,18 +190,18 @@ final class WorkerQueue {
      */
     private int add( RunTaskMessage msg )
     {
-        TaskType type = msg.task.type;
+        TaskType type = msg.taskInstance.type;
         TypeInfo info = getTypeInfo( type );
         int length = info.registerAdd();
         int pos = findInsertionPoint( queue, msg );
         queue.add( pos, msg );
         if( Settings.traceQueuing ) {
-            Globals.log.reportProgress( "Adding " + msg.task.formatJobAndType() + " at position " + pos + " of worker queue; length is now " + queue.size() + "; " + length + " of type " + type );
+            Globals.log.reportProgress( "Adding " + msg.taskInstance.formatJobAndType() + " at position " + pos + " of worker queue; length is now " + queue.size() + "; " + length + " of type " + type );
         }
         return length;
     }
 
-    void printStatistics( PrintStream s, long workInterval )
+    synchronized void printStatistics( PrintStream s, long workInterval )
     {
         double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
         s.println( "Worker: total idle time = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
@@ -212,13 +212,19 @@ final class WorkerQueue {
         }
     }
 
-    RunTaskMessage remove()
+    synchronized RunTaskMessage remove()
     {
+        if( queue.isEmpty() ) {
+            if( queueEmptyMoment == 0 ) {
+                queueEmptyMoment = System.nanoTime();
+            }
+            return null;
+        }
         RunTaskMessage res = queue.remove( 0 );
-        TypeInfo info = getTypeInfo( res.task.type );
+        TypeInfo info = getTypeInfo( res.taskInstance.type );
         int length = info.registerRemove();
         if( Settings.traceQueuing ) {
-            Globals.log.reportProgress( "Removing " + res.task.formatJobAndType() + " from worker queue; length is now " + queue.size() + "; " + length + " of type " + res.task.type );
+            Globals.log.reportProgress( "Removing " + res.taskInstance.formatJobAndType() + " from worker queue; length is now " + queue.size() + "; " + length + " of type " + res.taskInstance.type );
         }
         return res;
     }

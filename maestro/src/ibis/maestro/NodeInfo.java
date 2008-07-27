@@ -1,7 +1,6 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
-import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -23,9 +22,6 @@ final class NodeInfo {
     private final ArrayList<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
 
     private final ArrayList<NodeTaskInfo> workerTaskInfoList = new ArrayList<NodeTaskInfo>();
-
-    /** The receive port of the worker. */
-    private ReceivePortIdentifier port = null;
 
     /** The last time we sent this master an update. */
     private long lastUpdate = 0;
@@ -53,10 +49,9 @@ final class NodeInfo {
     /** The ibis this nodes lives on. */
     final IbisIdentifier ibis;
 
-    NodeInfo( NodeList wl, ReceivePortIdentifier port, NodeIdentifier localIdentifier, IbisIdentifier ibis, boolean local, TaskType[] types )
+    NodeInfo( NodeList wl, NodeIdentifier localIdentifier, IbisIdentifier ibis, boolean local, TaskType[] types )
     {
         this.localIdentifier = localIdentifier;
-        this.port = port;
 	this.identifierOnNode = null;
 	this.ibis = ibis;
 	this.local = local;
@@ -400,7 +395,7 @@ final class NodeInfo {
     {
         int ix = searchActiveTask( id );
         if( ix<0 ) {
-            Globals.log.reportInternalError( "Master: ignoring task retraction for unknown id " + id );
+            Globals.log.reportInternalError( "ignoring task retraction for unknown id " + id );
             return;
         }
         ActiveTask task = activeTasks.remove( ix );
@@ -413,7 +408,7 @@ final class NodeInfo {
     private void registerTaskType( TaskInfo taskInfoOnMaster )
     {
         if( Settings.traceTypeHandling ){
-            System.out.println( "worker " + localIdentifier + " (" + port + ") can handle " + taskInfoOnMaster + ", local=" + local );
+            System.out.println( "node " + localIdentifier + " can handle " + taskInfoOnMaster + ", local=" + local );
         }
         int ix = taskInfoOnMaster.type.index;
         while( ix+1>workerTaskInfoList.size() ) {
@@ -434,7 +429,7 @@ final class NodeInfo {
      */
     void printStatistics( PrintStream s )
     {
-        s.println( "Worker " + localIdentifier + (local?" (local)":"") );
+        s.println( "Node " + localIdentifier + (local?" (local)":"") );
 
         if( missedAllowanceDeadlines>0 ) {
             int total = 0;
@@ -492,11 +487,6 @@ final class NodeInfo {
     protected boolean hasIbisIdentifier( IbisIdentifier id )
     {
         return id.equals( ibis );
-    }
-    
-    void setPort( ReceivePortIdentifier p )
-    {
-        port = p;
     }
 
     /** 

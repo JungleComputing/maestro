@@ -75,7 +75,6 @@ final class NodeList {
             Globals.log.reportInternalError( "Somebody replied to a registration request we didn't send" );
             return null;
         }
-        node.setPort( port );
         node.setIdentifierOnNode( masterIdentifier );
         for( TaskType t: types ) {
             TaskInfo info = getTaskInfo( t );

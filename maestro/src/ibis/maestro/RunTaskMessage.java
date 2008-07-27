@@ -13,11 +13,10 @@ final class RunTaskMessage extends Message
     /** */
     private static final long serialVersionUID = 1L;
     final NodeIdentifier workerIdentifier;
-    final TaskInstance task;
+    final TaskInstance taskInstance;
     final long taskId;
     private transient long queueMoment = 0L;
     private transient int queueLength = 0;
-    private transient long runMoment = 0L;
     final NodeIdentifier source;
 
     /**
@@ -30,7 +29,7 @@ final class RunTaskMessage extends Message
     {
         this.source = source;
 	this.workerIdentifier = workerIdentifier;
-	this.task = task;
+	this.taskInstance = task;
         this.taskId = taskId;
     }
 
@@ -42,15 +41,6 @@ final class RunTaskMessage extends Message
     {
         this.queueMoment = t;
         this.queueLength = queueLength;
-    }
-
-    /**
-     * Registers the given time as the moment this task started running.
-     * @param t The start time.
-     */
-    void setRunMoment( long t )
-    {
-        this.runMoment = t;
     }
 
     /** Returns the registered enqueuing moment.
@@ -71,15 +61,6 @@ final class RunTaskMessage extends Message
         return queueLength;
     }
 
-    /** Returns the registered start time.
-     * 
-     * @return The registered start time.
-     */
-    long getRunMoment()
-    {
-        return runMoment;
-    }
-
     /**
      * Returns a string representation of this task messabge.
      * @return The string representation.
@@ -87,6 +68,6 @@ final class RunTaskMessage extends Message
     @Override
     public String toString()
     {
-	return "Task message for task " + taskId + " of type " + task.type;
+	return "Task message for task " + taskId + " of type " + taskInstance.type;
     }
 }
