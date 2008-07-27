@@ -18,6 +18,7 @@ final class WorkerQueue {
     private final ArrayList<TypeInfo> queueTypes = new ArrayList<TypeInfo>();
     long queueEmptyMoment = System.nanoTime();
     private long idleDuration = 0;
+    private long activeTime = 0L;
 
     /**
      * Returns true iff the entire queue is empty.
@@ -153,7 +154,7 @@ final class WorkerQueue {
     }
 
     @SuppressWarnings("synthetic-access")
-    protected synchronized WorkerQueueInfo[] getWorkerQueueInfo( ArrayList<WorkerTaskStats> taskStats )
+    protected synchronized WorkerQueueInfo[] getWorkerQueueInfo( TaskInfoList taskInfoList )
     {
         WorkerQueueInfo res[] = new WorkerQueueInfo[queueTypes.size()];
 
@@ -161,14 +162,7 @@ final class WorkerQueue {
             TypeInfo q = queueTypes.get( i );
 
             if( q != null ){
-        	int ix = q.type.index;
-                WorkerTaskStats stats;
-        	if( ix<taskStats.size() ) {
-        	    stats = taskStats.get( q.type.index );
-        	}
-        	else {
-        	    stats = null;
-        	}
+                TaskInfo stats = taskInfoList.getTaskInfo( q.type );
 
                 if( stats == null ) {
                     res[i] = null;
@@ -236,6 +230,9 @@ final class WorkerQueue {
      */
     synchronized void add( RunTaskMessage msg, long arrivalMoment )
     {
+        if( activeTime == 0L ) {
+            activeTime = arrivalMoment;
+        }
         if( queueEmptyMoment>0L ){
             // The queue was empty before we entered this
             // task in it. Record this for the statistics.
@@ -245,5 +242,18 @@ final class WorkerQueue {
         }
         int length = add( msg );
         msg.setQueueMoment( arrivalMoment, length );
+    }
+
+    /** FIXME.
+     * @param startTime
+     * @return
+     */
+    long getActiveTime( long startTime )
+    {
+        if( activeTime<startTime ) {
+            System.err.println( "Worker was not used" );
+            return startTime;
+        }
+        return activeTime;
     }
 }

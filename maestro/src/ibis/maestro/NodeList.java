@@ -14,27 +14,11 @@ import java.util.List;
  */
 final class NodeList {
     private final ArrayList<NodeInfo> nodes = new ArrayList<NodeInfo>();
-    private final ArrayList<TaskInfo> taskInfoList = new ArrayList<TaskInfo>();
+    private final TaskInfoList taskInfoList;
 
-    /**
-     * Returns the TaskInfoOnMaster instance for the given task type. If
-     * necessary, extend the taskInfoList to cover this type. If necessary,
-     * create a new class instance for this type.
-     * @param type The type we want info for.
-     * @return The info structure for the given type.
-     */
-    TaskInfo getTaskInfo( TaskType type )
+    NodeList( TaskInfoList taskInfoList )
     {
-        int ix = type.index;
-        while( ix+1>taskInfoList.size() ) {
-            taskInfoList.add( null );
-        }
-        TaskInfo res = taskInfoList.get( ix );
-        if( res == null ) {
-            res = new TaskInfo( type );
-            taskInfoList.set( ix, res );
-        }
-        return res;
+        this.taskInfoList = taskInfoList;
     }
 
     private NodeInfo getNode( NodeIdentifier workerIdentifier )
@@ -77,8 +61,8 @@ final class NodeList {
         }
         node.setIdentifierOnNode( masterIdentifier );
         for( TaskType t: types ) {
-            TaskInfo info = getTaskInfo( t );
-            NodeTaskInfo wti = node.getTaskInfo( t );
+            TaskInfo info = taskInfoList.getTaskInfo( t );
+            NodeTaskInfo wti = node.getNodeTaskInfo( t );
             info.addWorker( wti );
         }
         if( Settings.traceMasterProgress ){
@@ -149,7 +133,7 @@ final class NodeList {
      */
     NodeTaskInfo selectBestWorker( TaskType type )
     {
-        TaskInfo taskInfo = getTaskInfo( type );
+        TaskInfo taskInfo = taskInfoList.getTaskInfo( type );
         NodeTaskInfo worker = taskInfo.getBestWorker();
         return worker;
     }
@@ -176,7 +160,7 @@ final class NodeList {
      */
     long getAverageCompletionTime( TaskType taskType )
     {
-        TaskInfo taskInfo = getTaskInfo( taskType );
+        TaskInfo taskInfo = taskInfoList.getTaskInfo( taskType );
         return taskInfo.getAverageCompletionTime();
     }
 

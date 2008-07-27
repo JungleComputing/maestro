@@ -21,7 +21,8 @@ final class NodeInfo {
     /** The active tasks of this worker. */
     private final ArrayList<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
 
-    private final ArrayList<NodeTaskInfo> workerTaskInfoList = new ArrayList<NodeTaskInfo>();
+    /** Info about the tasks for this particular node. */
+    private final ArrayList<NodeTaskInfo> nodeTaskInfoList = new ArrayList<NodeTaskInfo>();
 
     /** The last time we sent this master an update. */
     private long lastUpdate = 0;
@@ -48,19 +49,6 @@ final class NodeInfo {
 
     /** The ibis this nodes lives on. */
     final IbisIdentifier ibis;
-
-    NodeInfo( NodeList wl, NodeIdentifier localIdentifier, IbisIdentifier ibis, boolean local, TaskType[] types )
-    {
-        this.localIdentifier = localIdentifier;
-	this.identifierOnNode = null;
-	this.ibis = ibis;
-	this.local = local;
-        // Initial, totally unfounded, guess for the ping time.
-        this.pingTime = local?Service.MICROSECOND_IN_NANOSECONDS:Service.MILLISECOND_IN_NANOSECONDS;
-        for( TaskType t: types ) {
-            registerTaskType( wl.getTaskInfo( t ) );
-        }
-    }
 
     /**
      * Constructs a new NodeInfo.
@@ -104,7 +92,7 @@ final class NodeInfo {
         if( completionInfo == null ) {
             return;
         }
-        NodeTaskInfo workerTaskInfo = workerTaskInfoList.get( completionInfo.type.index );
+        NodeTaskInfo workerTaskInfo = nodeTaskInfoList.get( completionInfo.type.index );
 
         if( workerTaskInfo == null ) {
             return;
@@ -122,7 +110,7 @@ final class NodeInfo {
         if( info == null ) {
             return;
         }
-        NodeTaskInfo workerTaskInfo = workerTaskInfoList.get( info.type.index );
+        NodeTaskInfo workerTaskInfo = nodeTaskInfoList.get( info.type.index );
 
         if( workerTaskInfo == null ) {
             return;
@@ -261,7 +249,7 @@ final class NodeInfo {
             // We are measuring this round-trip time.
             pingTime = arrivalMoment-pingSentTime;
             pingSentTime = 0L;  // We're no longer measuring a ping time.
-            setPingTime( workerTaskInfoList, pingTime );
+            setPingTime( nodeTaskInfoList, pingTime );
             if( Settings.traceRemainingJobTime ) {
                 Globals.log.reportProgress( "Master: ping time to worker " + localIdentifier + " is " + Service.formatNanoseconds( pingTime ) );
             }
@@ -373,7 +361,7 @@ final class NodeInfo {
      */
     boolean registerTaskStart( TaskInstance task, long id, long predictedDuration )
     {
-        NodeTaskInfo workerTaskInfo = workerTaskInfoList.get( task.type.index );
+        NodeTaskInfo workerTaskInfo = nodeTaskInfoList.get( task.type.index );
         if( workerTaskInfo == null ) {
             System.err.println( "No worker task info for task type " + task.type );
             return true;
@@ -411,16 +399,16 @@ final class NodeInfo {
             System.out.println( "node " + localIdentifier + " can handle " + taskInfoOnMaster + ", local=" + local );
         }
         int ix = taskInfoOnMaster.type.index;
-        while( ix+1>workerTaskInfoList.size() ) {
-            workerTaskInfoList.add( null );
+        while( ix+1>nodeTaskInfoList.size() ) {
+            nodeTaskInfoList.add( null );
         }
         NodeTaskInfo info = new NodeTaskInfo( taskInfoOnMaster, this, local, pingTime );
-        workerTaskInfoList.set( ix, info );
+        nodeTaskInfoList.set( ix, info );
     }
     
-    NodeTaskInfo getTaskInfo( TaskType taskType )
+    NodeTaskInfo getNodeTaskInfo( TaskType taskType )
     {
-        return workerTaskInfoList.get( taskType.index );
+        return nodeTaskInfoList.get( taskType.index );
     }
 
     /**
@@ -433,14 +421,14 @@ final class NodeInfo {
 
         if( missedAllowanceDeadlines>0 ) {
             int total = 0;
-            for( NodeTaskInfo wti: workerTaskInfoList ){
+            for( NodeTaskInfo wti: nodeTaskInfoList ){
                 if( wti != null ){
                     total += wti.getSubmissions();
                 }
             }
             s.println( "  Missed deadlines: allowance: " + missedAllowanceDeadlines  + " reschedule: " + missedRescheduleDeadlines + " of " + total );
         }
-        for( NodeTaskInfo info: workerTaskInfoList ) {
+        for( NodeTaskInfo info: nodeTaskInfoList ) {
             if( info != null && info.didWork() ) {
                 String stats = info.buildStatisticsString();
                 s.println( "  " + info + ": " + stats );
@@ -463,7 +451,7 @@ final class NodeInfo {
 
     protected void resetReservations()
     {
-        for( NodeTaskInfo info: workerTaskInfoList ) {
+        for( NodeTaskInfo info: nodeTaskInfoList ) {
             if( info != null ) {
                 info.resetReservations();
             }
