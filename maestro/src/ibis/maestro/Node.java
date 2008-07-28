@@ -34,10 +34,8 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private RegistryEventHandler registryEventHandler;
 
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
-    private final ArrayList<WorkThread> workThreads = new ArrayList<WorkThread>();
-
-    /** The estimated time it takes to send an administration message. */
-    private final TimeEstimate infoSendTime = new TimeEstimate( Service.MICROSECOND_IN_NANOSECONDS );
+    private static final int workThreadCount = numberOfProcessors+2;
+    private final WorkThread workThreads[] = new WorkThread[workThreadCount];
 
     /** The list of ibises we haven't registered with yet. */
     private final MasterInfoList unregisteredNodes = new MasterInfoList();
@@ -197,9 +195,9 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	if( Settings.traceNodes ) {
 	    Globals.log.reportProgress( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
 	}
-	for( int i=0; i<=numberOfProcessors; i++ ) {
+	for( int i=0; i<workThreads.length; i++ ) {
 	    WorkThread t = new WorkThread( this );
-	    workThreads.add( t );
+	    workThreads[i] = t;
 	    t.start();
 	}
 	receivePort = new PacketUpcallReceivePort<Message>( ibis, Globals.receivePortName, this );
@@ -361,7 +359,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    System.err.println( "Node didn't stop yet" );
 	    stopTime = System.nanoTime();
 	}
-	s.printf(  "# threads       = %5d\n", workThreads.size() );
+	s.printf(  "# threads       = %5d\n", workThreads.length );
 	nodes.printStatistics( s );
 	jobs.printStatistics( s );
 	sendPort.printStatistics( s, "send port" );
@@ -410,7 +408,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 
     private void sendUpdateMessage( NodeIdentifier node, NodeIdentifier identifierOnNode )
     {
-	long start = System.nanoTime();
 	CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes );
 	WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
 	NodeUpdateMessage msg = new NodeUpdateMessage( identifierOnNode, completionInfo, workerQueueInfo );
@@ -418,7 +415,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	// We ignore the result because we don't care about the message size,
 	// and if the update failed, it failed.
 	sendPort.tryToSend( node.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
-	infoSendTime.addSample( System.nanoTime()-start );
     }
 
     private void sendUpdate( NodeInfo node )
@@ -552,25 +548,16 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	else {
 	    Globals.log.reportInternalError( "the node should handle message of type " + msg.getClass() );
 	}
+	synchronized( this ) {
+	    this.notify();
+	}
     }
 
     private void waitForWorkThreadsToTerminate()
     {
-	WorkThread t = null;
-	while( true ){
-            int n;
-	    synchronized( workThreads ){
-		if( t != null ){
-		    workThreads.remove( t );  // Remove a terminated worker.
-		}
-		if( workThreads.isEmpty() ){
-		    break;
-		}
-		t = workThreads.get( 0 );
-                n = workThreads.size();
-	    }
+	for( WorkThread t: workThreads ) {
             if( Settings.traceNodes ){
-                Globals.log.reportProgress( "Waiting for termination of thread " + t + "; there are " + n + " threads" );
+                Globals.log.reportProgress( "Waiting for termination of thread " + t );
             }
 	    Service.waitToTerminate( t );
 	}
@@ -590,12 +577,8 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 		Globals.log.reportProgress( "registering with node " + newIbis );
 	    }
 	    // We record the transmission time as a reasonable estimate of a sleep time.
-	    long start = System.nanoTime();
 	    boolean ok = registerWithNode( newIbis );
-	    if( ok ) {
-		infoSendTime.addSample( System.nanoTime()-start );
-	    }
-	    else {
+	    if( !ok ) {
 		// We couldn't reach this master. Put it back on the list.
 		unregisteredNodes.add( newIbis );
 	    }
@@ -650,6 +633,13 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         if( Settings.traceNodeProgress && !submissions.isEmpty() ){
             System.out.println( "Got " + submissions.size() + " submissions from master queue" );
         }
+	sendSubmissionsToWorkers(submissions);
+    }
+
+    /**
+     * @param submissions The list of submissions to send.
+     */
+    private void sendSubmissionsToWorkers(LinkedList<Submission> submissions) {
 	while( !submissions.isEmpty() ) {
 	    Submission sub = submissions.removeFirst();
 	    NodeTaskInfo wti = sub.worker;
@@ -703,8 +693,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    if( message == null ) {
 		// No work in the worker queue. See if we can get more work.
 		askMoreWork();
-                // long sleepTime = Math.max( 1, (infoSendTime.getAverage()*4)/Service.MILLISECOND_IN_NANOSECONDS );
-                long sleepTime = 10;
+                long sleepTime = 100;
 		if( Settings.traceWaits ) {
 		    System.out.println( "Worker: waiting for " + sleepTime + "ms for new tasks in queue" );
 		}
@@ -720,7 +709,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    }
 	    else {
 		// We have a task to execute.
-		Object result;
 		long runMoment = System.nanoTime();
 		TaskType type = message.taskInstance.type;
 		long queueInterval = runMoment-message.getQueueMoment();
@@ -737,64 +725,74 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 		Object input = message.taskInstance.input;
 		if( task instanceof AtomicTask ) {
 		    AtomicTask at = (AtomicTask) task;
-		    result = at.run( input, this );
+		    Object result = at.run( input, this );
+		    transferResult( message, result, runMoment );
 		}
 		else if( task instanceof MapReduceTask ) {
 		    MapReduceTask mrt = (MapReduceTask) task;
-		    MapReduceHandler handler = new MapReduceHandler( this, mrt );
+		    MapReduceHandler handler = new MapReduceHandler( this, mrt, message, runMoment );
 		    mrt.map( input, handler );
-		    result = handler.waitForResult();
+		    handler.start();
 		}
 		else {
 		    Globals.log.reportInternalError( "Don't know what to do with a task of type " + task.getClass() );
-		    result = null;
 		}
 		if( Settings.traceNodeProgress ) {
 		    System.out.println( "Work thread: completed " + message );
-		}
-		long taskCompletionMoment = System.nanoTime();
-		final NodeIdentifier masterId = message.source;
-
-		CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes );
-		WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
-		long workerDwellTime = taskCompletionMoment-message.getQueueMoment();
-		if( traceStats ) {
-		    double now = 1e-9*(System.nanoTime()-startTime);
-		    System.out.println( "TRACE:workerDwellTime " + type + " " + now + " " + 1e-9*workerDwellTime );
-		}
-		Message msg = new TaskCompletedMessage( message.workerIdentifier, message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
-		long sz = sendPort.tryToSend( masterId.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-
-		// FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
-
-		TaskType nextTaskType = jobs.getNextTaskType( type );
-		if( nextTaskType == null ){
-		    // This was the final step. Report back the result.
-		    JobInstanceIdentifier identifier = message.taskInstance.jobInstance;
-		    sendResultMessage( identifier.receivePort, identifier, result );
-		}
-		else {
-		    // There is a next step to take.
-		    TaskInstance nextTask = new TaskInstance( message.taskInstance.jobInstance, nextTaskType, result );
-		    submit( nextTask );
-		}
-
-		// Update statistics and notify our own queue waiters that something
-		// has happened.
-		final NodeInfo mi = nodes.get( masterId );
-		taskSources.add( mi );
-		final long computeInterval = taskCompletionMoment-runMoment;
-		taskInfoList.countTask( type, computeInterval );
-		synchronized( this ) {
-		    runningTasks--;
-		    if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
-		        Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
-		    }
 		}
 	    }
             synchronized( this ){
                 this.notifyAll();
             }
+	}
+    }
+
+    /**
+     * @param message
+     * @param result
+     * @param runMoment
+     */
+    void transferResult( RunTaskMessage message, Object result, long runMoment ) {
+	long taskCompletionMoment = System.nanoTime();
+	final NodeIdentifier masterId = message.source;
+
+	long queueInterval = runMoment-message.getQueueMoment();
+	TaskType type = message.taskInstance.type;
+	CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes );
+	WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
+	long workerDwellTime = taskCompletionMoment-message.getQueueMoment();
+	if( traceStats ) {
+	    double now = 1e-9*(System.nanoTime()-startTime);
+	    System.out.println( "TRACE:workerDwellTime " + type + " " + now + " " + 1e-9*workerDwellTime );
+	}
+	Message msg = new TaskCompletedMessage( message.workerIdentifier, message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
+	long sz = sendPort.tryToSend( masterId.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+
+	// FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
+
+	TaskType nextTaskType = jobs.getNextTaskType( type );
+	if( nextTaskType == null ){
+	    // This was the final step. Report back the result.
+	    JobInstanceIdentifier identifier = message.taskInstance.jobInstance;
+	    sendResultMessage( identifier.receivePort, identifier, result );
+	}
+	else {
+	    // There is a next step to take.
+	    TaskInstance nextTask = new TaskInstance( message.taskInstance.jobInstance, nextTaskType, result );
+	    submit( nextTask );
+	}
+
+	// Update statistics and notify our own queue waiters that something
+	// has happened.
+	final NodeInfo mi = nodes.get( masterId );
+	taskSources.add( mi );
+	final long computeInterval = taskCompletionMoment-runMoment;
+	taskInfoList.countTask( type, computeInterval );
+	synchronized( this ) {
+	    runningTasks--;
+	    if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
+	        Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
+	    }
 	}
     }
 }

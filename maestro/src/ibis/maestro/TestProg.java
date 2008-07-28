@@ -210,6 +210,11 @@ public class TestProg {
 	    return "Assemble array";
 	}
 
+        /**
+         * Is this task supported on this node?
+         * @return <true> since all nodes support this task.
+         */
+        @Override
 	public boolean isSupported() {
 	    return true;
 	}
@@ -225,8 +230,8 @@ public class TestProg {
 	Job createJob = jobs.createJob("createarray", new CreateArrayTask() );
 	Job job = jobs.createJob(
 		"testprog",
-		//new AssembleArrayTask( createJob ),
-                new CreateArrayTask(),
+		new AssembleArrayTask( createJob ),
+                //new CreateArrayTask(),
 		new AdditionTask(),
 		new AdditionTask(),
 		new AdditionTask(),

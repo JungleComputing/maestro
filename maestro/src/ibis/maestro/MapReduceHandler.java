@@ -4,20 +4,33 @@ import ibis.maestro.LabelTracker.Label;
 
 import java.io.Serializable;
 
-public class MapReduceHandler implements CompletionListener
+/**
+ * Handles the execution of a map/reduce task.
+ * In particular, it handles the submission of sub-tasks,
+ * waits for their completion, applies the reduction,
+ * and handles the result.
+ * 
+ * @author Kees van Reeuwijk
+ *
+ */
+public class MapReduceHandler extends Thread implements CompletionListener
 {
     final Node localNode;
     final MapReduceTask reducer;
     final LabelTracker labeler = new LabelTracker();
+    final RunTaskMessage message;
+    final long runMoment;
 
     /**
-     * @param node
-     * @param reducer
+     * @param localNode The node we are running on.
+     * @param reducer The reducer to run on each result we're waiting for.
      */
-    MapReduceHandler( Node node, MapReduceTask reducer )
+    MapReduceHandler( Node localNode, MapReduceTask reducer, RunTaskMessage message, long runMoment )
     {
-	this.localNode = node;
+	this.localNode = localNode;
 	this.reducer = reducer;
+	this.message = message;
+	this.runMoment = runMoment;
     }
 
     private static final class Id implements Serializable
@@ -85,20 +98,21 @@ public class MapReduceHandler implements CompletionListener
     }
 
     /**
-     * Wait until all jobs have been executed, and then ask the reducer for the
-     * result.
-     * @return The result as reported by the reducer.
+     * Runs this thread. We assume that the map phase has been completed,
+     * so all we have to do is wait for the return of all results.
      */
-    protected Object waitForResult()
+    @Override
+    public void run()
     {
 	try {
 	    labeler.waitForAllLabels();
 	    // FIXME: this blocks a worker thread!!!
 	}
 	catch( InterruptedException x ) {
-	    return null;
+	    // Nothing we can do.
 	}
-	return reducer.getResult();
+	Object result = reducer.getResult();
+	localNode.transferResult( message, result, runMoment );
     }
 
 }
