@@ -248,7 +248,7 @@ final class WorkerQueue {
      * @param startTime
      * @return
      */
-    long getActiveTime( long startTime )
+    synchronized long getActiveTime( long startTime )
     {
         if( activeTime<startTime ) {
             System.err.println( "Worker was not used" );

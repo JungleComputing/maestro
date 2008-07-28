@@ -120,7 +120,7 @@ class PacketSendPort<T extends Serializable> {
         this.node = node;
     }
 
-    void setLocalListener( PacketReceiveListener<T> localListener )
+    synchronized void setLocalListener( PacketReceiveListener<T> localListener )
     {
         if( this.localListener != null ) {
             System.err.println( "Cannot change the local listener" );
@@ -236,6 +236,8 @@ class PacketSendPort<T extends Serializable> {
             }
         }
         else {
+            long t;
+
             synchronized( this ) {
                 ensureOpenDestination( info, timeout );
                 long startTime = System.nanoTime();
@@ -248,11 +250,12 @@ class PacketSendPort<T extends Serializable> {
                 sentBytes += len;
                 sentCount++;
                 info.sentBytes += len;
-                sendTime += (stopTime-startTime);
+                t = stopTime-startTime;
+                sendTime += t;
                 info.sentCount++;
-                if( Settings.traceSends ) {
-                    System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-startTime) );
-                }
+            }
+            if( Settings.traceSends ) {
+                System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds( t ) );
             }
         }
         return len;
