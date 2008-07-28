@@ -244,10 +244,6 @@ final class WorkerQueue {
         msg.setQueueMoment( arrivalMoment, length );
     }
 
-    /** FIXME.
-     * @param startTime
-     * @return
-     */
     synchronized long getActiveTime( long startTime )
     {
         if( activeTime<startTime ) {

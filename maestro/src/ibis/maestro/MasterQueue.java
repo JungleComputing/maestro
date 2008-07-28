@@ -308,9 +308,6 @@ final class MasterQueue
 	int reserved = 0;  // How many tasks are reserved for future submission.
 	HashSet<TaskType> noReadyWorkers = new HashSet<TaskType>();
 
-	if( Settings.traceNodeProgress ){
-	    System.out.println( "submitting all possible tasks" );
-	}
 	nodes.resetReservations();   // FIXME: store reservations in a separate structure.
 	while( true ) {
 	    if( isEmpty() ) {

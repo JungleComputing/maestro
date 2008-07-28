@@ -255,7 +255,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private void reportCompletion( JobInstanceIdentifier id, Object result )
     {
 	JobInstanceInfo job = runningJobs.remove( id );
-        System.out.println( "Completed job " + id );
 	if( job != null ){
 	    job.listener.jobCompleted( this, id.userId, result );
 	}
@@ -454,7 +453,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     /**
      * A worker has sent use a completion message for a task. Process it.
      * @param result The status message.
-     * @param arrivalMoment FIXME
+     * @param arrivalMoment The time on ns this message arrived.
      */
     private void handleTaskCompletedMessage( TaskCompletedMessage result, long arrivalMoment )
     {
@@ -473,10 +472,10 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      * @param m The update message.
      * @param arrivalMoment The time in ns the message arrived.
      */
-    private void handleWorkerUpdateMessage( NodeUpdateMessage m, long arrivalMoment )
+    private void handleNodeUpdateMessage( NodeUpdateMessage m, long arrivalMoment )
     {
 	if( Settings.traceNodeProgress ){
-	    Globals.log.reportProgress( "Received worker update message " + m );
+	    Globals.log.reportProgress( "Received node update message " + m );
 	}
 	nodes.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo, arrivalMoment );
     }
@@ -486,7 +485,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	if( Settings.traceNodeProgress ){
 	    Globals.log.reportProgress( "Received a node accept message " + msg );
 	}
-	sendPort.registerDestination( msg.port, msg.source.value );
 	nodes.registerAccept( msg.source, msg.port, msg.identifierOnNode );
 	sendUpdateMessage( msg.source, msg.identifierOnNode );
     }
@@ -519,7 +517,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	if( msg instanceof TaskCompletedMessage ) {
 	    TaskCompletedMessage result = (TaskCompletedMessage) msg;
 
-	    nodes.setUnsuspect( result.source );
 	    handleTaskCompletedMessage( result, arrivalMoment );
 	}
 	else if( msg instanceof JobResultMessage ) {
@@ -530,8 +527,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	else if( msg instanceof NodeUpdateMessage ) {
 	    NodeUpdateMessage m = (NodeUpdateMessage) msg;
 
-	    nodes.setUnsuspect( m.source );
-	    handleWorkerUpdateMessage( m, arrivalMoment );
+	    handleNodeUpdateMessage( m, arrivalMoment );
 	}
 	else if( msg instanceof RegisterNodeMessage ) {
 	    RegisterNodeMessage m = (RegisterNodeMessage) msg;
@@ -562,6 +558,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     {
 	WorkThread t = null;
 	while( true ){
+            int n;
 	    synchronized( workThreads ){
 		if( t != null ){
 		    workThreads.remove( t );  // Remove a terminated worker.
@@ -570,10 +567,11 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 		    break;
 		}
 		t = workThreads.get( 0 );
-                if( Settings.traceNodes ){
-                    Globals.log.reportProgress( "Waiting for termination of thread " + t + "; there are " + workThreads.size() + " threads" );
-                }
+                n = workThreads.size();
 	    }
+            if( Settings.traceNodes ){
+                Globals.log.reportProgress( "Waiting for termination of thread " + t + "; there are " + n + " threads" );
+            }
 	    Service.waitToTerminate( t );
 	}
 	synchronized( this ) {
@@ -607,6 +605,9 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 
     private void askMoreWork()
     {
+        if( Settings.noStealRequests ){
+            return;
+        }
 	// Try to tell a known master we want more tasks. We do this by
 	// telling it about our current state.
 	NodeInfo taskSource = taskSources.getRandomWorkSource();
@@ -619,7 +620,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	}
 
 	// Finally, just tell a random master about our current work queues.
-	taskSource = nodes.getRandomRegisteredMaster();
+	taskSource = nodes.getRandomReadyNode();
 	if( taskSource != null ){
 	    if( Settings.traceNodeProgress ){
 		Globals.log.reportProgress( "Updating node " + taskSource.localIdentifier );
@@ -646,7 +647,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private void drainQueue()
     {
 	LinkedList<Submission> submissions = masterQueue.getSubmissions( nodes );
-        if( Settings.traceNodeProgress ){
+        if( Settings.traceNodeProgress && !submissions.isEmpty() ){
             System.out.println( "Got " + submissions.size() + " submissions from master queue" );
         }
 	while( !submissions.isEmpty() ) {
@@ -697,14 +698,14 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     void runWorkThread()
     {
 	while( keepRunning() ) {
-            System.out.println( "Next round for runWorkThread()" );
 	    updateAdministration();
 	    RunTaskMessage message = workerQueue.remove();
 	    if( message == null ) {
 		// No work in the worker queue. See if we can get more work.
 		askMoreWork();
-                long sleepTime = Math.max( 1, (infoSendTime.getAverage()*4)/Service.MILLISECOND_IN_NANOSECONDS );
-		if( Settings.traceNodeProgress || Settings.traceWaits ) {
+                // long sleepTime = Math.max( 1, (infoSendTime.getAverage()*4)/Service.MILLISECOND_IN_NANOSECONDS );
+                long sleepTime = 10;
+		if( Settings.traceWaits ) {
 		    System.out.println( "Worker: waiting for " + sleepTime + "ms for new tasks in queue" );
 		}
 		// Wait a little, there is nothing to do.

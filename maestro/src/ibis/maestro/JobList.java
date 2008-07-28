@@ -108,19 +108,11 @@ public final class JobList
         return res;
     }
 
-    /** FIXME.
-     * @param type
-     * @return
-     */
     Job findJob( TaskType type )
     {
         return jobs.get( type.job.id );
     }
 
-    /** FIXME.
-     * @param type
-     * @return
-     */
     Task getTask( TaskType type )
     {
         Job job = findJob( type );
@@ -128,10 +120,6 @@ public final class JobList
         return task;
     }
 
-    /** FIXME.
-     * @param type
-     * @return
-     */
     TaskType getNextTaskType( TaskType type )
     {
         Job job = findJob( type );

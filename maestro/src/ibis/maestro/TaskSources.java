@@ -42,9 +42,6 @@ public class TaskSources
         }
     }
 
-    /** FIXME.
-     * @return
-     */
     synchronized boolean isEmpty()
     {
         return taskSources.isEmpty();

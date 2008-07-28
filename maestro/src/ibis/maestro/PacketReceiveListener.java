@@ -15,7 +15,7 @@ interface PacketReceiveListener<T extends Serializable> {
     /**
      * Handle the reception of packet <code>packet</code>.
      * @param packet The packet that was received.
-     * @param arrivalMoment TODO
+     * @param arrivalMoment The time in ns this message arrived.
      */
     void messageReceived( T packet, long arrivalMoment );
 

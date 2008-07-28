@@ -30,7 +30,7 @@ class Settings {
     static final boolean traceWorkerList = false;
     
     /** Trace the creation and destruction of Nodes. */
-    static final boolean traceNodes = true;
+    static final boolean traceNodes = false;
 
     /** Trace the events in the master queue? */
     static final boolean traceMasterQueue = false;
@@ -39,7 +39,7 @@ class Settings {
     static final boolean traceRemainingJobTime = false;
 
     /** Trace the progress of masters? */
-    static final boolean traceNodeProgress = true;
+    static final boolean traceNodeProgress = false;
 
     /** Trace all send events. */
     static final boolean traceSends = false;
@@ -71,4 +71,6 @@ class Settings {
 
     /** If set, routes tasks based on worker list shuffling instead of measured times. */
     static final boolean useShuffleRouting = false;
+
+    static final boolean noStealRequests = false;
 }

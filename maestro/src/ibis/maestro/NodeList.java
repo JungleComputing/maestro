@@ -232,11 +232,6 @@ final class NodeList {
         }
     }
 
-    /** FIXME.
-     * @param source
-     * @param port
-     * @param identifierOnMaster
-     */
     synchronized void registerAccept( NodeIdentifier source, ReceivePortIdentifier port, NodeIdentifier identifierOnMaster )
     {
         NodeInfo wi = getNode( source );
@@ -248,7 +243,7 @@ final class NodeList {
     /** Returns a random registered master.
      * @return
      */
-    synchronized NodeInfo getRandomRegisteredMaster()
+    synchronized NodeInfo getRandomReadyNode()
     {
         NodeInfo res = null;
         int size = nodes.size();
@@ -265,7 +260,7 @@ final class NodeList {
             // We only try 'n' times, since the list may consist entirely of duds.
             // (And yes, these duds skew the probabilities, we don't care.)
             res = nodes.get( ix );
-            if( !res.isSuspect() && res.isRegistered() ) {
+            if( res.isReady() ) {
                 return res;
             }
             ix++;
@@ -279,10 +274,6 @@ final class NodeList {
         return null;
     }
 
-    /** FIXME.
-     * @param masterId
-     * @return
-     */
     synchronized NodeInfo get( NodeIdentifier id )
     {
         return getNode( id );

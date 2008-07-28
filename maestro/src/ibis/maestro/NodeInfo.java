@@ -63,11 +63,6 @@ final class NodeInfo {
         this.local = local;
     }
 
-    boolean isRegistered()
-    {
-        return identifierOnNode != null;
-    }
-
     /**
      * Given a task identifier, returns the task queue entry with that id, or null.
      * @param id The task identifier to search for.
@@ -177,7 +172,6 @@ final class NodeInfo {
      */
     ArrayList<TaskInstance> setDead()
     {
-        // FIXME: make sure everyone handles our orphans
         suspect = true;
         dead = true;
         ArrayList<TaskInstance> orphans = new ArrayList<TaskInstance>();
@@ -241,8 +235,10 @@ final class NodeInfo {
             // revive the worker.
             return;
         }
-        if( !enabled && Settings.traceWorkerList ) {
-            Globals.log.reportProgress( "Worker " + localIdentifier + " is now enabled" );
+        if( !enabled ){ 
+            if( Settings.traceWorkerList ) {
+                Globals.log.reportProgress( "Worker " + localIdentifier + " is now enabled" );
+            }
             enabled = true;   // The worker now has its administration in order. We can submit jobs.
         }
         if( pingSentTime != 0 ) {
