@@ -176,7 +176,7 @@ final class MasterQueue
      * @param task The task to submit.
      */
     @SuppressWarnings("synthetic-access")
-    void add( TaskInstance task )
+    protected void add( TaskInstance task )
     {
 	TaskType type = task.type;
 	TypeInfo info = getTypeInfo( type );
@@ -221,7 +221,6 @@ final class MasterQueue
 	        ix++;
 	        continue;
 	    }
-	    TypeInfo info = getTypeInfo( type );
 	    NodeTaskInfo worker = workers.selectBestWorker( type );
 	    if( worker != null ) {
                 if( worker.reserveIfNeeded() ) {
@@ -233,16 +232,14 @@ final class MasterQueue
                     continue;
                 }
                 queue.remove( ix );
+                TypeInfo info = getTypeInfo( type );
                 int length = info.registerRemove();
-                if( Settings.traceQueuing ) {
-                    Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type );
+                if( Settings.traceMasterQueue || Settings.traceQueuing ) {
+                    Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type + " nodeTaskInfo=" + worker );
                 }
                 sub.task = task;
                 sub.worker = worker;
                 sub.predictedDuration = worker.estimateRoundtripTime();
-                if( Settings.traceMasterQueue ){
-                    System.out.println( "Found a worker for task type " + type );
-                }
                 break;
 	    }
 	    noReadyWorkers.add( type );
@@ -327,6 +324,7 @@ final class MasterQueue
 	    }
 	    submissions.add( sub );
 	}
+        nodes.resetReservations();   // FIXME: store reservations in a separate structure.
 	return submissions;
     }
 }

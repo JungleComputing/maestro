@@ -91,14 +91,14 @@ public class Service
      */
     public static void waitToTerminate( Thread thread )
     {
-        do {
+        while( thread.isAlive() ) {
             try {
                 thread.join();
             }
             catch( InterruptedException x ) {
                 // We don't care
             }
-        } while( thread.isAlive() );
+        }
     }
 
     static boolean member( ArrayList<TaskType> taskTypes, TaskType taskType )

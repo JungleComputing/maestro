@@ -28,5 +28,9 @@ final class WorkThread extends Thread
     public void run()
     {
 	node.runWorkThread();
+        if( Settings.traceNodeProgress ) {
+            Globals.log.reportProgress( "Work thread " + this + " ended" );
+        }
+
     }
 }

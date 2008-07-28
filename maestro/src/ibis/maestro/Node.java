@@ -61,8 +61,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 
     private boolean isMaestro;
 
-    private Flag askMastersForWork = new Flag( true );
-
     private final boolean traceStats;
     private final MasterQueue masterQueue = new MasterQueue();
     final WorkerQueue workerQueue = new WorkerQueue();
@@ -220,12 +218,12 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      * This does not mean that the node stops immediately,
      * but it does mean the master and worker try to wind down the work.
      */
-    public void setStopped()
+    public synchronized void setStopped()
     {
 	if( Settings.traceNodes ) {
-	    Globals.log.reportProgress( "Set node to stopped state. Telling worker..." );
+	    Globals.log.reportProgress( "Set node to stopped state" );
 	}
-	stopAskingForWork();
+        stopped = true;
     }
 
     /**
@@ -234,36 +232,20 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     public void waitToTerminate()
     {
 	if( Settings.traceNodes ) {
-	    Globals.log.reportProgress( "Waiting for master to terminate" );
-	}
-	/**
-	 * Everything interesting happens in the master and worker.
-	 * So all we do here is wait for the master and worker to terminate.
-	 * We only stop this thread if both are terminated, so we can just wait
-	 * for one to terminate, and then the other.
-	 */
-	Service.waitToTerminate( this );
-	if( Settings.traceNodes ) {
-	    Globals.log.reportProgress( "master is terminated; waiting for worker to terminate" );
+	    Globals.log.reportProgress( "Waiting for node to terminate" );
 	}
 
-	// FIXME: do termination properly!!
-
-	/** Once the master has stopped, stop the worker. */
 	waitForWorkThreadsToTerminate();
 	if( Settings.traceNodes ) {
-	    Globals.log.reportProgress( "worker is terminated" );
+	    Globals.log.reportProgress( "Node has terminated" );
 	}
-	printStatistics( System.out );
 	try {
 	    ibis.end();
 	}
 	catch( IOException x ) {
 	    // Nothing we can do about it.
 	}
-	if( Settings.traceNodes ) {
-	    Globals.log.reportProgress( "Node has terminated" );
-	}
+        printStatistics( System.out );
     }
 
     /** Report the completion of the job with the given identifier.
@@ -273,6 +255,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private void reportCompletion( JobInstanceIdentifier id, Object result )
     {
 	JobInstanceInfo job = runningJobs.remove( id );
+        System.out.println( "Completed job " + id );
 	if( job != null ){
 	    job.listener.jobCompleted( this, id.userId, result );
 	}
@@ -456,7 +439,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	NodeIdentifier workerID;
 
 	if( Settings.traceNodeProgress ){
-	    Globals.log.reportProgress( "Master: received registration message " + m + " from worker " + m.port );
+	    Globals.log.reportProgress( "received registration message " + m + " from node " + m.port );
 	}
 	if( m.supportedTypes.length == 0 ) {
 	    Globals.log.reportInternalError( "Node " + m.port + " has zero supported types??" );
@@ -587,37 +570,15 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 		    break;
 		}
 		t = workThreads.get( 0 );
+                if( Settings.traceNodes ){
+                    Globals.log.reportProgress( "Waiting for termination of thread " + t + "; there are " + workThreads.size() + " threads" );
+                }
 	    }
 	    Service.waitToTerminate( t );
 	}
 	synchronized( this ) {
 	    stopTime = System.nanoTime();
 	}
-    }
-
-    /** Removes and returns a random task source from the list of
-     * known task sources. Returns null if the list is empty.
-     * 
-     * @return The task source, or null if there isn't one.
-     */
-    private NodeInfo getRandomWorkSource()
-    {
-	if( !askMastersForWork.isSet() ){
-	    return null;
-	}
-	return taskSources.getRandomWorkSource();
-    }
-
-    /**
-     * Returns a random registered master.
-     * @return The task source, or <code>null</code> if there isn't one.
-     */
-    private NodeInfo getRandomRegisteredMaster()
-    {
-	if( !askMastersForWork.isSet() ){
-	    return null;
-	}
-	return nodes.getRandomRegisteredMaster();
     }
 
     /**
@@ -628,7 +589,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	NodeInfo newIbis = unregisteredNodes.removeIfAny();
 	if( newIbis != null ){
 	    if( Settings.traceNodeProgress ){
-		Globals.log.reportProgress( "Worker: registering with master " + newIbis );
+		Globals.log.reportProgress( "registering with node " + newIbis );
 	    }
 	    // We record the transmission time as a reasonable estimate of a sleep time.
 	    long start = System.nanoTime();
@@ -648,20 +609,20 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     {
 	// Try to tell a known master we want more tasks. We do this by
 	// telling it about our current state.
-	NodeInfo taskSource = getRandomWorkSource();
+	NodeInfo taskSource = taskSources.getRandomWorkSource();
 	if( taskSource != null ){
 	    if( Settings.traceNodeProgress ){
-		Globals.log.reportProgress( "Worker: asking master " + taskSource.localIdentifier + " for work" );
+		Globals.log.reportProgress( "Asking node " + taskSource.localIdentifier + " for work" );
 	    }
 	    sendUpdate( taskSource );
 	    return;
 	}
 
 	// Finally, just tell a random master about our current work queues.
-	taskSource = getRandomRegisteredMaster();
+	taskSource = nodes.getRandomRegisteredMaster();
 	if( taskSource != null ){
 	    if( Settings.traceNodeProgress ){
-		Globals.log.reportProgress( "Worker: updating master " + taskSource.localIdentifier );
+		Globals.log.reportProgress( "Updating node " + taskSource.localIdentifier );
 	    }
 	    sendUpdate( taskSource );
 	}
@@ -681,23 +642,15 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
     }
 
-    /**
-     * Tells this worker not to ask for work any more.
-     */
-    private void stopAskingForWork()
-    {
-	if( Settings.traceNodeProgress ) {
-	    Globals.log.reportProgress( "Worker: don't ask for work" );
-	}
-	askMastersForWork.reset();
-    }
-
     /** On a locked queue, try to send out as many task as we can. */
     private void drainQueue()
     {
 	LinkedList<Submission> submissions = masterQueue.getSubmissions( nodes );
+        if( Settings.traceNodeProgress ){
+            System.out.println( "Got " + submissions.size() + " submissions from master queue" );
+        }
 	while( !submissions.isEmpty() ) {
-	    Submission sub = submissions.getFirst();
+	    Submission sub = submissions.removeFirst();
 	    NodeTaskInfo wti = sub.worker;
 	    TaskInstance task = sub.task;
 	    NodeInfo worker = wti.nodeInfo;
@@ -736,25 +689,28 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 
     private synchronized boolean keepRunning()
     {
-	return !stopped || runningTasks>0;
+	boolean res = !stopped || runningTasks>0;
+	return res;
     }
 
     /** Run a work thread. Only return when we want to shut down the node. */
     void runWorkThread()
     {
 	while( keepRunning() ) {
+            System.out.println( "Next round for runWorkThread()" );
 	    updateAdministration();
 	    RunTaskMessage message = workerQueue.remove();
 	    if( message == null ) {
 		// No work in the worker queue. See if we can get more work.
 		askMoreWork();
+                long sleepTime = Math.max( 1, (infoSendTime.getAverage()*4)/Service.MILLISECOND_IN_NANOSECONDS );
 		if( Settings.traceNodeProgress || Settings.traceWaits ) {
-		    System.out.println( "Worker: waiting for new tasks in queue" );
+		    System.out.println( "Worker: waiting for " + sleepTime + "ms for new tasks in queue" );
 		}
 		// Wait a little, there is nothing to do.
 		try{
 		    synchronized( this ) {
-			this.wait( (infoSendTime.getAverage()*2)/Service.MILLISECOND_IN_NANOSECONDS );
+			this.wait( sleepTime );
 		    }
 		}
 		catch( InterruptedException e ){
@@ -831,11 +787,13 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 		synchronized( this ) {
 		    runningTasks--;
 		    if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
-			Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
+		        Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
 		    }
 		}
 	    }
+            synchronized( this ){
+                this.notifyAll();
+            }
 	}
     }
-
 }

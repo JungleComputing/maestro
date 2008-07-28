@@ -192,7 +192,7 @@ final class NodeList {
         w.setPingStartMoment( System.nanoTime() );
     }
 
-    protected void resetReservations()
+    synchronized protected void resetReservations()
     {
         for( NodeInfo wi: nodes ) {
             wi.resetReservations();

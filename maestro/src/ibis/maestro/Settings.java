@@ -24,19 +24,19 @@ class Settings {
     static final boolean traceTypeHandling = false;
 
     /** Trace the handling or result tasks? */
-    static final boolean traceResultTasks = true;
+    static final boolean traceResultTasks = false;
 
     /** Trace the progress of the worker lists of masters. */
-    static final boolean traceWorkerList = true;
+    static final boolean traceWorkerList = false;
     
     /** Trace the creation and destruction of Nodes. */
     static final boolean traceNodes = true;
 
     /** Trace the events in the master queue? */
-    static final boolean traceMasterQueue = true;
+    static final boolean traceMasterQueue = false;
 
     /** Trace the administration of remaining job time. */
-    static final boolean traceRemainingJobTime = true;
+    static final boolean traceRemainingJobTime = false;
 
     /** Trace the progress of masters? */
     static final boolean traceNodeProgress = true;
@@ -45,19 +45,19 @@ class Settings {
     static final boolean traceSends = false;
 
     /** Trace all missed deadlines. */
-    static final boolean traceMissedDeadlines = true;
+    static final boolean traceMissedDeadlines = false;
 
     /** Trace all queuing and dequeuing. */
-    static final boolean traceQueuing = true;
+    static final boolean traceQueuing = false;
 
     /** Print a reason for every wait() that we do. */
-    static final boolean traceWaits = true;
+    static final boolean traceWaits = false;
 
     /** Print the reason a particular worker was selected. */
-    static final boolean traceWorkerSelection = true;
+    static final boolean traceWorkerSelection = false;
 
     /** Trace the adventures of the map/reduce handler. */
-    static final boolean traceMapReduce = true;
+    static final boolean traceMapReduce = false;
 
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.
@@ -70,5 +70,5 @@ class Settings {
     static final long RESCHEDULE_DEADLINE_MARGIN = 6;
 
     /** If set, routes tasks based on worker list shuffling instead of measured times. */
-    static final boolean useShuffleRouting = true;
+    static final boolean useShuffleRouting = false;
 }

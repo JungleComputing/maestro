@@ -31,7 +31,9 @@ public class TestProg {
 	public void jobCompleted( Node node, Object id, Object result ) {
 	    //System.out.println( "result is " + result );
 	    jobsCompleted++;
-	    //System.out.println( "I now have " + tasksCompleted + "/" + taskCount + " tasks" );
+            if( Settings.traceNodes ){
+                System.out.println( "I now have " + jobsCompleted + "/" + jobCount + " jobs" );
+            }
 	    if( jobsCompleted>=jobCount ){
 		System.out.println( "I got all task results back; stopping test program" );
 		node.setStopped();
@@ -224,6 +226,7 @@ public class TestProg {
 	Job job = jobs.createJob(
 		"testprog",
 		//new AssembleArrayTask( createJob ),
+                new CreateArrayTask(),
 		new AdditionTask(),
 		new AdditionTask(),
 		new AdditionTask(),
