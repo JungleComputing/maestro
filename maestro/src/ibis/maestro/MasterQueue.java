@@ -3,6 +3,7 @@ package ibis.maestro;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -298,5 +299,34 @@ final class MasterQueue
 		add( ti );
 	    }
 	}
+    }
+
+    /**
+     * @param nodes  
+     * @return
+     */
+    synchronized LinkedList<Submission> getSubmissions(NodeList nodes )
+    {
+	LinkedList<Submission> submissions = new LinkedList<Submission>();
+	int reserved = 0;  // How many tasks are reserved for future submission.
+	HashSet<TaskType> noReadyWorkers = new HashSet<TaskType>();
+
+	if( Settings.traceNodeProgress ){
+	    System.out.println( "submitting all possible tasks" );
+	}
+	nodes.resetReservations();   // FIXME: store reservations in a separate structure.
+	while( true ) {
+	    if( isEmpty() ) {
+		// Mission accomplished.
+		break;
+	    }
+	    Submission sub = new Submission();
+	    reserved = selectSubmisson( reserved, sub, nodes, noReadyWorkers );
+	    if( sub.worker == null ){
+		break;
+	    }
+	    submissions.add( sub );
+	}
+	return submissions;
     }
 }

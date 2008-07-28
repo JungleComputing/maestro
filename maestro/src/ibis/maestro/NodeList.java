@@ -65,7 +65,7 @@ final class NodeList {
             NodeTaskInfo wti = node.registerTaskType( info );
             info.addWorker( wti );
         }
-        if( Settings.traceMasterProgress ){
+        if( Settings.traceNodeProgress ){
             System.out.println( "Subscribing node " + masterIdentifier );
         }
         return node.localIdentifier;

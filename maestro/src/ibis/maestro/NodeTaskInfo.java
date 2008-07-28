@@ -159,7 +159,7 @@ final class NodeTaskInfo {
         roundtripErrorEstimate.addSample( roundtripError );
         transmissionTimeEstimate.addSample( transmissionTime );
         String label = "task=" + taskInfo + " worker=" + nodeInfo;
-        if( Settings.traceMasterProgress || Settings.traceRemainingJobTime ) {
+        if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( label + ": roundTripTimeEstimate=" + roundtripTimeEstimate + " roundTripErrorEstimate=" + roundtripErrorEstimate + " transimssionTimeEstimate=" + transmissionTimeEstimate );
         }
         if( traceStats ) {
@@ -271,7 +271,6 @@ final class NodeTaskInfo {
     {
         return executedTasks;
     }
-
 
     protected void resetReservations()
     {

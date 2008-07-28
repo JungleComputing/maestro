@@ -331,7 +331,7 @@ final class NodeInfo {
         }
         registerWorkerInfo( result.workerQueueInfo, result.completionInfo, arrivalMoment );
         task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime, roundtripError );
-        if( Settings.traceMasterProgress ){
+        if( Settings.traceNodeProgress ){
             Globals.log.reportProgress(
                 "Master: retired task " + task
                 + " roundtripTime=" + Service.formatNanoseconds( roundtripTime )

@@ -77,7 +77,7 @@ public class TaskInfo
                     }
                 }
             }
-            if( Settings.traceRemainingJobTime || Settings.traceMasterProgress || Settings.traceWorkerSelection ) {
+            if( Settings.traceRemainingJobTime || Settings.traceNodeProgress || Settings.traceWorkerSelection ) {
                 System.out.print( "Worker for " + type + ":" );
                 for( NodeTaskInfo wi: workers ) {
                     NodeInfo worker = wi.nodeInfo;

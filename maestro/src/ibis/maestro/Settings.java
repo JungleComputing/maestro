@@ -23,44 +23,41 @@ class Settings {
     /** Trace type handling? */
     static final boolean traceTypeHandling = false;
 
-    /** Trace the progress of workers? */
-    static final boolean traceWorkerProgress = false;
-
     /** Trace the handling or result tasks? */
-    static final boolean traceResultTasks = false;
+    static final boolean traceResultTasks = true;
 
     /** Trace the progress of the worker lists of masters. */
-    static final boolean traceWorkerList = false;
+    static final boolean traceWorkerList = true;
     
     /** Trace the creation and destruction of Nodes. */
-    static final boolean traceNodes = false;
+    static final boolean traceNodes = true;
 
     /** Trace the events in the master queue? */
-    static final boolean traceMasterQueue = false;
+    static final boolean traceMasterQueue = true;
 
     /** Trace the administration of remaining job time. */
-    static final boolean traceRemainingJobTime = false;
+    static final boolean traceRemainingJobTime = true;
 
     /** Trace the progress of masters? */
-    static final boolean traceMasterProgress = false;
+    static final boolean traceNodeProgress = true;
 
     /** Trace all send events. */
     static final boolean traceSends = false;
 
     /** Trace all missed deadlines. */
-    static final boolean traceMissedDeadlines = false;
+    static final boolean traceMissedDeadlines = true;
 
     /** Trace all queuing and dequeuing. */
-    static final boolean traceQueuing = false;
+    static final boolean traceQueuing = true;
 
     /** Print a reason for every wait() that we do. */
-    static final boolean traceWaits = false;
+    static final boolean traceWaits = true;
 
     /** Print the reason a particular worker was selected. */
-    static final boolean traceWorkerSelection = false;
+    static final boolean traceWorkerSelection = true;
 
     /** Trace the adventures of the map/reduce handler. */
-    static final boolean traceMapReduce = false;
+    static final boolean traceMapReduce = true;
 
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.
@@ -73,5 +70,5 @@ class Settings {
     static final long RESCHEDULE_DEADLINE_MARGIN = 6;
 
     /** If set, routes tasks based on worker list shuffling instead of measured times. */
-    static final boolean useShuffleRouting = false;
+    static final boolean useShuffleRouting = true;
 }
