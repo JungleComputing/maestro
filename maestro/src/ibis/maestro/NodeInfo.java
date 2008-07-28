@@ -393,7 +393,7 @@ final class NodeInfo {
     /**
      * @param taskInfoOnMaster The task type to register for.
      */
-    private void registerTaskType( TaskInfo taskInfoOnMaster )
+    NodeTaskInfo registerTaskType( TaskInfo taskInfoOnMaster )
     {
         if( Settings.traceTypeHandling ){
             System.out.println( "node " + localIdentifier + " can handle " + taskInfoOnMaster + ", local=" + local );
@@ -404,6 +404,7 @@ final class NodeInfo {
         }
         NodeTaskInfo info = new NodeTaskInfo( taskInfoOnMaster, this, local, pingTime );
         nodeTaskInfoList.set( ix, info );
+        return info;
     }
     
     NodeTaskInfo getNodeTaskInfo( TaskType taskType )

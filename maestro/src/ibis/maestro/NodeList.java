@@ -62,7 +62,7 @@ final class NodeList {
         node.setIdentifierOnNode( masterIdentifier );
         for( TaskType t: types ) {
             TaskInfo info = taskInfoList.getTaskInfo( t );
-            NodeTaskInfo wti = node.getNodeTaskInfo( t );
+            NodeTaskInfo wti = node.registerTaskType( info );
             info.addWorker( wti );
         }
         if( Settings.traceMasterProgress ){
