@@ -407,8 +407,11 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	if( m.supportedTypes.length == 0 ) {
 	    Globals.log.reportInternalError( "Node " + m.port + " has zero supported types??" );
 	}
-	NodeInfo nodeInfo = nodes.subscribeNode( m.port, m.supportedTypes, theirIdentifierForUs );
-	sendPort.registerDestination( m.port, nodeInfo.ourIdentifierForNode.value );
+        NodeInfo nodeInfo;
+	synchronized( this ) {
+	    nodeInfo = nodes.subscribeNode( m.port, m.supportedTypes, theirIdentifierForUs );
+	    sendPort.registerDestination( m.port, nodeInfo.ourIdentifierForNode.value );
+	}
 	if( !m.reply ) {
 	    unregisteredNodes.add( nodeInfo, true );
 	}
