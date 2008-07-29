@@ -196,9 +196,11 @@ final class NodeList {
 
     synchronized void registerCompletionInfo( NodeIdentifier nodeID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
     {
-        NodeInfo w = getNode( nodeID );
-        w.registerWorkerInfo( workerQueueInfo, completionInfo, arrivalMoment );
-        w.registerAsCommunicating();
+        NodeInfo nodeInfo = getNode( nodeID );
+        if( nodeInfo != null ) {
+            nodeInfo.registerWorkerInfo( workerQueueInfo, completionInfo, arrivalMoment );
+            nodeInfo.registerAsCommunicating();
+        }
     }
 
     /** Given a remote node, returns the identifier this node uses for us.
