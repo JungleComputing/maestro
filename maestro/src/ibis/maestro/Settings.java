@@ -60,7 +60,7 @@ class Settings {
     static final boolean traceMapReduce = false;
 
     /** Trace registration of the nodes with eachother. */
-    static final boolean traceRegistration = false;
+    static final boolean traceRegistration = true;
 
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.

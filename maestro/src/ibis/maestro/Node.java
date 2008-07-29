@@ -259,14 +259,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	runningJobs.add( new JobInstanceInfo( id, job, listener ) );
     }
 
-    /**
-     * @return The ibis identifier of this node.
-     */
-    private IbisIdentifier ibisIdentifier()
-    {
-	return Globals.localIbis.identifier();
-    }
-
     /** This ibis was reported as 'may be dead'. Try
      * not to communicate with it.
      * @param theIbis The ibis that may be dead.
@@ -328,12 +320,13 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 
     private void addUnregisteredNode( IbisIdentifier theIbis, boolean local )
     {
-        if( nodes.hasReadyNode( theIbis ) ) {
+        NodeInfo info = nodes.registerNode( theIbis, local );
+        if( info.isReady() ) {
             // We already know everything there is to know about this node.
             // (Presumably because it registered itself with us.)
             return;
         }
-	unregisteredNodes.add( theIbis, local, false );
+	unregisteredNodes.add( info, false );
     }
 
     private void removeNode( NodeIdentifier theWorker )
@@ -368,7 +361,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     {
 	boolean ok = true;
 	if( Settings.traceWorkerList ) {
-	    Globals.log.reportProgress( "Node " + ibisIdentifier() + ": sending registration message to ibis " + ni );
+	    Globals.log.reportProgress( "Node " + Globals.localIbis.identifier() + ": sending registration message to ibis " + ni );
 	}
 	TaskType taskTypes[] = jobs.getSupportedTaskTypes();
 	RegisterNodeMessage msg = new RegisterNodeMessage( receivePort.identifier(), taskTypes, ni.ourIdentifierForNode, ni.getReply() );
@@ -417,9 +410,9 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	NodeInfo nodeInfo = nodes.subscribeNode( m.port, m.supportedTypes, theirIdentifierForUs );
 	sendPort.registerDestination( m.port, nodeInfo.ourIdentifierForNode.value );
 	if( !m.reply ) {
-	    IbisIdentifier ibisIdentifier = m.port.ibisIdentifier();
-	    unregisteredNodes.add( ibisIdentifier, ibisIdentifier.equals( Globals.localIbis.identifier() ), true );
+	    unregisteredNodes.add( nodeInfo, true );
 	}
+        sendUpdate( nodeInfo );
     }
 
     /**

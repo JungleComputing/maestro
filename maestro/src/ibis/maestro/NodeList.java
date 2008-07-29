@@ -62,6 +62,9 @@ final class NodeList {
 
             // The node isn't in our administration, add it.
             node = new NodeInfo( id, ibis, local );
+            if( Settings.traceRegistration ) {
+                Globals.log.reportProgress( "Ibis " + ibis + " isn't in our admistration; creating new entry " + node );
+            }
         }
         node.setTheirIdentifierForUs( theirIdentifierForUs );
         for( TaskType t: types ) {
@@ -259,14 +262,18 @@ final class NodeList {
      * @param local Is this a local node?
      * @return The newly created Node info for this node.
      */
-    synchronized NodeInfo addNode( IbisIdentifier theIbis, boolean local )
+    synchronized NodeInfo registerNode( IbisIdentifier theIbis, boolean local )
     {
+        NodeInfo info = searchNode( nodes, theIbis );
+        if( info != null ) {
+            return info;
+        }
         NodeIdentifier id = NodeIdentifier.getNextIdentifier();
         int ix = id.value;
         while( nodes.size()<=ix ) {
             nodes.add( null );
         }
-        NodeInfo info = new NodeInfo( id, theIbis, local );
+        info = new NodeInfo( id, theIbis, local );
         nodes.set( ix, info );
         return info;
     }
