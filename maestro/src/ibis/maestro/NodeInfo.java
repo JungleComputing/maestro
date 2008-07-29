@@ -468,7 +468,7 @@ final class NodeInfo
         return false;
     }
 
-    public void setTypesKnown()
+    void setTypesKnown()
     {
         typesKnown = true;
     }

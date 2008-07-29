@@ -61,6 +61,11 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private long nextTaskId = 0;
     private long incomingTaskCount = 0;
     private long handledTaskCount = 0;
+    private long registrationMessageCount = 0;
+    private long updateMessageCount = 0;
+    private long submitMessageCount = 0;
+    private long taskResultMessageCount = 0;
+    private long jobResultMessageCount = 0;
 
     private boolean stopped = false;
 
@@ -350,6 +355,11 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	s.printf(  "# threads       = %5d\n", workThreads.length );
 	nodes.printStatistics( s );
 	jobs.printStatistics( s );
+	s.printf( "registration messages:   %5d", registrationMessageCount );
+        s.printf( "update       messages:   %5d", updateMessageCount );
+        s.printf( "submit       messages:   %5d", submitMessageCount );
+        s.printf( "task result  messages:   %5d", taskResultMessageCount );
+        s.printf( "job result   messages:   %5d", jobResultMessageCount );
 	sendPort.printStatistics( s, "send port" );
 	long activeTime = workerQueue.getActiveTime( startTime );
 	long workInterval = stopTime-activeTime;
@@ -376,6 +386,9 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    setSuspect( ni.ibis );
 	    ok = false;
 	}
+	synchronized( this ) {
+	    this.registrationMessageCount++;
+	}
 	return ok;
     }
 
@@ -388,6 +401,9 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	// We ignore the result because we don't care about the message size,
 	// and if the update failed, it failed.
 	sendPort.tryToSend( node, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+        synchronized( this ) {
+            this.updateMessageCount++;
+        }
     }
 
     private void sendUpdate( NodeInfo node )
@@ -596,7 +612,10 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      */
     private long sendResultMessage( ReceivePortIdentifier port, JobInstanceIdentifier id, Object result )
     {
-	Message msg = new JobResultMessage( id, result );
+	Message msg = new JobResultMessage( id, result );	
+        synchronized( this ) {
+            this.jobResultMessageCount++;
+        }
 	return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
     }
 
@@ -622,16 +641,19 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    long taskId = nextTaskId++;
 	    worker.registerTaskStart( task, taskId, sub.predictedDuration );
 	    if( Settings.traceMasterQueue ) {
-		System.out.println( "Selected " + worker + " as best for task " + task );
+	        System.out.println( "Selected " + worker + " as best for task " + task );
 	    }
 
 	    RunTaskMessage msg = new RunTaskMessage( worker.getTheirIdentifierForUs(), worker.ourIdentifierForNode, task, taskId );
 	    long sz = sendPort.tryToSend( worker.ourIdentifierForNode, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	    if( sz<0 ){
-		// Try to put the paste back in the tube.
-		// The sendport has already registered the trouble.
-		worker.retractTask( msg.taskId );
-		masterQueue.add( msg.taskInstance );
+	        // Try to put the paste back in the tube.
+	        // The sendport has already registered the trouble.
+	        worker.retractTask( msg.taskId );
+	        masterQueue.add( msg.taskInstance );
+	    }
+	    synchronized( this ) {
+	        this.submitMessageCount++;
 	    }
 	}
     }
@@ -741,6 +763,9 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	}
 	Message msg = new TaskCompletedMessage( message.workerIdentifier, message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
 	long sz = sendPort.tryToSend( masterId, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        synchronized( this ) {
+            this.taskResultMessageCount++;
+        }
 
 	// FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
 
