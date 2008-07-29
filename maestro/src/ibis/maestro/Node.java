@@ -355,11 +355,11 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	s.printf(  "# threads       = %5d\n", workThreads.length );
 	nodes.printStatistics( s );
 	jobs.printStatistics( s );
-	s.printf( "registration messages:   %5d", registrationMessageCount );
-        s.printf( "update       messages:   %5d", updateMessageCount );
-        s.printf( "submit       messages:   %5d", submitMessageCount );
-        s.printf( "task result  messages:   %5d", taskResultMessageCount );
-        s.printf( "job result   messages:   %5d", jobResultMessageCount );
+	s.printf( "registration messages:   %5d\n", registrationMessageCount );
+        s.printf( "update       messages:   %5d\n", updateMessageCount );
+        s.printf( "submit       messages:   %5d\n", submitMessageCount );
+        s.printf( "task result  messages:   %5d\n", taskResultMessageCount );
+        s.printf( "job result   messages:   %5d\n", jobResultMessageCount );
 	sendPort.printStatistics( s, "send port" );
 	long activeTime = workerQueue.getActiveTime( startTime );
 	long workInterval = stopTime-activeTime;
@@ -432,10 +432,13 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	synchronized( this ) {
 	    nodeInfo = nodes.subscribeNode( m.port, m.supportedTypes, theirIdentifierForUs, sendPort );
 	}
-	if( !m.reply ) {
+	if( m.reply ) {
+	    sendUpdate( nodeInfo );
+	}
+	else {
 	    unregisteredNodes.add( nodeInfo, true );
 	}
-        sendUpdate( nodeInfo );
+	taskSources.add( nodeInfo );
     }
 
     /**
@@ -449,7 +452,10 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    Globals.log.reportProgress( "Received a worker task completed message " + result );
 	}
 	nodes.registerTaskCompleted( result, arrivalMoment );
-	nodes.registerAsCommunicating( result.source );
+        final NodeInfo mi = nodes.get( result.source );
+        if( mi != null ) {
+            taskSources.add( mi );
+        }
 	synchronized( this ) {
 	    handledTaskCount++;
 	}
@@ -465,6 +471,10 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	if( Settings.traceNodeProgress ){
 	    Globals.log.reportProgress( "Received node update message " + m );
 	}
+        final NodeInfo mi = nodes.get( m.source );
+        if( mi != null ) {
+            taskSources.add( mi );
+        }
 	nodes.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo, arrivalMoment );
     }
 
@@ -569,9 +579,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 
     private void askMoreWork()
     {
-        if( Settings.noStealRequests ){
-            return;
-        }
         if( isStopped() ) {
             return;
         }
@@ -586,6 +593,9 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
                 return;
             }
             sendUpdate( taskSource );
+            return;
+        }
+        if( Settings.noStealRequests ){
             return;
         }
 
@@ -781,10 +791,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    submit( nextTask );
 	}
 
-	// Update statistics and notify our own queue waiters that something
-	// has happened.
-	final NodeInfo mi = nodes.get( masterId );
-	taskSources.add( mi );
+	// Update statistics.
 	final long computeInterval = taskCompletionMoment-runMoment;
 	taskInfoList.countTask( type, computeInterval );
 	synchronized( this ) {

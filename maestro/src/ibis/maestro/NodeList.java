@@ -150,6 +150,7 @@ final class NodeList {
             return;
         }
         w.registerTaskCompleted( result, arrivalMoment );
+        w.registerAsCommunicating();
     }
 
     /**
