@@ -687,8 +687,8 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 
     private boolean keepRunning()
     {
-        boolean res = stopped.isSet() || runningTasks.isAbove( 0 );
-        return res;
+	boolean res = !stopped.isSet() || runningTasks.isAbove( 0 );
+	return res;
     }
 
     /** Run a work thread. Only return when we want to shut down the node. */
@@ -752,7 +752,8 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
                 }
             }
             synchronized( this ){
-                // This thread has stopped. Wake up all others, since they will want to stop too.
+                // This thread has stopped. Wake up all others, since they
+                // will want to stop too.
                 this.notifyAll();
             }
         }
