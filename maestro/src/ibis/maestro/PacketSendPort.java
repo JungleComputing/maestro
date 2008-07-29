@@ -20,9 +20,8 @@ import java.util.HashMap;
  *
  * @author Kees van Reeuwijk
  *
- * @param <T> The type of data that will be sent over this port.
  */
-class PacketSendPort<T extends Serializable> {
+class PacketSendPort {
     static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
     private final Ibis ibis;
     private final Node node;  // The node this runs on.
@@ -38,7 +37,7 @@ class PacketSendPort<T extends Serializable> {
     private int localSentCount = 0;
     private final CacheInfo cache[] = new CacheInfo[Settings.CONNECTION_CACHE_SIZE];
     private final HashMap<ReceivePortIdentifier, Integer> PortToIdMap = new HashMap<ReceivePortIdentifier, Integer>();
-    private PacketReceiveListener<T> localListener = null;
+    private PacketReceiveListener localListener = null;
     int clockHand = 0;
 
     /** The list of known destinations.
@@ -120,7 +119,7 @@ class PacketSendPort<T extends Serializable> {
         this.node = node;
     }
 
-    synchronized void setLocalListener( PacketReceiveListener<T> localListener )
+    synchronized void setLocalListener( PacketReceiveListener localListener )
     {
         if( this.localListener != null ) {
             System.err.println( "Cannot change the local listener" );
@@ -223,7 +222,7 @@ class PacketSendPort<T extends Serializable> {
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
-    private long send( int destination, T data, int timeout ) throws IOException
+    private long send( int destination, Message data, int timeout ) throws IOException
     {
         long len;
 
@@ -231,7 +230,8 @@ class PacketSendPort<T extends Serializable> {
         if( info.local ) {
             // This is the local destination. Use the back door to get
             // the info to the destination.
-            localListener.messageReceived( data, System.nanoTime() );
+            data.arrivalMoment = System.nanoTime();
+            localListener.messageReceived( data );
             len = 0;
             synchronized( this ) {
                 localSentCount++;
@@ -276,7 +276,7 @@ class PacketSendPort<T extends Serializable> {
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
-    private long send( IbisIdentifier receiver, String portname, T data, int timeout ) throws IOException
+    private long send( IbisIdentifier receiver, String portname, Message data, int timeout ) throws IOException
     {
         long len;
 
@@ -360,7 +360,7 @@ class PacketSendPort<T extends Serializable> {
      * @param timeout The timeout on the message.
      * @return The number of transmitted bytes, or -1 if the message could not be sent.
      */
-    long tryToSend( IbisIdentifier theIbis, String portName, T msg, int timeout )
+    long tryToSend( IbisIdentifier theIbis, String portName, Message msg, int timeout )
     {
         long sz = -1;
         try {
@@ -382,7 +382,7 @@ class PacketSendPort<T extends Serializable> {
      * @return The length of the transmitted data, or -1 if nothing could be transmitted.
      */
     @SuppressWarnings("synthetic-access")
-    long tryToSend( NodeIdentifier id, T msg, int timeout )
+    long tryToSend( NodeIdentifier id, Message msg, int timeout )
     {
         int destination = id.value;
         long sz = -1;
@@ -404,7 +404,7 @@ class PacketSendPort<T extends Serializable> {
      * @param timeout The timeout value to use.
      * @return The size of the transmitted message, or -1 if the transmission failed.
      */
-    long tryToSend( ReceivePortIdentifier port, T data, int timeout )
+    long tryToSend( ReceivePortIdentifier port, Message data, int timeout )
     {
         long len = -1;
         try {

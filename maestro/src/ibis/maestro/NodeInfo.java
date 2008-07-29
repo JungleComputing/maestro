@@ -267,7 +267,7 @@ final class NodeInfo
      * @param result The task result message that tells about this task.
      * @param arrivalMoment The time in ns the message arrived.
      */
-    synchronized TaskType registerTaskCompleted( TaskCompletedMessage result, long arrivalMoment )
+    synchronized TaskType registerTaskCompleted( TaskCompletedMessage result )
     {
         final long id = result.taskId;    // The identifier of the task, as handed out by us.
 
@@ -277,11 +277,11 @@ final class NodeInfo
             return null;
         }
         ActiveTask task = activeTasks.remove( ix );
-        long roundtripTime = arrivalMoment-task.startTime;
+        long roundtripTime = result.arrivalMoment-task.startTime;
         long roundtripError = Math.abs( task.predictedDuration-roundtripTime );
         long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
 
-        if( task.allowanceDeadline<arrivalMoment ) {
+        if( task.allowanceDeadline<result.arrivalMoment ) {
             missedAllowanceDeadlines++;
             if( Settings.traceMissedDeadlines ){
                 Globals.log.reportProgress(
@@ -292,7 +292,7 @@ final class NodeInfo
                 );
             }
         }
-        if( task.rescheduleDeadline<arrivalMoment ) {
+        if( task.rescheduleDeadline<result.arrivalMoment ) {
             if( Settings.traceMissedDeadlines ){
                 Globals.log.reportProgress(
                     "Missed reschedule deadline for " + task.task.type + " task: "
@@ -303,7 +303,7 @@ final class NodeInfo
             }
             missedRescheduleDeadlines++;
         }
-        registerWorkerInfo( result.workerQueueInfo, result.completionInfo, arrivalMoment );
+        registerWorkerInfo( result.workerQueueInfo, result.completionInfo, result.arrivalMoment );
         task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime, roundtripError );
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress(

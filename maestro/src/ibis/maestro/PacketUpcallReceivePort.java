@@ -8,19 +8,17 @@ import ibis.ipl.ReceivePort;
 import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 /**
  * A Receive port for packet reception.
  * 
  * @author Kees van Reeuwijk
  *
- * @param <T> The type of the packets that will be received on this port.
  */
-class PacketUpcallReceivePort<T extends Serializable> implements MessageUpcall {
+class PacketUpcallReceivePort implements MessageUpcall {
     static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
     private final ReceivePort port;
-    private PacketReceiveListener<T> listener;
+    private PacketReceiveListener listener;
 
     /**
      * Constructs a new PacketSendPort.
@@ -28,7 +26,7 @@ class PacketUpcallReceivePort<T extends Serializable> implements MessageUpcall {
      * @param name The name of the port.
      * @throws IOException
      */
-    PacketUpcallReceivePort( Ibis ibis, String name, PacketReceiveListener<T> listener ) throws IOException
+    PacketUpcallReceivePort( Ibis ibis, String name, PacketReceiveListener listener ) throws IOException
     {
 	this.listener = listener;
         port = ibis.createReceivePort(portType, name, this );
@@ -43,10 +41,9 @@ class PacketUpcallReceivePort<T extends Serializable> implements MessageUpcall {
     @SuppressWarnings("unchecked")
     public void upcall(ReadMessage msg) throws IOException, ClassNotFoundException
     {
-        long arrivalMoment = System.nanoTime();
-        T data = (T) msg.readObject();
-        msg.finish(); // Since the listener can do anything...
-        listener.messageReceived( data, arrivalMoment );
+        Message data = (Message) msg.readObject();
+        data.arrivalMoment = System.nanoTime();
+        listener.messageReceived( data );
     }
     
     /**

@@ -176,14 +176,22 @@ final class WorkerQueue {
         return res;
     }
 
-    /**
-     * Submit a new task, belonging to the job with the given identifier,
-     * to the queue.
-     * @param msg The task to submit.
-     * @return The new queue length.
+    /** 
+     * Add the given task to our queue.
+     * @param msg The task to add to the queue
      */
-    private int add( RunTaskMessage msg )
+    synchronized void add( RunTaskMessage msg )
     {
+        if( activeTime == 0L ) {
+            activeTime = msg.arrivalMoment;
+        }
+        if( queueEmptyMoment>0L ){
+            // The queue was empty before we entered this
+            // task in it. Record this for the statistics.
+            long queueEmptyInterval = msg.arrivalMoment - queueEmptyMoment;
+            idleDuration += queueEmptyInterval;
+            queueEmptyMoment = 0L;
+        }
         TaskType type = msg.taskInstance.type;
         TypeInfo info = getTypeInfo( type );
         int length = info.registerAdd();
@@ -192,18 +200,7 @@ final class WorkerQueue {
         if( Settings.traceQueuing ) {
             Globals.log.reportProgress( "Adding " + msg.taskInstance.formatJobAndType() + " at position " + pos + " of worker queue; length is now " + queue.size() + "; " + length + " of type " + type );
         }
-        return length;
-    }
-
-    synchronized void printStatistics( PrintStream s, long workInterval )
-    {
-        double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
-        s.println( "Worker: total idle time = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
-        for( TypeInfo t: queueTypes ) {
-            if( t != null ) {
-                t.printStatistics( s );
-            }
-        }
+        msg.setQueueMoment( msg.arrivalMoment, length );
     }
 
     synchronized RunTaskMessage remove()
@@ -223,27 +220,6 @@ final class WorkerQueue {
         return res;
     }
 
-    /** 
-     * Add the given task to our queue.
-     * @param msg The task to add to the queue
-     * @param arrivalMoment The moment in ns it arrived/
-     */
-    synchronized void add( RunTaskMessage msg, long arrivalMoment )
-    {
-        if( activeTime == 0L ) {
-            activeTime = arrivalMoment;
-        }
-        if( queueEmptyMoment>0L ){
-            // The queue was empty before we entered this
-            // task in it. Record this for the statistics.
-            long queueEmptyInterval = arrivalMoment - queueEmptyMoment;
-            idleDuration += queueEmptyInterval;
-            queueEmptyMoment = 0L;
-        }
-        int length = add( msg );
-        msg.setQueueMoment( arrivalMoment, length );
-    }
-
     synchronized long getActiveTime( long startTime )
     {
         if( activeTime<startTime ) {
@@ -251,5 +227,16 @@ final class WorkerQueue {
             return startTime;
         }
         return activeTime;
+    }
+
+    synchronized void printStatistics( PrintStream s, long workInterval )
+    {
+        double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
+        s.println( "Worker: total idle time = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
+        for( TypeInfo t: queueTypes ) {
+            if( t != null ) {
+                t.printStatistics( s );
+            }
+        }
     }
 }

@@ -110,7 +110,7 @@ final class NodeList {
      * @param theirIdentifierForUs Their identifier for us.
      * @return Our local identifier of this node.
      */
-    synchronized NodeInfo subscribeNode( ReceivePortIdentifier port, TaskType[] types, NodeIdentifier theirIdentifierForUs, PacketSendPort<Message> sendPort )
+    synchronized NodeInfo subscribeNode( ReceivePortIdentifier port, TaskType[] types, NodeIdentifier theirIdentifierForUs, PacketSendPort sendPort )
     {
         final IbisIdentifier ibis = port.ibisIdentifier();
         NodeInfo node = searchNode( nodes, ibis );
@@ -142,14 +142,14 @@ final class NodeList {
      * Register a task result in the info of the worker that handled it.
      * @param result The task result.
      */
-    synchronized void registerTaskCompleted( TaskCompletedMessage result, long arrivalMoment )
+    synchronized void registerTaskCompleted( TaskCompletedMessage result )
     {
         NodeInfo w = getNode( result.source );
         if( w == null ) {
             Globals.log.reportError( "Worker status message from unknown worker " + result.source );
             return;
         }
-        w.registerTaskCompleted( result, arrivalMoment );
+        w.registerTaskCompleted( result );
         w.registerAsCommunicating();
     }
 

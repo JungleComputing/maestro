@@ -22,11 +22,11 @@ import java.util.concurrent.Semaphore;
  * @author Kees van Reeuwijk
  *
  */
-public final class Node extends Thread implements PacketReceiveListener<Message>
+public final class Node extends Thread implements PacketReceiveListener
 {
     static final IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE, IbisCapabilities.ELECTIONS_STRICT );
-    private final PacketSendPort<Message> sendPort;
-    final PacketUpcallReceivePort<Message> receivePort;
+    private final PacketSendPort sendPort;
+    final PacketUpcallReceivePort receivePort;
     final long startTime;
     private long stopTime = 0;
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
@@ -41,6 +41,9 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private final UnregisteredNodeList unregisteredNodes = new UnregisteredNodeList();
 
     private final TaskSources taskSources = new TaskSources();
+
+    /** The incoming message queue. */
+    private final MessageQueue messageQueue = new MessageQueue();
 
     /** The list of maestro nodes in this computation. */
     private final MaestroList maestros = new MaestroList();
@@ -202,8 +205,8 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
             workThreads[i] = t;
             t.start();
         }
-        receivePort = new PacketUpcallReceivePort<Message>( Globals.localIbis, Globals.receivePortName, this );
-        sendPort = new PacketSendPort<Message>( Globals.localIbis, this );
+        receivePort = new PacketUpcallReceivePort( Globals.localIbis, Globals.receivePortName, this );
+        sendPort = new PacketSendPort( Globals.localIbis, this );
         sendPort.setLocalListener( this );    // FIXME: no longer necessary
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
         startTime = System.nanoTime();
@@ -292,8 +295,9 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      */
     private void updateAdministration()
     {
+        drainMessageQueue();
         registerWithMaster();
-        drainQueue();
+        drainMasterQueue();
     }
 
     /**
@@ -440,14 +444,13 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     /**
      * A worker has sent use a completion message for a task. Process it.
      * @param result The status message.
-     * @param arrivalMoment The time on ns this message arrived.
      */
-    private void handleTaskCompletedMessage( TaskCompletedMessage result, long arrivalMoment )
+    private void handleTaskCompletedMessage( TaskCompletedMessage result )
     {
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received a worker task completed message " + result );
         }
-        nodes.registerTaskCompleted( result, arrivalMoment );
+        nodes.registerTaskCompleted( result );
         final NodeInfo mi = nodes.get( result.source );
         if( mi != null ) {
             taskSources.add( mi );
@@ -458,9 +461,8 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     /**
      * A worker has sent us a message with its current status, handle it.
      * @param m The update message.
-     * @param arrivalMoment The time in ns the message arrived.
      */
-    private void handleNodeUpdateMessage( NodeUpdateMessage m, long arrivalMoment )
+    private void handleNodeUpdateMessage( NodeUpdateMessage m )
     {
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
@@ -469,24 +471,20 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         if( mi != null ) {
             taskSources.add( mi );
         }
-        nodes.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo, arrivalMoment );
+        nodes.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo, m.arrivalMoment );
     }
 
     /**
      * Handle a message containing a new task to run.
      * 
      * @param msg The message to handle.
-     * @param arrivalMoment The moment in ns this message arrived.
      */
-    private void handleRunTaskMessage( RunTaskMessage msg, long arrivalMoment )
+    private void handleRunTaskMessage( RunTaskMessage msg )
     {
-        workerQueue.add( msg, arrivalMoment );
+        workerQueue.add( msg );
         boolean isDead = nodes.registerAsCommunicating( msg.source );
         if( !isDead ) {
-            if( nodes == null ){
-                Globals.log.reportInternalError( "Null nodes????" );
-            }
-            else if( msg.source == null ){
+            if( msg.source == null ){
                 Globals.log.reportInternalError( "Null msg.source????" );
             }
             else {
@@ -500,7 +498,13 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      * @param msg The message we received.
      */
     @Override
-    public void messageReceived( Message msg, long arrivalMoment )
+    public void messageReceived( Message msg )
+    {
+        messageQueue.add( msg );
+    }
+
+    /** Handle the given message. */
+    private void handleMessage( Message msg )
     {
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received message " + msg );
@@ -508,7 +512,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         if( msg instanceof TaskCompletedMessage ) {
             TaskCompletedMessage result = (TaskCompletedMessage) msg;
 
-            handleTaskCompletedMessage( result, arrivalMoment );
+            handleTaskCompletedMessage( result );
         }
         else if( msg instanceof JobResultMessage ) {
             JobResultMessage m = (JobResultMessage) msg;
@@ -518,7 +522,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         else if( msg instanceof NodeUpdateMessage ) {
             NodeUpdateMessage m = (NodeUpdateMessage) msg;
 
-            handleNodeUpdateMessage( m, arrivalMoment );
+            handleNodeUpdateMessage( m );
         }
         else if( msg instanceof RegisterNodeMessage ) {
             RegisterNodeMessage m = (RegisterNodeMessage) msg;
@@ -533,13 +537,24 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         else if( msg instanceof RunTaskMessage ){
             RunTaskMessage runTaskMessage = (RunTaskMessage) msg;
 
-            handleRunTaskMessage( runTaskMessage, arrivalMoment );
+            handleRunTaskMessage( runTaskMessage );
         }
         else {
             Globals.log.reportInternalError( "the node should handle message of type " + msg.getClass() );
         }
         synchronized( this ) {
             this.notify();
+        }
+    }
+    
+    private void drainMessageQueue()
+    {
+        while( true ) {
+            Message msg = messageQueue.removeIfAny();
+            if( msg == null ) {
+                return;
+            }
+            handleMessage( msg );
         }
     }
 
@@ -630,7 +645,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     }
 
     /** On a locked queue, try to send out as many task as we can. */
-    private void drainQueue()
+    private void drainMasterQueue()
     {
         if( drainingQueue.tryAcquire() ) {
             // Only bother to drain the queue if no other thread is working on it.
