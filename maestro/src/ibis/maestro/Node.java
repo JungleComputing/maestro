@@ -409,8 +409,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	}
         NodeInfo nodeInfo;
 	synchronized( this ) {
-	    nodeInfo = nodes.subscribeNode( m.port, m.supportedTypes, theirIdentifierForUs );
-	    sendPort.registerDestination( m.port, nodeInfo.ourIdentifierForNode.value );
+	    nodeInfo = nodes.subscribeNode( m.port, m.supportedTypes, theirIdentifierForUs, sendPort );
 	}
 	if( !m.reply ) {
 	    unregisteredNodes.add( nodeInfo, true );

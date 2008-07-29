@@ -25,9 +25,6 @@ final class NodeInfo
     /** Info about the tasks for this particular node. */
     private final ArrayList<NodeTaskInfo> nodeTaskInfoList = new ArrayList<NodeTaskInfo>();
 
-    /** The last time we sent this master an update. */
-    private long lastUpdate = 0;
-
     /** Set to true when we know the worker is ready to talk to us. */
     private boolean enabled = false;
 
@@ -149,22 +146,6 @@ final class NodeInfo
     NodeIdentifier getTheirIdentifierForUs()
     {
         return theirIdentifierForUs;
-    }
-
-    /**
-     * @return The lastUpdate.
-     */
-    long getLastUpdate()
-    {
-        return lastUpdate;
-    }
-
-    /**
-     * @param lastUpdate the lastUpdate to set
-     */
-    void setLastUpdate(long lastUpdate)
-    {
-        this.lastUpdate = lastUpdate;
     }
 
     /** Mark this worker as dead, and return a list of active tasks

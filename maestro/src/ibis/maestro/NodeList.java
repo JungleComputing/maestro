@@ -52,7 +52,7 @@ final class NodeList {
      * @param theirIdentifierForUs Their identifier for us.
      * @return Our local identifier of this node.
      */
-    synchronized NodeInfo subscribeNode( ReceivePortIdentifier port, TaskType[] types, NodeIdentifier theirIdentifierForUs )
+    synchronized NodeInfo subscribeNode( ReceivePortIdentifier port, TaskType[] types, NodeIdentifier theirIdentifierForUs, PacketSendPort<Message> sendPort )
     {
         final IbisIdentifier ibis = port.ibisIdentifier();
         NodeInfo node = searchNode( nodes, ibis );
@@ -66,6 +66,7 @@ final class NodeList {
                 Globals.log.reportProgress( "Ibis " + ibis + " isn't in our admistration; creating new entry " + node );
             }
         }
+        sendPort.registerDestination( port, node.ourIdentifierForNode.value );
         node.setTheirIdentifierForUs( theirIdentifierForUs );
         for( TaskType t: types ) {
             TaskInfo info = taskInfoList.getTaskInfo( t );
