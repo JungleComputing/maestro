@@ -489,7 +489,15 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	workerQueue.add( msg, arrivalMoment );
 	boolean isDead = nodes.registerAsCommunicating( msg.source );
 	if( !isDead ) {
-	    sendUpdate( nodes.get( msg.source ) );
+            if( nodes == null ){
+                Globals.log.reportInternalError( "Null nodes????" );
+            }
+            else if( msg.source == null ){
+                Globals.log.reportInternalError( "Null msg.source????" );
+            }
+            else {
+                sendUpdate( nodes.get( msg.source ) );
+            }
 	}
     }
 

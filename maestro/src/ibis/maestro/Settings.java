@@ -60,7 +60,7 @@ class Settings {
     static final boolean traceMapReduce = false;
 
     /** Trace registration of the nodes with eachother. */
-    static final boolean traceRegistration = true;
+    static final boolean traceRegistration = false;
 
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.
@@ -75,7 +75,7 @@ class Settings {
     /** If set, routes tasks based on worker list shuffling instead of measured times. */
     static final boolean useShuffleRouting = false;
 
-    static final boolean noStealRequests = false;
+    static final boolean noStealRequests = true;
 
     /** How many times do we try to send a registration message to an ibis? */
     static final int MAXIMAL_REGISTRATION_TRIES = 8;

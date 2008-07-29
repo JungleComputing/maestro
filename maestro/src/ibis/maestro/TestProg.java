@@ -230,8 +230,8 @@ public class TestProg {
 	Job createJob = jobs.createJob("createarray", new CreateArrayTask() );
 	Job job = jobs.createJob(
 		"testprog",
-		new AssembleArrayTask( createJob ),
-                //new CreateArrayTask(),
+		//new AssembleArrayTask( createJob ),
+                new CreateArrayTask(),
 		new AdditionTask(),
 		new AdditionTask(),
 		new AdditionTask(),
