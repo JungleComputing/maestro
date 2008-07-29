@@ -25,6 +25,9 @@ final class NodeInfo
     /** Info about the tasks for this particular node. */
     private final ArrayList<NodeTaskInfo> nodeTaskInfoList = new ArrayList<NodeTaskInfo>();
 
+    /** Set to true when the types of this node are known. */
+    private boolean typesKnown = false;
+
     /** Set to true when we know the worker is ready to talk to us. */
     private boolean enabled = false;
 
@@ -204,6 +207,10 @@ final class NodeInfo
         if( dead ) {
             // It is strange to get info from a dead worker, but we're not going to try and
             // revive the worker.
+            return;
+        }
+        if( !typesKnown ){
+            // It's a bit early to tell us about type info; we don't have the administration yet.
             return;
         }
         if( !enabled ){ 
@@ -459,5 +466,10 @@ final class NodeInfo
         }
         suspect = false;
         return false;
+    }
+
+    public void setTypesKnown()
+    {
+        typesKnown = true;
     }
 }

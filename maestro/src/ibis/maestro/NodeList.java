@@ -44,42 +44,6 @@ final class NodeList {
     }
 
     /**
-     * Add a node to our node administration.
-     * We may, or may not, have info for this node. Create or update an entry. 
-     * Add some registration info to the node info we already have.
-     * @param port The receive port of this node.
-     * @param types The types it supports.
-     * @param theirIdentifierForUs Their identifier for us.
-     * @return Our local identifier of this node.
-     */
-    synchronized NodeInfo subscribeNode( ReceivePortIdentifier port, TaskType[] types, NodeIdentifier theirIdentifierForUs, PacketSendPort<Message> sendPort )
-    {
-        final IbisIdentifier ibis = port.ibisIdentifier();
-        NodeInfo node = searchNode( nodes, ibis );
-        if( node == null ) {
-            NodeIdentifier id = NodeIdentifier.getNextIdentifier();
-            boolean local = Globals.localIbis.identifier().equals( ibis );
-
-            // The node isn't in our administration, add it.
-            node = new NodeInfo( id, ibis, local );
-            if( Settings.traceRegistration ) {
-                Globals.log.reportProgress( "Ibis " + ibis + " isn't in our admistration; creating new entry " + node );
-            }
-        }
-        sendPort.registerDestination( port, node.ourIdentifierForNode.value );
-        node.setTheirIdentifierForUs( theirIdentifierForUs );
-        for( TaskType t: types ) {
-            TaskInfo info = taskInfoList.getTaskInfo( t );
-            NodeTaskInfo wti = node.registerTaskType( info );
-            info.addWorker( wti );
-        }
-        if( Settings.traceNodeProgress || Settings.traceRegistration ){
-            System.out.println( "Subscribing node " + node.ourIdentifierForNode + " theirIdentifierForUs=" + theirIdentifierForUs );
-        }
-        return node;
-    }
-
-    /**
      * We know the given ibis has disappeared from the computation.
      * Remove any workers on that ibis.
      * @param theIbis The ibis that was gone.
@@ -114,6 +78,64 @@ final class NodeList {
             orphans = wi.setDead();
         }
         return orphans;
+    }
+
+    /** Add a new node to the list with the given ibis identifier.
+     * @param theIbis The identifier o the ibis.
+     * @param local Is this a local node?
+     * @return The newly created Node info for this node.
+     */
+    synchronized NodeInfo registerNode( IbisIdentifier theIbis, boolean local )
+    {
+        NodeInfo info = searchNode( nodes, theIbis );
+        if( info != null ) {
+            return info;
+        }
+        NodeIdentifier id = NodeIdentifier.getNextIdentifier();
+        int ix = id.value;
+        while( nodes.size()<=ix ) {
+            nodes.add( null );
+        }
+        info = new NodeInfo( id, theIbis, local );
+        nodes.set( ix, info );
+        return info;
+    }
+
+    /**
+     * Add a node to our node administration.
+     * We may, or may not, have info for this node. Create or update an entry. 
+     * Add some registration info to the node info we already have.
+     * @param port The receive port of this node.
+     * @param types The types it supports.
+     * @param theirIdentifierForUs Their identifier for us.
+     * @return Our local identifier of this node.
+     */
+    synchronized NodeInfo subscribeNode( ReceivePortIdentifier port, TaskType[] types, NodeIdentifier theirIdentifierForUs, PacketSendPort<Message> sendPort )
+    {
+        final IbisIdentifier ibis = port.ibisIdentifier();
+        NodeInfo node = searchNode( nodes, ibis );
+        if( node == null ) {
+            NodeIdentifier id = NodeIdentifier.getNextIdentifier();
+            boolean local = Globals.localIbis.identifier().equals( ibis );
+    
+            // The node isn't in our administration, add it.
+            node = new NodeInfo( id, ibis, local );
+            if( Settings.traceRegistration ) {
+                Globals.log.reportProgress( "Ibis " + ibis + " isn't in our admistration; creating new entry " + node );
+            }
+        }
+        sendPort.registerDestination( port, node.ourIdentifierForNode.value );
+        node.setTheirIdentifierForUs( theirIdentifierForUs );
+        for( TaskType t: types ) {
+            TaskInfo info = taskInfoList.getTaskInfo( t );
+            NodeTaskInfo wti = node.registerTaskType( info );
+            info.addWorker( wti );
+        }
+        node.setTypesKnown();
+        if( Settings.traceNodeProgress || Settings.traceRegistration ){
+            System.out.println( "Subscribing node " + node.ourIdentifierForNode + " theirIdentifierForUs=" + theirIdentifierForUs );
+        }
+        return node;
     }
 
     /**
@@ -256,27 +278,6 @@ final class NodeList {
     synchronized NodeInfo get( NodeIdentifier id )
     {
         return getNode( id );
-    }
-
-    /** Add a new node to the list with the given ibis identifier.
-     * @param theIbis The identifier o the ibis.
-     * @param local Is this a local node?
-     * @return The newly created Node info for this node.
-     */
-    synchronized NodeInfo registerNode( IbisIdentifier theIbis, boolean local )
-    {
-        NodeInfo info = searchNode( nodes, theIbis );
-        if( info != null ) {
-            return info;
-        }
-        NodeIdentifier id = NodeIdentifier.getNextIdentifier();
-        int ix = id.value;
-        while( nodes.size()<=ix ) {
-            nodes.add( null );
-        }
-        info = new NodeInfo( id, theIbis, local );
-        nodes.set( ix, info );
-        return info;
     }
 
     synchronized boolean registerAsCommunicating( NodeIdentifier id )
