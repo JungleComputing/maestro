@@ -551,6 +551,11 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         if( Settings.noStealRequests ){
             return;
         }
+        synchronized( this ) {
+            if( stopped ) {
+                return;
+            }
+        }
 	// Try to tell a known master we want more tasks. We do this by
 	// telling it about our current state.
 	NodeInfo taskSource = taskSources.getRandomWorkSource();

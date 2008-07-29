@@ -188,7 +188,7 @@ final class NodeList {
      * @param taskType The type of the task.
      * @return The estimated time in nanoseconds.
      */
-    long getAverageCompletionTime( TaskType taskType )
+    synchronized long getAverageCompletionTime( TaskType taskType )
     {
         TaskInfo taskInfo = taskInfoList.getTaskInfo( taskType );
         return taskInfo.getAverageCompletionTime();
