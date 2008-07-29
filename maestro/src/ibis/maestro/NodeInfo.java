@@ -11,12 +11,13 @@ import java.util.ArrayList;
  * @author Kees van Reeuwijk
  *
  */
-final class NodeInfo {
+final class NodeInfo
+{
     /** Our local identifier of this node. */
-    final NodeIdentifier localIdentifier;
+    final NodeIdentifier ourIdentifierForNode;
 
     /** The identifier the node wants to see when we talk to it. */
-    private NodeIdentifier identifierOnNode;
+    private NodeIdentifier theirIdentifierForUs;
 
     /** The active tasks of this worker. */
     private final ArrayList<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
@@ -58,7 +59,7 @@ final class NodeInfo {
      */
     protected NodeInfo( NodeIdentifier id, IbisIdentifier ibis, boolean local )
     {
-        this.localIdentifier = id;
+        this.ourIdentifierForNode = id;
         this.ibis = ibis;
         this.local = local;
     }
@@ -93,7 +94,7 @@ final class NodeInfo {
             return;
         }
         if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "Master: worker " + localIdentifier + ":" + completionInfo );
+            Globals.log.reportProgress( "Master: worker " + ourIdentifierForNode + ":" + completionInfo );
         }
         if( completionInfo.completionInterval != Long.MAX_VALUE ) {
             workerTaskInfo.setCompletionTime( completionInfo.completionInterval );
@@ -111,7 +112,7 @@ final class NodeInfo {
             return;
         }
         if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "Master: worker " + localIdentifier + ":" + info );
+            Globals.log.reportProgress( "Master: worker " + ourIdentifierForNode + ":" + info );
         }
         workerTaskInfo.setDequeueTime( info.dequeueTime );
         workerTaskInfo.setComputeTime( info.computeTime );
@@ -133,21 +134,21 @@ final class NodeInfo {
     }
 
     /**
-     * Sets the identifier that we have on this node to the given value.
-     * @param workerIdentifier The identifier on this master.
+     * Sets the identifier this node uses for us to the given value.
+     * @param id The identifier on this master.
      */
-    void setIdentifierOnNode( NodeIdentifier workerIdentifier )
+    void setTheirIdentifierForUs( NodeIdentifier id )
     {
-        this.identifierOnNode = workerIdentifier;
+        this.theirIdentifierForUs = id;
     }
     
     /**
      * Gets the identifier that we have on this node.
      * @return The identifier.
      */
-    NodeIdentifier getIdentifierOnNode()
+    NodeIdentifier getTheirIdentifierForUs()
     {
-        return identifierOnNode;
+        return theirIdentifierForUs;
     }
 
     /**
@@ -180,7 +181,7 @@ final class NodeInfo {
         }
         activeTasks.clear(); // Don't let those orphans take up memory.
         if( !orphans.isEmpty() ) {
-            System.out.println( "Rescued " + orphans.size() + " orphans from dead worker " + localIdentifier );
+            System.out.println( "Rescued " + orphans.size() + " orphans from dead worker " + ourIdentifierForNode );
         }
         return orphans;
     }
@@ -209,10 +210,10 @@ final class NodeInfo {
     protected void setSuspect()
     {
         if( local ) {
-            System.out.println( "Cannot communicate with local node " + localIdentifier + "???" );
+            System.out.println( "Cannot communicate with local node " + ourIdentifierForNode + "???" );
         }
         else {
-            System.out.println( "Cannot communicate with node " + localIdentifier );
+            System.out.println( "Cannot communicate with node " + ourIdentifierForNode );
             suspect = true;
         }
     }
@@ -223,7 +224,7 @@ final class NodeInfo {
     protected void setUnsuspect()
     {
         if( !local && suspect && !dead ) {
-            System.out.println( "Restored contact with node " + localIdentifier );
+            System.out.println( "Restored contact with node " + ourIdentifierForNode );
             suspect = false;
         }
     }
@@ -237,7 +238,7 @@ final class NodeInfo {
         }
         if( !enabled ){ 
             if( Settings.traceWorkerList ) {
-                Globals.log.reportProgress( "Worker " + localIdentifier + " is now enabled" );
+                Globals.log.reportProgress( "Worker " + ourIdentifierForNode + " is now enabled" );
             }
             enabled = true;   // The worker now has its administration in order. We can submit jobs.
         }
@@ -247,7 +248,7 @@ final class NodeInfo {
             pingSentTime = 0L;  // We're no longer measuring a ping time.
             setPingTime( nodeTaskInfoList, pingTime );
             if( Settings.traceRemainingJobTime ) {
-                Globals.log.reportProgress( "Master: ping time to worker " + localIdentifier + " is " + Service.formatNanoseconds( pingTime ) );
+                Globals.log.reportProgress( "Master: ping time to worker " + ourIdentifierForNode + " is " + Service.formatNanoseconds( pingTime ) );
             }
         }
         if( Settings.traceRemainingJobTime ) {
@@ -274,7 +275,7 @@ final class NodeInfo {
                 s += i;
             }
             s += ']';
-            Globals.log.reportProgress( "Master: got new information from " + localIdentifier + ": " +  s );
+            Globals.log.reportProgress( "Master: got new information from " + ourIdentifierForNode + ": " +  s );
         }
         for( WorkerQueueInfo i: workerQueueInfo ) {
             registerWorkerQueueInfo( i );
@@ -392,7 +393,7 @@ final class NodeInfo {
     NodeTaskInfo registerTaskType( TaskInfo taskInfoOnMaster )
     {
         if( Settings.traceTypeHandling ){
-            System.out.println( "node " + localIdentifier + " can handle " + taskInfoOnMaster + ", local=" + local );
+            System.out.println( "node " + ourIdentifierForNode + " can handle " + taskInfoOnMaster + ", local=" + local );
         }
         int ix = taskInfoOnMaster.type.index;
         while( ix+1>nodeTaskInfoList.size() ) {
@@ -414,7 +415,7 @@ final class NodeInfo {
      */
     void printStatistics( PrintStream s )
     {
-        s.println( "Node " + localIdentifier + (local?" (local)":"") );
+        s.println( "Node " + ourIdentifierForNode + (local?" (local)":"") );
 
         if( missedAllowanceDeadlines>0 ) {
             int total = 0;

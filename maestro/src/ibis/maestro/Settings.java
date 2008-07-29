@@ -30,7 +30,7 @@ class Settings {
     static final boolean traceWorkerList = false;
     
     /** Trace the creation and destruction of Nodes. */
-    static final boolean traceNodes = true;
+    static final boolean traceNodes = false;
 
     /** Trace the events in the master queue? */
     static final boolean traceMasterQueue = false;
@@ -59,6 +59,9 @@ class Settings {
     /** Trace the adventures of the map/reduce handler. */
     static final boolean traceMapReduce = false;
 
+    /** Trace registration of the nodes with eachother. */
+    static final boolean traceRegistration = false;
+
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.
      */
@@ -73,4 +76,7 @@ class Settings {
     static final boolean useShuffleRouting = false;
 
     static final boolean noStealRequests = false;
+
+    /** How many times do we try to send a registration message to an ibis? */
+    static final int MAXIMAL_REGISTRATION_TRIES = 8;
 }

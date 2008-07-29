@@ -31,9 +31,9 @@ final class NodeList {
         return nodes.get( ix );
     }
 
-    private static NodeInfo searchNode( List<NodeInfo> workers, IbisIdentifier id )
+    private static NodeInfo searchNode( List<NodeInfo> nodes, IbisIdentifier id )
     {
-        for( NodeInfo w: workers ) {
+        for( NodeInfo w: nodes ) {
             if( w != null ) {
                 if( w.hasIbisIdentifier( id ) ) {
                     return w;
@@ -44,31 +44,35 @@ final class NodeList {
     }
 
     /**
+     * Add a node to our node administration.
+     * We may, or may not, have info for this node. Create or update an entry. 
      * Add some registration info to the node info we already have.
-     * @param port
-     * @param types
-     * @param masterIdentifier
+     * @param port The receive port of this node.
+     * @param types The types it supports.
+     * @param theirIdentifierForUs Their identifier for us.
      * @return Our local identifier of this node.
      */
-    synchronized NodeIdentifier subscribeNode( ReceivePortIdentifier port, TaskType[] types,
-        NodeIdentifier masterIdentifier )
+    synchronized NodeInfo subscribeNode( ReceivePortIdentifier port, TaskType[] types, NodeIdentifier theirIdentifierForUs )
     {
         final IbisIdentifier ibis = port.ibisIdentifier();
         NodeInfo node = searchNode( nodes, ibis );
         if( node == null ) {
-            Globals.log.reportInternalError( "Somebody replied to a registration request we didn't send" );
-            return null;
+            NodeIdentifier id = NodeIdentifier.getNextIdentifier();
+            boolean local = Globals.localIbis.identifier().equals( ibis );
+
+            // The node isn't in our administration, add it.
+            node = new NodeInfo( id, ibis, local );
         }
-        node.setIdentifierOnNode( masterIdentifier );
+        node.setTheirIdentifierForUs( theirIdentifierForUs );
         for( TaskType t: types ) {
             TaskInfo info = taskInfoList.getTaskInfo( t );
             NodeTaskInfo wti = node.registerTaskType( info );
             info.addWorker( wti );
         }
-        if( Settings.traceNodeProgress ){
-            System.out.println( "Subscribing node " + masterIdentifier );
+        if( Settings.traceNodeProgress || Settings.traceRegistration ){
+            System.out.println( "Subscribing node " + node.ourIdentifierForNode + " theirIdentifierForUs=" + theirIdentifierForUs );
         }
-        return node.localIdentifier;
+        return node;
     }
 
     /**
@@ -164,21 +168,24 @@ final class NodeList {
         return taskInfo.getAverageCompletionTime();
     }
 
-    synchronized void registerCompletionInfo( NodeIdentifier workerID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
+    synchronized void registerCompletionInfo( NodeIdentifier nodeID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
     {
-        NodeInfo w = nodes.get( workerID.value );
+        NodeInfo w = getNode( nodeID );
         w.registerWorkerInfo( workerQueueInfo, completionInfo, arrivalMoment );
         w.registerAsCommunicating();
     }
 
-    /** Given a worker, return the identifier of this master on the worker.
-     * @param workerID The worker to get the identifier for.
-     * @return The identifier of this master on the worker.
+    /** Given a remote node, returns the identifier this node uses for us.
+     * @param nodeID The node to get the identifier for us for for.
+     * @return The identifier for this node on the given node.
      */
-    NodeIdentifier getNodeIdentifier( NodeIdentifier workerID )
+    NodeIdentifier getTheirIdentifierForUs( NodeIdentifier nodeID )
     {
-        NodeInfo w = nodes.get( workerID.value );
-        return w.getIdentifierOnNode();
+        NodeInfo w = getNode( nodeID );
+        if( w == null ) {
+            return null;
+        }
+        return w.getTheirIdentifierForUs();
     }
 
     int size()
@@ -188,7 +195,7 @@ final class NodeList {
 
     void setPingStartMoment( NodeIdentifier workerID )
     {
-        NodeInfo w = nodes.get( workerID.value );
+        NodeInfo w = getNode( workerID );
         w.setPingStartMoment( System.nanoTime() );
     }
 
@@ -205,38 +212,6 @@ final class NodeList {
 
         if( wi != null ) {
             wi.setSuspect();
-        }
-    }
-
-    protected synchronized void setUnsuspect( IbisIdentifier theIbis )
-    {
-        NodeInfo nodeInfo = searchNode( nodes, theIbis );
-
-        if( nodeInfo != null ) {
-            nodeInfo.setUnsuspect();
-        }
-    }
-
-    /** Remove any suspect label from the given worker.
-     * @param workerID The id of the worker that is no longer suspect.
-     * @param node The node to report any change of state to.
-     */
-    protected void setUnsuspect( NodeIdentifier workerID )
-    {
-        if( workerID == null ){
-            return;
-        }
-        NodeInfo nodeInfo = nodes.get( workerID.value );
-        if( nodeInfo != null ) {
-            nodeInfo.setUnsuspect();
-        }
-    }
-
-    synchronized void registerAccept( NodeIdentifier source, ReceivePortIdentifier port, NodeIdentifier identifierOnMaster )
-    {
-        NodeInfo wi = getNode( source );
-        if( wi.isSuspect() && !wi.isDead() ) {
-            wi.setUnsuspect();
         }
     }
 
@@ -303,5 +278,18 @@ final class NodeList {
             return false;
         }
         return nodeInfo.registerAsCommunicating();
+    }
+
+    /** FIXME.
+     * @param theIbis
+     * @return
+     */
+    synchronized boolean hasReadyNode( IbisIdentifier theIbis )
+    {
+        NodeInfo nodeInfo = searchNode( nodes, theIbis );
+        if( nodeInfo == null ) {
+            return false;
+        }
+        return nodeInfo.isReady();
     }
 }

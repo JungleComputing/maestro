@@ -202,8 +202,11 @@ class PacketSendPort<T extends Serializable> {
             destinations.add( null );
         }
         PortToIdMap.put( port, identifier );
-        if( destinations.get( identifier ) != null ) {
-            System.err.println( "Internal error: duplicate registration for sendport ID " + identifier + ": old=" + destinations.get( identifier ) + "; new=" + port );
+        DestinationInfo destinationInfo = destinations.get( identifier );
+        if( destinationInfo != null ) {
+            if( !port.equals( destinationInfo.portIdentifier ) ) {
+                System.err.println( "Internal error: two different registrations for sendport ID " + identifier + ": old=" + destinationInfo + "; new=" + port );
+            }
         }
         boolean local = localListener.hasReceivePort( port );
         destinations.set( identifier, new DestinationInfo( port, local ) );
@@ -376,7 +379,8 @@ class PacketSendPort<T extends Serializable> {
      * @return The length of the transmitted data, or -1 if nothing could be transmitted.
      */
     @SuppressWarnings("synthetic-access")
-    long tryToSend( int destination, T msg, int timeout ) {
+    long tryToSend( NodeIdentifier id, T msg, int timeout ) {
+        int destination = id.value;
         long sz = -1;
         try {
             sz = send( destination, msg, timeout );

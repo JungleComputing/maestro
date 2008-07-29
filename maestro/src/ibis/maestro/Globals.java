@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.ipl.Ibis;
+
 import java.util.Random;
 
 
@@ -18,4 +20,6 @@ class Globals {
 
     /** A random-number generator. */
     static final Random rng = new Random();
+
+    static Ibis localIbis;
 }

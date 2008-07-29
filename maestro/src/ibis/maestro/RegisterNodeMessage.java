@@ -9,7 +9,8 @@ import ibis.ipl.ReceivePortIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-final class RegisterNodeMessage extends Message {
+final class RegisterNodeMessage extends Message
+{
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
@@ -18,20 +19,24 @@ final class RegisterNodeMessage extends Message {
 
     final TaskType[] supportedTypes;
     
-    /** Our identifier for the master. */
-    final NodeIdentifier masterIdentifier;
+    /** Our identifier for the node we're sending to. */
+    final NodeIdentifier ourIdentifierForNode;
+
+    /** Is this a reply to another registration? */
+    final boolean reply;
 
     /**
      * Constructs a new worker registration message.
      * @param port The receive port to use to submit tasks.
      * @param supportedTypes The list of supported types of this node worker.
-     * @param masterID The identifier to use.
+     * @param ourIdentifierForNode The identifier to use.
      */
-    RegisterNodeMessage( ReceivePortIdentifier port, TaskType[] supportedTypes, NodeIdentifier masterID )
+    RegisterNodeMessage( ReceivePortIdentifier port, TaskType[] supportedTypes, NodeIdentifier ourIdentifierForNode, boolean reply )
     {
 	this.port = port;
-	this.masterIdentifier = masterID;
+	this.ourIdentifierForNode = ourIdentifierForNode;
 	this.supportedTypes = supportedTypes;
+	this.reply = reply;
     }
 
     /**

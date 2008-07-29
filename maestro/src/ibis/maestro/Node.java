@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import ibis.ipl.Ibis;
 import ibis.ipl.IbisCapabilities;
 import ibis.ipl.IbisCreationFailedException;
 import ibis.ipl.IbisFactory;
@@ -8,6 +7,7 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.Registry;
 import ibis.ipl.RegistryEventHandler;
+import ibis.maestro.UnregisteredNodeList.UnregisteredNodeInfo;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -24,7 +24,6 @@ import java.util.Properties;
 public final class Node extends Thread implements PacketReceiveListener<Message>
 {
     static final IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE, IbisCapabilities.ELECTIONS_STRICT );
-    private final Ibis ibis;
     private final PacketSendPort<Message> sendPort;
     final PacketUpcallReceivePort<Message> receivePort;
     final long startTime;
@@ -37,16 +36,13 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private static final int workThreadCount = numberOfProcessors+2;
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
 
-    /** The list of ibises we haven't registered with yet. */
-    private final MasterInfoList unregisteredNodes = new MasterInfoList();
+    /** The list of ibises we haven't (successfully) registered with yet. */
+    private final UnregisteredNodeList unregisteredNodes = new UnregisteredNodeList();
 
     private final TaskSources taskSources = new TaskSources();
 
     /** The list of maestro nodes in this computation. */
     private final MaestroList maestros = new MaestroList();
-
-    /** The list of nodes we want to accept. */
-    private final AcceptList acceptList = new AcceptList();
 
     /** The list of running jobs with their completion listeners. */
     private final RunningJobs runningJobs = new RunningJobs();
@@ -80,7 +76,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	@Override
 	public void joined( IbisIdentifier theIbis )
 	{
-	    boolean local = theIbis.equals( ibis.identifier() );
+	    boolean local = theIbis.equals( Globals.localIbis.identifier() );
 	    if( !local ) {
 		addUnregisteredNode( theIbis, local );
 	    }
@@ -171,7 +167,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	this.jobs = jobs;
 	ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
 	registryEventHandler = new NodeRegistryEventHandler();
-	ibis = IbisFactory.createIbis(
+	Globals.localIbis = IbisFactory.createIbis(
 		ibisCapabilities,
 		ibisProperties,
 		true,
@@ -181,27 +177,27 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 		PacketBlockingReceivePort.portType
 	);
 	if( Settings.traceNodes ) {
-	    Globals.log.reportProgress( "Created ibis " + ibis );
+	    Globals.log.reportProgress( "Created ibis " + Globals.localIbis );
 	}
-	Registry registry = ibis.registry();
+	Registry registry = Globals.localIbis.registry();
 	if( runForMaestro ){
 	    maestro = registry.elect( MAESTRO_ELECTION_NAME );
-	    isMaestro = maestro.equals( ibis.identifier() );
+	    isMaestro = maestro.equals( Globals.localIbis.identifier() );
 	}
 	else {
 	    isMaestro = false;
 
 	}
 	if( Settings.traceNodes ) {
-	    Globals.log.reportProgress( "Ibis " + ibis.identifier() + ": isMaestro=" + isMaestro );
+	    Globals.log.reportProgress( "Ibis " + Globals.localIbis.identifier() + ": isMaestro=" + isMaestro );
 	}
 	for( int i=0; i<workThreads.length; i++ ) {
 	    WorkThread t = new WorkThread( this );
 	    workThreads[i] = t;
 	    t.start();
 	}
-	receivePort = new PacketUpcallReceivePort<Message>( ibis, Globals.receivePortName, this );
-	sendPort = new PacketSendPort<Message>( ibis, this );
+	receivePort = new PacketUpcallReceivePort<Message>( Globals.localIbis, Globals.receivePortName, this );
+	sendPort = new PacketSendPort<Message>( Globals.localIbis, this );
 	sendPort.setLocalListener( this );    // FIXME: no longer necessary
 	this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
 	startTime = System.nanoTime();
@@ -238,7 +234,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    Globals.log.reportProgress( "Node has terminated" );
 	}
 	try {
-	    ibis.end();
+	    Globals.localIbis.end();
 	}
 	catch( IOException x ) {
 	    // Nothing we can do about it.
@@ -268,7 +264,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      */
     private IbisIdentifier ibisIdentifier()
     {
-	return ibis.identifier();
+	return Globals.localIbis.identifier();
     }
 
     /** This ibis was reported as 'may be dead'. Try
@@ -278,7 +274,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     void setSuspect( IbisIdentifier theIbis )
     {
 	try {
-	    ibis.registry().assumeDead( theIbis );
+	    Globals.localIbis.registry().assumeDead( theIbis );
 	}
 	catch( IOException e )
 	{
@@ -293,17 +289,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      */
     private void updateAdministration()
     {
-	NodeIdentifier workerToAccept = null;
-
-	registerWithAnyMaster();
-	workerToAccept = acceptList.removeIfAny();
-	if( workerToAccept != null ) {
-	    boolean ok = sendAcceptMessage( workerToAccept );
-	    if( !ok ) {
-		// Couldn't send an accept message: back on the list.
-		acceptList.add( workerToAccept );
-	    }
-	}
+	registerWithMaster();
 	drainQueue();
     }
 
@@ -324,7 +310,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     @Override
     public void start()
     {
-	addUnregisteredNode( ibis.identifier(), true );
+	addUnregisteredNode( Globals.localIbis.identifier(), true );
 	receivePort.enable();           // We're open for business.
 	super.start();                  // Start the thread
     }
@@ -342,8 +328,12 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 
     private void addUnregisteredNode( IbisIdentifier theIbis, boolean local )
     {
-	NodeInfo info = nodes.addNode( theIbis, local );
-	unregisteredNodes.add( info );
+        if( nodes.hasReadyNode( theIbis ) ) {
+            // We already know everything there is to know about this node.
+            // (Presumably because it registered itself with us.)
+            return;
+        }
+	unregisteredNodes.add( theIbis, local, false );
     }
 
     private void removeNode( NodeIdentifier theWorker )
@@ -374,33 +364,18 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	s.printf(  "Master: # handled tasks  = %5d\n", handledTaskCount );
     }
 
-    private boolean sendAcceptMessage( NodeIdentifier workerID )
-    {
-	ReceivePortIdentifier myport = receivePort.identifier();
-	NodeIdentifier idOnWorker = nodes.getNodeIdentifier( workerID );
-	NodeAcceptMessage msg = new NodeAcceptMessage( idOnWorker, myport, workerID );
-	boolean ok = true;
-
-	nodes.setPingStartMoment( workerID );
-	long sz = sendPort.tryToSend( workerID.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-	if( sz<0 ){
-	    ok = false;
-	}
-	return ok;
-    }
-
-    private boolean registerWithNode( NodeInfo info )
+    private boolean registerWithNode( UnregisteredNodeInfo ni )
     {
 	boolean ok = true;
 	if( Settings.traceWorkerList ) {
-	    Globals.log.reportProgress( "Node " + ibisIdentifier() + ": sending registration message to ibis " + info );
+	    Globals.log.reportProgress( "Node " + ibisIdentifier() + ": sending registration message to ibis " + ni );
 	}
 	TaskType taskTypes[] = jobs.getSupportedTaskTypes();
-	RegisterNodeMessage msg = new RegisterNodeMessage( receivePort.identifier(), taskTypes, info.localIdentifier );
-	long sz = sendPort.tryToSend( info.ibis, Globals.receivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+	RegisterNodeMessage msg = new RegisterNodeMessage( receivePort.identifier(), taskTypes, ni.ourIdentifierForNode, ni.getReply() );
+	long sz = sendPort.tryToSend( ni.ibis, Globals.receivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	if( sz<0 ) {
-	    System.err.println( "Cannot register with node " + info.ibis );
-	    setSuspect( info.ibis );
+	    System.err.println( "Cannot register with node " + ni.ibis );
+	    setSuspect( ni.ibis );
 	    ok = false;
 	}
 	return ok;
@@ -414,12 +389,12 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 
 	// We ignore the result because we don't care about the message size,
 	// and if the update failed, it failed.
-	sendPort.tryToSend( node.value, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+	sendPort.tryToSend( node, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
     }
 
     private void sendUpdate( NodeInfo node )
     {
-	sendUpdateMessage( node.localIdentifier, node.getIdentifierOnNode() );
+	sendUpdateMessage( node.ourIdentifierForNode, node.getTheirIdentifierForUs() );
     }
 
     /**
@@ -431,18 +406,19 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      */
     private void handleRegisterNodeMessage( RegisterNodeMessage m )
     {
-	NodeIdentifier workerID;
+	NodeIdentifier theirIdentifierForUs = m.ourIdentifierForNode;  // Change of perspective...
 
-	if( Settings.traceNodeProgress ){
-	    Globals.log.reportProgress( "received registration message " + m + " from node " + m.port );
+	if( Settings.traceNodeProgress || Settings.traceRegistration ){
+	    Globals.log.reportProgress( "received registration message from node " + m.port );
 	}
 	if( m.supportedTypes.length == 0 ) {
 	    Globals.log.reportInternalError( "Node " + m.port + " has zero supported types??" );
 	}
-	workerID = nodes.subscribeNode( m.port, m.supportedTypes, m.masterIdentifier );
-	if( workerID != null ) {
-	    sendPort.registerDestination( m.port, workerID.value );
-	    acceptList.add( workerID );
+	NodeInfo nodeInfo = nodes.subscribeNode( m.port, m.supportedTypes, theirIdentifierForUs );
+	sendPort.registerDestination( m.port, nodeInfo.ourIdentifierForNode.value );
+	if( !m.reply ) {
+	    IbisIdentifier ibisIdentifier = m.port.ibisIdentifier();
+	    unregisteredNodes.add( ibisIdentifier, ibisIdentifier.equals( Globals.localIbis.identifier() ), true );
 	}
     }
 
@@ -474,15 +450,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    Globals.log.reportProgress( "Received node update message " + m );
 	}
 	nodes.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo, arrivalMoment );
-    }
-
-    private void handleNodeAcceptMessage( NodeAcceptMessage msg )
-    {    
-	if( Settings.traceNodeProgress ){
-	    Globals.log.reportProgress( "Received a node accept message " + msg );
-	}
-	nodes.registerAccept( msg.source, msg.port, msg.identifierOnNode );
-	sendUpdateMessage( msg.source, msg.identifierOnNode );
     }
 
     /**
@@ -540,11 +507,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 
 	    handleRunTaskMessage( runTaskMessage, arrivalMoment );
 	}
-	else if( msg instanceof NodeAcceptMessage ) {
-	    NodeAcceptMessage am = (NodeAcceptMessage) msg;
-
-	    handleNodeAcceptMessage( am );
-	}
 	else {
 	    Globals.log.reportInternalError( "the node should handle message of type " + msg.getClass() );
 	}
@@ -569,21 +531,24 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     /**
      * If there is any new master on our list, try to register with it.
      */
-    private void registerWithAnyMaster()
+    private void registerWithMaster()
     {
-	NodeInfo newIbis = unregisteredNodes.removeIfAny();
-	if( newIbis != null ){
-	    if( Settings.traceNodeProgress ){
-		Globals.log.reportProgress( "registering with node " + newIbis );
-	    }
-	    // We record the transmission time as a reasonable estimate of a sleep time.
-	    boolean ok = registerWithNode( newIbis );
-	    if( !ok ) {
-		// We couldn't reach this master. Put it back on the list.
-		unregisteredNodes.add( newIbis );
-	    }
-	    return;
-	}
+        UnregisteredNodeInfo ni = unregisteredNodes.removeIfAny();
+        if( ni != null ) {
+            if( Settings.traceNodeProgress ){
+                Globals.log.reportProgress( "registering with node " + ni );
+            }
+            boolean ok = registerWithNode( ni );
+            if( !ok ) {
+                int tries = ni.incrementTries();
+                if( tries<Settings.MAXIMAL_REGISTRATION_TRIES ) {
+                    unregisteredNodes.add( ni );
+                }
+                else {
+                    Globals.log.reportError( "I cannot register with node " + ni.ibis + " even after " + Settings.MAXIMAL_REGISTRATION_TRIES + " attempts; giving up" );
+                }
+            }
+        }
     }
 
     private void askMoreWork()
@@ -596,7 +561,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	NodeInfo taskSource = taskSources.getRandomWorkSource();
 	if( taskSource != null ){
 	    if( Settings.traceNodeProgress ){
-		Globals.log.reportProgress( "Asking node " + taskSource.localIdentifier + " for work" );
+		Globals.log.reportProgress( "Asking node " + taskSource.ourIdentifierForNode + " for work" );
 	    }
 	    sendUpdate( taskSource );
 	    return;
@@ -606,7 +571,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	taskSource = nodes.getRandomReadyNode();
 	if( taskSource != null ){
 	    if( Settings.traceNodeProgress ){
-		Globals.log.reportProgress( "Updating node " + taskSource.localIdentifier );
+		Globals.log.reportProgress( "Updating node " + taskSource.ourIdentifierForNode );
 	    }
 	    sendUpdate( taskSource );
 	}
@@ -651,11 +616,11 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 		System.out.println( "Selected " + worker + " as best for task " + task );
 	    }
 
-	    RunTaskMessage msg = new RunTaskMessage( worker.getIdentifierOnNode(), worker.localIdentifier, task, taskId );
-	    long sz = sendPort.tryToSend( worker.localIdentifier.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+	    RunTaskMessage msg = new RunTaskMessage( worker.getTheirIdentifierForUs(), worker.ourIdentifierForNode, task, taskId );
+	    long sz = sendPort.tryToSend( worker.ourIdentifierForNode, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	    if( sz<0 ){
 		// Try to put the paste back in the tube.
-		// The sendport has already reported the trouble with the worker.
+		// The sendport has already registered the trouble.
 		worker.retractTask( msg.taskId );
 		masterQueue.add( msg.taskInstance );
 	    }
@@ -742,6 +707,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 		}
 	    }
             synchronized( this ){
+                // This thread has stopped. Wake up all others, since they will want to stop too.
                 this.notifyAll();
             }
 	}
@@ -756,7 +722,6 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	long taskCompletionMoment = System.nanoTime();
 	final NodeIdentifier masterId = message.source;
 
-	long queueInterval = runMoment-message.getQueueMoment();
 	TaskType type = message.taskInstance.type;
 	CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes );
 	WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
@@ -766,7 +731,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    System.out.println( "TRACE:workerDwellTime " + type + " " + now + " " + 1e-9*workerDwellTime );
 	}
 	Message msg = new TaskCompletedMessage( message.workerIdentifier, message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
-	long sz = sendPort.tryToSend( masterId.value, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+	long sz = sendPort.tryToSend( masterId, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 
 	// FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
 
@@ -791,6 +756,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	synchronized( this ) {
 	    runningTasks--;
 	    if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
+	        long queueInterval = runMoment-message.getQueueMoment();
 	        Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
 	    }
 	}
