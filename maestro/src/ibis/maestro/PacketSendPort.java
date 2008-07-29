@@ -198,6 +198,9 @@ class PacketSendPort<T extends Serializable> {
     @SuppressWarnings("synthetic-access")
     synchronized void registerDestination( ReceivePortIdentifier port, int identifier )
     {
+        if( Settings.traceRegistration ) {
+            Globals.log.reportProgress( "PacketSendPort(): id=" + identifier + "->" + port );
+        }
         while( destinations.size()<=identifier ) {
             destinations.add( null );
         }
@@ -379,7 +382,8 @@ class PacketSendPort<T extends Serializable> {
      * @return The length of the transmitted data, or -1 if nothing could be transmitted.
      */
     @SuppressWarnings("synthetic-access")
-    long tryToSend( NodeIdentifier id, T msg, int timeout ) {
+    long tryToSend( NodeIdentifier id, T msg, int timeout )
+    {
         int destination = id.value;
         long sz = -1;
         try {
