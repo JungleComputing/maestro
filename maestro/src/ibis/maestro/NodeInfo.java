@@ -188,7 +188,7 @@ final class NodeInfo
     /**
      * This worker is suspect because it got a communication timeout.
      */
-    protected void setSuspect()
+    synchronized void setSuspect()
     {
         if( local ) {
             System.out.println( "Cannot communicate with local node " + ourIdentifierForNode + "???" );
@@ -199,18 +199,7 @@ final class NodeInfo
         }
     }
 
-    /**
-     * This worker is no longer suspect.
-     */
-    protected void setUnsuspect()
-    {
-        if( !local && suspect && !dead ) {
-            System.out.println( "Restored contact with node " + ourIdentifierForNode );
-            suspect = false;
-        }
-    }
-
-    void registerWorkerInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
+    synchronized void registerWorkerInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
     {
         if( dead ) {
             // It is strange to get info from a dead worker, but we're not going to try and
@@ -271,7 +260,7 @@ final class NodeInfo
      * @param result The task result message that tells about this task.
      * @param arrivalMoment The time in ns the message arrived.
      */
-    TaskType registerTaskCompleted( TaskCompletedMessage result, long arrivalMoment )
+    synchronized TaskType registerTaskCompleted( TaskCompletedMessage result, long arrivalMoment )
     {
         final long id = result.taskId;    // The identifier of the task, as handed out by us.
 
@@ -337,7 +326,7 @@ final class NodeInfo
      * @return If true, this task was added to the reservations, not
      *         to the collection of outstanding tasks.
      */
-    boolean registerTaskStart( TaskInstance task, long id, long predictedDuration )
+    synchronized boolean registerTaskStart( TaskInstance task, long id, long predictedDuration )
     {
         NodeTaskInfo workerTaskInfo = nodeTaskInfoList.get( task.type.index );
         if( workerTaskInfo == null ) {
@@ -357,7 +346,7 @@ final class NodeInfo
      * For some reason we could not send this task to the worker.
      * @param id The identifier of the task.
      */
-    void retractTask( long id )
+    synchronized void retractTask( long id )
     {
         int ix = searchActiveTask( id );
         if( ix<0 ) {
@@ -415,7 +404,7 @@ final class NodeInfo
         }
     }
 
-    void setPingStartMoment( long t )
+    synchronized void setPingStartMoment( long t )
     {
         this.pingSentTime = t;
     }
@@ -423,8 +412,9 @@ final class NodeInfo
     /**
      * @return Ping time.
      */
-    long getPingTime()
+    synchronized long getPingTime()
     {
+        // TODO: method is not used at the moment.
         return pingTime;
     }
 
