@@ -463,7 +463,7 @@ final class NodeInfo
      */
     boolean isReady()
     {
-        return !suspect && enabled;
+        return !suspect && enabled && theirIdentifierForUs != null;
     }
 
     /** Returns true iff this node has the given ibis identifier.

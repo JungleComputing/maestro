@@ -34,7 +34,7 @@ public class TaskSources
             // draw a random one.
             int ix = Globals.rng.nextInt( size );
             res = taskSources.remove( ix );
-            if( !res.isSuspect() ){
+            if( res.isReady() ){
                 return res;
             }
             // The master we drew from the lottery is suspect or dead. Try again.
