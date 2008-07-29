@@ -82,8 +82,8 @@ public class TaskInfo
                 for( NodeTaskInfo wi: workers ) {
                     NodeInfo worker = wi.nodeInfo;
                     System.out.print( " " + worker + "=" );
-                    if( worker.isDead() ) {
-                        System.out.print( "DEAD" );
+                    if( worker.isReady() ) {
+                        System.out.print( "NOT READY" );
                     }
                     else {
                         long val = wi.estimateJobCompletion();

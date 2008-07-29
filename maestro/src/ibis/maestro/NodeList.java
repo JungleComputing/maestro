@@ -35,7 +35,7 @@ final class NodeList {
     {
         for( NodeInfo w: nodes ) {
             if( w != null ) {
-                if( w.hasIbisIdentifier( id ) ) {
+                if( id.equals( w.ibis ) ) {
                     return w;
                 }
             }

@@ -204,6 +204,7 @@ final class MasterQueue
      *
      * @param sub The submission structure to fill.
      * @param workers The list of workers to choose from.
+     * @param noReadyWorkers The set of task types for which no ready workers are available.
      */
     @SuppressWarnings("synthetic-access")
     int selectSubmisson( int reserved, Submission sub, NodeList workers, HashSet<TaskType> noReadyWorkers )

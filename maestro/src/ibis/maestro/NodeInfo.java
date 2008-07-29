@@ -137,7 +137,7 @@ final class NodeInfo
      * Sets the identifier this node uses for us to the given value.
      * @param id The identifier on this master.
      */
-    void setTheirIdentifierForUs( NodeIdentifier id )
+    synchronized void setTheirIdentifierForUs( NodeIdentifier id )
     {
         this.theirIdentifierForUs = id;
     }
@@ -146,7 +146,7 @@ final class NodeInfo
      * Gets the identifier that we have on this node.
      * @return The identifier.
      */
-    NodeIdentifier getTheirIdentifierForUs()
+    synchronized NodeIdentifier getTheirIdentifierForUs()
     {
         return theirIdentifierForUs;
     }
@@ -155,7 +155,7 @@ final class NodeInfo
      * of this worker.
      * @return The list of task instances that were outstanding on this worker.
      */
-    ArrayList<TaskInstance> setDead()
+    synchronized ArrayList<TaskInstance> setDead()
     {
         suspect = true;
         dead = true;
@@ -171,19 +171,10 @@ final class NodeInfo
     }
 
     /**
-     * Returns true iff this worker is dead.
-     * @return Is this worker dead?
-     */
-    boolean isDead()
-    {
-        return dead;
-    }
-
-    /**
      * Returns true iff this worker is suspect.
      * @return Is this worker suspect?
      */
-    boolean isSuspect()
+    synchronized boolean isSuspect()
     {
         return suspect;
     }
@@ -320,7 +311,7 @@ final class NodeInfo
      * Returns true iff this worker is in a state where the master can finish.
      * @return True iff the master is allowed to finish.
      */
-    boolean allowMasterToFinish()
+    synchronized boolean allowMasterToFinish()
     {
         return activeTasks.isEmpty();
     }
@@ -367,7 +358,7 @@ final class NodeInfo
     /**
      * @param taskInfoOnMaster The task type to register for.
      */
-    NodeTaskInfo registerTaskType( TaskInfo taskInfoOnMaster )
+    synchronized NodeTaskInfo registerTaskType( TaskInfo taskInfoOnMaster )
     {
         if( Settings.traceTypeHandling ){
             System.out.println( "node " + ourIdentifierForNode + " can handle " + taskInfoOnMaster + ", local=" + local );
@@ -381,7 +372,7 @@ final class NodeInfo
         return info;
     }
     
-    NodeTaskInfo getNodeTaskInfo( TaskType taskType )
+    synchronized NodeTaskInfo getNodeTaskInfo( TaskType taskType )
     {
         return nodeTaskInfoList.get( taskType.index );
     }
@@ -390,7 +381,7 @@ final class NodeInfo
      * Given a print stream, print some statistics about this worker.
      * @param s The stream to print to.
      */
-    void printStatistics( PrintStream s )
+    synchronized void printStatistics( PrintStream s )
     {
         s.println( "Node " + ourIdentifierForNode + (local?" (local)":"") );
 
@@ -439,18 +430,9 @@ final class NodeInfo
      * as suspect, and if it is enabled.
      * @return Whether this worker is ready to do work.
      */
-    boolean isReady()
+    synchronized boolean isReady()
     {
-        return !suspect && enabled && theirIdentifierForUs != null;
-    }
-
-    /** Returns true iff this node has the given ibis identifier.
-     * @param id The ibis identifier to compare to.
-     * @return True iff this node has the given identifier.
-     */
-    protected boolean hasIbisIdentifier( IbisIdentifier id )
-    {
-        return id.equals( ibis );
+        return !suspect && enabled && theirIdentifierForUs != null && typesKnown;
     }
 
     /** 
@@ -468,7 +450,7 @@ final class NodeInfo
         return false;
     }
 
-    void setTypesKnown()
+    synchronized void setTypesKnown()
     {
         typesKnown = true;
     }
