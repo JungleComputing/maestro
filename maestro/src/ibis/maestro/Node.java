@@ -219,6 +219,11 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	}
         stopped = true;
     }
+    
+    private synchronized boolean isStopped()
+    {
+        return stopped;
+    }
 
     /**
      * Wait for this node to finish.
@@ -551,30 +556,34 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         if( Settings.noStealRequests ){
             return;
         }
-        synchronized( this ) {
-            if( stopped ) {
+        if( isStopped() ) {
+            return;
+        }
+        // Try to tell a known master we want more tasks. We do this by
+        // telling it about our current state.
+        NodeInfo taskSource = taskSources.getRandomWorkSource();
+        if( taskSource != null ){
+            if( Settings.traceNodeProgress ){
+                Globals.log.reportProgress( "Asking node " + taskSource.ourIdentifierForNode + " for work" );
+            }
+            if( isStopped() ) {
                 return;
             }
+            sendUpdate( taskSource );
+            return;
         }
-	// Try to tell a known master we want more tasks. We do this by
-	// telling it about our current state.
-	NodeInfo taskSource = taskSources.getRandomWorkSource();
-	if( taskSource != null ){
-	    if( Settings.traceNodeProgress ){
-		Globals.log.reportProgress( "Asking node " + taskSource.ourIdentifierForNode + " for work" );
-	    }
-	    sendUpdate( taskSource );
-	    return;
-	}
 
-	// Finally, just tell a random master about our current work queues.
-	taskSource = nodes.getRandomReadyNode();
-	if( taskSource != null ){
-	    if( Settings.traceNodeProgress ){
-		Globals.log.reportProgress( "Updating node " + taskSource.ourIdentifierForNode );
-	    }
-	    sendUpdate( taskSource );
-	}
+        // Finally, just tell a random master about our current work queues.
+        taskSource = nodes.getRandomReadyNode();
+        if( taskSource != null ){
+            if( Settings.traceNodeProgress ){
+                Globals.log.reportProgress( "Updating node " + taskSource.ourIdentifierForNode );
+            }
+            if( isStopped() ) {
+                return;
+            }
+            sendUpdate( taskSource );
+        }
     }
 
     /**
