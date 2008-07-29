@@ -18,6 +18,7 @@ import java.util.List;
  */
 final class MasterQueue
 {
+    int taskCount = 0;
     private final ArrayList<TypeInfo> queueTypes = new ArrayList<TypeInfo>();
     protected final ArrayList<TaskInstance> queue = new ArrayList<TaskInstance>();
 
@@ -178,6 +179,7 @@ final class MasterQueue
     @SuppressWarnings("synthetic-access")
     protected void add( TaskInstance task )
     {
+        taskCount++;
 	TaskType type = task.type;
 	TypeInfo info = getTypeInfo( type );
 	int length = info.registerAdd();
@@ -259,6 +261,7 @@ final class MasterQueue
 		t.printStatistics( s );
 	    }
 	}
+        s.printf(  "Master: # incoming tasks = %5d\n", taskCount );
     }
 
     @SuppressWarnings("synthetic-access")

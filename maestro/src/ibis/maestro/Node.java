@@ -59,17 +59,16 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private final MasterQueue masterQueue = new MasterQueue();
     final WorkerQueue workerQueue = new WorkerQueue();
     private long nextTaskId = 0;
-    private long incomingTaskCount = 0;
-    private long handledTaskCount = 0;
-    private long registrationMessageCount = 0;
-    private long updateMessageCount = 0;
-    private long submitMessageCount = 0;
-    private long taskResultMessageCount = 0;
-    private long jobResultMessageCount = 0;
+    private Counter handledTaskCount = new Counter();
+    private Counter registrationMessageCount = new Counter();
+    private Counter updateMessageCount = new Counter();
+    private Counter submitMessageCount = new Counter();
+    private Counter taskResultMessageCount = new Counter();
+    private Counter jobResultMessageCount = new Counter();
 
-    private boolean stopped = false;
+    private Flag stopped = new Flag( false );
 
-    private int runningTasks = 0;
+    private UpDownCounter runningTasks = new UpDownCounter();
     private final JobList jobs;
 
     private class NodeRegistryEventHandler implements RegistryEventHandler {
@@ -217,17 +216,17 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
      * This does not mean that the node stops immediately,
      * but it does mean the master and worker try to wind down the work.
      */
-    public synchronized void setStopped()
+    public void setStopped()
     {
 	if( Settings.traceNodes ) {
 	    Globals.log.reportProgress( "Set node to stopped state" );
 	}
-        stopped = true;
+        stopped.set();
     }
-    
-    private synchronized boolean isStopped()
+
+    private boolean isStopped()
     {
-        return stopped;
+        return stopped.isSet();
     }
 
     /**
@@ -355,11 +354,11 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	s.printf(  "# threads       = %5d\n", workThreads.length );
 	nodes.printStatistics( s );
 	jobs.printStatistics( s );
-	s.printf( "registration messages:   %5d\n", registrationMessageCount );
-        s.printf( "update       messages:   %5d\n", updateMessageCount );
-        s.printf( "submit       messages:   %5d\n", submitMessageCount );
-        s.printf( "task result  messages:   %5d\n", taskResultMessageCount );
-        s.printf( "job result   messages:   %5d\n", jobResultMessageCount );
+	s.printf( "registration messages:   %5d\n", registrationMessageCount.get() );
+        s.printf( "update       messages:   %5d\n", updateMessageCount.get() );
+        s.printf( "submit       messages:   %5d\n", submitMessageCount.get() );
+        s.printf( "task result  messages:   %5d\n", taskResultMessageCount.get() );
+        s.printf( "job result   messages:   %5d\n", jobResultMessageCount.get() );
 	sendPort.printStatistics( s, "send port" );
 	long activeTime = workerQueue.getActiveTime( startTime );
 	long workInterval = stopTime-activeTime;
@@ -368,8 +367,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	s.println( "Worker: run time        = " + Service.formatNanoseconds( workInterval ) );
 	s.println( "Worker: activated after = " + Service.formatNanoseconds( activeTime-startTime ) );
 	masterQueue.printStatistics( s );
-	s.printf(  "Master: # incoming tasks = %5d\n", incomingTaskCount );
-	s.printf(  "Master: # handled tasks  = %5d\n", handledTaskCount );
+	s.printf(  "Master: # handled tasks  = %5d\n", handledTaskCount.get() );
     }
 
     private boolean registerWithNode( UnregisteredNodeInfo ni )
@@ -386,9 +384,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    setSuspect( ni.ibis );
 	    ok = false;
 	}
-	synchronized( this ) {
-	    this.registrationMessageCount++;
-	}
+	registrationMessageCount.add();
 	return ok;
     }
 
@@ -401,9 +397,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	// We ignore the result because we don't care about the message size,
 	// and if the update failed, it failed.
 	sendPort.tryToSend( node, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
-        synchronized( this ) {
-            this.updateMessageCount++;
-        }
+	this.updateMessageCount.add();
     }
 
     private void sendUpdate( NodeInfo node )
@@ -456,9 +450,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
         if( mi != null ) {
             taskSources.add( mi );
         }
-	synchronized( this ) {
-	    handledTaskCount++;
-	}
+        handledTaskCount.add();
     }
 
     /**
@@ -631,9 +623,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
     private long sendResultMessage( ReceivePortIdentifier port, JobInstanceIdentifier id, Object result )
     {
 	Message msg = new JobResultMessage( id, result );	
-        synchronized( this ) {
-            this.jobResultMessageCount++;
-        }
+	jobResultMessageCount.add();
 	return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
     }
 
@@ -670,9 +660,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	        worker.retractTask( msg.taskId );
 	        masterQueue.add( msg.taskInstance );
 	    }
-	    synchronized( this ) {
-	        this.submitMessageCount++;
-	    }
+	    submitMessageCount.add();
 	}
     }
 
@@ -686,15 +674,14 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    System.out.println( "Master: received task " + task );
 	}
 	synchronized ( masterQueue ) {
-	    incomingTaskCount++;
 	    masterQueue.add( task );
 	}
 	drainQueue();
     }
 
-    private synchronized boolean keepRunning()
+    private boolean keepRunning()
     {
-	boolean res = !stopped || runningTasks>0;
+	boolean res = stopped.isSet() || runningTasks.isAbove( 0 );
 	return res;
     }
 
@@ -705,8 +692,10 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	    updateAdministration();
 	    RunTaskMessage message = workerQueue.remove();
 	    if( message == null ) {
-		// No work in the worker queue. See if we can get more work.
-		askMoreWork();
+	        if( runningTasks.isBelow( this.numberOfProcessors ) ) {
+	            // No work in the worker queue, not all processors are busy, See if we can get more work.
+	            askMoreWork();
+	        }
                 long sleepTime = 100;
 		if( Settings.traceWaits ) {
 		    System.out.println( "Worker: waiting for " + sleepTime + "ms for new tasks in queue" );
@@ -730,11 +719,9 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 		taskInfoList.setQueueTimePerTask( type, queueInterval, queueLength );
 		Task task = jobs.getTask( type );
 
-		synchronized( this ) {
-		    runningTasks++;
-		    if( Settings.traceNodeProgress ) {
-			System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueInterval ) + "; there are now " + runningTasks + " running tasks" );
-		    }
+		runningTasks.up();
+		if( Settings.traceNodeProgress ) {
+		    System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueInterval ) + "; there are now " + runningTasks + " running tasks" );
 		}
 		Object input = message.taskInstance.input;
 		if( task instanceof AtomicTask ) {
@@ -781,9 +768,7 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	}
 	Message msg = new TaskCompletedMessage( message.workerIdentifier, message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
 	long sz = sendPort.tryToSend( masterId, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-        synchronized( this ) {
-            this.taskResultMessageCount++;
-        }
+	taskResultMessageCount.add();
 
 	// FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
 
@@ -802,12 +787,10 @@ public final class Node extends Thread implements PacketReceiveListener<Message>
 	// Update statistics.
 	final long computeInterval = taskCompletionMoment-runMoment;
 	taskInfoList.countTask( type, computeInterval );
-	synchronized( this ) {
-	    runningTasks--;
-	    if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
-	        long queueInterval = runMoment-message.getQueueMoment();
-	        Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
-	    }
+	runningTasks.down();
+	if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
+	    long queueInterval = runMoment-message.getQueueMoment();
+	    Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
 	}
     }
 }

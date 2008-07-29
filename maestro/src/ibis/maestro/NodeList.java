@@ -177,7 +177,9 @@ final class NodeList {
     void printStatistics( PrintStream out )
     {
         for( NodeInfo wi: nodes ) {
-            wi.printStatistics( out );
+            if( wi != null ) {
+                wi.printStatistics( out );
+            }
         }
     }
 
