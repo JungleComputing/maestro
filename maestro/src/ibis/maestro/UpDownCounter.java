@@ -43,4 +43,9 @@ public class UpDownCounter
     {
         return Integer.toString( value );
     }
+
+    synchronized boolean isLessOrEqual( int v )
+    {
+        return this.value<=v;
+    }
 }

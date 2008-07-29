@@ -177,7 +177,7 @@ final class MasterQueue
      * @param task The task to submit.
      */
     @SuppressWarnings("synthetic-access")
-    protected void add( TaskInstance task )
+    protected synchronized void add( TaskInstance task )
     {
         taskCount++;
 	TaskType type = task.type;
