@@ -84,5 +84,5 @@ class Settings {
     static final int MAXIMAL_REGISTRATION_TRIES = 8;
 
     /** The time in >>ms<<< between node updates. */
-    static final long UPDATE_INTERVAL = 10;
+    static final long UPDATE_INTERVAL = 5;
 }

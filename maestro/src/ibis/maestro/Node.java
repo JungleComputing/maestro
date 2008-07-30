@@ -801,7 +801,7 @@ public final class Node extends Thread implements PacketReceiveListener
                         askMoreWork();
                     }
                 }
-                long sleepTime = 100;
+                long sleepTime = 3;
                 if( Settings.traceWaits ) {
                     System.out.println( "Worker: waiting for " + sleepTime + "ms for new tasks in queue" );
                 }
