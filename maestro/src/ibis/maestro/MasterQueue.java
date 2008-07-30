@@ -121,6 +121,18 @@ final class MasterQueue
 	}
     }
 
+    /**
+     * Constructs a new MasterQueue.
+     * @param taskTypes The supported types.
+     */
+    MasterQueue( TaskType[] taskTypes )
+    {
+        for( TaskType t: taskTypes ) {
+            getTypeInfo( t );  // Make sure the type administration is there.
+        }
+        // TODO: after this point no new types should have to be added.
+    }
+
     private TypeInfo getTypeInfo( TaskType t )
     {
 	int ix = t.index;
@@ -172,24 +184,52 @@ final class MasterQueue
     }
 
     /**
-     * Submit a new task, belonging to the job with the given identifier,
-     * to the queue.
-     * @param task The task to submit.
+     * Returns true iff the entire queue is empty.
+     * @return
      */
+    synchronized boolean isEmpty()
+    {
+        return queue.isEmpty();
+    }
+
     @SuppressWarnings("synthetic-access")
-    protected synchronized void add( TaskInstance task )
+    private void unsynchronizedAdd( TaskInstance task )
     {
         taskCount++;
-	TaskType type = task.type;
-	TypeInfo info = getTypeInfo( type );
-	int length = info.registerAdd();
+        TaskType type = task.type;
+        TypeInfo info = getTypeInfo( type );
+        int length = info.registerAdd();
         int pos = findInsertionPoint( queue, task );
-	queue.add( pos, task );
+        queue.add( pos, task );
         if( Settings.traceQueuing ) {
             Globals.log.reportProgress( "Adding " + task.formatJobAndType() + " at position " + pos + " of master queue; length is now " + queue.size() + "; " + length + " of type " + type );
         }
     }
-    
+
+    /**
+     * Submit a new task, belonging to the job with the given identifier,
+     * to the queue.
+     * @param task The task to submit.
+     */
+    protected synchronized void add( TaskInstance task )
+    {
+        unsynchronizedAdd( task );
+    }
+
+    /**
+     * Adds all the task instances in the given list to the queue.
+     * The list may be <code>null</code>.
+     * @param l The list of task instances to add.
+     */
+    protected synchronized void add( List<TaskInstance> l )
+    {
+        if( l != null ) {
+            for( TaskInstance ti: l ) {
+        	unsynchronizedAdd( ti );
+            }
+        }
+    }
+
     protected TaskInstance remove()
     {
         return queue.remove( 0 );
@@ -277,29 +317,6 @@ final class MasterQueue
             }
 	}
 	return res;
-    }
-
-    /**
-     * Returns true iff the entire queue is empty.
-     * @return
-     */
-    synchronized boolean isEmpty()
-    {
-        return queue.isEmpty();
-    }
-
-    /**
-     * Adds all the task instances in the given list to the queue.
-     * The list may be <code>null</code>.
-     * @param l The list of task instances to add.
-     */
-    protected synchronized void add( List<TaskInstance> l )
-    {
-	if( l != null ) {
-	    for( TaskInstance ti: l ) {
-		add( ti );
-	    }
-	}
     }
 
     /**

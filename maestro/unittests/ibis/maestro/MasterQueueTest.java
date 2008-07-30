@@ -41,7 +41,8 @@ public class MasterQueueTest extends TestCase
     {
         JobIdentifier id = null;
         TaskType type = new TaskType( id, 0, 1, 0 );
-        MasterQueue queue = new MasterQueue();
+        TaskType l[] = new TaskType[] { type };
+        MasterQueue queue = new MasterQueue( l );
 
         addToQueue( type, queue, 0 );
         removeFromQueue( queue, 0 );

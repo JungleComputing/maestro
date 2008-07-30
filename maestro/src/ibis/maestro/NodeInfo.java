@@ -200,7 +200,7 @@ final class NodeInfo
         }	
     }
 
-    synchronized void registerWorkerInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
+    synchronized void registerWorkerInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
     {
         if( dead ) {
             // It is strange to get info from a dead worker, but we're not going to try and
@@ -286,7 +286,7 @@ final class NodeInfo
             }
             missedRescheduleDeadlines++;
         }
-        registerWorkerInfo( result.workerQueueInfo, result.completionInfo, result.arrivalMoment );
+        registerWorkerInfo( result.workerQueueInfo, result.completionInfo );
         task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime, roundtripError );
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress(

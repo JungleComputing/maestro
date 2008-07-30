@@ -61,8 +61,8 @@ public final class Node extends Thread implements PacketReceiveListener
     private boolean isMaestro;
 
     private final boolean traceStats;
-    private final MasterQueue masterQueue = new MasterQueue();
-    final WorkerQueue workerQueue = new WorkerQueue();
+    private final MasterQueue masterQueue;
+    private final WorkerQueue workerQueue;
     private long nextTaskId = 0;
     private Counter handledTaskCount = new Counter();
     private Counter registrationMessageCount = new Counter();
@@ -138,7 +138,7 @@ public final class Node extends Thread implements PacketReceiveListener
                         	}
                             }
                             else {
-                        	sendUpdate( target );
+                        	sendUpdateMessage( target );
                             }
                         }
                         synchronized( this ) {
@@ -251,6 +251,9 @@ public final class Node extends Thread implements PacketReceiveListener
         IbisIdentifier maestro;
 
         this.jobs = jobs;
+        TaskType taskTypes[] = jobs.getSupportedTaskTypes();
+        masterQueue = new MasterQueue( taskTypes );
+        workerQueue = new WorkerQueue( taskTypes );
         ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
         registryEventHandler = new NodeRegistryEventHandler();
         Globals.localIbis = IbisFactory.createIbis(
@@ -496,7 +499,7 @@ public final class Node extends Thread implements PacketReceiveListener
         updateMessageCount.add();
     }
 
-    private void sendUpdate( NodeInfo node )
+    private void sendUpdateMessage( NodeInfo node )
     {
         sendUpdateMessage( node.ourIdentifierForNode, node.getTheirIdentifierForUs() );
     }
@@ -547,7 +550,7 @@ public final class Node extends Thread implements PacketReceiveListener
             nodeInfo = nodes.subscribeNode( m.port, m.supportedTypes, theirIdentifierForUs, sendPort );
         }
         if( m.reply ) {
-            sendUpdate( nodeInfo );
+            sendUpdateMessage( nodeInfo );
         }
         else {
             unregisteredNodes.add( nodeInfo, true );
@@ -585,7 +588,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( mi != null ) {
             taskSources.add( mi );
         }
-        nodes.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo, m.arrivalMoment );
+        nodes.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo );
     }
 
     /**
@@ -631,7 +634,7 @@ public final class Node extends Thread implements PacketReceiveListener
             NodeInfo nodeInfo = nodes.get( msg.source );
             if( nodeInfo != null ) {
                 // We have the node in our administration.
-                sendUpdate( nodeInfo );
+                sendUpdateMessage( nodeInfo );
             }
         }
     }
@@ -752,7 +755,7 @@ public final class Node extends Thread implements PacketReceiveListener
             if( isStopped() ) {
                 return;
             }
-            sendUpdate( taskSource );
+            sendUpdateMessage( taskSource );
             return;
         }
         if( Settings.noStealRequests ){
@@ -768,7 +771,7 @@ public final class Node extends Thread implements PacketReceiveListener
             if( isStopped() ) {
                 return;
             }
-            sendUpdate( taskSource );
+            sendUpdateMessage( taskSource );
         }
     }
 

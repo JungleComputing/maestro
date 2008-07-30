@@ -197,11 +197,11 @@ final class NodeList {
         return taskInfo.getAverageCompletionTime();
     }
 
-    synchronized void registerCompletionInfo( NodeIdentifier nodeID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
+    synchronized void registerCompletionInfo( NodeIdentifier nodeID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
     {
         NodeInfo nodeInfo = getNode( nodeID );
         if( nodeInfo != null ) {
-            nodeInfo.registerWorkerInfo( workerQueueInfo, completionInfo, arrivalMoment );
+            nodeInfo.registerWorkerInfo( workerQueueInfo, completionInfo );
             nodeInfo.registerAsCommunicating();
         }
     }

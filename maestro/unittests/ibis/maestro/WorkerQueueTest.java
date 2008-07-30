@@ -42,7 +42,8 @@ public class WorkerQueueTest extends TestCase
     {
 	JobIdentifier id = null;
 	TaskType type = new TaskType( id, 0, 1, 0 );
-	WorkerQueue queue = new WorkerQueue();
+        TaskType l[] = new TaskType[] { type };
+	WorkerQueue queue = new WorkerQueue( l );
 
 	addToQueue( type, queue, 0 );
 	removeFromQueue( queue, 0 );
