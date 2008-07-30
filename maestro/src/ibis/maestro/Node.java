@@ -566,7 +566,11 @@ public final class Node extends Thread implements PacketReceiveListener
                 Globals.log.reportInternalError( "Null msg.source????" );
             }
             else {
-                sendUpdate( nodes.get( msg.source ) );
+                NodeInfo nodeInfo = nodes.get( msg.source );
+                if( nodeInfo != null ) {
+                    // Somehow we don't have the node in our administration.
+                    sendUpdate( nodeInfo );
+                }
             }
         }
     }
@@ -773,9 +777,7 @@ public final class Node extends Thread implements PacketReceiveListener
             System.out.println( "Master: received task " + task );
         }
         masterQueue.add( task );
-        synchronized( this ) {
-            notify();
-        }
+        drainMasterQueue();
     }
 
     private boolean keepRunning()
