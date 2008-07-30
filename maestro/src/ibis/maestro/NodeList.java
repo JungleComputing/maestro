@@ -224,14 +224,6 @@ final class NodeList {
         return nodes.size();
     }
 
-    void setPingStartMoment( NodeIdentifier workerID )
-    {
-        NodeInfo w = getNode( workerID );
-        if( w != null ) {
-            w.setPingStartMoment( System.nanoTime() );
-        }
-    }
-
     synchronized protected void resetReservations()
     {
         for( NodeInfo nodeInfo: nodes ) {

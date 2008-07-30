@@ -28,19 +28,13 @@ final class NodeInfo
     /** Set to true when the types of this node are known. */
     private boolean typesKnown = false;
 
-    /** Set to true when we know the worker is ready to talk to us. */
-    private boolean enabled = false;
-
     private boolean suspect = false;  // This node may be dead.
 
     private boolean dead = false;     // This node is known to be dead.
 
-    final boolean local;
+    private boolean needsPing = true; // True if nobody tried to ping it yet.
 
-    /** The time the accept message was sent to this worker.
-     * The roundtrip time determines the ping duration of this worker.
-     */
-    private long pingSentTime = 0;
+    final boolean local;
 
     /** The duration of the ping round-trip for this worker. */
     private long pingTime;
@@ -62,6 +56,10 @@ final class NodeInfo
         this.ourIdentifierForNode = id;
         this.ibis = ibis;
         this.local = local;
+        // For non-local nodes, start with a very pessimistic ping time.
+        // This means that if we really need another node, we use it, otherwise
+        // we wait for the measurement of the real ping time.
+        pingTime = local?0L:Service.HOUR_IN_NANOSECONDS;
     }
 
     /**
@@ -192,6 +190,15 @@ final class NodeInfo
             suspect = true;
         }
     }
+    
+    synchronized void setPingTime( long t )
+    {
+	pingTime = t;
+        setPingTime( nodeTaskInfoList, pingTime );
+        if( Settings.traceRemainingJobTime ) {
+            Globals.log.reportProgress( "Ping time to node " + ourIdentifierForNode + " is " + Service.formatNanoseconds( pingTime ) );
+        }	
+    }
 
     synchronized void registerWorkerInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo, long arrivalMoment )
     {
@@ -203,21 +210,6 @@ final class NodeInfo
         if( !typesKnown ){
             // It's a bit early to tell us about type info; we don't have the administration yet.
             return;
-        }
-        if( !enabled ){ 
-            if( Settings.traceWorkerList ) {
-                Globals.log.reportProgress( "Worker " + ourIdentifierForNode + " is now enabled" );
-            }
-            enabled = true;   // The worker now has its administration in order. We can submit jobs.
-        }
-        if( pingSentTime != 0 ) {
-            // We are measuring this round-trip time.
-            pingTime = arrivalMoment-pingSentTime;
-            pingSentTime = 0L;  // We're no longer measuring a ping time.
-            setPingTime( nodeTaskInfoList, pingTime );
-            if( Settings.traceRemainingJobTime ) {
-                Globals.log.reportProgress( "Master: ping time to worker " + ourIdentifierForNode + " is " + Service.formatNanoseconds( pingTime ) );
-            }
         }
         if( Settings.traceRemainingJobTime ) {
             String s = "workerQueueInfo=[";
@@ -405,11 +397,6 @@ final class NodeInfo
         }
     }
 
-    synchronized void setPingStartMoment( long t )
-    {
-        this.pingSentTime = t;
-    }
-
     /**
      * @return Ping time.
      */
@@ -435,7 +422,7 @@ final class NodeInfo
      */
     synchronized boolean isReady()
     {
-        return !suspect && enabled && theirIdentifierForUs != null && typesKnown;
+        return !suspect && pingTime != Long.MAX_VALUE && theirIdentifierForUs != null && typesKnown;
     }
 
     /** 
@@ -461,6 +448,18 @@ final class NodeInfo
     synchronized boolean isDead()
     {
         return dead;
+    }
+
+    synchronized boolean needsPing()
+    {
+	boolean res = needsPing;
+	needsPing = false;
+	return res;
+    }
+    
+    synchronized void setNeedsPing()
+    {
+	needsPing = true;
     }
 
 }

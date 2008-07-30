@@ -228,12 +228,12 @@ class PacketSendPort {
     /**
      * Sends the given data to the given port.
      * @param destination The port to send it to.
-     * @param data The data to send.
+     * @param message The data to send.
      * @param timeout The timeout of the transmission.
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
-    private long send( int destination, Message data, int timeout ) throws IOException
+    private long send( int destination, Message message, int timeout ) throws IOException
     {
         long len;
         DestinationInfo info = destinations.get( destination );
@@ -242,12 +242,12 @@ class PacketSendPort {
         if( info.local ) {
             // This is the local destination. Use the back door to get
             // the info to the destination.
-            data.arrivalMoment = System.nanoTime();
-            localListener.messageReceived( data );
+            message.arrivalMoment = System.nanoTime();
+            localListener.messageReceived( message );
             len = 0;
             localSentCount.add();
             if( Settings.traceSends ) {
-                System.out.println( "Sent local message" );
+                System.out.println( "Sent local message " + message );
             }
         }
         else {
@@ -259,7 +259,7 @@ class PacketSendPort {
                 final CacheInfo cacheInfo = info.cacheSlot;
                 cacheInfo.recentlyUsed = true;
                 WriteMessage msg = cacheInfo.port.newMessage();
-                msg.writeObject( data );
+                msg.writeObject( message );
                 len = msg.finish();
                 long stopTime = System.nanoTime();
                 sentBytes += len;

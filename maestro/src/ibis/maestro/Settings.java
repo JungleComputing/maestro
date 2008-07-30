@@ -84,5 +84,8 @@ class Settings {
     static final int MAXIMAL_REGISTRATION_TRIES = 8;
 
     /** The time in >>ms<<< between node updates. */
-    static final long UPDATE_INTERVAL = 5;
+    static final long UPDATE_INTERVAL = 10;
+
+    /** The size in longs of the padding array in a ping message. */
+    static final int PING_PADDING_SIZE = 50000;
 }

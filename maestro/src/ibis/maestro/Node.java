@@ -36,7 +36,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private static final int workThreadCount = numberOfProcessors+2;
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
-    private final UpdateThread updater;
+    private final UpdateThread updaters[] = new UpdateThread[numberOfProcessors];
 
     /** The list of ibises we haven't (successfully) registered with yet. */
     private final UnregisteredNodeList unregisteredNodes = new UnregisteredNodeList();
@@ -66,6 +66,8 @@ public final class Node extends Thread implements PacketReceiveListener
     private long nextTaskId = 0;
     private Counter handledTaskCount = new Counter();
     private Counter registrationMessageCount = new Counter();
+    private Counter pingMessageCount = new Counter();
+    private Counter pingReplyMessageCount = new Counter();
     private Counter updateMessageCount = new Counter();
     private Counter submitMessageCount = new Counter();
     private Counter taskResultMessageCount = new Counter();
@@ -104,7 +106,6 @@ public final class Node extends Thread implements PacketReceiveListener
         {
             int ix = 0;
             while( !stopped.isSet() ) {
-                long nextStartTime = System.currentTimeMillis()+Settings.UPDATE_INTERVAL;
                 NodeInfo target = null;
 
                 while( !targets.isEmpty() ) {
@@ -130,19 +131,23 @@ public final class Node extends Thread implements PacketReceiveListener
                     }
                     else {
                         if( target.isReady() ) {
-                            sendUpdate( target );
-                        }
-                        long sleepTime = nextStartTime-System.currentTimeMillis();
-                        if( sleepTime>0 ) {
-                            synchronized( this ) {
-                                this.wait( sleepTime );
+                            if( target.needsPing() ) {
+                        	boolean ok = sendPing( target );
+                        	if( !ok ) {
+                        	    target.setNeedsPing();
+                        	}
                             }
+                            else {
+                        	sendUpdate( target );
+                            }
+                        }
+                        synchronized( this ) {
+                            this.wait( Settings.UPDATE_INTERVAL );
                         }
                     }
                 }
                 catch( InterruptedException e ){
-                    // FIXME Verify this auto-generated catch block is correct.
-                    e.printStackTrace();
+                    // Nothing.
                 }
             }
         }
@@ -281,8 +286,11 @@ public final class Node extends Thread implements PacketReceiveListener
         sendPort = new PacketSendPort( Globals.localIbis, this );
         sendPort.setLocalListener( this );    // FIXME: no longer necessary
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
-        updater = new UpdateThread();
-        updater.start();
+        for( int i=0; i<updaters.length; i++ ) {
+            UpdateThread updater = new UpdateThread();
+            updater.start();
+            updaters[i] = updater;
+        }
         startTime = System.nanoTime();
         start();
         registry.enableEvents();
@@ -410,7 +418,9 @@ public final class Node extends Thread implements PacketReceiveListener
     private void addUnregisteredNode( IbisIdentifier theIbis, boolean local )
     {
         NodeInfo info = nodes.registerNode( theIbis, local );
-        updater.addTarget( info );
+        for( UpdateThread updater: updaters ) {
+            updater.addTarget( info );
+        }
         if( info.isReady() ) {
             // We already know everything there is to know about this node.
             // (Presumably because it registered itself with us.)
@@ -435,11 +445,13 @@ public final class Node extends Thread implements PacketReceiveListener
         s.printf(  "# threads       = %5d\n", workThreads.length );
         nodes.printStatistics( s );
         jobs.printStatistics( s );
-        s.printf( "registration messages:   %5d\n", registrationMessageCount.get() );
-        s.printf( "update       messages:   %5d\n", updateMessageCount.get() );
-        s.printf( "submit       messages:   %5d\n", submitMessageCount.get() );
-        s.printf( "task result  messages:   %5d\n", taskResultMessageCount.get() );
-        s.printf( "job result   messages:   %5d\n", jobResultMessageCount.get() );
+        s.printf( "registration messages:   %5d sent\n", registrationMessageCount.get() );
+        s.printf( "ping         messages:   %5d sent\n", pingMessageCount.get() );
+        s.printf( "ping reply   messages:   %5d sent\n", pingReplyMessageCount.get() );
+        s.printf( "update       messages:   %5d sent\n", updateMessageCount.get() );
+        s.printf( "submit       messages:   %5d sent\n", submitMessageCount.get() );
+        s.printf( "task result  messages:   %5d sent\n", taskResultMessageCount.get() );
+        s.printf( "job result   messages:   %5d sent\n", jobResultMessageCount.get() );
         sendPort.printStatistics( s, "send port" );
         long activeTime = workerQueue.getActiveTime( startTime );
         long workInterval = stopTime-activeTime;
@@ -481,12 +493,36 @@ public final class Node extends Thread implements PacketReceiveListener
         // We ignore the result because we don't care about the message size,
         // and if the update failed, it failed.
         sendPort.tryToSend( node, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
-        this.updateMessageCount.add();
+        updateMessageCount.add();
     }
 
     private void sendUpdate( NodeInfo node )
     {
         sendUpdateMessage( node.ourIdentifierForNode, node.getTheirIdentifierForUs() );
+    }
+
+    private boolean sendPing( NodeInfo node )
+    {
+        PingMessage msg = new PingMessage( node.getTheirIdentifierForUs(), System.nanoTime() );
+	
+	if( Settings.traceUpdateMessages ) {
+	    Globals.log.reportProgress( "Sending " + msg );
+	}
+	long res = sendPort.tryToSend( node.ourIdentifierForNode, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+	boolean ok = res>=0;
+	pingMessageCount.add();
+	return ok;
+    }
+
+    private void sendPingReply( NodeInfo node, long sendTime )
+    {
+        PingReplyMessage msg = new PingReplyMessage( node.ourIdentifierForNode, sendTime );
+	
+	if( Settings.traceUpdateMessages ) {
+	    Globals.log.reportProgress( "Sending " + msg );
+	}
+	sendPort.tryToSend( node.ourIdentifierForNode, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+	pingReplyMessageCount.add();
     }
 
     /**
@@ -553,6 +589,36 @@ public final class Node extends Thread implements PacketReceiveListener
     }
 
     /**
+     * A worker has sent us a message with its current status, handle it.
+     * @param m The update message.
+     */
+    private void handlePingMessage( PingMessage m )
+    {
+        if( Settings.traceNodeProgress ){
+            Globals.log.reportProgress( "Received node update message " + m );
+        }
+        final NodeInfo node = nodes.get( m.source );
+	if( node == null ) {
+	    Globals.log.reportInternalError( "Cannot reply to ping from unknown node " + m.source );
+	    return;
+	}
+        sendPingReply( node, m.sendMoment );
+    }
+
+    /**
+     * A worker has sent us a message with its current status, handle it.
+     * @param m The update message.
+     */
+    private void handlePingReplyMessage( PingReplyMessage m )
+    {
+        if( Settings.traceNodeProgress ){
+            Globals.log.reportProgress( "Received node update message " + m );
+        }
+        final NodeInfo mi = nodes.get( m.source );
+        mi.setPingTime( m.arrivalMoment-m.sendMoment );
+    }
+
+    /**
      * Handle a message containing a new task to run.
      * 
      * @param msg The message to handle.
@@ -602,14 +668,16 @@ public final class Node extends Thread implements PacketReceiveListener
             reportCompletion( m.job, m.result );
         }
         else if( msg instanceof NodeUpdateMessage ) {
-            NodeUpdateMessage m = (NodeUpdateMessage) msg;
-
-            handleNodeUpdateMessage( m );
+            handleNodeUpdateMessage( (NodeUpdateMessage) msg );
         }
         else if( msg instanceof RegisterNodeMessage ) {
-            RegisterNodeMessage m = (RegisterNodeMessage) msg;
-
-            handleRegisterNodeMessage( m );
+            handleRegisterNodeMessage( (RegisterNodeMessage) msg );
+        }
+        else if( msg instanceof PingMessage ) {
+            handlePingMessage( (PingMessage) msg );
+        }
+        else if( msg instanceof PingReplyMessage ) {
+            handlePingReplyMessage( (PingReplyMessage) msg );
         }
         else if( msg instanceof NodeResignMessage ) {
             NodeResignMessage m = (NodeResignMessage) msg;
@@ -841,6 +909,9 @@ public final class Node extends Thread implements PacketReceiveListener
                     MapReduceHandler handler = new MapReduceHandler( this, mrt, message, runMoment );
                     mrt.map( input, handler );
                     handler.start();
+                }
+                else if( task instanceof AlternativesTask ) {
+                    // FIXME: implement this.
                 }
                 else {
                     Globals.log.reportInternalError( "Don't know what to do with a task of type " + task.getClass() );
