@@ -35,11 +35,16 @@ public class TaskInfo
 
     /**
      * Add a new worker to our list of supporting workers.
-     * We place it in front of the list to give it a chance to do work.
      * @param worker The worker to add.
      */
     protected void addWorker( NodeTaskInfo worker )
     {
+        if( workers.contains( worker ) ) {
+            return;
+        }
+        if( Settings.traceTypeHandling ){
+            System.out.println( "task " + type + " is supported by node " + worker.nodeInfo.ourIdentifierForNode );
+        }
 	workers.add( worker );
     }
 

@@ -97,7 +97,7 @@ final class MasterQueue
 	private long estimateQueueTime()
 	{
 	    long timePerEntry = dequeueInterval.getAverage();
-	    long res = timePerEntry*elements;
+	    long res = timePerEntry*(1+elements);
 	    return res;
 	}
 

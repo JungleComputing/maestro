@@ -62,6 +62,9 @@ class Settings {
     /** Trace registration of the nodes with eachother. */
     static final boolean traceRegistration = false;
 
+    /** Trace all sent update messages. */
+    static final boolean traceUpdateMessages = false;
+
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.
      */
@@ -79,4 +82,7 @@ class Settings {
 
     /** How many times do we try to send a registration message to an ibis? */
     static final int MAXIMAL_REGISTRATION_TRIES = 8;
+
+    /** The time in >>ms<<< between node updates. */
+    static final long UPDATE_INTERVAL = 10;
 }

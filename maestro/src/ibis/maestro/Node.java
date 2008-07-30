@@ -36,6 +36,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private static final int workThreadCount = numberOfProcessors+2;
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
+    private final UpdateThread updater;
 
     /** The list of ibises we haven't (successfully) registered with yet. */
     private final UnregisteredNodeList unregisteredNodes = new UnregisteredNodeList();
@@ -76,7 +77,78 @@ public final class Node extends Thread implements PacketReceiveListener
     private final JobList jobs;
     private Semaphore drainingQueue = new Semaphore( 1, false );
 
-    private class NodeRegistryEventHandler implements RegistryEventHandler {
+    /**
+     * Regularly send update messages to all neighbours.
+     *
+     * @author Kees van Reeuwijk.
+     */
+    private final class UpdateThread extends Thread {
+        private ArrayList<NodeInfo> targets = new ArrayList<NodeInfo>();
+
+        UpdateThread()
+        {
+            super( "updater thread" );
+            setDaemon( true );
+        }
+        
+        synchronized void addTarget( NodeInfo target )
+        {
+            targets.add( target );
+            notify();
+        }
+
+        /** Runs this thread. (Overrides method in superclass.) */
+        @SuppressWarnings("synthetic-access")
+        @Override
+        public void run()
+        {
+            int ix = 0;
+            while( !stopped.isSet() ) {
+                long nextStartTime = System.currentTimeMillis()+Settings.UPDATE_INTERVAL;
+                NodeInfo target = null;
+
+                while( !targets.isEmpty() ) {
+                    if( ix>=targets.size() ) {
+                        ix = 0;
+                    }
+                    target = targets.get( ix++ );
+                    if( !target.isDead() ) {
+                        // We have a target.
+                        break;
+                    }
+                    // The target is dead, remove it from our list.
+                    targets.remove( target );
+                    target = null;
+                }
+                // At this point we either have a target, or the list is empty, and target is null.
+                try{
+                    if( target == null ) {
+                        // The list of targets is empty. Wake us when there is something to do.
+                        synchronized( this ) {
+                            this.wait();
+                        }
+                    }
+                    else {
+                        if( target.isReady() ) {
+                            sendUpdate( target );
+                        }
+                        long sleepTime = nextStartTime-System.currentTimeMillis();
+                        if( sleepTime>0 ) {
+                            synchronized( this ) {
+                                this.wait( sleepTime );
+                            }
+                        }
+                    }
+                }
+                catch( InterruptedException e ){
+                    // FIXME Verify this auto-generated catch block is correct.
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+
+    private final class NodeRegistryEventHandler implements RegistryEventHandler {
         /**
          * A new Ibis joined the computation.
          * @param theIbis The ibis that joined the computation.
@@ -209,6 +281,8 @@ public final class Node extends Thread implements PacketReceiveListener
         sendPort = new PacketSendPort( Globals.localIbis, this );
         sendPort.setLocalListener( this );    // FIXME: no longer necessary
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
+        updater = new UpdateThread();
+        updater.start();
         startTime = System.nanoTime();
         start();
         registry.enableEvents();
@@ -336,6 +410,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private void addUnregisteredNode( IbisIdentifier theIbis, boolean local )
     {
         NodeInfo info = nodes.registerNode( theIbis, local );
+        updater.addTarget( info );
         if( info.isReady() ) {
             // We already know everything there is to know about this node.
             // (Presumably because it registered itself with us.)
@@ -400,6 +475,9 @@ public final class Node extends Thread implements PacketReceiveListener
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
         NodeUpdateMessage msg = new NodeUpdateMessage( identifierOnNode, completionInfo, workerQueueInfo );
 
+        if( Settings.traceUpdateMessages ) {
+            Globals.log.reportProgress( "Sending " + msg );
+        }
         // We ignore the result because we don't care about the message size,
         // and if the update failed, it failed.
         sendPort.tryToSend( node, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
@@ -716,9 +794,12 @@ public final class Node extends Thread implements PacketReceiveListener
                 message = workerQueue.remove();
             }
             if( message == null ) {
-                if( runningTasks.isBelow( numberOfProcessors ) ) {
-                    // No work in the worker queue, not all processors are busy, See if we can get more work.
-                    askMoreWork();
+                if( false ) {
+                    // TODO: remove this code, or enable again.
+                    if( runningTasks.isBelow( numberOfProcessors ) ) {
+                        // No work in the worker queue, not all processors are busy, See if we can get more work.
+                        askMoreWork();
+                    }
                 }
                 long sleepTime = 100;
                 if( Settings.traceWaits ) {

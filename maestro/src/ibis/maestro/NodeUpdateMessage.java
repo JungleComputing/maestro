@@ -28,8 +28,58 @@ final class NodeUpdateMessage extends Message {
      */
     NodeUpdateMessage( NodeIdentifier identifier, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
     {
-	source = identifier;
-	this.completionInfo = completionInfo;
-	this.workerQueueInfo = workerQueueInfo;
+        source = identifier;
+        this.completionInfo = completionInfo;
+        this.workerQueueInfo = workerQueueInfo;
+    }
+
+    private String buildCompletionString()
+    {
+        StringBuilder b = new StringBuilder( "[" );
+        boolean first = true;
+        for( CompletionInfo i: completionInfo ) {
+            if( i != null ) {
+                if( first ) {
+                    first = false;
+                }
+                else {
+                    b.append( ',' );
+                }
+                b.append( i.toString() );
+            }
+        }
+        b.append( ']' );
+        return b.toString();
+    }
+
+    private String buildWorkerQueue()
+    {
+        StringBuilder b = new StringBuilder( "[" );
+        boolean first = true;
+        for( WorkerQueueInfo i: workerQueueInfo ) {
+            if( i != null ) {
+                if( first ) {
+                    first = false;
+                }
+                else {
+                    b.append( ',' );
+                }
+                b.append( i.toString() );
+            }
+        }
+        b.append( ']' );
+        return b.toString();
+    }
+
+    /**
+     * Returns a string representation of update message. (Overrides method in superclass.)
+     * @return The string representation.
+     */
+    @Override
+    public String toString()
+    {
+        String completion = buildCompletionString();
+        String workerQueue = buildWorkerQueue();
+        return "Update " + completion + " " + workerQueue;
     }
 }

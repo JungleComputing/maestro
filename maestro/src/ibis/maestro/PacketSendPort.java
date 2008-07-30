@@ -34,11 +34,11 @@ class PacketSendPort {
     private long uncachedSendTime = 0;
     private long uncachedAdminTime = 0;
     private long uncachedSentCount = 0;
-    private int localSentCount = 0;
+    private Counter localSentCount = new Counter();
     private final CacheInfo cache[] = new CacheInfo[Settings.CONNECTION_CACHE_SIZE];
     private final HashMap<ReceivePortIdentifier, Integer> PortToIdMap = new HashMap<ReceivePortIdentifier, Integer>();
     private PacketReceiveListener localListener = null;
-    int clockHand = 0;
+    private int clockHand = 0;
 
     /** The list of known destinations.
      * Register a destination before trying to send to it.
@@ -58,6 +58,7 @@ class PacketSendPort {
              * @param b The second class instance to compare.
              * @return The comparison result.
              */
+            @SuppressWarnings("synthetic-access")
             @Override
             public int compare(DestinationInfo a, DestinationInfo b) {
                 if( a.sentCount<b.sentCount ){
@@ -84,8 +85,8 @@ class PacketSendPort {
         }
 
         CacheInfo cacheSlot;
-        int sentCount = 0;
-        long sentBytes = 0;
+        private int sentCount = 0;
+        private long sentBytes = 0;
         private final ReceivePortIdentifier portIdentifier;
         boolean local;
 
@@ -99,10 +100,20 @@ class PacketSendPort {
         }
 
         /** Print statistics for this destination. */
-        private void printStats( PrintStream s )
+        private synchronized void printStats( PrintStream s )
         {
             char dest = local?'L':'R'; 
             s.format( " %c %5d messages %7d bytes; port %s\n", dest, sentCount, sentBytes, portIdentifier.toString() );
+        }
+
+        synchronized void incrementSentCount()
+        {
+            sentCount++;
+        }
+        
+        synchronized void addSentBytes( long val )
+        {
+            sentBytes += val;
         }
     }
 
@@ -225,18 +236,16 @@ class PacketSendPort {
     private long send( int destination, Message data, int timeout ) throws IOException
     {
         long len;
-
         DestinationInfo info = destinations.get( destination );
+
+        info.incrementSentCount();
         if( info.local ) {
             // This is the local destination. Use the back door to get
             // the info to the destination.
             data.arrivalMoment = System.nanoTime();
             localListener.messageReceived( data );
             len = 0;
-            synchronized( this ) {
-                localSentCount++;
-                info.sentCount++;
-            }
+            localSentCount.add();
             if( Settings.traceSends ) {
                 System.out.println( "Sent local message" );
             }
@@ -248,18 +257,17 @@ class PacketSendPort {
                 ensureOpenDestination( info, timeout );
                 long startTime = System.nanoTime();
                 final CacheInfo cacheInfo = info.cacheSlot;
+                cacheInfo.recentlyUsed = true;
                 WriteMessage msg = cacheInfo.port.newMessage();
                 msg.writeObject( data );
                 len = msg.finish();
-                cacheInfo.recentlyUsed = true;
                 long stopTime = System.nanoTime();
                 sentBytes += len;
                 sentCount++;
-                info.sentBytes += len;
                 t = stopTime-startTime;
                 sendTime += t;
-                info.sentCount++;
             }
+            info.addSentBytes( len );
             if( Settings.traceSends ) {
                 System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds( t ) );
             }
@@ -308,7 +316,7 @@ class PacketSendPort {
     @SuppressWarnings("synthetic-access")
     synchronized void printStatistics( PrintStream s, String portname )
     {
-        s.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " remote messages; " + localSentCount + " local sends; "+ evictions + " evictions" );
+        s.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " remote messages; " + localSentCount.get() + " local sends; "+ evictions + " evictions" );
         if( sentCount>0 ) {
             s.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
             s.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
@@ -388,7 +396,8 @@ class PacketSendPort {
         long sz = -1;
         try {
             sz = send( destination, msg, timeout );
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             DestinationInfo info = destinations.get( destination );
             node.setSuspect( info.portIdentifier.ibisIdentifier() );
             Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to master " + destination );
@@ -440,13 +449,5 @@ class PacketSendPort {
             e.printStackTrace( Globals.log.getPrintStream() );
         }
         return len;
-    }
-
-    synchronized boolean isLocalListener( ReceivePortIdentifier identifier )
-    {
-	if( localListener == null ) {
-	    return false;
-	}
-	return localListener.hasReceivePort( identifier );
     }
 }

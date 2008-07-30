@@ -356,19 +356,23 @@ final class NodeInfo
     }
 
     /**
-     * @param taskInfoOnMaster The task type to register for.
+     * @param taskInfo The task type to register for.
      */
-    synchronized NodeTaskInfo registerTaskType( TaskInfo taskInfoOnMaster )
+    synchronized NodeTaskInfo registerTaskType( TaskInfo taskInfo )
     {
-        if( Settings.traceTypeHandling ){
-            System.out.println( "node " + ourIdentifierForNode + " can handle " + taskInfoOnMaster + ", local=" + local );
-        }
-        int ix = taskInfoOnMaster.type.index;
+        int ix = taskInfo.type.index;
         while( ix+1>nodeTaskInfoList.size() ) {
             nodeTaskInfoList.add( null );
         }
-        NodeTaskInfo info = new NodeTaskInfo( taskInfoOnMaster, this, local, pingTime );
-        nodeTaskInfoList.set( ix, info );
+        NodeTaskInfo info = nodeTaskInfoList.get( ix );
+        if( info == null ) {
+            // This is new information.
+            info = new NodeTaskInfo( taskInfo, this, local, pingTime );
+            nodeTaskInfoList.set( ix, info );
+            if( Settings.traceTypeHandling ){
+                System.out.println( "node " + ourIdentifierForNode + " can handle " + taskInfo + ", local=" + local );
+            }
+        }
         return info;
     }
     
@@ -395,9 +399,8 @@ final class NodeInfo
             s.println( "  Missed deadlines: allowance: " + missedAllowanceDeadlines  + " reschedule: " + missedRescheduleDeadlines + " of " + total );
         }
         for( NodeTaskInfo info: nodeTaskInfoList ) {
-            if( info != null && info.didWork() ) {
-                String stats = info.buildStatisticsString();
-                s.println( "  " + info + ": " + stats );
+            if( info != null ) {
+                info.printStatistics( s );
             }
         }
     }
@@ -454,4 +457,10 @@ final class NodeInfo
     {
         typesKnown = true;
     }
+
+    synchronized boolean isDead()
+    {
+        return dead;
+    }
+
 }

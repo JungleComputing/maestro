@@ -20,8 +20,8 @@ class CompletionInfo implements Serializable
      */
     CompletionInfo( TaskType type, long completionInterval )
     {
-	this.type = type;
-	this.completionInterval = completionInterval;
+        this.type = type;
+        this.completionInterval = completionInterval;
     }
 
     /**
@@ -31,6 +31,6 @@ class CompletionInfo implements Serializable
     @Override
     public String toString()
     {
-        return "completionInterval(" + type + ")=" + Service.formatNanoseconds( completionInterval );
+        return "completionInterval" + type + "=" + Service.formatNanoseconds( completionInterval );
     }
 }

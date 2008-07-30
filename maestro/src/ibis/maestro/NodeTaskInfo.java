@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.io.PrintStream;
+
 /**
  * Information the node has about a particular task type on a particular node.
  */
@@ -196,15 +198,10 @@ final class NodeTaskInfo {
         latentSubmissions = Math.max( 0, latentSubmissions-1 );
     }
 
-    String buildStatisticsString()
-    {
-        return "executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + " dequeueTime=" + Service.formatNanoseconds( dequeueTime )+ " computeTime=" + Service.formatNanoseconds( computeTime )+ ", remaining time " + Service.formatNanoseconds( remainingJobTime );
-    }
-
     /**
      * @return True iff this worker ever executed a task of this type.
      */
-    protected boolean didWork()
+    private boolean didWork()
     {
         return (executedTasks != 0) || ((outstandingTasks+latentSubmissions) != 0);
     }
@@ -300,5 +297,12 @@ final class NodeTaskInfo {
     protected long estimateRoundtripTime()
     {
         return roundtripTimeEstimate.getAverage();
+    }
+
+    void printStatistics( PrintStream s )
+    {
+        if( didWork() ) {
+            s.println( "  " + taskInfo.type + ": executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + " dequeueTime=" + Service.formatNanoseconds( dequeueTime )+ " computeTime=" + Service.formatNanoseconds( computeTime )+ ", remaining time " + Service.formatNanoseconds( remainingJobTime ) );
+        }
     }
 }
