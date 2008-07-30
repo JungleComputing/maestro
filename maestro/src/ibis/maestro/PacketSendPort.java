@@ -269,7 +269,7 @@ class PacketSendPort {
             }
             info.addSentBytes( len );
             if( Settings.traceSends ) {
-                System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds( t ) );
+                System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds( t ) + ": " + message );
             }
         }
         return len;
@@ -299,7 +299,7 @@ class PacketSendPort {
             port.close();
             long stopTime = System.nanoTime();
             if( Settings.traceSends ) {
-                System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) );
+                System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) + ": " + data );
             }
             uncachedAdminTime += (setupTime-startTime);
             uncachedSendTime += (stopTime-setupTime);

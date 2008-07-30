@@ -34,6 +34,6 @@ final class AcceptNodeMessage extends Message
     @Override
     public String toString()
     {
-        return "Ping reply";
+        return "Accept node message from " + source;
     }
 }

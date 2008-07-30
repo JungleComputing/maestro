@@ -165,6 +165,7 @@ public final class Node extends Thread implements PacketReceiveListener
         @Override
         public void died( IbisIdentifier theIbis )
         {
+            Globals.log.reportProgress( "Ibis " + theIbis + " has died" );
             registerIbisLeft( theIbis );
             removeNode( theIbis );
         }
@@ -489,7 +490,7 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private void sendAcceptNodeMessage( NodeInfo node, long sendTime )
     {
-        AcceptNodeMessage msg = new AcceptNodeMessage( node.ourIdentifierForNode, sendTime );
+        AcceptNodeMessage msg = new AcceptNodeMessage( node.getTheirIdentifierForUs(), sendTime );
 	
 	if( Settings.traceUpdateMessages ) {
 	    Globals.log.reportProgress( "Sending " + msg );
@@ -559,11 +560,15 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void handleAcceptNodeMessage( AcceptNodeMessage m )
     {
-        if( Settings.traceNodeProgress ){
+        if( Settings.traceNodeProgress || Settings.traceRegistration ){
             Globals.log.reportProgress( "Received node accept message " + m );
         }
         final NodeInfo nodeInfo = nodes.get( m.source );
-        nodeInfo.setPingTime( m.arrivalMoment-m.sendMoment );
+        long pingTime = m.arrivalMoment-m.sendMoment;
+        if( Settings.traceRegistration ){
+            Globals.log.reportProgress( "Ping time to " + m.source + " is " + Service.formatNanoseconds( pingTime ) );
+        }
+        nodeInfo.setPingTime( pingTime );
         for( UpdateThread updater: updaters ) {
             updater.addTarget( nodeInfo );
         }

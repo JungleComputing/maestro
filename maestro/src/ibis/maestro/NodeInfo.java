@@ -81,7 +81,12 @@ final class NodeInfo
         if( completionInfo == null ) {
             return;
         }
-        NodeTaskInfo workerTaskInfo = nodeTaskInfoList.get( completionInfo.type.index );
+        int ix = completionInfo.type.index;
+        if( ix>=nodeTaskInfoList.size() ){
+            // Adminstration doesn't have this type. We don't care.
+            return;
+        }
+        NodeTaskInfo workerTaskInfo = nodeTaskInfoList.get( ix );
 
         if( workerTaskInfo == null ) {
             return;
@@ -99,7 +104,12 @@ final class NodeInfo
         if( info == null ) {
             return;
         }
-        NodeTaskInfo workerTaskInfo = nodeTaskInfoList.get( info.type.index );
+        int ix = info.type.index;
+        if( ix>=nodeTaskInfoList.size() ){
+            // Adminstration doesn't have this type. We don't care.
+            return;
+        }
+        NodeTaskInfo workerTaskInfo = nodeTaskInfoList.get( ix  );
 
         if( workerTaskInfo == null ) {
             return;
@@ -189,11 +199,11 @@ final class NodeInfo
     synchronized void setPingTime( long t )
     {
 	pingTime = t;
-        setPingTime( nodeTaskInfoList, pingTime );
         if( !dead ) {
             // We seem to be communicating.
             suspect = false;
         }
+        setPingTime( nodeTaskInfoList, pingTime );
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "Ping time to node " + ourIdentifierForNode + " is " + Service.formatNanoseconds( pingTime ) );
         }	

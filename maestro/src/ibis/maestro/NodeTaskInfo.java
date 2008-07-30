@@ -301,7 +301,7 @@ final class NodeTaskInfo {
 
     void printStatistics( PrintStream s )
     {
-        if( didWork() ) {
+        if( true || didWork() ) {
             s.println( "  " + taskInfo.type + ": executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + " dequeueTime=" + Service.formatNanoseconds( dequeueTime )+ " computeTime=" + Service.formatNanoseconds( computeTime )+ ", remaining time " + Service.formatNanoseconds( remainingJobTime ) );
         }
     }
