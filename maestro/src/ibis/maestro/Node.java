@@ -130,7 +130,7 @@ public final class Node extends Thread implements PacketReceiveListener
                     }
                     else {
                         if( target.isReady() ) {
-                            sendUpdateMessage( target );
+                            sendUpdateNodeMessage( target );
                         }
                         synchronized( this ) {
                             this.wait( Settings.UPDATE_INTERVAL );
@@ -467,11 +467,11 @@ public final class Node extends Thread implements PacketReceiveListener
         return ok;
     }
 
-    private void sendUpdateMessage( NodeIdentifier node, NodeIdentifier identifierOnNode )
+    private void sendUpdateNodeMessage( NodeIdentifier node, NodeIdentifier identifierOnNode )
     {
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
-        NodeUpdateMessage msg = new NodeUpdateMessage( identifierOnNode, completionInfo, workerQueueInfo );
+        UpdateNodeMessage msg = new UpdateNodeMessage( identifierOnNode, completionInfo, workerQueueInfo );
 
         if( Settings.traceUpdateMessages ) {
             Globals.log.reportProgress( "Sending " + msg );
@@ -482,9 +482,9 @@ public final class Node extends Thread implements PacketReceiveListener
         updateMessageCount.add();
     }
 
-    private void sendUpdateMessage( NodeInfo node )
+    private void sendUpdateNodeMessage( NodeInfo node )
     {
-        sendUpdateMessage( node.ourIdentifierForNode, node.getTheirIdentifierForUs() );
+        sendUpdateNodeMessage( node.ourIdentifierForNode, node.getTheirIdentifierForUs() );
     }
 
     private void sendAcceptNodeMessage( NodeInfo node, long sendTime )
@@ -541,7 +541,7 @@ public final class Node extends Thread implements PacketReceiveListener
      * A worker has sent us a message with its current status, handle it.
      * @param m The update message.
      */
-    private void handleNodeUpdateMessage( NodeUpdateMessage m )
+    private void handleNodeUpdateMessage( UpdateNodeMessage m )
     {
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
@@ -582,7 +582,7 @@ public final class Node extends Thread implements PacketReceiveListener
             NodeInfo nodeInfo = nodes.get( msg.source );
             if( nodeInfo != null ) {
                 // We have the node in our administration.
-                sendUpdateMessage( nodeInfo );
+                sendUpdateNodeMessage( nodeInfo );
             }
         }
     }
@@ -613,8 +613,8 @@ public final class Node extends Thread implements PacketReceiveListener
 
             reportCompletion( m.job, m.result );
         }
-        else if( msg instanceof NodeUpdateMessage ) {
-            handleNodeUpdateMessage( (NodeUpdateMessage) msg );
+        else if( msg instanceof UpdateNodeMessage ) {
+            handleNodeUpdateMessage( (UpdateNodeMessage) msg );
         }
         else if( msg instanceof RegisterNodeMessage ) {
             handleRegisterNodeMessage( (RegisterNodeMessage) msg );
@@ -700,7 +700,7 @@ public final class Node extends Thread implements PacketReceiveListener
             if( isStopped() ) {
                 return;
             }
-            sendUpdateMessage( taskSource );
+            sendUpdateNodeMessage( taskSource );
             return;
         }
         if( Settings.noStealRequests ){
@@ -716,7 +716,7 @@ public final class Node extends Thread implements PacketReceiveListener
             if( isStopped() ) {
                 return;
             }
-            sendUpdateMessage( taskSource );
+            sendUpdateNodeMessage( taskSource );
         }
     }
 

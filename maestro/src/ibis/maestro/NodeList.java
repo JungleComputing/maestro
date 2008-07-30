@@ -131,7 +131,6 @@ final class NodeList {
             NodeTaskInfo wti = node.registerTaskType( info );
             info.addWorker( wti );
         }
-        node.setTypesKnown();
         if( Settings.traceNodeProgress || Settings.traceRegistration ){
             System.out.println( "Subscribing node " + node.ourIdentifierForNode + " theirIdentifierForUs=" + theirIdentifierForUs );
         }

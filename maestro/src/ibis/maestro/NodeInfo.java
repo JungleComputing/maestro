@@ -25,10 +25,7 @@ final class NodeInfo
     /** Info about the tasks for this particular node. */
     private final ArrayList<NodeTaskInfo> nodeTaskInfoList = new ArrayList<NodeTaskInfo>();
 
-    /** Set to true when the types of this node are known. */
-    private boolean typesKnown = false;
-
-    private boolean suspect = false;  // This node may be dead.
+    private boolean suspect = true;   // A node starts as suspect.
 
     private boolean dead = false;     // This node is known to be dead.
 
@@ -193,6 +190,10 @@ final class NodeInfo
     {
 	pingTime = t;
         setPingTime( nodeTaskInfoList, pingTime );
+        if( !dead ) {
+            // We seem to be communicating.
+            suspect = false;
+        }
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "Ping time to node " + ourIdentifierForNode + " is " + Service.formatNanoseconds( pingTime ) );
         }	
@@ -203,10 +204,6 @@ final class NodeInfo
         if( dead ) {
             // It is strange to get info from a dead worker, but we're not going to try and
             // revive the worker.
-            return;
-        }
-        if( !typesKnown ){
-            // It's a bit early to tell us about type info; we don't have the administration yet.
             return;
         }
         if( Settings.traceRemainingJobTime ) {
@@ -395,15 +392,6 @@ final class NodeInfo
         }
     }
 
-    /**
-     * @return Ping time.
-     */
-    synchronized long getPingTime()
-    {
-        // TODO: method is not used at the moment.
-        return pingTime;
-    }
-
     protected void resetReservations()
     {
         for( NodeTaskInfo info: nodeTaskInfoList ) {
@@ -420,7 +408,7 @@ final class NodeInfo
      */
     synchronized boolean isReady()
     {
-        return !suspect && pingTime != Long.MAX_VALUE && theirIdentifierForUs != null && typesKnown;
+        return !suspect && pingTime != Long.MAX_VALUE && theirIdentifierForUs != null;
     }
 
     /** 
@@ -436,11 +424,6 @@ final class NodeInfo
         }
         suspect = false;
         return false;
-    }
-
-    synchronized void setTypesKnown()
-    {
-        typesKnown = true;
     }
 
     synchronized boolean isDead()

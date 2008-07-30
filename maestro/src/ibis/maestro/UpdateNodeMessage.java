@@ -8,7 +8,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-final class NodeUpdateMessage extends Message {
+final class UpdateNodeMessage extends Message {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
@@ -26,7 +26,7 @@ final class NodeUpdateMessage extends Message {
      * Constructs a new work request message.
      * @param identifier The identifier to use.
      */
-    NodeUpdateMessage( NodeIdentifier identifier, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
+    UpdateNodeMessage( NodeIdentifier identifier, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
     {
         source = identifier;
         this.completionInfo = completionInfo;
