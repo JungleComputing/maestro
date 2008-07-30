@@ -614,8 +614,8 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
         }
-        final NodeInfo mi = nodes.get( m.source );
-        mi.setPingTime( m.arrivalMoment-m.sendMoment );
+        final NodeInfo nodeInfo = nodes.get( m.source );
+        nodeInfo.setPingTime( m.arrivalMoment-m.sendMoment );
     }
 
     /**
@@ -628,15 +628,10 @@ public final class Node extends Thread implements PacketReceiveListener
         workerQueue.add( msg );
         boolean isDead = nodes.registerAsCommunicating( msg.source );
         if( !isDead ) {
-            if( msg.source == null ){
-                Globals.log.reportInternalError( "Null msg.source????" );
-            }
-            else {
-                NodeInfo nodeInfo = nodes.get( msg.source );
-                if( nodeInfo != null ) {
-                    // Somehow we don't have the node in our administration.
-                    sendUpdate( nodeInfo );
-                }
+            NodeInfo nodeInfo = nodes.get( msg.source );
+            if( nodeInfo != null ) {
+                // We have the node in our administration.
+                sendUpdate( nodeInfo );
             }
         }
     }
@@ -685,9 +680,7 @@ public final class Node extends Thread implements PacketReceiveListener
             removeNode( m.source );
         }
         else if( msg instanceof RunTaskMessage ){
-            RunTaskMessage runTaskMessage = (RunTaskMessage) msg;
-
-            handleRunTaskMessage( runTaskMessage );
+            handleRunTaskMessage( (RunTaskMessage) msg );
         }
         else {
             Globals.log.reportInternalError( "the node should handle message of type " + msg.getClass() );
