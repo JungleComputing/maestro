@@ -32,8 +32,6 @@ final class NodeInfo
 
     private boolean dead = false;     // This node is known to be dead.
 
-    private boolean needsPing = true; // True if nobody tried to ping it yet.
-
     final boolean local;
 
     /** The duration of the ping round-trip for this worker. */
@@ -449,17 +447,4 @@ final class NodeInfo
     {
         return dead;
     }
-
-    synchronized boolean needsPing()
-    {
-	boolean res = needsPing;
-	needsPing = false;
-	return res;
-    }
-    
-    synchronized void setNeedsPing()
-    {
-	needsPing = true;
-    }
-
 }

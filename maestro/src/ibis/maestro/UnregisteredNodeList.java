@@ -10,16 +10,14 @@ class UnregisteredNodeList
     static final class UnregisteredNodeInfo implements Comparable<UnregisteredNodeInfo>
     {
         final IbisIdentifier ibis;
-        private boolean reply;
         final boolean local;
         private int tries = 0;
         final NodeIdentifier ourIdentifierForNode;
 
-        UnregisteredNodeInfo( IbisIdentifier ibis, NodeIdentifier ourIdentifierForNode, boolean reply, boolean local )
+        UnregisteredNodeInfo( IbisIdentifier ibis, NodeIdentifier ourIdentifierForNode, boolean local )
         {
             this.ibis = ibis;
             this.ourIdentifierForNode = ourIdentifierForNode;
-            this.reply = reply;
             this.local = local;
         }
         
@@ -30,7 +28,7 @@ class UnregisteredNodeList
         @Override
         public String toString()
         {
-            return "registration to " + ibis + " (reply=" + reply + " local=" + local + " tries=" + tries + ")";
+            return "registration to " + ibis + " (local=" + local + " tries=" + tries + ")";
         }
         
         synchronized int incrementTries()
@@ -38,11 +36,6 @@ class UnregisteredNodeList
             return tries++;
         }
 
-        boolean getReply()
-        {
-            return reply;
-        }
-        
         private static int rankIbisIdentifiers( IbisIdentifier local, IbisIdentifier a, IbisIdentifier b )
         {
             if( local == null ) {
@@ -98,13 +91,6 @@ class UnregisteredNodeList
             if( this.tries>other.tries ) {
                 return 1;
             }
-            // A reply gets priority.
-            if( this.reply && !other.reply ) {
-                return -1;
-            }
-            if( !this.reply && other.reply ) {
-                return 1;
-            }
             return rankIbisIdentifiers( Globals.localIbis.identifier(), this.ibis, other.ibis );
         }
     }
@@ -119,31 +105,15 @@ class UnregisteredNodeList
         }
         return info;
     }
-    
-    private UnregisteredNodeInfo containsIbis( IbisIdentifier theIbis )
-    {
-        for( UnregisteredNodeInfo info: list ) {
-            if( info.ibis.equals( theIbis ) ) {
-                return info;
-            }
-        }
-        return null;
-    }
 
     /** FIXME.
      * @param theIbis The unregistered ibis.
      * @param local Is this the local ibis?
-     * @param reply Is this registration a reply?
      */
     @SuppressWarnings("synthetic-access")
-    synchronized void add( NodeInfo nodeInfo, boolean reply )
+    synchronized void add( NodeInfo nodeInfo )
     {
-        UnregisteredNodeInfo info = containsIbis( nodeInfo.ibis );
-        if( info != null ) {
-            info.reply = true;
-            return;
-        }
-        info = new UnregisteredNodeInfo( nodeInfo.ibis, nodeInfo.ourIdentifierForNode, reply, nodeInfo.local );
+        UnregisteredNodeInfo info = new UnregisteredNodeInfo( nodeInfo.ibis, nodeInfo.ourIdentifierForNode, nodeInfo.local );
         if( Settings.traceRegistration ) {
             Globals.log.reportProgress( "Adding " + info + " to the registration queue" );
         }

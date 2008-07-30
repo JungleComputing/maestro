@@ -8,7 +8,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-final class PingReplyMessage extends Message
+final class AcceptNodeMessage extends Message
 {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
@@ -21,7 +21,7 @@ final class PingReplyMessage extends Message
      * Constructs a new ping message.
      * @param source The identifier of the ping source.
      */
-    PingReplyMessage( NodeIdentifier source, long sendMoment )
+    AcceptNodeMessage( NodeIdentifier source, long sendMoment )
     {
         this.source = source;
         this.sendMoment = sendMoment;

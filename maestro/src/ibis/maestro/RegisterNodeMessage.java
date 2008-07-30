@@ -18,12 +18,13 @@ final class RegisterNodeMessage extends Message
     final ReceivePortIdentifier port;
 
     final TaskType[] supportedTypes;
-    
-    /** Our identifier for the node we're sending to. */
-    final NodeIdentifier ourIdentifierForNode;
 
-    /** Is this a reply to another registration? */
-    final boolean reply;
+    final long sendMoment;
+    
+    final long padding[] = new long[Settings.PING_PADDING_SIZE];
+
+    /** Our identifier for the node we're sending to. */
+    final NodeIdentifier senderIdentifierForReceiver;
 
     /**
      * Constructs a new worker registration message.
@@ -31,12 +32,12 @@ final class RegisterNodeMessage extends Message
      * @param supportedTypes The list of supported types of this node worker.
      * @param ourIdentifierForNode The identifier to use.
      */
-    RegisterNodeMessage( ReceivePortIdentifier port, TaskType[] supportedTypes, NodeIdentifier ourIdentifierForNode, boolean reply )
+    RegisterNodeMessage( ReceivePortIdentifier port, TaskType[] supportedTypes, NodeIdentifier ourIdentifierForNode )
     {
 	this.port = port;
-	this.ourIdentifierForNode = ourIdentifierForNode;
+	this.senderIdentifierForReceiver = ourIdentifierForNode;
 	this.supportedTypes = supportedTypes;
-	this.reply = reply;
+	this.sendMoment = System.nanoTime();
     }
 
     /**
