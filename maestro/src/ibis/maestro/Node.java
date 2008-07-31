@@ -470,7 +470,7 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private void sendUpdateNodeMessage( NodeIdentifier node, NodeIdentifier identifierOnNode )
     {
-        CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes );
+        CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleTasks() );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
         UpdateNodeMessage msg = new UpdateNodeMessage( identifierOnNode, completionInfo, workerQueueInfo );
 
@@ -481,6 +481,11 @@ public final class Node extends Thread implements PacketReceiveListener
         // and if the update failed, it failed.
         sendPort.tryToSend( node, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
         updateMessageCount.add();
+    }
+
+    private int getIdleTasks()
+    {
+	return Math.max( numberOfProcessors-runningTasks.get(), 0 );
     }
 
     private void sendUpdateNodeMessage( NodeInfo node )
@@ -884,7 +889,7 @@ public final class Node extends Thread implements PacketReceiveListener
         final NodeIdentifier masterId = message.source;
 
         TaskType type = message.taskInstance.type;
-        CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes );
+        CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleTasks() );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
         long workerDwellTime = taskCompletionMoment-message.getQueueMoment();
         if( traceStats ) {

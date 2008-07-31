@@ -91,17 +91,22 @@ final class MasterQueue
 	}
 
 	/**
+	 * @param idleProcessors The number of processors that are currently idle.
 	 * @return The estimated time in ns it will take to drain all
 	 *          current tasks from the queue.
 	 */
-	private long estimateQueueTime()
+	private long estimateQueueTime( int idleProcessors )
 	{
 	    long timePerEntry = dequeueInterval.getAverage();
-	    long res = timePerEntry*(1+elements);
+	    // Since at least one processor isn't working on a task (or we
+	    // wouldn't be here), we are only impressed if there is more
+	    // than one idle processor.
+	    int extra = idleProcessors>1?0:1;
+	    long res = timePerEntry*(extra+elements);
 	    return res;
 	}
 
-	private CompletionInfo getCompletionInfo( JobList jobs, NodeList workers )
+	private CompletionInfo getCompletionInfo( JobList jobs, NodeList workers, int idleProcessors )
 	{
             TaskType previousType = jobs.getPreviousTaskType( type );
             if( previousType == null ) {
@@ -114,7 +119,7 @@ final class MasterQueue
 		duration = Long.MAX_VALUE;
 	    }
 	    else {
-		long queueTime = estimateQueueTime();
+		long queueTime = estimateQueueTime( idleProcessors );
 		duration = queueTime + averageCompletionTime;
 	    }
 	    return new CompletionInfo( previousType, duration );
@@ -306,14 +311,14 @@ final class MasterQueue
     }
 
     @SuppressWarnings("synthetic-access")
-    synchronized CompletionInfo[] getCompletionInfo( JobList jobs, NodeList workers )
+    synchronized CompletionInfo[] getCompletionInfo( JobList jobs, NodeList workers, int idleProcessors )
     {
 	CompletionInfo res[] = new CompletionInfo[queueTypes.size()];
 
 	for( int i=0; i<res.length; i++ ) {
 	    TypeInfo q = queueTypes.get( i );
             if( q != null ){
-                res[i] = q.getCompletionInfo( jobs, workers );
+                res[i] = q.getCompletionInfo( jobs, workers, idleProcessors );
             }
 	}
 	return res;
