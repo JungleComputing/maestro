@@ -116,7 +116,7 @@ class PacketSendPort {
             sentBytes += val;
         }
 
-        /** FIXME.
+        /** Close this port.
          * @throws IOException 
          * 
          */
@@ -135,6 +135,7 @@ class PacketSendPort {
     /** One entry in the connection cache administration. */
     static class CacheInfo {
         DestinationInfo destination;
+        boolean inUse;                  // If set, port is currently used. Never evict such an entry.
         boolean recentlyUsed;
         SendPort port;
     }
@@ -163,14 +164,16 @@ class PacketSendPort {
                 // Prefer empty cache slots, or slots with null ports.
                 return clockHand;
             }
-            if( e.recentlyUsed ){
-                // Next round it will not be considered recently used,
-                // unless it is used. For now don't consider it an
-                // empty slot.
-                e.recentlyUsed = false;
-            }
-            else {
-                return clockHand;
+            if( !e.inUse ) {
+                if( e.recentlyUsed ){
+                    // Next round it will not be considered recently used,
+                    // unless it is used. For now don't consider it an
+                    // empty slot.
+                    e.recentlyUsed = false;
+                }
+                else {
+                    return clockHand;
+                }
             }
             clockHand++;
             if( clockHand>=cache.length ){
@@ -269,14 +272,25 @@ class PacketSendPort {
             long t;
 
             try {
+                SendPort port;
+                long startTime;
+                final CacheInfo cacheInfo;
+
                 synchronized( this ) {
                     ensureOpenDestination( info, timeout );
-                    long startTime = System.nanoTime();
-                    final CacheInfo cacheInfo = info.cacheSlot;
+                    startTime = System.nanoTime();
+                    cacheInfo = info.cacheSlot;
                     cacheInfo.recentlyUsed = true;
-                    WriteMessage msg = cacheInfo.port.newMessage();
+                    cacheInfo.inUse = true;
+                    port = cacheInfo.port;
+                }
+                synchronized( port ) {
+                    WriteMessage msg = port.newMessage();
                     msg.writeObject( message );
                     len = msg.finish();
+                }
+                synchronized( this ) {
+                    cacheInfo.inUse = false;
                     long stopTime = System.nanoTime();
                     sentBytes += len;
                     sentCount++;
