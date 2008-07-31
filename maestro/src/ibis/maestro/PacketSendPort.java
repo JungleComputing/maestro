@@ -110,10 +110,25 @@ class PacketSendPort {
         {
             sentCount++;
         }
-        
+
         synchronized void addSentBytes( long val )
         {
             sentBytes += val;
+        }
+
+        /** FIXME.
+         * @throws IOException 
+         * 
+         */
+        synchronized void close() throws IOException
+        {
+            if( cacheSlot != null ) {
+                if( cacheSlot.port != null ) {
+                    cacheSlot.port.close();
+                    cacheSlot.port = null;
+                }
+            }
+            cacheSlot = null;
         }
     }
 
@@ -253,19 +268,25 @@ class PacketSendPort {
         else {
             long t;
 
-            synchronized( this ) {
-                ensureOpenDestination( info, timeout );
-                long startTime = System.nanoTime();
-                final CacheInfo cacheInfo = info.cacheSlot;
-                cacheInfo.recentlyUsed = true;
-                WriteMessage msg = cacheInfo.port.newMessage();
-                msg.writeObject( message );
-                len = msg.finish();
-                long stopTime = System.nanoTime();
-                sentBytes += len;
-                sentCount++;
-                t = stopTime-startTime;
-                sendTime += t;
+            try {
+                synchronized( this ) {
+                    ensureOpenDestination( info, timeout );
+                    long startTime = System.nanoTime();
+                    final CacheInfo cacheInfo = info.cacheSlot;
+                    cacheInfo.recentlyUsed = true;
+                    WriteMessage msg = cacheInfo.port.newMessage();
+                    msg.writeObject( message );
+                    len = msg.finish();
+                    long stopTime = System.nanoTime();
+                    sentBytes += len;
+                    sentCount++;
+                    t = stopTime-startTime;
+                    sendTime += t;
+                }
+            }
+            catch ( IOException x ) {
+                info.close();
+                throw x;
             }
             info.addSentBytes( len );
             if( Settings.traceSends ) {
