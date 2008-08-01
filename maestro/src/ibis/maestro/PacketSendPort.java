@@ -128,6 +128,7 @@ class PacketSendPort {
                     cacheSlot.port = null;
                 }
             }
+            cacheSlot.destination = null;
             cacheSlot = null;
         }
     }
@@ -288,7 +289,7 @@ class PacketSendPort {
                     cacheInfo.useCount++;
                     port = cacheInfo.port;
                 }
-                synchronized( port ) {
+                synchronized( port ) {    // FIXME: somehow this can be null.
                     WriteMessage msg = port.newMessage();
                     msg.writeObject( message );
                     len = msg.finish();
