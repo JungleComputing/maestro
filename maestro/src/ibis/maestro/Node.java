@@ -737,9 +737,9 @@ public final class Node extends Thread implements PacketReceiveListener
      * @param port The port to send the result to.
      * @param id The job instance identifier.
      * @param result The result to send.
-     * @return The size of the sent message, or -1 if the transmission failed.
+     * @return <code>true</code> if the message could be sent.
      */
-    private long sendResultMessage( ReceivePortIdentifier port, JobInstanceIdentifier id, Object result )
+    private boolean sendResultMessage( ReceivePortIdentifier port, JobInstanceIdentifier id, Object result )
     {
         Message msg = new JobResultMessage( id, result );	
         jobResultMessageCount.add();
@@ -776,8 +776,8 @@ public final class Node extends Thread implements PacketReceiveListener
             }
 
             RunTaskMessage msg = new RunTaskMessage( worker.getTheirIdentifierForUs(), worker.ourIdentifierForNode, task, taskId );
-            long sz = sendPort.tryToSend( worker.ourIdentifierForNode, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-            if( sz<0 ){
+            boolean ok = sendPort.tryToSend( worker.ourIdentifierForNode, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+            if( !ok ){
                 // Try to put the paste back in the tube.
                 // The sendport has already registered the trouble.
                 worker.retractTask( msg.taskId );
@@ -885,7 +885,8 @@ public final class Node extends Thread implements PacketReceiveListener
      * @param result
      * @param runMoment
      */
-    void transferResult( RunTaskMessage message, Object result, long runMoment ) {
+    void transferResult( RunTaskMessage message, Object result, long runMoment )
+    {
         long taskCompletionMoment = System.nanoTime();
         final NodeIdentifier masterId = message.source;
 
@@ -898,7 +899,7 @@ public final class Node extends Thread implements PacketReceiveListener
             System.out.println( "TRACE:workerDwellTime " + type + " " + now + " " + 1e-9*workerDwellTime );
         }
         Message msg = new TaskCompletedMessage( message.workerIdentifier, message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
-        long sz = sendPort.tryToSend( masterId, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        boolean ok = sendPort.tryToSend( masterId, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         taskResultMessageCount.add();
 
         // FIXME: try to do something if we couldn't send to the originator of the job. At least retry.

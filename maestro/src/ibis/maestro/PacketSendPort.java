@@ -135,7 +135,7 @@ class PacketSendPort {
     /** One entry in the connection cache administration. */
     static class CacheInfo {
         DestinationInfo destination;
-        boolean inUse;                  // If set, port is currently used. Never evict such an entry.
+        int useCount;                  // If >0, port is currently used. Never evict such an entry.
         boolean recentlyUsed;
         SendPort port;
     }
@@ -155,7 +155,9 @@ class PacketSendPort {
         this.localListener = localListener;
     }
 
-    /** Return an empty slot in the cache. */
+    /** Return an empty slot in the cache.
+     * Assumes there is a lock on 'this'.
+     */
     private int searchEmptySlot()
     {
         for(;;){
@@ -164,7 +166,7 @@ class PacketSendPort {
                 // Prefer empty cache slots, or slots with null ports.
                 return clockHand;
             }
-            if( !e.inUse ) {
+            if( e.useCount == 0 ) {
                 if( e.recentlyUsed ){
                     // Next round it will not be considered recently used,
                     // unless it is used. For now don't consider it an
@@ -216,6 +218,7 @@ class PacketSendPort {
         long tEnd = System.nanoTime();
         adminTime += (tEnd-tStart);
         e.port = port;
+        e.useCount = 0;  // Should be 0, but paranoia doesn't hurt here.
     }
 
     /**
@@ -251,9 +254,10 @@ class PacketSendPort {
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
-    private long send( int destination, Message message, int timeout ) throws IOException
+    private boolean send( int destination, Message message, int timeout ) throws IOException
     {
         long len;
+        boolean ok = true;
         DestinationInfo info = destinations.get( destination );
 
         info.incrementSentCount();
@@ -281,20 +285,23 @@ class PacketSendPort {
                     startTime = System.nanoTime();
                     cacheInfo = info.cacheSlot;
                     cacheInfo.recentlyUsed = true;
-                    cacheInfo.inUse = true;
+                    cacheInfo.useCount++;
                     port = cacheInfo.port;
                 }
                 synchronized( port ) {
                     WriteMessage msg = port.newMessage();
                     msg.writeObject( message );
                     len = msg.finish();
+                    if( len<0 ) {
+                        ok = false;
+                        len = 0;
+                    }
                 }
                 synchronized( this ) {
-                    cacheInfo.inUse = false;
-                    long stopTime = System.nanoTime();
+                    cacheInfo.useCount--;
                     sentBytes += len;
                     sentCount++;
-                    t = stopTime-startTime;
+                    t = System.nanoTime()-startTime;
                     sendTime += t;
                 }
             }
@@ -307,7 +314,7 @@ class PacketSendPort {
                 System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds( t ) + ": " + message );
             }
         }
-        return len;
+        return ok;
     }
 
     /**
@@ -422,15 +429,15 @@ class PacketSendPort {
      * @param msg The data to send.
      * @param destination The port to send it to.
      * @param timeout The timeout of the transmission.
-     * @return The length of the transmitted data, or -1 if nothing could be transmitted.
+     * @return <code>true</code> if the message could be sent.
      */
     @SuppressWarnings("synthetic-access")
-    long tryToSend( NodeIdentifier id, Message msg, int timeout )
+    boolean tryToSend( NodeIdentifier id, Message msg, int timeout )
     {
         int destination = id.value;
-        long sz = -1;
+        boolean ok = false;
         try {
-            sz = send( destination, msg, timeout );
+            ok = send( destination, msg, timeout );
         }
         catch (IOException e) {
             DestinationInfo info = destinations.get( destination );
@@ -438,7 +445,7 @@ class PacketSendPort {
             Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to master " + destination );
             e.printStackTrace( Globals.log.getPrintStream() );
         }
-        return sz;
+        return ok;
     }
 
     /**
@@ -446,11 +453,11 @@ class PacketSendPort {
      * @param port The port to send the message to.
      * @param data The message to send.
      * @param timeout The timeout value to use.
-     * @return The size of the transmitted message, or -1 if the transmission failed.
+     * @return <code>true</code> if the message could be sent.
      */
-    long tryToSend( ReceivePortIdentifier port, Message data, int timeout )
+    boolean tryToSend( ReceivePortIdentifier port, Message data, int timeout )
     {
-        long len = -1;
+        boolean ok = false;
         try {
             Integer destination = PortToIdMap.get( port );
             if( destination != null ) {
@@ -468,7 +475,7 @@ class PacketSendPort {
                 WriteMessage msg = sendPort.newMessage();
                 long setupTime = System.nanoTime();
                 msg.writeObject( data );
-                len = msg.finish();
+                long len = msg.finish();
                 sendPort.close();
                 long stopTime = System.nanoTime();
                 uncachedAdminTime += (setupTime-tStart);
@@ -483,6 +490,6 @@ class PacketSendPort {
             Globals.log.reportError( "Cannot send a " + data.getClass() + " message to master " + port );
             e.printStackTrace( Globals.log.getPrintStream() );
         }
-        return len;
+        return ok;
     }
 }
