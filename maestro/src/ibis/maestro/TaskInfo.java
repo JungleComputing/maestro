@@ -15,7 +15,7 @@ public class TaskInfo
     private int taskCount = 0;
     private long totalWorkTime = 0;        
     private long totalQueueTime = 0;     // Cumulative queue time of all tasks.
-    final TimeEstimate averageWorkTime = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
+    final TimeEstimate averageComputeTime = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
     final TimeEstimate queueTimePerTask = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
 
     TaskInfo( TaskType type )
@@ -164,7 +164,7 @@ public class TaskInfo
     {
         taskCount++;
         totalWorkTime += workTime;
-        averageWorkTime.addSample( workTime );
+        averageComputeTime.addSample( workTime );
     }
 
     void reportStats( PrintStream out, double workTime )
@@ -189,7 +189,7 @@ public class TaskInfo
      */
     long getEstimatedDwellTime( int queueLength )
     {
-        long res = averageWorkTime.getAverage() + queueTimePerTask.getAverage()*queueLength;
+        long res = averageComputeTime.getAverage() + queueTimePerTask.getAverage()*queueLength;
         return res;
     }
 
@@ -208,7 +208,16 @@ public class TaskInfo
      */
     long getEstimatedComputeTime()
     {
-        return averageWorkTime.getAverage();
+        return averageComputeTime.getAverage();
+    }
+
+    /** 
+     * Sets the initial compute time estimate of this task to the given value.
+     * @param estimate The initial estimate.
+     */
+    void setInitialComputeTimeEstimate( long estimate )
+    {
+        averageComputeTime.setInitialEstimate( estimate );
     }
 
 }

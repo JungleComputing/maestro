@@ -32,6 +32,24 @@ public class TaskInfoList
         }
         return res;
     }
+    
+    private void registerLocalTask( TaskType type, JobList jobs )
+    {
+        Task task = jobs.getTask( type );
+        if( task instanceof TaskExecutionTimeEstimator ) {
+            TaskExecutionTimeEstimator estimator = (TaskExecutionTimeEstimator) task;
+            TaskInfo info = getTaskInfo( type );
+            info.setInitialComputeTimeEstimate( estimator.estimateTaskExecutionTime() );
+        }
+        
+    }
+
+    void registerLocalTasks( TaskType l[], JobList jobs )
+    {
+        for( TaskType type: l ) {
+            registerLocalTask( type, jobs );
+        }
+    }
 
     synchronized void printStatistics( PrintStream s, long workInterval )
     {

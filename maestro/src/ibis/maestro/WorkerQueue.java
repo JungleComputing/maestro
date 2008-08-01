@@ -21,13 +21,14 @@ final class WorkerQueue {
     private long activeTime = 0L;
 
     /**
-     * Given FIXME, constructs a new WorkerQueue.
-     * @param taskTypes
+     * Given a list of supported types, constructs a new WorkerQueue.
+     * @param taskTypes The list of types we support.
+     * @param jobs 
      */
     WorkerQueue( TaskType[] taskTypes )
     {
-        for( TaskType t: taskTypes ) {
-            getTypeInfo( t );  // Make sure the type administration is there.
+        for( TaskType type: taskTypes ) {
+            TypeInfo info = getTypeInfo( type );  // Make sure the type administration is there.
         }
         // TODO: after this point no new types should have to be added.
     }

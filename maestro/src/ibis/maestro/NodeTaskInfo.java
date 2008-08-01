@@ -47,12 +47,12 @@ final class NodeTaskInfo {
 
     private final long startTime = System.nanoTime();
     /**
+     * Constructs a new information class for a particular task type
+     * for a particular worker.
      * @param taskInfo The type of task we have administration for.
      * @param worker The worker we have administration for.
      * @param local True iff this is the local worker.
      * @param pingTime The ping time of this worker.
-     * Constructs a new information class for a particular task type
-     * for a particular worker.
      */
     NodeTaskInfo( TaskInfo taskInfo, NodeInfo worker, boolean local, long pingTime )
     {
