@@ -15,6 +15,7 @@ import java.util.List;
 final class NodeList {
     private final ArrayList<NodeInfo> nodes = new ArrayList<NodeInfo>();
     private final TaskInfoList taskInfoList;
+    private UpDownCounter readyNodeCounter = new UpDownCounter();
 
     NodeList( TaskInfoList taskInfoList )
     {
@@ -59,6 +60,7 @@ final class NodeList {
         if( wi != null ) {
             orphans = wi.setDead();
         }
+        readyNodeCounter.down();
         return orphans;
     }
 
@@ -77,6 +79,7 @@ final class NodeList {
         if( wi != null ) {
             orphans = wi.setDead();
         }
+        readyNodeCounter.down();
         return orphans;
     }
 
@@ -134,6 +137,7 @@ final class NodeList {
         if( Settings.traceNodeProgress || Settings.traceRegistration ){
             System.out.println( "Subscribing node " + node.ourIdentifierForNode + " theirIdentifierForUs=" + theirIdentifierForUs );
         }
+        readyNodeCounter.up();
         return node;
     }
 
@@ -289,16 +293,16 @@ final class NodeList {
         return nodeInfo.registerAsCommunicating();
     }
 
-    /** FIXME.
-     * @param theIbis
-     * @return
+    /**
+     * Wait until at least the given number of nodes have been registered with this node.
+     * Since nodes will never register themselves instantaneously with other nodes,
+     * the first jobs that are submitted may be executed on the first available node, instead
+     * of the best one. Waiting until there is some choice can therefore be an advantage.
+     * Of course, it must be certain that the given number of nodes will ever join the computation.
+     * @param n The number of nodes to wait for.
      */
-    synchronized boolean hasReadyNode( IbisIdentifier theIbis )
+    void waitForReadyNodes( int n )
     {
-        NodeInfo nodeInfo = searchNode( nodes, theIbis );
-        if( nodeInfo == null ) {
-            return false;
-        }
-        return nodeInfo.isReady();
+        readyNodeCounter.waitForGreaterOrEqual( n );
     }
 }

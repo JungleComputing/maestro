@@ -28,7 +28,7 @@ final class WorkerQueue {
     WorkerQueue( TaskType[] taskTypes )
     {
         for( TaskType type: taskTypes ) {
-            TypeInfo info = getTypeInfo( type );  // Make sure the type administration is there.
+            getTypeInfo( type );  // Make sure the type administration is there.
         }
         // TODO: after this point no new types should have to be added.
     }
