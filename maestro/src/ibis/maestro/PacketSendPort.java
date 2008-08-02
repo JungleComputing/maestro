@@ -123,13 +123,9 @@ class PacketSendPort {
         synchronized void close() throws IOException
         {
             if( cacheSlot != null ) {
-                if( cacheSlot.port != null ) {
-                    cacheSlot.port.close();
-                    cacheSlot.port = null;
-                }
+                cacheSlot.close();
+                cacheSlot = null;
             }
-            cacheSlot.destination = null;
-            cacheSlot = null;
         }
     }
 
@@ -139,6 +135,16 @@ class PacketSendPort {
         int useCount;                  // If >0, port is currently used. Never evict such an entry.
         boolean recentlyUsed;
         SendPort port;
+
+        void close() throws IOException
+        {
+            if( port != null ) {
+                port.close();
+                port = null;
+            }
+            recentlyUsed = false;
+            destination = null;
+        }
     }
 
     PacketSendPort( Ibis ibis, Node node )
@@ -167,7 +173,7 @@ class PacketSendPort {
                 // Prefer empty cache slots, or slots with null ports.
                 return clockHand;
             }
-            if( e.useCount == 0 ) {
+            if( e.useCount<=0 ) {
                 if( e.recentlyUsed ){
                     // Next round it will not be considered recently used,
                     // unless it is used. For now don't consider it an
@@ -199,29 +205,24 @@ class PacketSendPort {
         long tStart = System.nanoTime();
         int ix = searchEmptySlot();
 
-        CacheInfo e = cache[ix];
-        if( e == null ){
+        CacheInfo cacheInfo = cache[ix];
+        if( cacheInfo == null ){
             // An unused cache slot. Start to use it.
-            e = cache[ix] = new CacheInfo();
+            cacheInfo = cache[ix] = new CacheInfo();
         }
         else {
             // Somebody was using this cache slot. Evict him.
-            if( e.port != null ){
-                e.port.close();
-            }
-            if( e.destination != null ) {
-                e.destination.cacheSlot = null;
-            }
+            cacheInfo.close();
             evictions++;
         }
-        e.destination = newDestination;
-        newDestination.cacheSlot = e;
+        cacheInfo.destination = newDestination;
+        newDestination.cacheSlot = cacheInfo;
         SendPort port = ibis.createSendPort( portType );
         port.connect( newDestination.portIdentifier, timeout, true );
         long tEnd = System.nanoTime();
         adminTime += (tEnd-tStart);
-        e.port = port;
-        e.useCount = 0;  // Should be 0, but paranoia doesn't hurt here.
+        cacheInfo.port = port;
+        cacheInfo.useCount = 0;  // Should be 0, but paranoia doesn't hurt here.
     }
 
     /**
@@ -384,24 +385,6 @@ class PacketSendPort {
             DestinationInfo i = l[ix];
 
             i.printStats( s );
-        }
-    }
-
-    /**
-     * Tries to close all open connections.
-     */
-    void close()
-    {
-        for( CacheInfo e: cache ) {
-            if( e != null ) {
-                try {
-                    e.port.close();
-                }
-                catch( IOException x ) {
-                    Globals.log.reportError( "Cannot close cached send port" );
-                    x.printStackTrace( Globals.log.getPrintStream() );
-                }
-            }
         }
     }
 

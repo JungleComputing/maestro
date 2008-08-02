@@ -10,13 +10,13 @@ class Settings {
     // Timeout values.
     
     /** Message transmission timeout in ms on optional communication. */
-    static final int OPTIONAL_COMMUNICATION_TIMEOUT = 30000;
+    static final int OPTIONAL_COMMUNICATION_TIMEOUT = 3000;
     
     /** Message transmission timeout in ms on essential communications. */
-    static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 5*OPTIONAL_COMMUNICATION_TIMEOUT;
+    static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 10*OPTIONAL_COMMUNICATION_TIMEOUT;
 
     /** The number of connections we maximally keep open. */
-    static final int CONNECTION_CACHE_SIZE = 80;
+    static final int CONNECTION_CACHE_SIZE = 350;
 
     // Debugging flags.
     

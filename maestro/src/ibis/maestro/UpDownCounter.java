@@ -57,10 +57,10 @@ public class UpDownCounter
     public void waitForGreaterOrEqual( int n )
     {
         while( true ) {
-            if( value>=n ) {
-                return;
-            }
             synchronized( this ) {
+                if( value>=n ) {
+                    return;
+                }
                 try{
                     this.wait();
                 }
