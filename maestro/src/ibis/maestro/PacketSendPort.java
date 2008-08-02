@@ -209,7 +209,9 @@ class PacketSendPort {
             if( e.port != null ){
                 e.port.close();
             }
-            e.destination.cacheSlot = null;
+            if( e.destination != null ) {
+                e.destination.cacheSlot = null;
+            }
             evictions++;
         }
         e.destination = newDestination;
@@ -289,7 +291,7 @@ class PacketSendPort {
                     cacheInfo.useCount++;
                     port = cacheInfo.port;
                 }
-                synchronized( port ) {    // FIXME: somehow this can be null.
+                synchronized( port ) {
                     WriteMessage msg = port.newMessage();
                     msg.writeObject( message );
                     len = msg.finish();

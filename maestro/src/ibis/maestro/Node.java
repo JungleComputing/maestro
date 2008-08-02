@@ -180,7 +180,6 @@ public final class Node extends Thread implements PacketReceiveListener
         {
             registerIbisLeft( theIbis );
             removeNode( theIbis );
-            removeNode( theIbis );
         }
 
         /**
