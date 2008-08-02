@@ -312,7 +312,9 @@ final class NodeList {
     synchronized void checkDeadlines( long now )
     {
         for( NodeInfo nodeInfo: nodes ) {
-            nodeInfo.checkDeadlines( now );
+            if( nodeInfo != null ) {
+                nodeInfo.checkDeadlines( now );
+            }
         }
     }
 }
