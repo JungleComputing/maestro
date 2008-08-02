@@ -17,6 +17,7 @@ final class WorkThread extends Thread
     WorkThread( Node node )
     {
 	super( "Work thread" );
+	setDaemon( true );
 	this.node = node;
     }
 

@@ -301,8 +301,18 @@ final class NodeList {
      * Of course, it must be certain that the given number of nodes will ever join the computation.
      * @param n The number of nodes to wait for.
      */
-    void waitForReadyNodes( int n )
+    int waitForReadyNodes( int n, long waittime )
     {
-        readyNodeCounter.waitForGreaterOrEqual( n );
+        return readyNodeCounter.waitForGreaterOrEqual( n, waittime );
+    }
+
+    /**
+     * Check the deadlines of the nodes.
+     */
+    synchronized void checkDeadlines( long now )
+    {
+        for( NodeInfo nodeInfo: nodes ) {
+            nodeInfo.checkDeadlines( now );
+        }
     }
 }

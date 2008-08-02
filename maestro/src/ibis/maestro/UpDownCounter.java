@@ -51,18 +51,24 @@ public class UpDownCounter
         return this.value<=v;
     }
 
-    /** FIXME.
-     * @param n
+    /**
+     * Wait until this counter has reached a value greater or equal to
+     * the given value.
+     * @param n The threshold value to wait for.
+     * @param duration The maximal time in ms to wait.
+     * @return The actual value at the moment we stopped waiting.
      */
-    public void waitForGreaterOrEqual( int n )
+    public int waitForGreaterOrEqual( int n, long duration )
     {
+        long deadline = System.currentTimeMillis()+duration;
         while( true ) {
+            long waittime = deadline - System.currentTimeMillis();
             synchronized( this ) {
-                if( value>=n ) {
-                    return;
+                if( value>=n || waittime<=0 ) {
+                    return value;
                 }
                 try{
-                    this.wait();
+                    this.wait( waittime );
                 }
                 catch( InterruptedException e ){
                     // Not interested.

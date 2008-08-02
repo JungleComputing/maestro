@@ -88,7 +88,8 @@ public final class Node extends Thread implements PacketReceiveListener
 
         UpdateThread()
         {
-            super( "updater thread" );
+            super( "update thread" );
+            setPriority( Thread.MIN_PRIORITY );
             setDaemon( true );
         }
         
@@ -104,7 +105,8 @@ public final class Node extends Thread implements PacketReceiveListener
         public void run()
         {
             int ix = 0;
-            while( !stopped.isSet() ) {
+            while( true ) {
+                // This is a daemon thread, it will be killed when all threads stop.
                 NodeInfo target = null;
 
                 while( !targets.isEmpty() ) {
@@ -167,7 +169,6 @@ public final class Node extends Thread implements PacketReceiveListener
         {
             Globals.log.reportProgress( "Ibis " + theIbis + " has died" );
             registerIbisLeft( theIbis );
-            removeNode( theIbis );
         }
 
         /**
@@ -179,7 +180,6 @@ public final class Node extends Thread implements PacketReceiveListener
         public void left( IbisIdentifier theIbis )
         {
             registerIbisLeft( theIbis );
-            removeNode( theIbis );
         }
 
         /**
@@ -204,25 +204,6 @@ public final class Node extends Thread implements PacketReceiveListener
         public void gotSignal( String signal )
         {
             // Not interested.
-        }
-    }
-
-    /**
-     * Returns true iff this node is a maestro.
-     * @return True iff this node is a maestro.
-     */
-    public boolean isMaestro() { return isMaestro; }
-
-    /** Registers the ibis with the given identifier as one that has left the
-     * computation.
-     * @param id The ibis that has left.
-     */
-    private void registerIbisLeft( IbisIdentifier id )
-    {
-        boolean noMaestrosLeft = maestros.remove( id );
-        if( noMaestrosLeft ) {
-            Globals.log.reportProgress( "No maestros left; stopping.." );
-            setStopped();
         }
     }
 
@@ -292,6 +273,16 @@ public final class Node extends Thread implements PacketReceiveListener
         }
     }
 
+    /**
+     * Start this thread.
+     */
+    @Override
+    public void start()
+    {
+        receivePort.enable();           // We're open for business.
+        super.start();                  // Start the thread
+    }
+
     /** Set this node to the stopped state.
      * This does not mean that the node stops immediately,
      * but it does mean the master and worker try to wind down the work.
@@ -302,6 +293,10 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "Set node to stopped state" );
         }
         stopped.set();
+        synchronized( this ) {
+            // That's worth telling everyone.
+            this.notifyAll();
+        }
     }
 
     private boolean isStopped()
@@ -329,6 +324,27 @@ public final class Node extends Thread implements PacketReceiveListener
             // Nothing we can do about it.
         }
         printStatistics( System.out );
+    }
+
+    /**
+     * Returns true iff this node is a maestro.
+     * @return True iff this node is a maestro.
+     */
+    public boolean isMaestro() { return isMaestro; }
+
+    /** Registers the ibis with the given identifier as one that has left the
+     * computation.
+     * @param theIbis The ibis that has left.
+     */
+    private void registerIbisLeft( IbisIdentifier theIbis )
+    {
+        ArrayList<TaskInstance> orphans = nodes.removeNode( theIbis );
+        masterQueue.add( orphans );
+        boolean noMaestrosLeft = maestros.remove( theIbis );
+        if( noMaestrosLeft ) {
+            Globals.log.reportProgress( "No maestros left; stopping.." );
+            setStopped();
+        }
     }
 
     /** Report the completion of the job with the given identifier.
@@ -371,8 +387,9 @@ public final class Node extends Thread implements PacketReceiveListener
     private void updateAdministration()
     {
         drainMessageQueue();
-        registerWithMaster();
         drainMasterQueue();
+        registerWithMaster();
+        nodes.checkDeadlines( System.nanoTime() );
     }
 
     /**
@@ -384,27 +401,6 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         boolean res = port.equals( receivePort.identifier() );
         return res;
-    }
-
-    /**
-     * Start this thread.
-     */
-    @Override
-    public void start()
-    {
-        receivePort.enable();           // We're open for business.
-        super.start();                  // Start the thread
-    }
-
-    /**
-     * We know the given ibis has disappeared from the computation.
-     * Make sure we don't talk to it.
-     * @param theIbis The ibis that was gone.
-     */
-    private void removeNode( IbisIdentifier theIbis )
-    {
-        ArrayList<TaskInstance> orphans = nodes.removeNode( theIbis );
-        masterQueue.add( orphans );
     }
 
     private void addUnregisteredNode( IbisIdentifier theIbis, boolean local )
@@ -677,6 +673,10 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void registerWithMaster()
     {
+        if( isStopped() ) {
+            // Don't bother
+            return;
+        }
         UnregisteredNodeInfo ni = unregisteredNodes.removeIfAny();
         if( ni != null ) {
             if( Settings.traceNodeProgress ){
@@ -932,9 +932,11 @@ public final class Node extends Thread implements PacketReceiveListener
      * of the best one. Waiting until there is some choice can therefore be an advantage.
      * Of course, it must be certain that the given number of nodes will ever join the computation.
      * @param n The number of nodes to wait for.
+     * @param waittime The maximal time in milliseconds to wait for these nodes.
+     * @return The actual number of nodes at the moment we stopped waiting.
      */
-    public void waitForReadyNodes( int n )
+    public int waitForReadyNodes( int n, long waittime )
     {
-        nodes.waitForReadyNodes( n );
+        return nodes.waitForReadyNodes( n, waittime );
     }
 }

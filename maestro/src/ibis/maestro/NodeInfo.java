@@ -269,13 +269,13 @@ final class NodeInfo
         long roundtripError = Math.abs( task.predictedDuration-roundtripTime );
         long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
 
-        if( task.allowanceDeadline<result.arrivalMoment ) {
+        if( task.getAllowanceDeadline()<result.arrivalMoment ) {
             missedAllowanceDeadlines++;
             if( Settings.traceMissedDeadlines ){
                 Globals.log.reportProgress(
                     "Missed allowance deadline for " + task.task.type + " task: "
                     + " predictedDuration=" + Service.formatNanoseconds( task.predictedDuration )
-                    + " allowanceDuration=" + Service.formatNanoseconds( task.allowanceDeadline-task.startTime )
+                    + " allowanceDuration=" + Service.formatNanoseconds( task.getAllowanceDeadline()-task.startTime )
                     + " realDuration=" + Service.formatNanoseconds( roundtripTime )
                 );
             }
@@ -439,5 +439,17 @@ final class NodeInfo
     synchronized boolean isDead()
     {
         return dead;
+    }
+
+    synchronized void checkDeadlines( long now )
+    {
+        for( ActiveTask task: activeTasks ) {
+            if( task.getAllowanceDeadline()<now ) {
+                // Worker missed an allowance deadline.
+                long t = now-task.startTime+task.predictedDuration;
+                task.workerTaskInfo.updateRoundtripTimeEstimate( t );
+                task.setAllowanceDeadline( t );
+            }
+        }
     }
 }

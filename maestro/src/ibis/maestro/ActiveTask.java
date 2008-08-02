@@ -17,7 +17,7 @@ class ActiveTask {
     /** The predicted duration of the task. */
     final long predictedDuration;
 
-    final long allowanceDeadline;
+    private long allowanceDeadline;
     
     /** The moment this task should be completed. */
     final long rescheduleDeadline;
@@ -31,6 +31,33 @@ class ActiveTask {
         this.predictedDuration = predictedDuration;
         this.allowanceDeadline = allowanceDeadline;
         this.rescheduleDeadline = rescheduleDeadline;
+    }
+
+    /**
+     * Returns allowanceDeadline.
+     * @return allowanceDeadline.
+     */
+    long getAllowanceDeadline()
+    {
+        return allowanceDeadline;
+    }
+
+    /**
+     * Assign a new value to allowanceDeadline.
+     * @param allowanceDeadline The new value for allowanceDeadline.
+     */
+    void setAllowanceDeadline( long allowanceDeadline )
+    {
+        this.allowanceDeadline = allowanceDeadline;
+    }
+
+    /**
+     * Returns rescheduleDeadline.
+     * @return rescheduleDeadline.
+     */
+    long getRescheduleDeadline()
+    {
+        return rescheduleDeadline;
     }
 
     /**

@@ -305,4 +305,9 @@ final class NodeTaskInfo {
             s.println( "  " + taskInfo.type + ": executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + " dequeueTime=" + Service.formatNanoseconds( dequeueTime )+ " computeTime=" + Service.formatNanoseconds( computeTime )+ ", remaining time " + Service.formatNanoseconds( remainingJobTime ) );
         }
     }
+
+    void updateRoundtripTimeEstimate( long t )
+    {
+        roundtripTimeEstimate.addSample( t );
+    }
 }
