@@ -449,16 +449,14 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private boolean sendRegisterNodeMessage( UnregisteredNodeInfo ni )
     {
-        boolean ok = true;
         if( Settings.traceWorkerList ) {
             Globals.log.reportProgress( "Node " + Globals.localIbis.identifier() + ": sending registration message to ibis " + ni );
         }
         TaskType taskTypes[] = jobs.getSupportedTaskTypes();
         RegisterNodeMessage msg = new RegisterNodeMessage( receivePort.identifier(), taskTypes, ni.ourIdentifierForNode );
-        long sz = sendPort.tryToSend( ni.ibis, Globals.receivePortName, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-        if( sz<0 ) {
+        boolean ok = sendPort.tryToSendNonEssential( ni.ibis, msg );
+        if( !ok ) {
             System.err.println( "Cannot register with node " + ni.ibis );
-            ok = false;
         }
         registrationMessageCount.add();
         return ok;
@@ -762,7 +760,8 @@ public final class Node extends Thread implements PacketReceiveListener
     /**
      * @param submissions The list of submissions to send.
      */
-    private void sendSubmissionsToWorkers(LinkedList<Submission> submissions) {
+    private void sendSubmissionsToWorkers( LinkedList<Submission> submissions )
+    {
         while( !submissions.isEmpty() ) {
             Submission sub = submissions.removeFirst();
             NodeTaskInfo wti = sub.worker;

@@ -321,40 +321,6 @@ class PacketSendPort {
         return ok;
     }
 
-    /**
-     * Sends the given data to the port with the given name on the given ibis.
-     * @param receiver The port to send it to.
-     * @param portname The name of the port to send to.
-     * @param data The data to send.
-     * @param timeout The timeout on the port.
-     * @return The length of the transmitted data.
-     * @throws IOException Thrown if there is a communication error.
-     */
-    private long send( IbisIdentifier receiver, String portname, Message data, int timeout ) throws IOException
-    {
-        long len;
-
-        synchronized( this ) {
-            long startTime = System.nanoTime();
-            SendPort port = ibis.createSendPort( portType );
-            port.connect( receiver, portname, timeout, true );
-            long setupTime = System.nanoTime();
-            WriteMessage msg = port.newMessage();
-            msg.writeObject( data );
-            len = msg.finish();
-            port.close();
-            long stopTime = System.nanoTime();
-            if( Settings.traceSends ) {
-                System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) + ": " + data );
-            }
-            uncachedAdminTime += (setupTime-startTime);
-            uncachedSendTime += (stopTime-setupTime);
-            uncachedSentBytes += len;
-            uncachedSentCount++;
-        }
-        return len;
-    }
-
     /** Given the name of this port, prints some statistics about this port.
      * 
      * @param portname The name of the port.
@@ -391,22 +357,46 @@ class PacketSendPort {
     /** 
      * Tries to send a message to the given ibis and port name.
      * @param theIbis The ibis to send the message to.
-     * @param portName The port to send  the message to.
      * @param msg The message to send.
-     * @param timeout The timeout on the message.
      * @return The number of transmitted bytes, or -1 if the message could not be sent.
      */
-    long tryToSend( IbisIdentifier theIbis, String portName, Message msg, int timeout )
+    boolean tryToSendNonEssential( IbisIdentifier theIbis, Message msg )
     {
-        long sz = -1;
+        boolean ok = false;
         try {
-            sz = send( theIbis, portName, msg, timeout );
+            long len;
+            SendPort port;
+            
+            long startTime = System.nanoTime();
+            synchronized( this ) {
+                // TODO: is createSendPort re-entrant?
+                port = ibis.createSendPort( portType );
+            }
+            port.connect( theIbis, Globals.receivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT, false );
+            long setupTime = System.nanoTime();
+            WriteMessage msg1 = port.newMessage();
+            msg1.writeObject( msg );
+            len = msg1.finish();
+            port.close();
+            long stopTime = System.nanoTime();
+            if( Settings.traceSends ) {
+                System.out.println( "Sent non-essential message of " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) + ": " + msg );
+            }
+            synchronized( this ) {
+                uncachedAdminTime += (setupTime-startTime);
+                uncachedSendTime += (stopTime-setupTime);
+                uncachedSentCount++;
+                if( len>0 ) {
+                    uncachedSentBytes += len;
+                    ok = true;
+                }
+            }
         } catch (IOException e) {
             node.setSuspect( theIbis );
-            Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to ibis " + theIbis );
+            Globals.log.reportError( "Cannot send a non-essential " + msg.getClass() + " message to ibis " + theIbis );
             e.printStackTrace( Globals.log.getPrintStream() );
         }
-        return sz;
+        return ok;
     }
 
 
