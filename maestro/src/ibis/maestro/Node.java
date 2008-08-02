@@ -7,7 +7,6 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.Registry;
 import ibis.ipl.RegistryEventHandler;
-import ibis.maestro.UnregisteredNodeList.UnregisteredNodeInfo;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -25,7 +24,7 @@ import java.util.concurrent.Semaphore;
 public final class Node extends Thread implements PacketReceiveListener
 {
     static final IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE, IbisCapabilities.ELECTIONS_STRICT );
-    private final PacketSendPort sendPort;
+    final PacketSendPort sendPort;
     final PacketUpcallReceivePort receivePort;
     final long startTime;
     private long stopTime = 0;
@@ -39,7 +38,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private final UpdateThread updaters[] = new UpdateThread[numberOfProcessors];
 
     /** The list of ibises we haven't (successfully) registered with yet. */
-    private final UnregisteredNodeList unregisteredNodes = new UnregisteredNodeList();
+    private final UnregisteredNodeList unregisteredNodes;
 
     private final TaskSources taskSources = new TaskSources();
 
@@ -65,7 +64,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private final WorkerQueue workerQueue;
     private long nextTaskId = 0;
     private Counter handledTaskCount = new Counter();
-    private Counter registrationMessageCount = new Counter();
+    Counter registrationMessageCount = new Counter();
     private Counter acceptMessageCount = new Counter();
     private Counter updateMessageCount = new Counter();
     private Counter submitMessageCount = new Counter();
@@ -223,6 +222,7 @@ public final class Node extends Thread implements PacketReceiveListener
 
         this.jobs = jobs;
         TaskType taskTypes[] = jobs.getSupportedTaskTypes();
+        unregisteredNodes = new UnregisteredNodeList( this, taskTypes );
         masterQueue = new MasterQueue( taskTypes );
         workerQueue = new WorkerQueue( taskTypes );
         taskInfoList.registerLocalTasks( taskTypes, jobs );
@@ -389,7 +389,7 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         drainMessageQueue();
         drainMasterQueue();
-        registerWithMaster();
+        unregisteredNodes.registerWithMaster();
         nodes.checkDeadlines( System.nanoTime() );
     }
 
@@ -446,21 +446,6 @@ public final class Node extends Thread implements PacketReceiveListener
         s.println( "Worker: activated after = " + Service.formatNanoseconds( activeTime-startTime ) );
         masterQueue.printStatistics( s );
         s.printf(  "Master: # handled tasks  = %5d\n", handledTaskCount.get() );
-    }
-
-    private boolean sendRegisterNodeMessage( UnregisteredNodeInfo ni )
-    {
-        if( Settings.traceWorkerList ) {
-            Globals.log.reportProgress( "Node " + Globals.localIbis.identifier() + ": sending registration message to ibis " + ni );
-        }
-        TaskType taskTypes[] = jobs.getSupportedTaskTypes();
-        RegisterNodeMessage msg = new RegisterNodeMessage( receivePort.identifier(), taskTypes, ni.ourIdentifierForNode );
-        boolean ok = sendPort.tryToSendNonEssential( ni.ibis, msg );
-        if( !ok ) {
-            System.err.println( "Cannot register with node " + ni.ibis );
-        }
-        registrationMessageCount.add();
-        return ok;
     }
 
     private void sendUpdateNodeMessage( NodeIdentifier node, NodeIdentifier identifierOnNode )
@@ -664,33 +649,6 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         synchronized( this ) {
             stopTime = System.nanoTime();
-        }
-    }
-
-    /**
-     * If there is any new master on our list, try to register with it.
-     */
-    private void registerWithMaster()
-    {
-        if( isStopped() ) {
-            // Don't bother
-            return;
-        }
-        UnregisteredNodeInfo ni = unregisteredNodes.removeIfAny();
-        if( ni != null ) {
-            if( Settings.traceNodeProgress ){
-                Globals.log.reportProgress( "registering with node " + ni );
-            }
-            boolean ok = sendRegisterNodeMessage( ni );
-            if( !ok ) {
-                int tries = ni.incrementTries();
-                if( tries<Settings.MAXIMAL_REGISTRATION_TRIES ) {
-                    unregisteredNodes.add( ni );
-                }
-                else {
-                    Globals.log.reportError( "I cannot register with node " + ni.ibis + " even after " + Settings.MAXIMAL_REGISTRATION_TRIES + " attempts; giving up" );
-                }
-            }
         }
     }
 

@@ -5,9 +5,18 @@ import ibis.ipl.Location;
 
 import java.util.PriorityQueue;
 
-class UnregisteredNodeList
+class UnregisteredNodeList extends Thread
 {
-    static final class UnregisteredNodeInfo implements Comparable<UnregisteredNodeInfo>
+    private final Node node;
+    private final TaskType taskTypes[];    
+
+    UnregisteredNodeList( Node node, TaskType taskTypes[] )
+    {
+        this.node = node;
+        this.taskTypes = taskTypes;
+    }
+
+    private static final class UnregisteredNodeInfo implements Comparable<UnregisteredNodeInfo>
     {
         final IbisIdentifier ibis;
         final boolean local;
@@ -127,4 +136,43 @@ class UnregisteredNodeList
         }
         list.add( ni );
     }
+
+    private boolean sendRegisterNodeMessage( IbisIdentifier ibis, NodeIdentifier ourIdentifierForNode )
+    {
+        if( Settings.traceWorkerList ) {
+            Globals.log.reportProgress( "Node " + Globals.localIbis.identifier() + ": sending registration message to ibis " + ibis );
+        }
+        RegisterNodeMessage msg = new RegisterNodeMessage( node.receivePort.identifier(), taskTypes, ourIdentifierForNode );
+        boolean ok = node.sendPort.tryToSendNonEssential( ibis, msg );
+        if( !ok ) {
+            System.err.println( "Cannot register with node " + ibis );
+        }
+        node.registrationMessageCount.add();
+        return ok;
+    }
+
+
+    /**
+     * If there is any new master on our list, try to register with it.
+     */
+    void registerWithMaster()
+    {
+        UnregisteredNodeInfo ni = removeIfAny();
+        if( ni != null ) {
+            if( Settings.traceNodeProgress ){
+                Globals.log.reportProgress( "registering with node " + ni );
+            }
+            boolean ok = sendRegisterNodeMessage( ni.ibis, ni.ourIdentifierForNode );
+            if( !ok ) {
+                int tries = ni.incrementTries();
+                if( tries<Settings.MAXIMAL_REGISTRATION_TRIES ) {
+                    add( ni );
+                }
+                else {
+                    Globals.log.reportError( "I cannot register with node " + ni.ibis + " even after " + Settings.MAXIMAL_REGISTRATION_TRIES + " attempts; giving up" );
+                }
+            }
+        }
+    }
+
 }
