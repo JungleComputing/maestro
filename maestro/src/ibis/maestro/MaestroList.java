@@ -13,6 +13,7 @@ class MaestroList
 {
     private static final long serialVersionUID = 1L;
     private final ArrayList<MaestroInfo> list = new ArrayList<MaestroInfo>();
+    boolean everHadMaestros = false;
 
     /** Remove the maestro with the given identifier.
      * @param id The identifier of the maestro to remove.
@@ -31,12 +32,13 @@ class MaestroList
                 noMaestrosLeft = list.isEmpty();
             }
         }
-        return noMaestrosLeft;
+        return everHadMaestros && noMaestrosLeft;
     }
     
     /** Add a new maestro. */
     synchronized void addMaestro( MaestroInfo info )
     {
         list.add( info );
+        everHadMaestros = true;
     }
 }

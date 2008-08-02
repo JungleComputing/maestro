@@ -192,6 +192,7 @@ public final class Node extends Thread implements PacketReceiveListener
         public void electionResult( String name, IbisIdentifier theIbis )
         {
             if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
+                System.out.println( "Ibis " + theIbis + " was elected maestro" );
                 maestros.addMaestro( new MaestroInfo( theIbis ) );
             }
         }
