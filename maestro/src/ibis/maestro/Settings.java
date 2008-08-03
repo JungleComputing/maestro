@@ -70,6 +70,9 @@ class Settings {
     /** Trace all sent update messages. */
     static final boolean traceUpdateMessages = false;
 
+    /** Trace the adventures of the non-essential sender. */
+    static final boolean traceNonEssentialSender = true;
+
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.
      */

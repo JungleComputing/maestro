@@ -41,6 +41,9 @@ public final class Node extends Thread implements PacketReceiveListener
     private final UnregisteredNodeList unregisteredNodes;
 
     private final TaskSources taskSources = new TaskSources();
+    
+    /** The sender of non-essential messages. */
+    private final NonEssentialSender nonEssentialSender;
 
     /** The incoming message queue. */
     private final MessageQueue messageQueue = new MessageQueue();
@@ -227,6 +230,8 @@ public final class Node extends Thread implements PacketReceiveListener
         masterQueue = new MasterQueue( taskTypes );
         workerQueue = new WorkerQueue( taskTypes );
         taskInfoList.registerLocalTasks( taskTypes, jobs );
+        nonEssentialSender = new NonEssentialSender();
+        nonEssentialSender.start();
         ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
         registryEventHandler = new NodeRegistryEventHandler();
         Globals.localIbis = IbisFactory.createIbis(
@@ -463,6 +468,17 @@ public final class Node extends Thread implements PacketReceiveListener
         s.printf(  "Master: # handled tasks  = %5d\n", handledTaskCount.get() );
     }
 
+    private void sendNonEssential( NonEssentialMessage msg )
+    {
+        if( msg.destination.equals( Globals.localIbis.identifier() ) ) {
+            // Don't go through all the bureaucracy for a local message.
+            messageQueue.add( msg );
+        }
+        else {
+            nonEssentialSender.submit( msg );
+        }
+    }
+
     private void sendUpdateNodeMessage( NodeIdentifier node, NodeIdentifier identifierOnNode )
     {
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleTasks() );
@@ -482,17 +498,31 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         sendUpdateNodeMessage( node.ourIdentifierForNode, node.getTheirIdentifierForUs() );
     }
-
+    
     private void sendAcceptNodeMessage( NodeInfo node, long sendTime )
     {
-        AcceptNodeMessage msg = new AcceptNodeMessage( node.getTheirIdentifierForUs(), sendTime );
+        AcceptNodeMessage msg = new AcceptNodeMessage( node.ibis, node.getTheirIdentifierForUs(), sendTime );
 	
 	if( Settings.traceUpdateMessages ) {
 	    Globals.log.reportProgress( "Sending " + msg );
 	}
-	// FIXME: make OPTIONAL_COMMUNICATION_TIMEOUT once we do retries.
-	sendPort.tryToSend( node.ourIdentifierForNode, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+	sendNonEssential( msg );
 	acceptMessageCount.add();
+    }
+
+    /**
+     * Send a result message to the given port, using the given job identifier
+     * and the given result value.
+     * @param port The port to send the result to.
+     * @param id The job instance identifier.
+     * @param result The result to send.
+     * @return <code>true</code> if the message could be sent.
+     */
+    private boolean sendResultMessage( ReceivePortIdentifier port, JobInstanceIdentifier id, Object result )
+    {
+        Message msg = new JobResultMessage( id, result );	
+        jobResultMessageCount.add();
+        return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
     }
 
     /**
@@ -706,21 +736,6 @@ public final class Node extends Thread implements PacketReceiveListener
         }
     }
 
-    /**
-     * Send a result message to the given port, using the given job identifier
-     * and the given result value.
-     * @param port The port to send the result to.
-     * @param id The job instance identifier.
-     * @param result The result to send.
-     * @return <code>true</code> if the message could be sent.
-     */
-    private boolean sendResultMessage( ReceivePortIdentifier port, JobInstanceIdentifier id, Object result )
-    {
-        Message msg = new JobResultMessage( id, result );	
-        jobResultMessageCount.add();
-        return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-    }
-
     /** On a locked queue, try to send out as many task as we can. */
     private void drainMasterQueue()
     {
@@ -915,5 +930,15 @@ public final class Node extends Thread implements PacketReceiveListener
     public int waitForReadyNodes( int n, long waittime )
     {
         return nodes.waitForReadyNodes( n, waittime );
+    }
+
+    void sendRegisterNodeMessage( TaskType taskTypes[], IbisIdentifier ibis, NodeIdentifier ourIdentifierForNode )
+    {
+        if( Settings.traceWorkerList ) {
+            Globals.log.reportProgress( "Node " + Globals.localIbis.identifier() + ": sending registration message to ibis " + ibis );
+        }
+        RegisterNodeMessage msg = new RegisterNodeMessage( ibis, Globals.localIbis.identifier(), taskTypes, ourIdentifierForNode );
+        sendNonEssential( msg );
+        registrationMessageCount.add();
     }
 }

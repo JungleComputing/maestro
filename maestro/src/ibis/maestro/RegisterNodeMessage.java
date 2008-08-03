@@ -26,12 +26,14 @@ final class RegisterNodeMessage extends NonEssentialMessage
 
     /**
      * Constructs a new worker registration message.
+     * @param dest The destination ibis of the message.
      * @param ibis The ibis of the node.
      * @param supportedTypes The list of supported types of this node worker.
      * @param ourIdentifierForNode The identifier to use.
      */
-    RegisterNodeMessage( IbisIdentifier ibis, TaskType[] supportedTypes, NodeIdentifier ourIdentifierForNode )
+    RegisterNodeMessage( IbisIdentifier dest, IbisIdentifier ibis, TaskType[] supportedTypes, NodeIdentifier ourIdentifierForNode )
     {
+	super( dest );
 	this.ibis = ibis;
 	this.senderIdentifierForReceiver = ourIdentifierForNode;
 	this.supportedTypes = supportedTypes;

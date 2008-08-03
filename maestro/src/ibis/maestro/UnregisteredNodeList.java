@@ -8,7 +8,7 @@ import java.util.PriorityQueue;
 class UnregisteredNodeList extends Thread
 {
     private final Node node;
-    private final TaskType taskTypes[];    
+    final TaskType taskTypes[];    
 
     UnregisteredNodeList( Node node, TaskType taskTypes[] )
     {
@@ -20,7 +20,6 @@ class UnregisteredNodeList extends Thread
     {
         final IbisIdentifier ibis;
         final boolean local;
-        private int tries = 0;
         final NodeIdentifier ourIdentifierForNode;
 
         UnregisteredNodeInfo( IbisIdentifier ibis, NodeIdentifier ourIdentifierForNode, boolean local )
@@ -37,12 +36,7 @@ class UnregisteredNodeList extends Thread
         @Override
         public String toString()
         {
-            return "registration to " + ibis + " (local=" + local + " tries=" + tries + ")";
-        }
-        
-        synchronized int incrementTries()
-        {
-            return ++tries;
+            return "registration to " + ibis + " (local=" + local + ")";
         }
 
         private static int rankIbisIdentifiers( IbisIdentifier local, IbisIdentifier a, IbisIdentifier b )
@@ -93,13 +87,6 @@ class UnregisteredNodeList extends Thread
         @Override
         public int compareTo( UnregisteredNodeInfo other )
         {
-            // The one with the lowest number of tries get priority.
-            if( this.tries<other.tries ) {
-                return -1;
-            }
-            if( this.tries>other.tries ) {
-                return 1;
-            }
             return rankIbisIdentifiers( Globals.localIbis.identifier(), this.ibis, other.ibis );
         }
     }
@@ -137,18 +124,6 @@ class UnregisteredNodeList extends Thread
         list.add( ni );
     }
 
-    private boolean sendRegisterNodeMessage( IbisIdentifier ibis, NodeIdentifier ourIdentifierForNode )
-    {
-        if( Settings.traceWorkerList ) {
-            Globals.log.reportProgress( "Node " + Globals.localIbis.identifier() + ": sending registration message to ibis " + ibis );
-        }
-        RegisterNodeMessage msg = new RegisterNodeMessage( Globals.localIbis.identifier(), taskTypes, ourIdentifierForNode );
-        boolean ok = node.sendPort.tryToSendNonEssential( ibis, msg );
-        node.registrationMessageCount.add();
-        return ok;
-    }
-
-
     /**
      * If there is any new master on our list, try to register with it.
      */
@@ -157,19 +132,9 @@ class UnregisteredNodeList extends Thread
         UnregisteredNodeInfo ni = removeIfAny();
         if( ni != null ) {
             if( Settings.traceNodeProgress ){
-                Globals.log.reportProgress( "registering with node " + ni );
+        	Globals.log.reportProgress( "registering with node " + ni );
             }
-            boolean ok = sendRegisterNodeMessage( ni.ibis, ni.ourIdentifierForNode );
-            if( !ok ) {
-                int tries = ni.incrementTries();
-                if( tries<Settings.MAXIMAL_REGISTRATION_TRIES ) {
-                    add( ni );
-                    Globals.log.reportError( "Cannot register with node " + ni.ibis + " (try " + (tries-1) + "/" + Settings.MAXIMAL_REGISTRATION_TRIES + ")" );
-                }
-                else {
-                    Globals.log.reportError( "I cannot register with node " + ni.ibis + " even after " + Settings.MAXIMAL_REGISTRATION_TRIES + " attempts; giving up" );
-                }
-            }
+            node.sendRegisterNodeMessage( taskTypes, ni.ibis, ni.ourIdentifierForNode );
         }
     }
 

@@ -111,4 +111,20 @@ public class Service
         return false;
     }
 
+    /**
+     * Given a time in nanoseconds, return a time in milliseconds.
+     * We always round up, and make absolutely sure we don't return 0,
+     * so that it can be used as parameter for a wait method or other
+     * delay specification.
+     * @param nanoTime The time in nanoseconds.
+     * @return The time in milliseconds.
+     */
+    static long nanosecondsToMilliseconds( long nanoTime )
+    {
+	if( nanoTime<MILLISECOND_IN_NANOSECONDS ) {
+	    return 1;
+	}
+	return (nanoTime+(MILLISECOND_IN_NANOSECONDS-1))/MILLISECOND_IN_NANOSECONDS;
+    }
+
 }

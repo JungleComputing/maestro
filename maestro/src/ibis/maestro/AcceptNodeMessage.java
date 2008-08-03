@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.ipl.IbisIdentifier;
+
 
 /**
  * A message from a worker to a master, telling it about its current
@@ -21,8 +23,9 @@ final class AcceptNodeMessage extends NonEssentialMessage
      * Constructs a new ping message.
      * @param source The identifier of the ping source.
      */
-    AcceptNodeMessage( NodeIdentifier source, long sendMoment )
+    AcceptNodeMessage( IbisIdentifier dest, NodeIdentifier source, long sendMoment )
     {
+	super( dest );
         this.source = source;
         this.sendMoment = sendMoment;
     }
