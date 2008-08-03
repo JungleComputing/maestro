@@ -367,7 +367,7 @@ final class NodeInfo
             info = new NodeTaskInfo( taskInfo, this, local, pingTime );
             nodeTaskInfoList.set( ix, info );
             if( Settings.traceTypeHandling ){
-                System.out.println( "node " + ourIdentifierForNode + " can handle " + taskInfo + ", local=" + local );
+                System.out.println( "node " + ourIdentifierForNode + " can handle " + taskInfo + ", local=" + local + " xmitTime=" + Service.formatNanoseconds( pingTime ) );
             }
         }
         return info;
