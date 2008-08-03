@@ -8,7 +8,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-final class AcceptNodeMessage extends Message
+final class AcceptNodeMessage extends NonEssentialMessage
 {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;

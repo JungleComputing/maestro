@@ -1,7 +1,6 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
-import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -108,14 +107,13 @@ final class NodeList {
      * Add a node to our node administration.
      * We may, or may not, have info for this node. Create or update an entry. 
      * Add some registration info to the node info we already have.
-     * @param port The receive port of this node.
+     * @param ibis The receive port of this node.
      * @param types The types it supports.
      * @param theirIdentifierForUs Their identifier for us.
      * @return Our local identifier of this node.
      */
-    synchronized NodeInfo subscribeNode( ReceivePortIdentifier port, TaskType[] types, NodeIdentifier theirIdentifierForUs, PacketSendPort sendPort )
+    synchronized NodeInfo subscribeNode( IbisIdentifier ibis, TaskType[] types, NodeIdentifier theirIdentifierForUs, PacketSendPort sendPort )
     {
-        final IbisIdentifier ibis = port.ibisIdentifier();
         NodeInfo node = searchNode( nodes, ibis );
         if( node == null ) {
             NodeIdentifier id = NodeIdentifier.getNextIdentifier();
@@ -127,7 +125,7 @@ final class NodeList {
                 Globals.log.reportProgress( "Ibis " + ibis + " isn't in our admistration; creating new entry " + node );
             }
         }
-        sendPort.registerDestination( port, node.ourIdentifierForNode.value );
+        sendPort.registerDestination( ibis, node.ourIdentifierForNode.value );
         node.setTheirIdentifierForUs( theirIdentifierForUs );
         for( TaskType t: types ) {
             TaskInfo info = taskInfoList.getTaskInfo( t );

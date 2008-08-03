@@ -1,6 +1,6 @@
 package ibis.maestro;
 
-import ibis.ipl.ReceivePortIdentifier;
+import ibis.ipl.IbisIdentifier;
 
 /**
  * A message from a worker to a master, telling it that the worker exists, and which identifier the
@@ -9,18 +9,16 @@ import ibis.ipl.ReceivePortIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-final class RegisterNodeMessage extends Message
+final class RegisterNodeMessage extends NonEssentialMessage
 {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
-    /** Our receive port. */
-    final ReceivePortIdentifier port;
+    /** The identifier of the node that wants to register. */
+    final IbisIdentifier ibis;
 
     final TaskType[] supportedTypes;
 
-    final long sendMoment;
-    
     final long padding[] = new long[Settings.PING_PADDING_SIZE];
 
     /** Our identifier for the node we're sending to. */
@@ -28,13 +26,13 @@ final class RegisterNodeMessage extends Message
 
     /**
      * Constructs a new worker registration message.
-     * @param port The receive port to use to submit tasks.
+     * @param ibis The ibis of the node.
      * @param supportedTypes The list of supported types of this node worker.
      * @param ourIdentifierForNode The identifier to use.
      */
-    RegisterNodeMessage( ReceivePortIdentifier port, TaskType[] supportedTypes, NodeIdentifier ourIdentifierForNode )
+    RegisterNodeMessage( IbisIdentifier ibis, TaskType[] supportedTypes, NodeIdentifier ourIdentifierForNode )
     {
-	this.port = port;
+	this.ibis = ibis;
 	this.senderIdentifierForReceiver = ourIdentifierForNode;
 	this.supportedTypes = supportedTypes;
 	this.sendMoment = System.nanoTime();
@@ -55,6 +53,6 @@ final class RegisterNodeMessage extends Message
             }
             tl += t;
         }
-        return "register worker " + port + "; supported types: [" + tl + ']';
+        return "register worker " + ibis + "; supported types: [" + tl + ']';
     }
 }

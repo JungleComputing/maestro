@@ -142,7 +142,7 @@ class UnregisteredNodeList extends Thread
         if( Settings.traceWorkerList ) {
             Globals.log.reportProgress( "Node " + Globals.localIbis.identifier() + ": sending registration message to ibis " + ibis );
         }
-        RegisterNodeMessage msg = new RegisterNodeMessage( node.receivePort.identifier(), taskTypes, ourIdentifierForNode );
+        RegisterNodeMessage msg = new RegisterNodeMessage( Globals.localIbis.identifier(), taskTypes, ourIdentifierForNode );
         boolean ok = node.sendPort.tryToSendNonEssential( ibis, msg );
         node.registrationMessageCount.add();
         return ok;

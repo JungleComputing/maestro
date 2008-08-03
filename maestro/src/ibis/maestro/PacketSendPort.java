@@ -36,7 +36,7 @@ class PacketSendPort {
     private long uncachedSentCount = 0;
     private Counter localSentCount = new Counter();
     private final CacheInfo cache[] = new CacheInfo[Settings.CONNECTION_CACHE_SIZE];
-    private final HashMap<ReceivePortIdentifier, Integer> PortToIdMap = new HashMap<ReceivePortIdentifier, Integer>();
+    private final HashMap<IbisIdentifier, Integer> ibisToIdMap = new HashMap<IbisIdentifier, Integer>();
     private PacketReceiveListener localListener = null;
     private int clockHand = 0;
 
@@ -87,15 +87,16 @@ class PacketSendPort {
         CacheInfo cacheSlot;
         private int sentCount = 0;
         private long sentBytes = 0;
-        private final ReceivePortIdentifier portIdentifier;
+        private final IbisIdentifier ibisIdentifier;
         boolean local;
 
         /** Create a new destination info entry.
-         * @param portIdentifier The destination port.
-         * @param local True iff this destination represents the local master or worker.
+         * @param ibisIdentifier The destination ibis.
+         * @param local True iff this destination represents the local node.
          */
-        private DestinationInfo( ReceivePortIdentifier portIdentifier, boolean local ){
-            this.portIdentifier = portIdentifier;
+        private DestinationInfo( IbisIdentifier ibisIdentifier, boolean local )
+        {
+            this.ibisIdentifier = ibisIdentifier;
             this.local = local;
         }
 
@@ -103,7 +104,7 @@ class PacketSendPort {
         private synchronized void printStats( PrintStream s )
         {
             char dest = local?'L':'R'; 
-            s.format( " %c %5d messages %7d bytes; port %s\n", dest, sentCount, sentBytes, portIdentifier.toString() );
+            s.format( " %c %5d messages %7d bytes; port %s\n", dest, sentCount, sentBytes, ibisIdentifier.toString() );
         }
 
         synchronized void incrementSentCount()
@@ -218,7 +219,7 @@ class PacketSendPort {
         cacheInfo.destination = newDestination;
         newDestination.cacheSlot = cacheInfo;
         SendPort port = ibis.createSendPort( portType );
-        port.connect( newDestination.portIdentifier, timeout, true );
+        port.connect( newDestination.ibisIdentifier, Globals.receivePortName, timeout, true );
         long tEnd = System.nanoTime();
         adminTime += (tEnd-tStart);
         cacheInfo.port = port;
@@ -231,7 +232,7 @@ class PacketSendPort {
      * @param identifier The identifier we will use for it.
      */
     @SuppressWarnings("synthetic-access")
-    synchronized void registerDestination( ReceivePortIdentifier port, int identifier )
+    synchronized void registerDestination( IbisIdentifier port, int identifier )
     {
         if( Settings.traceRegistration ) {
             Globals.log.reportProgress( "PacketSendPort(): id=" + identifier + "->" + port );
@@ -239,14 +240,14 @@ class PacketSendPort {
         while( destinations.size()<=identifier ) {
             destinations.add( null );
         }
-        PortToIdMap.put( port, identifier );
+        ibisToIdMap.put( port, identifier );
         DestinationInfo destinationInfo = destinations.get( identifier );
         if( destinationInfo != null ) {
-            if( !port.equals( destinationInfo.portIdentifier ) ) {
+            if( !port.equals( destinationInfo.ibisIdentifier ) ) {
                 System.err.println( "Internal error: two different registrations for sendport ID " + identifier + ": old=" + destinationInfo + "; new=" + port );
             }
         }
-        boolean local = localListener.hasReceivePort( port );
+        boolean local = port.equals( Globals.localIbis.identifier() );
         destinations.set( identifier, new DestinationInfo( port, local ) );
     }
 
@@ -418,7 +419,7 @@ class PacketSendPort {
         }
         catch (IOException e) {
             DestinationInfo info = destinations.get( destination );
-            node.setSuspect( info.portIdentifier.ibisIdentifier() );
+            node.setSuspect( info.ibisIdentifier );
             Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to master " + destination );
             e.printStackTrace( Globals.log.getPrintStream() );
         }
@@ -436,7 +437,7 @@ class PacketSendPort {
     {
         boolean ok = false;
         try {
-            Integer destination = PortToIdMap.get( port );
+            Integer destination = ibisToIdMap.get( port );
             if( destination != null ) {
                 // We have this one registered, use that port.
                 return send( destination, data, timeout );
