@@ -17,17 +17,18 @@ final class AcceptNodeMessage extends NonEssentialMessage
 
     final NodeIdentifier source;
     
-    final long sendMoment;
+    final long pingSendMoment;
 
     /**
-     * Constructs a new ping message.
+     * Constructs a new accept message.
      * @param source The identifier of the ping source.
+     * @param pingSendMoment The moment the original registration message (and ping message) was sent.
      */
-    AcceptNodeMessage( IbisIdentifier dest, NodeIdentifier source, long sendMoment )
+    AcceptNodeMessage( IbisIdentifier dest, NodeIdentifier source, long pingSendMoment )
     {
 	super( dest );
         this.source = source;
-        this.sendMoment = sendMoment;
+        this.pingSendMoment = pingSendMoment;
     }
 
     /**

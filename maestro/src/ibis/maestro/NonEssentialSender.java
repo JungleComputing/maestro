@@ -5,6 +5,7 @@ import ibis.ipl.SendPort;
 import ibis.ipl.WriteMessage;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.PriorityQueue;
@@ -257,8 +258,10 @@ class NonEssentialSender extends Thread
 	}
     }
 
+    @SuppressWarnings("synthetic-access")
     NonEssentialSender()
     {
+        super( "Non-essential sender" );
 	ReadyComparator readyComparator = new ReadyComparator();
 	FutureComparator futureComparator = new FutureComparator();
 	this.waitingMessages = new PriorityQueue<NonEssentialMessage>( 0, readyComparator );
@@ -267,6 +270,7 @@ class NonEssentialSender extends Thread
     }
 
     /** Runs this thread. */
+    @Override
     public void run()
     {
 	while( true ) {
@@ -293,5 +297,14 @@ class NonEssentialSender extends Thread
 		}
 	    }
 	}
+    }
+
+    synchronized void printStatistics( PrintStream s )
+    {
+        s.println( "Non-essential sender:" );
+        s.println( "  sent messages  %5d\n" + uncachedSentCount );
+        s.println( "  sent bytes     %5d\n" + uncachedSentBytes );
+        s.println( "  admin time     " + Service.formatNanoseconds( uncachedAdminTime ) );
+        s.println( "  send time      " + Service.formatNanoseconds( uncachedSendTime ) );
     }
 }

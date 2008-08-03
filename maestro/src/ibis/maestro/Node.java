@@ -33,9 +33,9 @@ public final class Node extends Thread implements PacketReceiveListener
     private RegistryEventHandler registryEventHandler;
 
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
-    private static final int workThreadCount = numberOfProcessors+2;
+    private static final int workThreadCount = numberOfProcessors+1;
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
-    private final UpdateThread updaters[] = new UpdateThread[numberOfProcessors];
+    private final UpdateThread updaters[] = new UpdateThread[1];
 
     /** The list of ibises we haven't (successfully) registered with yet. */
     private final UnregisteredNodeList unregisteredNodes;
@@ -348,6 +348,7 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void registerIbisLeft( IbisIdentifier theIbis )
     {
+        nonEssentialSender.removeMessagesToIbis( theIbis );
         ArrayList<TaskInstance> orphans = nodes.removeNode( theIbis );
         masterQueue.add( orphans );
         boolean noMaestrosLeft = maestros.remove( theIbis );
@@ -457,6 +458,7 @@ public final class Node extends Thread implements PacketReceiveListener
         s.printf( "submit       messages:   %5d sent\n", submitMessageCount.get() );
         s.printf( "task result  messages:   %5d sent\n", taskResultMessageCount.get() );
         s.printf( "job result   messages:   %5d sent\n", jobResultMessageCount.get() );
+        nonEssentialSender.printStatistics( s );
         sendPort.printStatistics( s, "send port" );
         long activeTime = workerQueue.getActiveTime( startTime );
         long workInterval = stopTime-activeTime;
@@ -565,10 +567,6 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "Received a worker task completed message " + result );
         }
         nodes.registerTaskCompleted( result );
-        final NodeInfo mi = nodes.get( result.source );
-        if( mi != null ) {
-            taskSources.add( mi );
-        }
         handledTaskCount.add();
     }
 
@@ -580,10 +578,6 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
-        }
-        final NodeInfo mi = nodes.get( m.source );
-        if( mi != null ) {
-            taskSources.add( mi );
         }
         nodes.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo );
     }
@@ -598,7 +592,7 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "Received node accept message " + m );
         }
         final NodeInfo nodeInfo = nodes.get( m.source );
-        long pingTime = m.arrivalMoment-m.sendMoment;
+        long pingTime = m.arrivalMoment-m.pingSendMoment;
         if( Settings.traceRegistration ){
             Globals.log.reportProgress( "Ping time to " + m.source + " is " + Service.formatNanoseconds( pingTime ) );
         }
@@ -622,6 +616,7 @@ public final class Node extends Thread implements PacketReceiveListener
             if( nodeInfo != null ) {
                 // We have the node in our administration.
                 sendUpdateNodeMessage( nodeInfo );
+                taskSources.add( nodeInfo );
             }
         }
     }
