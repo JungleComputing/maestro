@@ -41,4 +41,14 @@ class MaestroList
         list.add( info );
         everHadMaestros = true;
     }
+
+    synchronized boolean contains( IbisIdentifier ibisIdentifier )
+    {
+        for( MaestroInfo info: list ) {
+            if( info.ibis.equals( ibisIdentifier ) ) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

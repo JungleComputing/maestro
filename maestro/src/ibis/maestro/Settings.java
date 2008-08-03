@@ -10,10 +10,15 @@ class Settings {
     // Timeout values.
     
     /** Message transmission timeout in ms on optional communication. */
-    static final int OPTIONAL_COMMUNICATION_TIMEOUT = 4000;
+    static final int OPTIONAL_COMMUNICATION_TIMEOUT = 15000;
     
     /** Message transmission timeout in ms on essential communications. */
-    static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 10*OPTIONAL_COMMUNICATION_TIMEOUT;
+    static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 20*OPTIONAL_COMMUNICATION_TIMEOUT;
+
+    /**
+     * How many times do we try to send a registration message to an ibis? 
+     */
+    static final int MAXIMAL_REGISTRATION_TRIES = 20;
 
     /** The number of connections we maximally keep open. */
     static final int CONNECTION_CACHE_SIZE = 350;
@@ -79,9 +84,6 @@ class Settings {
     static final boolean useShuffleRouting = false;
 
     static final boolean noStealRequests = true;
-
-    /** How many times do we try to send a registration message to an ibis? */
-    static final int MAXIMAL_REGISTRATION_TRIES = 8;
 
     /** The time in >>ms<<< between node updates. */
     static final long UPDATE_INTERVAL = 100;

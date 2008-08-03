@@ -70,6 +70,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private Counter submitMessageCount = new Counter();
     private Counter taskResultMessageCount = new Counter();
     private Counter jobResultMessageCount = new Counter();
+    private Flag enableRegistration = new Flag( false );
 
     private Flag stopped = new Flag( false );
 
@@ -244,6 +245,9 @@ public final class Node extends Thread implements PacketReceiveListener
         if( runForMaestro ){
             maestro = registry.elect( MAESTRO_ELECTION_NAME );
             isMaestro = maestro.equals( Globals.localIbis.identifier() );
+            if( isMaestro ) {
+                enableRegistration.set();   // We're maestro, we're allowed to register with others.
+            }
         }
         else {
             isMaestro = false;
@@ -346,6 +350,10 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "No maestros left; stopping.." );
             setStopped();
         }
+        if( theIbis.equals( Globals.localIbis.identifier() ) ) {
+            // The registry has declared us dead. We might as well stop.
+            setStopped();
+        }
     }
 
     /** Report the completion of the job with the given identifier.
@@ -389,7 +397,9 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         drainMessageQueue();
         drainMasterQueue();
-        unregisteredNodes.registerWithMaster();
+        if( enableRegistration.isSet() ) {
+            unregisteredNodes.registerWithMaster();
+        }
         nodes.checkDeadlines( System.nanoTime() );
     }
 
@@ -419,6 +429,11 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         ArrayList<TaskInstance> orphans = nodes.removeNode( theWorker );
         masterQueue.add( orphans );
+    }
+
+    private int getIdleTasks()
+    {
+        return Math.max( numberOfProcessors-runningTasks.get(), 0 );
     }
 
     /** Print some statistics about the entire worker run. */
@@ -463,11 +478,6 @@ public final class Node extends Thread implements PacketReceiveListener
         updateMessageCount.add();
     }
 
-    private int getIdleTasks()
-    {
-	return Math.max( numberOfProcessors-runningTasks.get(), 0 );
-    }
-
     private void sendUpdateNodeMessage( NodeInfo node )
     {
         sendUpdateNodeMessage( node.ourIdentifierForNode, node.getTheirIdentifierForUs() );
@@ -480,7 +490,8 @@ public final class Node extends Thread implements PacketReceiveListener
 	if( Settings.traceUpdateMessages ) {
 	    Globals.log.reportProgress( "Sending " + msg );
 	}
-	sendPort.tryToSend( node.ourIdentifierForNode, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+	// FIXME: make OPTIONAL_COMMUNICATION_TIMEOUT once we do retries.
+	sendPort.tryToSend( node.ourIdentifierForNode, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 	acceptMessageCount.add();
     }
 
@@ -502,6 +513,14 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportInternalError( "Node " + m.port + " has zero supported types??" );
         }
         NodeInfo nodeInfo = nodes.subscribeNode( m.port, m.supportedTypes, theirIdentifierForUs, sendPort );
+        if( maestros.contains( m.port.ibisIdentifier() ) ) {
+            enableRegistration.set();
+            Globals.log.reportProgress( "Registration enableRegistration=" + enableRegistration.isSet() );
+            synchronized( this ) {
+                // Time to wake all our threads.
+                this.notifyAll();
+            }
+        }
         // FIXME: support retries.
         sendAcceptNodeMessage( nodeInfo, m.sendMoment );
     }

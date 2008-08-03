@@ -42,7 +42,7 @@ class UnregisteredNodeList extends Thread
         
         synchronized int incrementTries()
         {
-            return tries++;
+            return ++tries;
         }
 
         private static int rankIbisIdentifiers( IbisIdentifier local, IbisIdentifier a, IbisIdentifier b )
@@ -144,9 +144,6 @@ class UnregisteredNodeList extends Thread
         }
         RegisterNodeMessage msg = new RegisterNodeMessage( node.receivePort.identifier(), taskTypes, ourIdentifierForNode );
         boolean ok = node.sendPort.tryToSendNonEssential( ibis, msg );
-        if( !ok ) {
-            System.err.println( "Cannot register with node " + ibis );
-        }
         node.registrationMessageCount.add();
         return ok;
     }
@@ -167,6 +164,7 @@ class UnregisteredNodeList extends Thread
                 int tries = ni.incrementTries();
                 if( tries<Settings.MAXIMAL_REGISTRATION_TRIES ) {
                     add( ni );
+                    Globals.log.reportError( "Cannot register with node " + ni.ibis + " (try " + (tries-1) + "/" + Settings.MAXIMAL_REGISTRATION_TRIES + ")" );
                 }
                 else {
                     Globals.log.reportError( "I cannot register with node " + ni.ibis + " even after " + Settings.MAXIMAL_REGISTRATION_TRIES + " attempts; giving up" );

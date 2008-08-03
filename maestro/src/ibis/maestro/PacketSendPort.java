@@ -392,7 +392,8 @@ class PacketSendPort {
                 }
             }
         } catch (IOException e) {
-            node.setSuspect( theIbis );
+            // Don't declare a node dead just because of this small problem.
+            // node.setSuspect( theIbis );
             Globals.log.reportError( "Cannot send a non-essential " + msg.getClass() + " message to ibis " + theIbis );
             e.printStackTrace( Globals.log.getPrintStream() );
         }
