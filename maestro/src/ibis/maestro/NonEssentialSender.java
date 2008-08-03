@@ -264,8 +264,8 @@ class NonEssentialSender extends Thread
         super( "Non-essential sender" );
 	ReadyComparator readyComparator = new ReadyComparator();
 	FutureComparator futureComparator = new FutureComparator();
-	this.waitingMessages = new PriorityQueue<NonEssentialMessage>( 0, readyComparator );
-	this.futureMessages = new PriorityQueue<NonEssentialMessage>( 0, futureComparator );
+	this.waitingMessages = new PriorityQueue<NonEssentialMessage>( 4, readyComparator );
+	this.futureMessages = new PriorityQueue<NonEssentialMessage>( 4, futureComparator );
 	this.setDaemon( true );
     }
 
@@ -302,8 +302,8 @@ class NonEssentialSender extends Thread
     synchronized void printStatistics( PrintStream s )
     {
         s.println( "Non-essential sender:" );
-        s.println( "  sent messages  %5d\n" + uncachedSentCount );
-        s.println( "  sent bytes     %5d\n" + uncachedSentBytes );
+        s.printf(  "  sent messages  %5d\n", uncachedSentCount );
+        s.printf(  "  sent bytes     %5d\n", uncachedSentBytes );
         s.println( "  admin time     " + Service.formatNanoseconds( uncachedAdminTime ) );
         s.println( "  send time      " + Service.formatNanoseconds( uncachedSendTime ) );
     }
