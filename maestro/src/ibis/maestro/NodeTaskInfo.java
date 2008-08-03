@@ -63,7 +63,7 @@ final class NodeTaskInfo {
 
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
         // Totally unfounded guesses, but we should learn soon enough what the real values are...
-        this.transmissionTimeEstimate = new TimeEstimate( Long.MAX_VALUE );
+        this.transmissionTimeEstimate = new TimeEstimate( pingTime);
         this.roundtripTimeEstimate = new TimeEstimate( 2*pingTime );
         this.roundtripErrorEstimate = new TimeEstimate( 2*pingTime );
         this.computeTime = 2*pingTime;
