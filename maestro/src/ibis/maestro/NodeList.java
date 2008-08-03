@@ -198,7 +198,7 @@ final class NodeList {
         return taskInfo.getAverageCompletionTime();
     }
 
-    synchronized void registerCompletionInfo( NodeIdentifier nodeID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
+    synchronized void registerNodeInfo( NodeIdentifier nodeID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
     {
         NodeInfo nodeInfo = getNode( nodeID );
         if( nodeInfo != null ) {

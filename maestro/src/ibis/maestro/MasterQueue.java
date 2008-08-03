@@ -350,4 +350,9 @@ final class MasterQueue
         nodes.resetReservations();   // FIXME: store reservations in a separate structure.
 	return submissions;
     }
+
+    synchronized boolean hasWork()
+    {
+        return !queue.isEmpty();
+    }
 }

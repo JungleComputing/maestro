@@ -22,15 +22,19 @@ final class UpdateNodeMessage extends Message {
 
     final NodeIdentifier source;
 
+    final boolean masterHasWork;
+
     /**
      * Constructs a new work request message.
      * @param identifier The identifier to use.
+     * @param masterHasWork 
      */
-    UpdateNodeMessage( NodeIdentifier identifier, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
+    UpdateNodeMessage( NodeIdentifier identifier, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo, boolean masterHasWork )
     {
         source = identifier;
         this.completionInfo = completionInfo;
         this.workerQueueInfo = workerQueueInfo;
+        this.masterHasWork = masterHasWork;
     }
 
     private String buildCompletionString()

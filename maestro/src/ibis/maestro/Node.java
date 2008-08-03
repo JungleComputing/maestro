@@ -485,7 +485,8 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleTasks() );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
-        UpdateNodeMessage msg = new UpdateNodeMessage( identifierOnNode, completionInfo, workerQueueInfo );
+        boolean masterHasWork = masterQueue.hasWork();
+        UpdateNodeMessage msg = new UpdateNodeMessage( identifierOnNode, completionInfo, workerQueueInfo, masterHasWork );
 
         if( Settings.traceUpdateMessages ) {
             Globals.log.reportProgress( "Sending " + msg );
@@ -579,7 +580,12 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
         }
-        nodes.registerCompletionInfo( m.source, m.workerQueueInfo, m.completionInfo );
+        nodes.registerNodeInfo( m.source, m.workerQueueInfo, m.completionInfo );
+        if( m.masterHasWork ) {
+            NodeInfo node = nodes.get( m.source );
+            // A node that has work deserves a message about our capabilities.
+            sendUpdateNodeMessage( node );
+        }
     }
 
     /**
@@ -714,20 +720,18 @@ public final class Node extends Thread implements PacketReceiveListener
             sendUpdateNodeMessage( taskSource );
             return;
         }
-        if( Settings.noStealRequests ){
-            return;
-        }
-
-        // Finally, just tell a random master about our current work queues.
-        taskSource = nodes.getRandomReadyNode();
-        if( taskSource != null ){
-            if( Settings.traceNodeProgress ){
-                Globals.log.reportProgress( "Updating node " + taskSource.ourIdentifierForNode );
+        if( masterQueue.hasWork() ){
+            // We have work in our queue, try to get more workers to help us out.
+            taskSource = nodes.getRandomReadyNode();
+            if( taskSource != null ){
+                if( Settings.traceNodeProgress ){
+                    Globals.log.reportProgress( "Updating node " + taskSource.ourIdentifierForNode );
+                }
+                if( isStopped() ) {
+                    return;
+                }
+                sendUpdateNodeMessage( taskSource );
             }
-            if( isStopped() ) {
-                return;
-            }
-            sendUpdateNodeMessage( taskSource );
         }
     }
 
