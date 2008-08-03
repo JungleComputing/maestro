@@ -474,7 +474,8 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         if( msg.destination.equals( Globals.localIbis.identifier() ) ) {
             // Don't go through all the bureaucracy for a local message.
-            messageQueue.add( msg );
+            msg.arrivalMoment = msg.sendMoment = System.nanoTime();
+            messageReceived( msg );
         }
         else {
             nonEssentialSender.submit( msg );
