@@ -263,9 +263,15 @@ final class NodeTaskInfo {
      * for the transmission time if we don't have anything better.
      * @param pingTime The time in ns to ping this worker.
      */
-    void setPingTime( long pingTime )
+    void setInitialTransmissionTimeEstimate( long pingTime )
     {
+        if( Settings.traceRegistration ) {
+            Globals.log.reportProgress( "Setting transimssion time estimate for " + nodeInfo.ourIdentifierForNode + " for " + taskInfo.type + " to " + Service.formatNanoseconds( pingTime ));
+        }
         transmissionTimeEstimate.setInitialEstimate( pingTime );
+        if( Settings.traceRegistration ) {
+            Globals.log.reportProgress( "Transimssion time estimate for " + nodeInfo.ourIdentifierForNode + " for " + taskInfo.type + " is now " + transmissionTimeEstimate );
+        }
     }
 
     protected int getSubmissions()

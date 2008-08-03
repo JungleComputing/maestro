@@ -131,7 +131,7 @@ final class NodeInfo
     {
         for( NodeTaskInfo wi: l ) {
             if( wi != null ) {
-                wi.setPingTime( pingTime );
+                wi.setInitialTransmissionTimeEstimate( pingTime );
             }
         }        
     }
@@ -204,7 +204,7 @@ final class NodeInfo
             suspect = false;
         }
         setPingTime( nodeTaskInfoList, pingTime );
-        if( Settings.traceRemainingJobTime ) {
+        if( Settings.traceRemainingJobTime || Settings.traceRegistration ) {
             Globals.log.reportProgress( "Ping time to node " + ourIdentifierForNode + " is " + Service.formatNanoseconds( pingTime ) );
         }	
     }

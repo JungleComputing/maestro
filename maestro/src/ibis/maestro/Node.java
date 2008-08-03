@@ -590,7 +590,7 @@ public final class Node extends Thread implements PacketReceiveListener
     }
 
     /**
-     * A worker has sent us a message with its current status, handle it.
+     * A node has sent us an accept message, handle it.
      * @param m The update message.
      */
     private void handleAcceptNodeMessage( AcceptNodeMessage m )
@@ -607,6 +607,7 @@ public final class Node extends Thread implements PacketReceiveListener
         for( UpdateThread updater: updaters ) {
             updater.addTarget( nodeInfo );
         }
+        taskSources.add( nodeInfo );
     }
 
     /**
@@ -705,9 +706,6 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private void askMoreWork()
     {
-        if( isStopped() ) {
-            return;
-        }
         // Try to tell a known master we want more tasks. We do this by
         // telling it about our current state.
         NodeInfo taskSource = taskSources.getRandomWorkSource();
