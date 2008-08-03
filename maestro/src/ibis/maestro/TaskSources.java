@@ -23,11 +23,8 @@ public class TaskSources
      */
     synchronized NodeInfo getRandomWorkSource()
     {
-        NodeInfo res = null;
-        int maxTries = taskSources.size();
 
-        // Only try a limited number of times, all nodes may be non-ready.
-        for( int tries=0; tries<maxTries; tries++ ){
+        while( true ) {
             int size = taskSources.size();
             if( size == 0 ){
                 return null;
@@ -35,16 +32,12 @@ public class TaskSources
             // There are masters on the explict task sources list,
             // draw a random one.
             int ix = Globals.rng.nextInt( size );
-            res = taskSources.get( ix );
-            if( res.isDead() ) {
-                taskSources.remove( ix );
-                continue;
-            }
+            NodeInfo res = taskSources.remove( ix );
             if( res.isReady() ){
                 return res;
             }
+            // Otherwise it's dead or suspect, but it is now deleted from the list.
         }
-        return null;
     }
 
     synchronized boolean isEmpty()

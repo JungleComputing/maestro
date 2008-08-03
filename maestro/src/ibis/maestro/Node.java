@@ -584,7 +584,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( m.masterHasWork ) {
             NodeInfo node = nodes.get( m.source );
             // A node that has work deserves a message about our capabilities.
-            sendUpdateNodeMessage( node );
+            taskSources.add( node );
         }
     }
 
@@ -721,7 +721,7 @@ public final class Node extends Thread implements PacketReceiveListener
             return;
         }
         if( masterQueue.hasWork() ){
-            // We have work in our queue, try to get more workers to help us out.
+            // We have work in our queue, try to get more workers to help us.
             taskSource = nodes.getRandomReadyNode();
             if( taskSource != null ){
                 if( Settings.traceNodeProgress ){
