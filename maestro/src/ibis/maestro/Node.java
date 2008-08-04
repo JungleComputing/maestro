@@ -159,6 +159,7 @@ public final class Node extends Thread implements PacketReceiveListener
         public void joined( IbisIdentifier theIbis )
         {
             boolean local = theIbis.equals( Globals.localIbis.identifier() );
+            sendPort.registerDestination( theIbis, local );
             addUnregisteredNode( theIbis, local );
         }
 
@@ -539,7 +540,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( m.supportedTypes.length == 0 ) {
             Globals.log.reportInternalError( "Node " + m.ibis + " has zero supported types??" );
         }
-        NodeInfo nodeInfo = nodes.subscribeNode( m.ibis, m.supportedTypes, sendPort );
+        NodeInfo nodeInfo = nodes.subscribeNode( m.ibis, m.supportedTypes );
         if( maestros.contains( m.ibis ) ) {
             enableRegistration.set();
             Globals.log.reportProgress( "Registration enableRegistration=" + enableRegistration.isSet() );

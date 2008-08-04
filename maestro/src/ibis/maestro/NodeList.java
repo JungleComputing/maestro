@@ -66,7 +66,7 @@ final class NodeList {
      * @param types The types it supports.
      * @return Our local identifier of this node.
      */
-    synchronized NodeInfo subscribeNode( IbisIdentifier ibis, TaskType[] types, PacketSendPort sendPort )
+    synchronized NodeInfo subscribeNode( IbisIdentifier ibis, TaskType[] types )
     {
         NodeInfo node = ibisToNodeMap.get( ibis );
         if( node == null ) {
@@ -78,7 +78,6 @@ final class NodeList {
                 Globals.log.reportProgress( "Ibis " + ibis + " isn't in our admistration; creating new entry " + node );
             }
         }
-        sendPort.registerDestination( ibis );
         for( TaskType t: types ) {
             TaskInfo info = taskInfoList.getTaskInfo( t );
             NodeTaskInfo wti = node.registerTaskType( info );

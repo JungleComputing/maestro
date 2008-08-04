@@ -27,10 +27,6 @@ class PacketSendPort {
     private long adminTime = 0;
     private int sentCount = 0;
     private int evictions = 0;
-    private long uncachedSentBytes = 0;
-    private long uncachedSendTime = 0;
-    private long uncachedAdminTime = 0;
-    private long uncachedSentCount = 0;
     private Counter localSentCount = new Counter();
     private final CacheInfo cache[] = new CacheInfo[Settings.CONNECTION_CACHE_SIZE];
     private PacketReceiveListener localListener = null;
@@ -100,7 +96,7 @@ class PacketSendPort {
         private synchronized void printStatistics( PrintStream s )
         {
             char dest = local?'L':'R'; 
-            s.format( " %c %5d messages %5s bytes   node %s\n", dest, sentCount, Service.formatByteCount( sentBytes ), ibisIdentifier.toString() );
+            s.format( " %c %5d messages %5s   node %s\n", dest, sentCount, Service.formatByteCount( sentBytes ), ibisIdentifier.toString() );
         }
 
         synchronized void incrementSentCount()
@@ -227,14 +223,13 @@ class PacketSendPort {
      * @param identifier The identifier we will use for it.
      */
     @SuppressWarnings("synthetic-access")
-    synchronized void registerDestination( IbisIdentifier theIbis )
+    synchronized void registerDestination( IbisIdentifier theIbis, boolean local )
     {
         DestinationInfo destinationInfo = destinations.get( theIbis );
         if( destinationInfo != null ) {
             // Already registered. Don't worry about the duplication.
             return;
         }
-        boolean local = theIbis.equals( Globals.localIbis.identifier() );
         destinations.put( theIbis, new DestinationInfo( theIbis, local ) );
     }
 
@@ -314,15 +309,10 @@ class PacketSendPort {
     @SuppressWarnings("synthetic-access")
     synchronized void printStatistics( PrintStream s, String portname )
     {
-        s.println( portname + ": sent " + sentBytes + " bytes in " + sentCount + " remote messages; " + localSentCount.get() + " local sends; "+ evictions + " evictions" );
+        s.println( portname + ": sent " + Service.formatByteCount( sentBytes ) + " in " + sentCount + " remote messages; " + localSentCount.get() + " local sends; "+ evictions + " evictions" );
         if( sentCount>0 ) {
             s.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
             s.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
-        }
-        s.println( portname + ": sent " + uncachedSentBytes + " bytes in " + uncachedSentCount + " uncached remote messages" );
-        if( uncachedSentCount>0 ) {
-            s.println( portname + ": total uncached send time  " + Service.formatNanoseconds( uncachedSendTime ) + "; " + Service.formatNanoseconds( uncachedSendTime/uncachedSentCount ) + " per message" );
-            s.println( portname + ": total uncached setup time " + Service.formatNanoseconds( uncachedAdminTime ) + "; " + Service.formatNanoseconds( uncachedAdminTime/uncachedSentCount ) + " per message" );
         }
         DestinationInfo l[] = new DestinationInfo[destinations.size()];
         int sz = 0;
@@ -360,51 +350,6 @@ class PacketSendPort {
             DestinationInfo info = destinations.get( id );
             node.setSuspect( info.ibisIdentifier );
             Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to master " + id );
-            e.printStackTrace( Globals.log.getPrintStream() );
-        }
-        return ok;
-    }
-
-    /**
-     * Tries to send a message to the given receive port.
-     * @param identifier The port to send the message to.
-     * @param data The message to send.
-     * @param timeout The timeout value to use.
-     * @return <code>true</code> if the message could be sent.
-     */
-    boolean tryToSendUnused( IbisIdentifier identifier, Message data, int timeout )
-    {
-        boolean ok = false;
-        try {
-            DestinationInfo destination = destinations.get( identifier );
-            if( destination != null ) {
-                // We have this one registered, use that port.
-                return send( destination.ibisIdentifier, data, timeout );
-            }
-            synchronized( this ) {
-                // We don't have information about this destination,
-                // just send it.
-                long tStart = System.nanoTime();
-                SendPort sendPort = Globals.localIbis.createSendPort( portType );
-                sendPort.connect( identifier, Globals.receivePortName, timeout, true );
-                long tEnd = System.nanoTime();
-                adminTime += (tEnd-tStart);
-                WriteMessage msg = sendPort.newMessage();
-                long setupTime = System.nanoTime();
-                msg.writeObject( data );
-                long len = msg.finish();
-                sendPort.close();
-                long stopTime = System.nanoTime();
-                uncachedAdminTime += (setupTime-tStart);
-                uncachedSendTime += (stopTime-setupTime);
-                uncachedSentBytes += len;
-                uncachedSentCount++;
-                if( Settings.traceSends ) {
-                    System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-tStart) );
-                }
-            }
-        } catch (IOException e) {
-            Globals.log.reportError( "Cannot send a " + data.getClass() + " message to master " + identifier );
             e.printStackTrace( Globals.log.getPrintStream() );
         }
         return ok;
