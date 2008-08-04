@@ -111,6 +111,10 @@ public class Service
         return false;
     }
 
+    private static long divideRoundUp( long val, long divisor ) {
+        return (val+(divisor-1))/divisor;
+    }
+
     /**
      * Given a time in nanoseconds, return a time in milliseconds.
      * We always round up, and make absolutely sure we don't return 0,
@@ -124,7 +128,30 @@ public class Service
 	if( nanoTime<MILLISECOND_IN_NANOSECONDS ) {
 	    return 1;
 	}
-	return (nanoTime+(MILLISECOND_IN_NANOSECONDS-1))/MILLISECOND_IN_NANOSECONDS;
+	return divideRoundUp( nanoTime, MILLISECOND_IN_NANOSECONDS );
+    }
+
+    /**
+     * Given a byte count, return a human-readable representation of it.
+     * @param n The byte count to represent.
+     * @return The byte count as a human-readable string.
+     */
+    static String formatByteCount( long n )
+    {
+        if( n<1000 ) {
+            // This deliberately covers negative numbers
+            return n + "B";
+        }
+        if( n<1000000 ) {
+            return divideRoundUp( n, 1000L ) + "KB";
+        }
+        if( n<1000000000L ) {
+            return divideRoundUp( n, 1000000L ) + "MB";
+        }
+        if( n<1000000000000L ) {
+            return divideRoundUp( n, 1000000000L ) + "GB";
+        }
+            return divideRoundUp( n, 1000000000000L ) + "TB";        
     }
 
 }

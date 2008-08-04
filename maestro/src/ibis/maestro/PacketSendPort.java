@@ -97,10 +97,10 @@ class PacketSendPort {
         }
 
         /** Print statistics for this destination. */
-        private synchronized void printStats( PrintStream s )
+        private synchronized void printStatistics( PrintStream s )
         {
             char dest = local?'L':'R'; 
-            s.format( " %c %5d messages %7d bytes; port %s\n", dest, sentCount, sentBytes, ibisIdentifier.toString() );
+            s.format( " %c %5d messages %5s bytes   node %s\n", dest, sentCount, Service.formatByteCount( sentBytes ), ibisIdentifier.toString() );
         }
 
         synchronized void incrementSentCount()
@@ -338,7 +338,7 @@ class PacketSendPort {
         for( int ix=0; ix<sz; ix++ ) {
             DestinationInfo i = l[ix];
 
-            i.printStats( s );
+            i.printStatistics( s );
         }
     }
 
