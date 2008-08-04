@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import ibis.ipl.Ibis;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.PortType;
 import ibis.ipl.SendPort;
@@ -22,7 +21,6 @@ import java.util.Map;
  */
 class PacketSendPort {
     static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
-    private final Ibis ibis;   // TODO: just refer to Globals.localIbis.
     private final Node node;  // The node this runs on.
     private long sentBytes = 0;
     private long sendTime = 0;
@@ -146,9 +144,8 @@ class PacketSendPort {
         }
     }
 
-    PacketSendPort( Ibis ibis, Node node )
+    PacketSendPort( Node node )
     {
-        this.ibis = ibis;
         this.node = node;
     }
 
@@ -216,7 +213,7 @@ class PacketSendPort {
         }
         cacheInfo.destination = newDestination;
         newDestination.cacheSlot = cacheInfo;
-        SendPort port = ibis.createSendPort( portType );
+        SendPort port = Globals.localIbis.createSendPort( portType );
         port.connect( newDestination.ibisIdentifier, Globals.receivePortName, timeout, true );
         long tEnd = System.nanoTime();
         adminTime += (tEnd-tStart);
@@ -226,34 +223,34 @@ class PacketSendPort {
 
     /**
      * Given a receive port, registers it with this packet send port, and returns an identifier of the port.
-     * @param port The port to register.
+     * @param theIbis The port to register.
      * @param identifier The identifier we will use for it.
      */
     @SuppressWarnings("synthetic-access")
-    synchronized void registerDestination( IbisIdentifier port )
+    synchronized void registerDestination( IbisIdentifier theIbis )
     {
-        DestinationInfo destinationInfo = destinations.get( port );
+        DestinationInfo destinationInfo = destinations.get( theIbis );
         if( destinationInfo != null ) {
             // Already registered. Don't worry about the duplication.
             return;
         }
-        boolean local = port.equals( Globals.localIbis.identifier() );
-        destinations.put( port, new DestinationInfo( port, local ) );
+        boolean local = theIbis.equals( Globals.localIbis.identifier() );
+        destinations.put( theIbis, new DestinationInfo( theIbis, local ) );
     }
 
     /**
      * Sends the given data to the given port.
-     * @param ibis The port to send it to.
+     * @param theIbis The port to send it to.
      * @param message The data to send.
      * @param timeout The timeout of the transmission.
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
-    private boolean send( IbisIdentifier ibis, Message message, int timeout ) throws IOException
+    private boolean send( IbisIdentifier theIbis, Message message, int timeout ) throws IOException
     {
         long len;
         boolean ok = true;
-        DestinationInfo info = destinations.get( ibis );
+        DestinationInfo info = destinations.get( theIbis );
 
         info.incrementSentCount();
         if( info.local ) {
@@ -283,14 +280,12 @@ class PacketSendPort {
                     cacheInfo.useCount++;
                     port = cacheInfo.port;
                 }
-                synchronized( port ) {
-                    WriteMessage msg = port.newMessage();
-                    msg.writeObject( message );
-                    len = msg.finish();
-                    if( len<0 ) {
-                        ok = false;
-                        len = 0;
-                    }
+                WriteMessage msg = port.newMessage();
+                msg.writeObject( message );
+                len = msg.finish();
+                if( len<0 ) {
+                    ok = false;
+                    len = 0;
                 }
                 synchronized( this ) {
                     cacheInfo.useCount--;
@@ -390,7 +385,7 @@ class PacketSendPort {
                 // We don't have information about this destination,
                 // just send it.
                 long tStart = System.nanoTime();
-                SendPort sendPort = ibis.createSendPort( portType );
+                SendPort sendPort = Globals.localIbis.createSendPort( portType );
                 sendPort.connect( identifier, Globals.receivePortName, timeout, true );
                 long tEnd = System.nanoTime();
                 adminTime += (tEnd-tStart);

@@ -267,7 +267,7 @@ public final class Node extends Thread implements PacketReceiveListener
             t.start();
         }
         receivePort = new PacketUpcallReceivePort( Globals.localIbis, Globals.receivePortName, this );
-        sendPort = new PacketSendPort( Globals.localIbis, this );
+        sendPort = new PacketSendPort( this );
         sendPort.setLocalListener( this );    // FIXME: no longer necessary
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
         for( int i=0; i<updaters.length; i++ ) {
