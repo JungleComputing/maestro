@@ -4,6 +4,7 @@ import ibis.ipl.IbisIdentifier;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -13,6 +14,7 @@ import java.util.List;
  */
 final class NodeList {
     private final ArrayList<NodeInfo> nodes = new ArrayList<NodeInfo>();
+    private HashMap<IbisIdentifier,NodeInfo> ibisToNodeMap = new HashMap<IbisIdentifier, NodeInfo>();
     private final TaskInfoList taskInfoList;
     private UpDownCounter readyNodeCounter = new UpDownCounter();
 
@@ -100,6 +102,7 @@ final class NodeList {
         }
         info = new NodeInfo( id, theIbis, local );
         nodes.set( ix, info );
+        ibisToNodeMap.put( theIbis, info );
         return info;
     }
 
@@ -109,10 +112,9 @@ final class NodeList {
      * Add some registration info to the node info we already have.
      * @param ibis The receive port of this node.
      * @param types The types it supports.
-     * @param theirIdentifierForUs Their identifier for us.
      * @return Our local identifier of this node.
      */
-    synchronized NodeInfo subscribeNode( IbisIdentifier ibis, TaskType[] types, NodeIdentifier theirIdentifierForUs, PacketSendPort sendPort )
+    synchronized NodeInfo subscribeNode( IbisIdentifier ibis, TaskType[] types, PacketSendPort sendPort )
     {
         NodeInfo node = searchNode( nodes, ibis );
         if( node == null ) {
@@ -126,14 +128,13 @@ final class NodeList {
             }
         }
         sendPort.registerDestination( ibis, node.ourIdentifierForNode.value );
-        node.setTheirIdentifierForUs( theirIdentifierForUs );
         for( TaskType t: types ) {
             TaskInfo info = taskInfoList.getTaskInfo( t );
             NodeTaskInfo wti = node.registerTaskType( info );
             info.addWorker( wti );
         }
         if( Settings.traceNodeProgress || Settings.traceRegistration ){
-            System.out.println( "Subscribing node " + node.ourIdentifierForNode + " theirIdentifierForUs=" + theirIdentifierForUs );
+            System.out.println( "Subscribing node " + node.ourIdentifierForNode + " ibis=" + ibis );
         }
         readyNodeCounter.up();
         return node;
@@ -145,7 +146,7 @@ final class NodeList {
      */
     synchronized void registerTaskCompleted( TaskCompletedMessage result )
     {
-        NodeInfo w = getNode( result.source );
+        NodeInfo w = ibisToNodeMap.get( result.source );
         if( w == null ) {
             Globals.log.reportError( "Worker status message from unknown worker " + result.source );
             return;
@@ -196,28 +197,6 @@ final class NodeList {
     {
         TaskInfo taskInfo = taskInfoList.getTaskInfo( taskType );
         return taskInfo.getAverageCompletionTime();
-    }
-
-    synchronized void registerNodeInfo( NodeIdentifier nodeID, WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
-    {
-        NodeInfo nodeInfo = getNode( nodeID );
-        if( nodeInfo != null ) {
-            nodeInfo.registerWorkerInfo( workerQueueInfo, completionInfo );
-            nodeInfo.registerAsCommunicating();
-        }
-    }
-
-    /** Given a remote node, returns the identifier this node uses for us.
-     * @param nodeID The node to get the identifier for us for for.
-     * @return The identifier for this node on the given node.
-     */
-    NodeIdentifier getTheirIdentifierForUs( NodeIdentifier nodeID )
-    {
-        NodeInfo w = getNode( nodeID );
-        if( w == null ) {
-            return null;
-        }
-        return w.getTheirIdentifierForUs();
     }
 
     int size()
@@ -277,14 +256,14 @@ final class NodeList {
         return null;
     }
 
-    synchronized NodeInfo get( NodeIdentifier id )
+    synchronized NodeInfo get( IbisIdentifier id )
     {
-        return getNode( id );
+        return ibisToNodeMap.get( id );
     }
 
-    synchronized boolean registerAsCommunicating( NodeIdentifier id )
+    synchronized boolean registerAsCommunicating( NodeIdentifier ibisIdentifier )
     {
-        NodeInfo nodeInfo = getNode( id );
+        NodeInfo nodeInfo = getNode( ibisIdentifier );
         if( nodeInfo == null ) {
             return false;
         }

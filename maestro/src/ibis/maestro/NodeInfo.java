@@ -16,9 +16,6 @@ final class NodeInfo
     /** Our local identifier of this node. */
     final NodeIdentifier ourIdentifierForNode;
 
-    /** The identifier the node wants to see when we talk to it. */
-    private NodeIdentifier theirIdentifierForUs;
-
     /** The active tasks of this worker. */
     private final ArrayList<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
 
@@ -134,24 +131,6 @@ final class NodeInfo
                 wi.setInitialTransmissionTimeEstimate( pingTime );
             }
         }        
-    }
-
-    /**
-     * Sets the identifier this node uses for us to the given value.
-     * @param id The identifier on this master.
-     */
-    synchronized void setTheirIdentifierForUs( NodeIdentifier id )
-    {
-        this.theirIdentifierForUs = id;
-    }
-    
-    /**
-     * Gets the identifier that we have on this node.
-     * @return The identifier.
-     */
-    synchronized NodeIdentifier getTheirIdentifierForUs()
-    {
-        return theirIdentifierForUs;
     }
 
     /** Mark this worker as dead, and return a list of active tasks
@@ -418,7 +397,7 @@ final class NodeInfo
      */
     synchronized boolean isReady()
     {
-        return !suspect && pingTime != Long.MAX_VALUE && theirIdentifierForUs != null;
+        return !suspect && pingTime != Long.MAX_VALUE;
     }
 
     /** 

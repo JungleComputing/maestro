@@ -15,19 +15,19 @@ final class AcceptNodeMessage extends NonEssentialMessage
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
-    final NodeIdentifier source;
+    final IbisIdentifier source;
     
     final long pingSendMoment;
 
     /**
      * Constructs a new accept message.
-     * @param source The identifier of the ping source.
+     * @param dest The node to send the message to.
      * @param pingSendMoment The moment the original registration message (and ping message) was sent.
      */
-    AcceptNodeMessage( IbisIdentifier dest, NodeIdentifier source, long pingSendMoment )
+    AcceptNodeMessage( IbisIdentifier dest, long pingSendMoment )
     {
 	super( dest );
-        this.source = source;
+        this.source = Globals.localIbis.identifier();
         this.pingSendMoment = pingSendMoment;
     }
 

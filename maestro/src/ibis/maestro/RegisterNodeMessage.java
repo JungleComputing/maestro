@@ -21,9 +21,6 @@ final class RegisterNodeMessage extends NonEssentialMessage
 
     final long padding[] = new long[Settings.PING_PADDING_SIZE];
 
-    /** Our identifier for the node we're sending to. */
-    final NodeIdentifier senderIdentifierForReceiver;
-
     /**
      * Constructs a new worker registration message.
      * @param dest The destination ibis of the message.
@@ -35,7 +32,6 @@ final class RegisterNodeMessage extends NonEssentialMessage
     {
 	super( dest );
 	this.ibis = ibis;
-	this.senderIdentifierForReceiver = ourIdentifierForNode;
 	this.supportedTypes = supportedTypes;
 	this.sendMoment = System.nanoTime();
     }

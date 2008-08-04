@@ -27,19 +27,18 @@ final class TaskCompletedMessage extends Message {
      */
     final long workerDwellTime;
 
-    final NodeIdentifier source;
+    final ibis.ipl.IbisIdentifier source;
 
     /**
      * Constructs a task-completed message for the master of a task.
-     * @param src The worker that handled the task.
      * @param taskId The identifier of the task, as handed out by the master.
      * @param completionInfo The estimated time it will take on this
      *     worker to complete the remaining tasks of this job.
      * @param workerQueueInfo The queue length for the different types of task.
      */
-    TaskCompletedMessage( NodeIdentifier src, long taskId, long workerDwellTime, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
+    TaskCompletedMessage( long taskId, long workerDwellTime, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
     {
-        source = src;
+        source = Globals.localIbis.identifier();
         this.taskId = taskId;
         this.workerDwellTime = workerDwellTime;
         this.completionInfo = completionInfo;

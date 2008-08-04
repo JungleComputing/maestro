@@ -431,12 +431,6 @@ public final class Node extends Thread implements PacketReceiveListener
         unregisteredNodes.add( info );
     }
 
-    private void removeNode( NodeIdentifier theWorker )
-    {
-        ArrayList<TaskInstance> orphans = nodes.removeNode( theWorker );
-        masterQueue.add( orphans );
-    }
-
     private int getIdleTasks()
     {
         return Math.max( numberOfProcessors-runningTasks.get(), 0 );
@@ -482,12 +476,12 @@ public final class Node extends Thread implements PacketReceiveListener
         }
     }
 
-    private void sendUpdateNodeMessage( NodeIdentifier node, NodeIdentifier identifierOnNode )
+    private void sendUpdateNodeMessage( NodeIdentifier node )
     {
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleTasks() );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
         boolean masterHasWork = masterQueue.hasWork();
-        UpdateNodeMessage msg = new UpdateNodeMessage( identifierOnNode, completionInfo, workerQueueInfo, masterHasWork );
+        UpdateNodeMessage msg = new UpdateNodeMessage( completionInfo, workerQueueInfo, masterHasWork );
 
         if( Settings.traceUpdateMessages ) {
             Globals.log.reportProgress( "Sending " + msg );
@@ -500,12 +494,12 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private void sendUpdateNodeMessage( NodeInfo node )
     {
-        sendUpdateNodeMessage( node.ourIdentifierForNode, node.getTheirIdentifierForUs() );
+        sendUpdateNodeMessage( node.ourIdentifierForNode );
     }
     
     private void sendAcceptNodeMessage( NodeInfo node, long sendTime )
     {
-        AcceptNodeMessage msg = new AcceptNodeMessage( node.ibis, node.getTheirIdentifierForUs(), sendTime );
+        AcceptNodeMessage msg = new AcceptNodeMessage( node.ibis, sendTime );
 	
 	if( Settings.traceUpdateMessages ) {
 	    Globals.log.reportProgress( "Sending " + msg );
@@ -538,15 +532,13 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void handleRegisterNodeMessage( RegisterNodeMessage m )
     {
-        NodeIdentifier theirIdentifierForUs = m.senderIdentifierForReceiver;  // Change of perspective...
-
         if( Settings.traceNodeProgress || Settings.traceRegistration ){
             Globals.log.reportProgress( "received registration message from node " + m.ibis );
         }
         if( m.supportedTypes.length == 0 ) {
             Globals.log.reportInternalError( "Node " + m.ibis + " has zero supported types??" );
         }
-        NodeInfo nodeInfo = nodes.subscribeNode( m.ibis, m.supportedTypes, theirIdentifierForUs, sendPort );
+        NodeInfo nodeInfo = nodes.subscribeNode( m.ibis, m.supportedTypes, sendPort );
         if( maestros.contains( m.ibis ) ) {
             enableRegistration.set();
             Globals.log.reportProgress( "Registration enableRegistration=" + enableRegistration.isSet() );
@@ -577,15 +569,18 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void handleNodeUpdateMessage( UpdateNodeMessage m )
     {
-        if( Settings.traceNodeProgress ){
-            Globals.log.reportProgress( "Received node update message " + m );
-        }
-        nodes.registerNodeInfo( m.source, m.workerQueueInfo, m.completionInfo );
-        if( m.masterHasWork ) {
-            NodeInfo node = nodes.get( m.source );
-            // A node that has work deserves a message about our capabilities.
-            taskSources.add( node );
-        }
+	if( Settings.traceNodeProgress ){
+	    Globals.log.reportProgress( "Received node update message " + m );
+	}
+	NodeInfo nodeInfo = nodes.get( m.source );
+	if( nodeInfo != null ) {
+	    nodeInfo.registerWorkerInfo( m.workerQueueInfo, m.completionInfo );
+	    nodeInfo.registerAsCommunicating();
+	    if( m.masterHasWork ) {
+		// A node that has work deserves a message about our capabilities.
+		taskSources.add( nodeInfo );
+	    }
+	}
     }
 
     /**
@@ -617,9 +612,9 @@ public final class Node extends Thread implements PacketReceiveListener
     private void handleRunTaskMessage( RunTaskMessage msg )
     {
         workerQueue.add( msg );
-        boolean isDead = nodes.registerAsCommunicating( msg.source );
+        NodeInfo nodeInfo = nodes.get( msg.source );
+        boolean isDead = nodes.registerAsCommunicating( nodeInfo.ourIdentifierForNode );
         if( !isDead ) {
-            NodeInfo nodeInfo = nodes.get( msg.source );
             if( nodeInfo != null ) {
                 // We have the node in our administration.
                 sendUpdateNodeMessage( nodeInfo );
@@ -662,11 +657,6 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         else if( msg instanceof AcceptNodeMessage ) {
             handleAcceptNodeMessage( (AcceptNodeMessage) msg );
-        }
-        else if( msg instanceof NodeResignMessage ) {
-            NodeResignMessage m = (NodeResignMessage) msg;
-
-            removeNode( m.source );
         }
         else if( msg instanceof RunTaskMessage ){
             handleRunTaskMessage( (RunTaskMessage) msg );
@@ -763,7 +753,7 @@ public final class Node extends Thread implements PacketReceiveListener
                 System.out.println( "Selected " + worker + " as best for task " + task );
             }
 
-            RunTaskMessage msg = new RunTaskMessage( worker.getTheirIdentifierForUs(), worker.ourIdentifierForNode, task, taskId );
+            RunTaskMessage msg = new RunTaskMessage( worker.ourIdentifierForNode, task, taskId );
             boolean ok = sendPort.tryToSend( worker.ourIdentifierForNode, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
             if( !ok ){
                 // Try to put the paste back in the tube.
@@ -879,7 +869,7 @@ public final class Node extends Thread implements PacketReceiveListener
     void transferResult( RunTaskMessage message, Object result, long runMoment )
     {
         long taskCompletionMoment = System.nanoTime();
-        final NodeIdentifier masterId = message.source;
+        NodeInfo master = nodes.get( message.source );
 
         TaskType type = message.taskInstance.type;
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleTasks() );
@@ -889,8 +879,8 @@ public final class Node extends Thread implements PacketReceiveListener
             double now = 1e-9*(System.nanoTime()-startTime);
             System.out.println( "TRACE:workerDwellTime " + type + " " + now + " " + 1e-9*workerDwellTime );
         }
-        Message msg = new TaskCompletedMessage( message.workerIdentifier, message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
-        boolean ok = sendPort.tryToSend( masterId, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        Message msg = new TaskCompletedMessage( message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
+        boolean ok = sendPort.tryToSend( master.ourIdentifierForNode, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         taskResultMessageCount.add();
 
         // FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
