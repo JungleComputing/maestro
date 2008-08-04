@@ -13,9 +13,6 @@ import java.util.ArrayList;
  */
 final class NodeInfo
 {
-    /** Our local identifier of this node. */
-    final NodeIdentifier ourIdentifierForNode;
-
     /** The active tasks of this worker. */
     private final ArrayList<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
 
@@ -39,13 +36,11 @@ final class NodeInfo
 
     /**
      * Constructs a new NodeInfo.
-     * @param id The identifier of the node.
      * @param ibis The ibis identifier of the node.
      * @param local Is this the local node?
      */
-    protected NodeInfo( NodeIdentifier id, IbisIdentifier ibis, boolean local )
+    protected NodeInfo( IbisIdentifier ibis, boolean local )
     {
-        this.ourIdentifierForNode = id;
         this.ibis = ibis;
         this.local = local;
         // For non-local nodes, start with a very pessimistic ping time.
@@ -89,7 +84,7 @@ final class NodeInfo
             return;
         }
         if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "Master: worker " + ourIdentifierForNode + ":" + completionInfo );
+            Globals.log.reportProgress( "Master: worker " + ibis + ":" + completionInfo );
         }
         if( completionInfo.completionInterval != Long.MAX_VALUE ) {
             workerTaskInfo.setCompletionTime( completionInfo.completionInterval );
@@ -112,7 +107,7 @@ final class NodeInfo
             return;
         }
         if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "Master: worker " + ourIdentifierForNode + ":" + info );
+            Globals.log.reportProgress( "Master: worker " + ibis + ":" + info );
         }
         workerTaskInfo.setDequeueTime( info.dequeueTime );
         workerTaskInfo.setComputeTime( info.computeTime );
@@ -147,7 +142,7 @@ final class NodeInfo
         }
         activeTasks.clear(); // Don't let those orphans take up memory.
         if( !orphans.isEmpty() ) {
-            System.out.println( "Rescued " + orphans.size() + " orphans from dead worker " + ourIdentifierForNode );
+            System.out.println( "Rescued " + orphans.size() + " orphans from dead worker " + ibis );
         }
         return orphans;
     }
@@ -167,10 +162,10 @@ final class NodeInfo
     synchronized void setSuspect()
     {
         if( local ) {
-            System.out.println( "Cannot communicate with local node " + ourIdentifierForNode + "???" );
+            System.out.println( "Cannot communicate with local node " + ibis + "???" );
         }
         else {
-            System.out.println( "Cannot communicate with node " + ourIdentifierForNode );
+            System.out.println( "Cannot communicate with node " + ibis );
             suspect = true;
         }
     }
@@ -184,7 +179,7 @@ final class NodeInfo
         }
         setPingTime( nodeTaskInfoList, pingTime );
         if( Settings.traceRemainingJobTime || Settings.traceRegistration ) {
-            Globals.log.reportProgress( "Ping time to node " + ourIdentifierForNode + " is " + Service.formatNanoseconds( pingTime ) );
+            Globals.log.reportProgress( "Ping time to node " + ibis + " is " + Service.formatNanoseconds( pingTime ) );
         }	
     }
 
@@ -219,7 +214,7 @@ final class NodeInfo
                 s += i;
             }
             s += ']';
-            Globals.log.reportProgress( "Master: got new information from " + ourIdentifierForNode + ": " +  s );
+            Globals.log.reportProgress( "Master: got new information from " + ibis + ": " +  s );
         }
         for( WorkerQueueInfo i: workerQueueInfo ) {
             registerWorkerQueueInfo( i );
@@ -346,7 +341,7 @@ final class NodeInfo
             info = new NodeTaskInfo( taskInfo, this, local, pingTime );
             nodeTaskInfoList.set( ix, info );
             if( Settings.traceTypeHandling ){
-                System.out.println( "node " + ourIdentifierForNode + " can handle " + taskInfo + ", local=" + local + " xmitTime=" + Service.formatNanoseconds( pingTime ) );
+                System.out.println( "node " + ibis + " can handle " + taskInfo + ", local=" + local + " xmitTime=" + Service.formatNanoseconds( pingTime ) );
             }
         }
         return info;
@@ -363,7 +358,7 @@ final class NodeInfo
      */
     synchronized void printStatistics( PrintStream s )
     {
-        s.println( "Node " + ourIdentifierForNode + (local?" (local)":"") );
+        s.println( "Node " + ibis + (local?" (local)":"") );
 
         if( missedAllowanceDeadlines>0 ) {
             int total = 0;

@@ -5,7 +5,7 @@ import ibis.ipl.IbisIdentifier;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map;
 
 /**
  * The list of workers of a master.
@@ -13,7 +13,6 @@ import java.util.List;
  * @author Kees van Reeuwijk
  */
 final class NodeList {
-    private final ArrayList<NodeInfo> nodes = new ArrayList<NodeInfo>();
     private HashMap<IbisIdentifier,NodeInfo> ibisToNodeMap = new HashMap<IbisIdentifier, NodeInfo>();
     private final TaskInfoList taskInfoList;
     private UpDownCounter readyNodeCounter = new UpDownCounter();
@@ -21,28 +20,6 @@ final class NodeList {
     NodeList( TaskInfoList taskInfoList )
     {
         this.taskInfoList = taskInfoList;
-    }
-
-    private NodeInfo getNode( NodeIdentifier workerIdentifier )
-    {
-        int ix = workerIdentifier.value;
-        
-        if( ix>=nodes.size() ) {
-            return null;
-        }
-        return nodes.get( ix );
-    }
-
-    private static NodeInfo searchNode( List<NodeInfo> nodes, IbisIdentifier id )
-    {
-        for( NodeInfo w: nodes ) {
-            if( w != null ) {
-                if( id.equals( w.ibis ) ) {
-                    return w;
-                }
-            }
-        }
-        return null;
     }
 
     /**
@@ -56,27 +33,8 @@ final class NodeList {
             System.out.println( "remove node " + theIbis );
         }
         ArrayList<TaskInstance> orphans = null;
-        NodeInfo wi = searchNode( nodes, theIbis );
+        NodeInfo wi = ibisToNodeMap.get( theIbis );
 
-        if( wi != null ) {
-            orphans = wi.setDead();
-        }
-        readyNodeCounter.down();
-        return orphans;
-    }
-
-    /**
-     * We know the given ibis has disappeared from the computation.
-     * Remove any workers on that ibis.
-     * @param theIbis The worker that is gone.
-     */
-    synchronized ArrayList<TaskInstance> removeNode( NodeIdentifier identifier )
-    {
-        if( Settings.traceWorkerList ) {
-            System.out.println( "remove node " + identifier );
-        }
-        NodeInfo wi = getNode( identifier );
-        ArrayList<TaskInstance> orphans = null;
         if( wi != null ) {
             orphans = wi.setDead();
         }
@@ -91,17 +49,11 @@ final class NodeList {
      */
     synchronized NodeInfo registerNode( IbisIdentifier theIbis, boolean local )
     {
-        NodeInfo info = searchNode( nodes, theIbis );
+	NodeInfo info = ibisToNodeMap.get( theIbis );
         if( info != null ) {
             return info;
         }
-        NodeIdentifier id = NodeIdentifier.getNextIdentifier();
-        int ix = id.value;
-        while( nodes.size()<=ix ) {
-            nodes.add( null );
-        }
-        info = new NodeInfo( id, theIbis, local );
-        nodes.set( ix, info );
+        info = new NodeInfo( theIbis, local );
         ibisToNodeMap.put( theIbis, info );
         return info;
     }
@@ -116,25 +68,24 @@ final class NodeList {
      */
     synchronized NodeInfo subscribeNode( IbisIdentifier ibis, TaskType[] types, PacketSendPort sendPort )
     {
-        NodeInfo node = searchNode( nodes, ibis );
+        NodeInfo node = ibisToNodeMap.get( ibis );
         if( node == null ) {
-            NodeIdentifier id = NodeIdentifier.getNextIdentifier();
             boolean local = Globals.localIbis.identifier().equals( ibis );
     
             // The node isn't in our administration, add it.
-            node = new NodeInfo( id, ibis, local );
+            node = new NodeInfo( ibis, local );
             if( Settings.traceRegistration ) {
                 Globals.log.reportProgress( "Ibis " + ibis + " isn't in our admistration; creating new entry " + node );
             }
         }
-        sendPort.registerDestination( ibis, node.ourIdentifierForNode.value );
+        sendPort.registerDestination( ibis );
         for( TaskType t: types ) {
             TaskInfo info = taskInfoList.getTaskInfo( t );
             NodeTaskInfo wti = node.registerTaskType( info );
             info.addWorker( wti );
         }
         if( Settings.traceNodeProgress || Settings.traceRegistration ){
-            System.out.println( "Subscribing node " + node.ourIdentifierForNode + " ibis=" + ibis );
+            System.out.println( "Subscribing node " + ibis );
         }
         readyNodeCounter.up();
         return node;
@@ -178,7 +129,8 @@ final class NodeList {
      */
     void printStatistics( PrintStream out )
     {
-        for( NodeInfo wi: nodes ) {
+	for( Map.Entry<IbisIdentifier, NodeInfo> entry : ibisToNodeMap.entrySet() ) {
+	    NodeInfo wi = entry.getValue();
             if( wi != null ) {
                 wi.printStatistics( out );
             }
@@ -201,13 +153,15 @@ final class NodeList {
 
     int size()
     {
-        return nodes.size();
+        return ibisToNodeMap.size();
     }
 
     synchronized protected void resetReservations()
     {
-        for( NodeInfo nodeInfo: nodes ) {
-            if( nodeInfo != null ) {
+	for( Map.Entry<IbisIdentifier, NodeInfo> entry : ibisToNodeMap.entrySet() ) {
+	    NodeInfo nodeInfo = entry.getValue();
+
+	    if( nodeInfo != null ) {
                 nodeInfo.resetReservations();
             }
         }
@@ -215,7 +169,7 @@ final class NodeList {
 
     protected synchronized void setSuspect( IbisIdentifier theIbis )
     {
-        NodeInfo wi = searchNode( nodes, theIbis );
+        NodeInfo wi = ibisToNodeMap.get( theIbis );
 
         if( wi != null ) {
             wi.setSuspect();
@@ -228,7 +182,7 @@ final class NodeList {
     synchronized NodeInfo getRandomReadyNode()
     {
         NodeInfo res = null;
-        int size = nodes.size();
+        int size = ibisToNodeMap.size();
         if( size == 0 ) {
             // No masters at all, give up.
             return null;
@@ -241,12 +195,12 @@ final class NodeList {
             // encounter a good one.
             // We only try 'n' times, since the list may consist entirely of duds.
             // (And yes, these duds skew the probabilities, we don't care.)
-            res = nodes.get( ix );
+            res = ibisToNodeMap.get( ix );
             if( res.isReady() ) {
                 return res;
             }
             ix++;
-            if( ix>=nodes.size() ) {
+            if( ix>=ibisToNodeMap.size() ) {
                 // Wrap around.
                 ix = 0;
             }
@@ -261,9 +215,9 @@ final class NodeList {
         return ibisToNodeMap.get( id );
     }
 
-    synchronized boolean registerAsCommunicating( NodeIdentifier ibisIdentifier )
+    synchronized boolean registerAsCommunicating( IbisIdentifier ibisIdentifier )
     {
-        NodeInfo nodeInfo = getNode( ibisIdentifier );
+        NodeInfo nodeInfo = ibisToNodeMap.get( ibisIdentifier );
         if( nodeInfo == null ) {
             return false;
         }
@@ -288,8 +242,10 @@ final class NodeList {
      */
     synchronized void checkDeadlines( long now )
     {
-        for( NodeInfo nodeInfo: nodes ) {
-            if( nodeInfo != null ) {
+	for( Map.Entry<IbisIdentifier, NodeInfo> entry : ibisToNodeMap.entrySet() ) {
+	    NodeInfo nodeInfo = entry.getValue();
+
+	    if( nodeInfo != null ) {
                 nodeInfo.checkDeadlines( now );
             }
         }

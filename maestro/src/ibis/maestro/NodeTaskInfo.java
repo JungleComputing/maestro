@@ -266,11 +266,11 @@ final class NodeTaskInfo {
     void setInitialTransmissionTimeEstimate( long pingTime )
     {
         if( Settings.traceRegistration ) {
-            Globals.log.reportProgress( "Setting transimssion time estimate for " + nodeInfo.ourIdentifierForNode + " for " + taskInfo.type + " to " + Service.formatNanoseconds( pingTime ));
+            Globals.log.reportProgress( "Setting transimssion time estimate for " + nodeInfo.ibis + " for " + taskInfo.type + " to " + Service.formatNanoseconds( pingTime ));
         }
         transmissionTimeEstimate.setInitialEstimate( pingTime );
         if( Settings.traceRegistration ) {
-            Globals.log.reportProgress( "Transimssion time estimate for " + nodeInfo.ourIdentifierForNode + " for " + taskInfo.type + " is now " + transmissionTimeEstimate );
+            Globals.log.reportProgress( "Transimssion time estimate for " + nodeInfo.ibis + " for " + taskInfo.type + " is now " + transmissionTimeEstimate );
         }
     }
 

@@ -92,9 +92,9 @@ public final class Job
      * @param userIdentifier The user identifier to include in this identifier.
      * @return The newly constructed identifier.
      */
-    private JobInstanceIdentifier buildJobInstanceIdentifier( Node node, Object userIdentifier )
+    private JobInstanceIdentifier buildJobInstanceIdentifier( Object userIdentifier )
     {
-        return new JobInstanceIdentifier( userIdentifier, node.receivePort.identifier() );
+        return new JobInstanceIdentifier( userIdentifier, Globals.localIbis.identifier() );
     }
 
     /**
@@ -119,7 +119,7 @@ public final class Job
      */
     public void submit( Node node, Object value, Object userId, CompletionListener listener )
     {
-        JobInstanceIdentifier tii = buildJobInstanceIdentifier( node, userId );
+        JobInstanceIdentifier tii = buildJobInstanceIdentifier( userId );
         node.addRunningJob( tii, this, listener );
         submitATask( node, tii, 0, value );
     }

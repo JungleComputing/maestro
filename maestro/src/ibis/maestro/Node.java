@@ -476,7 +476,7 @@ public final class Node extends Thread implements PacketReceiveListener
         }
     }
 
-    private void sendUpdateNodeMessage( NodeIdentifier node )
+    private void sendUpdateNodeMessage( IbisIdentifier node )
     {
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleTasks() );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
@@ -494,7 +494,8 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private void sendUpdateNodeMessage( NodeInfo node )
     {
-        sendUpdateNodeMessage( node.ourIdentifierForNode );
+	// TODO: inline
+        sendUpdateNodeMessage( node.ibis );
     }
     
     private void sendAcceptNodeMessage( NodeInfo node, long sendTime )
@@ -516,7 +517,7 @@ public final class Node extends Thread implements PacketReceiveListener
      * @param result The result to send.
      * @return <code>true</code> if the message could be sent.
      */
-    private boolean sendResultMessage( ReceivePortIdentifier port, JobInstanceIdentifier id, Object result )
+    private boolean sendResultMessage( IbisIdentifier port, JobInstanceIdentifier id, Object result )
     {
         Message msg = new JobResultMessage( id, result );	
         jobResultMessageCount.add();
@@ -613,7 +614,7 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         workerQueue.add( msg );
         NodeInfo nodeInfo = nodes.get( msg.source );
-        boolean isDead = nodes.registerAsCommunicating( nodeInfo.ourIdentifierForNode );
+        boolean isDead = nodes.registerAsCommunicating( msg.source );
         if( !isDead ) {
             if( nodeInfo != null ) {
                 // We have the node in our administration.
@@ -700,7 +701,7 @@ public final class Node extends Thread implements PacketReceiveListener
         NodeInfo taskSource = taskSources.getRandomWorkSource();
         if( taskSource != null ){
             if( Settings.traceNodeProgress ){
-                Globals.log.reportProgress( "Asking node " + taskSource.ourIdentifierForNode + " for work" );
+                Globals.log.reportProgress( "Asking node " + taskSource.ibis + " for work" );
             }
             if( isStopped() ) {
                 return;
@@ -713,7 +714,7 @@ public final class Node extends Thread implements PacketReceiveListener
             taskSource = nodes.getRandomReadyNode();
             if( taskSource != null ){
                 if( Settings.traceNodeProgress ){
-                    Globals.log.reportProgress( "Updating node " + taskSource.ourIdentifierForNode );
+                    Globals.log.reportProgress( "Updating node " + taskSource.ibis );
                 }
                 if( isStopped() ) {
                     return;
@@ -753,11 +754,11 @@ public final class Node extends Thread implements PacketReceiveListener
                 System.out.println( "Selected " + worker + " as best for task " + task );
             }
 
-            RunTaskMessage msg = new RunTaskMessage( worker.ourIdentifierForNode, task, taskId );
-            boolean ok = sendPort.tryToSend( worker.ourIdentifierForNode, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+            RunTaskMessage msg = new RunTaskMessage( worker.ibis, task, taskId );
+            boolean ok = sendPort.tryToSend( worker.ibis, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
             if( !ok ){
                 // Try to put the paste back in the tube.
-                // The sendport has already registered the trouble.
+                // The send port has already registered the trouble.
                 worker.retractTask( msg.taskId );
                 masterQueue.add( msg.taskInstance );
             }
@@ -869,7 +870,6 @@ public final class Node extends Thread implements PacketReceiveListener
     void transferResult( RunTaskMessage message, Object result, long runMoment )
     {
         long taskCompletionMoment = System.nanoTime();
-        NodeInfo master = nodes.get( message.source );
 
         TaskType type = message.taskInstance.type;
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleTasks() );
@@ -880,7 +880,7 @@ public final class Node extends Thread implements PacketReceiveListener
             System.out.println( "TRACE:workerDwellTime " + type + " " + now + " " + 1e-9*workerDwellTime );
         }
         Message msg = new TaskCompletedMessage( message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
-        boolean ok = sendPort.tryToSend( master.ourIdentifierForNode, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        boolean ok = sendPort.tryToSend( message.source, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         taskResultMessageCount.add();
 
         // FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
@@ -889,7 +889,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( nextTaskType == null ){
             // This was the final step. Report back the result.
             JobInstanceIdentifier identifier = message.taskInstance.jobInstance;
-            sendResultMessage( identifier.receivePort, identifier, result );
+            sendResultMessage( identifier.ibis, identifier, result );
         }
         else {
             // There is a next step to take.
@@ -922,12 +922,12 @@ public final class Node extends Thread implements PacketReceiveListener
         return nodes.waitForReadyNodes( n, waittime );
     }
 
-    void sendRegisterNodeMessage( TaskType taskTypes[], IbisIdentifier ibis, NodeIdentifier ourIdentifierForNode )
+    void sendRegisterNodeMessage( TaskType taskTypes[], IbisIdentifier ibis )
     {
         if( Settings.traceWorkerList ) {
             Globals.log.reportProgress( "Node " + Globals.localIbis.identifier() + ": sending registration message to ibis " + ibis );
         }
-        RegisterNodeMessage msg = new RegisterNodeMessage( ibis, Globals.localIbis.identifier(), taskTypes, ourIdentifierForNode );
+        RegisterNodeMessage msg = new RegisterNodeMessage( ibis, Globals.localIbis.identifier(), taskTypes );
         sendNonEssential( msg );
         registrationMessageCount.add();
     }

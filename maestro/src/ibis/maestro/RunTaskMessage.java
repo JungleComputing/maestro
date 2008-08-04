@@ -14,7 +14,7 @@ final class RunTaskMessage extends Message
 {
     /** */
     private static final long serialVersionUID = 1L;
-    final NodeIdentifier workerIdentifier;
+    final IbisIdentifier workerIdentifier;
     final TaskInstance taskInstance;
     final long taskId;
     private transient long queueMoment = 0L;
@@ -27,7 +27,7 @@ final class RunTaskMessage extends Message
      * @param task The task to run.
      * @param taskId The identifier of the task.
      */
-    RunTaskMessage( NodeIdentifier workerIdentifier, TaskInstance task, long taskId )
+    RunTaskMessage( IbisIdentifier workerIdentifier, TaskInstance task, long taskId )
     {
         this.source = Globals.localIbis.identifier();
 	this.workerIdentifier = workerIdentifier;

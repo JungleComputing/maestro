@@ -1,6 +1,6 @@
 package ibis.maestro;
 
-import ibis.ipl.ReceivePortIdentifier;
+import ibis.ipl.IbisIdentifier;
 
 import java.io.Serializable;
 
@@ -16,28 +16,28 @@ class JobInstanceIdentifier implements Serializable
 
     final long id;
     final Object userId;
-    final ReceivePortIdentifier receivePort;
+    final IbisIdentifier ibis;
 
     /**
      * Constructs a new identifier.
      * @param userId The user identifier to include.
-     * @param receivePortIdentifier The receive port to send the result to.
+     * @param ibis The ibis to send the result to.
      */
-    JobInstanceIdentifier( long id, Object userId, ReceivePortIdentifier receivePortIdentifier )
+    JobInstanceIdentifier( long id, Object userId, IbisIdentifier ibis )
     {
         this.id = id;
         this.userId = userId;
-        this.receivePort = receivePortIdentifier;
+        this.ibis = ibis;
     }
 
     /**
      * Constructs a new identifier.
      * @param userId The user identifier to include.
-     * @param receivePortIdentifier The receive port to send the result to.
+     * @param ibis The ibis to send the result to.
      */
-    JobInstanceIdentifier( Object userId, ReceivePortIdentifier receivePortIdentifier )
+    JobInstanceIdentifier( Object userId, IbisIdentifier ibis )
     {
-	this( serialNo++, userId, receivePortIdentifier );
+	this( serialNo++, userId, ibis );
     }
 
     /**
@@ -47,7 +47,7 @@ class JobInstanceIdentifier implements Serializable
     @Override
     public String toString()
     {
-        return "(job instance: id=" + id + " user id=" + userId + " port=" + receivePort + ")";
+        return "(job instance: id=" + id + " user id=" + userId + " port=" + ibis + ")";
     }
     /**
      * Returns a hash code for this job identifier.

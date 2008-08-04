@@ -43,7 +43,7 @@ public class TaskInfo
             return;
         }
         if( Settings.traceTypeHandling ){
-            System.out.println( "task " + type + " is supported by node " + worker.nodeInfo.ourIdentifierForNode );
+            System.out.println( "task " + type + " is supported by node " + worker.nodeInfo.ibis );
         }
 	workers.add( worker );
     }

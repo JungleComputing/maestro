@@ -20,12 +20,10 @@ class UnregisteredNodeList extends Thread
     {
         final IbisIdentifier ibis;
         final boolean local;
-        final NodeIdentifier ourIdentifierForNode;
 
-        UnregisteredNodeInfo( IbisIdentifier ibis, NodeIdentifier ourIdentifierForNode, boolean local )
+        UnregisteredNodeInfo( IbisIdentifier ibis, boolean local )
         {
             this.ibis = ibis;
-            this.ourIdentifierForNode = ourIdentifierForNode;
             this.local = local;
         }
         
@@ -110,7 +108,7 @@ class UnregisteredNodeList extends Thread
     @SuppressWarnings("synthetic-access")
     synchronized void add( NodeInfo nodeInfo )
     {
-        UnregisteredNodeInfo info = new UnregisteredNodeInfo( nodeInfo.ibis, nodeInfo.ourIdentifierForNode, nodeInfo.local );
+        UnregisteredNodeInfo info = new UnregisteredNodeInfo( nodeInfo.ibis, nodeInfo.local );
         if( Settings.traceRegistration ) {
             Globals.log.reportProgress( "Adding " + info + " to the registration queue" );
         }
@@ -135,7 +133,7 @@ class UnregisteredNodeList extends Thread
             if( Settings.traceNodeProgress ){
         	Globals.log.reportProgress( "registering with node " + ni );
             }
-            node.sendRegisterNodeMessage( taskTypes, ni.ibis, ni.ourIdentifierForNode );
+            node.sendRegisterNodeMessage( taskTypes, ni.ibis );
         }
     }
 
