@@ -26,10 +26,10 @@ class NonEssentialSender extends Thread
     /** The messages that should be sent some time in the future. */
     private final PriorityQueue<NonEssentialMessage> futureMessages;
 
-    private long uncachedAdminTime = 0;
-    private long uncachedSendTime = 0;
-    private long uncachedSentBytes = 0;
-    private int uncachedSentCount = 0;
+    private long adminTime = 0;
+    private long sendTime = 0;
+    private long sentBytes = 0;
+    private int sentCount = 0;
 
     private static final class ReadyComparator implements Comparator<NonEssentialMessage>
     {
@@ -130,12 +130,7 @@ class NonEssentialSender extends Thread
         msg.sendMoment = startTime;
         try {
             long len;
-            SendPort port;
-
-            synchronized( Globals.localIbis ) {
-                // TODO: is createSendPort re-entrant?
-                port = Globals.localIbis.createSendPort( PacketSendPort.portType );
-            }
+            SendPort port = Globals.localIbis.createSendPort( PacketSendPort.portType );
             port.connect( theIbis, Globals.receivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT, false );
             long setupTime = System.nanoTime();
             WriteMessage writeMessage = port.newMessage();
@@ -147,11 +142,11 @@ class NonEssentialSender extends Thread
                 System.out.println( "Sent non-essential message of " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) + ": " + msg );
             }
             synchronized( this ) {
-                uncachedAdminTime += (setupTime-startTime);
-                uncachedSendTime += (stopTime-setupTime);
-                uncachedSentCount++;
+                adminTime += (setupTime-startTime);
+                sendTime += (stopTime-setupTime);
+                sentCount++;
                 if( len>0 ) {
-                    uncachedSentBytes += len;
+                    sentBytes += len;
                 }
             }
         } catch (IOException e) {
@@ -302,9 +297,9 @@ class NonEssentialSender extends Thread
     synchronized void printStatistics( PrintStream s )
     {
         s.println( "Non-essential sender:" );
-        s.printf(  "  sent messages  %5d\n", uncachedSentCount );
-        s.printf(  "  sent bytes     %5d\n", uncachedSentBytes );
-        s.println( "  admin time     " + Service.formatNanoseconds( uncachedAdminTime ) );
-        s.println( "  send time      " + Service.formatNanoseconds( uncachedSendTime ) );
+        s.printf(  "  sent messages  %5d\n", sentCount );
+        s.printf(  "  sent bytes     %5d\n", sentBytes );
+        s.println( "  admin time     " + Service.formatNanoseconds( adminTime ) );
+        s.println( "  send time      " + Service.formatNanoseconds( sendTime ) );
     }
 }

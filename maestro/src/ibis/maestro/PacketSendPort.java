@@ -355,53 +355,6 @@ class PacketSendPort {
         }
     }
 
-    /** 
-     * Tries to send a message to the given ibis and port name.
-     * @param theIbis The ibis to send the message to.
-     * @param msg The message to send.
-     * @return The number of transmitted bytes, or -1 if the message could not be sent.
-     */
-    private boolean tryToSendNonEssential( IbisIdentifier theIbis, Message msg )
-    {
-        boolean ok = false;
-        try {
-            long len;
-            SendPort port;
-            
-            long startTime = System.nanoTime();
-            synchronized( ibis ) {
-                // TODO: is createSendPort re-entrant?
-                port = ibis.createSendPort( portType );
-            }
-            port.connect( theIbis, Globals.receivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT, false );
-            long setupTime = System.nanoTime();
-            WriteMessage msg1 = port.newMessage();
-            msg1.writeObject( msg );
-            len = msg1.finish();
-            port.close();
-            long stopTime = System.nanoTime();
-            if( Settings.traceSends ) {
-                System.out.println( "Sent non-essential message of " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) + ": " + msg );
-            }
-            synchronized( this ) {
-                uncachedAdminTime += (setupTime-startTime);
-                uncachedSendTime += (stopTime-setupTime);
-                uncachedSentCount++;
-                if( len>0 ) {
-                    uncachedSentBytes += len;
-                    ok = true;
-                }
-            }
-        } catch (IOException e) {
-            // Don't declare a node dead just because of this small problem.
-            // node.setSuspect( theIbis );
-            Globals.log.reportError( "Cannot send a non-essential " + msg.getClass() + " message to ibis " + theIbis );
-            e.printStackTrace( Globals.log.getPrintStream() );
-        }
-        return ok;
-    }
-
-
     /**
      * Sends the given data to the given port.
      * @param msg The data to send.
