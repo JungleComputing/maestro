@@ -102,7 +102,8 @@ class UnregisteredNodeList extends Thread
         return info;
     }
 
-    /** FIXME.
+    /** Add a node to the list of unregistered nodes.
+     * 
      * @param theIbis The unregistered ibis.
      * @param local Is this the local ibis?
      */

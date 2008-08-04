@@ -132,7 +132,7 @@ class NonEssentialSender extends Thread
             long len;
             SendPort port;
 
-            synchronized( this ) {
+            synchronized( Globals.localIbis ) {
                 // TODO: is createSendPort re-entrant?
                 port = Globals.localIbis.createSendPort( PacketSendPort.portType );
             }

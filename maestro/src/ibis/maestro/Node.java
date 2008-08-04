@@ -555,7 +555,6 @@ public final class Node extends Thread implements PacketReceiveListener
                 this.notifyAll();
             }
         }
-        // FIXME: support retries.
         sendAcceptNodeMessage( nodeInfo, m.sendMoment );
     }
 
@@ -799,9 +798,12 @@ public final class Node extends Thread implements PacketReceiveListener
     void runWorkThread()
     {
         while( keepRunning() ) {
-            updateAdministration();
             RunTaskMessage message = null;
-            if( runningTasks.isLessOrEqual( numberOfProcessors ) ) {
+
+            updateAdministration();
+            if( runningTasks.isBelow( numberOfProcessors ) ) {
+        	// Only try to start a new task when there are idle
+        	// processors.
                 message = workerQueue.remove();
             }
             if( message == null ) {

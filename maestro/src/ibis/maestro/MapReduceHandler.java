@@ -106,7 +106,6 @@ public class MapReduceHandler extends Thread implements CompletionListener
     {
 	try {
 	    labeler.waitForAllLabels();
-	    // FIXME: this blocks a worker thread!!!
 	}
 	catch( InterruptedException x ) {
 	    // Nothing we can do.

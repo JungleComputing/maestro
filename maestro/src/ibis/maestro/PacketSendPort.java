@@ -23,7 +23,7 @@ import java.util.HashMap;
  */
 class PacketSendPort {
     static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
-    private final Ibis ibis;
+    private final Ibis ibis;   // TODO: just refer to Globals.localIbis.
     private final Node node;  // The node this runs on.
     private long sentBytes = 0;
     private long sendTime = 0;
@@ -166,7 +166,7 @@ class PacketSendPort {
     /** Return an empty slot in the cache.
      * Assumes there is a lock on 'this'.
      */
-    private int searchEmptySlot()
+    private int searchCacheEmptySlot()
     {
         for(;;){
             CacheInfo e = cache[clockHand];
@@ -204,7 +204,7 @@ class PacketSendPort {
             return;
         }
         long tStart = System.nanoTime();
-        int ix = searchEmptySlot();
+        int ix = searchCacheEmptySlot();
 
         CacheInfo cacheInfo = cache[ix];
         if( cacheInfo == null ){
@@ -271,7 +271,7 @@ class PacketSendPort {
             // the info to the destination.
             message.arrivalMoment = System.nanoTime();
             localListener.messageReceived( message );
-            len = 0;
+            len = 0;  // We're not going to compute a size just for the statistics.
             localSentCount.add();
             if( Settings.traceSends ) {
                 System.out.println( "Sent local message " + message );
@@ -361,7 +361,7 @@ class PacketSendPort {
      * @param msg The message to send.
      * @return The number of transmitted bytes, or -1 if the message could not be sent.
      */
-    boolean tryToSendNonEssential( IbisIdentifier theIbis, Message msg )
+    private boolean tryToSendNonEssential( IbisIdentifier theIbis, Message msg )
     {
         boolean ok = false;
         try {
@@ -369,7 +369,7 @@ class PacketSendPort {
             SendPort port;
             
             long startTime = System.nanoTime();
-            synchronized( this ) {
+            synchronized( ibis ) {
                 // TODO: is createSendPort re-entrant?
                 port = ibis.createSendPort( portType );
             }

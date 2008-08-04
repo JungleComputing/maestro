@@ -92,5 +92,6 @@ class Settings {
     static final long UPDATE_INTERVAL = 100;
 
     /** The size in longs of the padding array in a ping message. */
-    static final int PING_PADDING_SIZE = 50000;
+    // FIXME: change again after competition.
+    static final int PING_PADDING_SIZE = 10;
 }
