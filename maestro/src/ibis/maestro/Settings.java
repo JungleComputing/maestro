@@ -71,7 +71,7 @@ class Settings {
     static final boolean traceUpdateMessages = false;
 
     /** Trace the adventures of the non-essential sender. */
-    static final boolean traceNonEssentialSender = true;
+    static final boolean traceNonEssentialSender = false;
 
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.
@@ -89,7 +89,7 @@ class Settings {
     static final boolean noStealRequests = true;
 
     /** The time in >>ms<<< between node updates. */
-    static final long UPDATE_INTERVAL = 100;
+    static final long UPDATE_INTERVAL = 30;
 
     /** The size in longs of the padding array in a ping message. */
     // FIXME: change again after competition.

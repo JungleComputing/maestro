@@ -33,9 +33,9 @@ public final class Node extends Thread implements PacketReceiveListener
     private RegistryEventHandler registryEventHandler;
 
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
-    private static final int workThreadCount = numberOfProcessors+1;
+    private static final int workThreadCount = numberOfProcessors+2;
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
-    private final UpdateThread updaters[] = new UpdateThread[1];
+    private final UpdateThread updaters[] = new UpdateThread[2];
 
     /** The list of ibises we haven't (successfully) registered with yet. */
     private final UnregisteredNodeList unregisteredNodes;
@@ -445,6 +445,7 @@ public final class Node extends Thread implements PacketReceiveListener
             stopTime = System.nanoTime();
         }
         s.printf(  "# threads       = %5d\n", workThreads.length );
+        messageQueue.printStatistics( s );
         nodes.printStatistics( s );
         jobs.printStatistics( s );
         s.printf( "registration messages:   %5d sent\n", registrationMessageCount.get() );

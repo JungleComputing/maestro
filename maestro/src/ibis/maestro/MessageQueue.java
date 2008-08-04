@@ -1,5 +1,6 @@
 package ibis.maestro;
 
+import java.io.PrintStream;
 import java.util.LinkedList;
 
 /**
@@ -9,11 +10,17 @@ import java.util.LinkedList;
  */
 class MessageQueue
 {
+    private int maxQueueSize = 0;
+
     private final LinkedList<Message> messages = new LinkedList<Message>();
     
     protected synchronized void add ( Message e )
     {
         messages.add( e );
+        int sz = messages.size();
+        if( maxQueueSize<sz ){
+            maxQueueSize = sz;
+        }
     }
 
     protected synchronized Message removeIfAny()
@@ -23,5 +30,10 @@ class MessageQueue
         }
         return messages.removeFirst();
     }
-   
+
+
+    protected synchronized void printStatistics( PrintStream s )
+    {
+        s.println( "Maximal message queue size: " + maxQueueSize );
+    }
 }
