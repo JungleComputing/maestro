@@ -41,8 +41,6 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private final TaskSources taskSources = new TaskSources();
 
-    private final IbisIdentifierList nodesToUpdate = new IbisIdentifierList();
-
     /** The sender of non-essential messages. */
     private final NonEssentialSender nonEssentialSender;
 
@@ -393,17 +391,6 @@ public final class Node extends Thread implements PacketReceiveListener
         nodes.setSuspect( theIbis );
     }
 
-    private void drainUpdateList()
-    {
-        while( true ) {
-            IbisIdentifier node = nodesToUpdate.removeIfAny();
-            if( node == null ) {
-                break;
-            }
-            sendUpdateNodeMessage( node );
-        }
-    }
-
     private void drainCompletedJobList()
     {
         while( true ) {
@@ -422,7 +409,6 @@ public final class Node extends Thread implements PacketReceiveListener
     private void updateAdministration()
     {
         drainCompletedJobList();
-        drainUpdateList();
         drainMasterQueue();
         if( enableRegistration.isSet() ) {
             unregisteredNodes.registerWithMaster();
@@ -502,14 +488,12 @@ public final class Node extends Thread implements PacketReceiveListener
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleTasks() );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
         boolean masterHasWork = masterQueue.hasWork();
-        UpdateNodeMessage msg = new UpdateNodeMessage( completionInfo, workerQueueInfo, masterHasWork );
+        UpdateNodeMessage msg = new UpdateNodeMessage( node, completionInfo, workerQueueInfo, masterHasWork );
 
         if( Settings.traceUpdateMessages ) {
             Globals.log.reportProgress( "Sending " + msg );
         }
-        // We ignore the result because we don't care about the message size,
-        // and if the update failed, it failed.
-        sendPort.tryToSend( node, msg, Settings.OPTIONAL_COMMUNICATION_TIMEOUT );
+        nonEssentialSender.submit( msg );
         updateMessageCount.add();
     }
 
@@ -588,7 +572,7 @@ public final class Node extends Thread implements PacketReceiveListener
         NodeInfo nodeInfo = nodes.get( source );
         boolean isDead = nodes.registerAsCommunicating( source );
         if( !isDead ) {
-            nodesToUpdate.add( source );
+            sendUpdateNodeMessage( source );
             if( nodeInfo != null ) {
                 taskSources.add( nodeInfo );
             }

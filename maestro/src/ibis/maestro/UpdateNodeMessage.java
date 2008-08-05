@@ -10,7 +10,7 @@ import ibis.ipl.IbisIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-final class UpdateNodeMessage extends Message {
+final class UpdateNodeMessage extends NonEssentialMessage {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
@@ -31,8 +31,9 @@ final class UpdateNodeMessage extends Message {
      * @param identifier The identifier to use.
      * @param masterHasWork 
      */
-    UpdateNodeMessage( CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo, boolean masterHasWork )
+    UpdateNodeMessage( IbisIdentifier destination, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo, boolean masterHasWork )
     {
+        super( destination );
         source = Globals.localIbis.identifier();
         this.completionInfo = completionInfo;
         this.workerQueueInfo = workerQueueInfo;
