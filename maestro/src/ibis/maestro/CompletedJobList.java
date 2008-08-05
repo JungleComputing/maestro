@@ -1,6 +1,6 @@
 package ibis.maestro;
 
-class IbisIdentifierList extends Queue<CompletedJob>
+class CompletedJobJist extends Queue<CompletedJob>
 {
     // Nothing extra.
 }
