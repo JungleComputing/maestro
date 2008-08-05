@@ -137,7 +137,7 @@ public final class Node extends Thread implements PacketReceiveListener
                     }
                     else {
                         if( target.isReady() ) {
-                            sendUpdateNodeMessage( target.ibis );
+                            postUpdateNodeMessage( target.ibis );
                         }
                         synchronized( this ) {
                             this.wait( Settings.UPDATE_INTERVAL );
@@ -495,7 +495,7 @@ public final class Node extends Thread implements PacketReceiveListener
         acceptMessageCount.add();
     }
 
-    private void sendUpdateNodeMessage( IbisIdentifier node )
+    private void postUpdateNodeMessage( IbisIdentifier node )
     {
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleTasks() );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
@@ -505,7 +505,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceUpdateMessages ) {
             Globals.log.reportProgress( "Sending " + msg );
         }
-        nonEssentialSender.submit( msg );
+        sendNonEssential( msg );
         updateMessageCount.add();
     }
 
@@ -584,7 +584,7 @@ public final class Node extends Thread implements PacketReceiveListener
         NodeInfo nodeInfo = nodes.get( source );
         boolean isDead = nodes.registerAsCommunicating( source );
         if( !isDead ) {
-            sendUpdateNodeMessage( source );
+            postUpdateNodeMessage( source );
             if( nodeInfo != null ) {
                 taskSources.add( nodeInfo );
             }
@@ -698,7 +698,7 @@ public final class Node extends Thread implements PacketReceiveListener
             if( isStopped() ) {
                 return;
             }
-            sendUpdateNodeMessage( taskSource.ibis );
+            postUpdateNodeMessage( taskSource.ibis );
             return;
         }
         if( masterQueue.hasWork() ){
@@ -711,7 +711,7 @@ public final class Node extends Thread implements PacketReceiveListener
                 if( isStopped() ) {
                     return;
                 }
-                sendUpdateNodeMessage( taskSource.ibis );
+                postUpdateNodeMessage( taskSource.ibis );
             }
         }
     }
