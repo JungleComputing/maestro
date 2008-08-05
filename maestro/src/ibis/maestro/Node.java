@@ -4,7 +4,6 @@ import ibis.ipl.IbisCapabilities;
 import ibis.ipl.IbisCreationFailedException;
 import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisIdentifier;
-import ibis.ipl.ReceivePortIdentifier;
 import ibis.ipl.Registry;
 import ibis.ipl.RegistryEventHandler;
 
@@ -48,8 +47,7 @@ public final class Node extends Thread implements PacketReceiveListener
     /** The incoming message queue. */
     private final MessageQueue messageQueue = new MessageQueue();
 
-    /** The list of maestro nodes in this computation. */
-    private final MaestroList maestros = new MaestroList();
+    private IbisIdentifier maestro = null;
 
     /** The list of running jobs with their completion listeners. */
     private final RunningJobs runningJobs = new RunningJobs();
@@ -197,7 +195,7 @@ public final class Node extends Thread implements PacketReceiveListener
         {
             if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
                 System.out.println( "Ibis " + theIbis + " was elected maestro" );
-                maestros.addMaestro( new MaestroInfo( theIbis ) );
+                maestro = theIbis;
             }
         }
 
@@ -223,7 +221,6 @@ public final class Node extends Thread implements PacketReceiveListener
     public Node( JobList jobs, boolean runForMaestro ) throws IbisCreationFailedException, IOException
     {
         Properties ibisProperties = new Properties();
-        IbisIdentifier maestro;
 
         this.jobs = jobs;
         TaskType taskTypes[] = jobs.getSupportedTaskTypes();
@@ -241,16 +238,15 @@ public final class Node extends Thread implements PacketReceiveListener
             true,
             registryEventHandler,
             PacketSendPort.portType,
-            PacketUpcallReceivePort.portType,
-            PacketBlockingReceivePort.portType
+            PacketUpcallReceivePort.portType
         );
         if( Settings.traceNodes ) {
             Globals.log.reportProgress( "Created ibis " + Globals.localIbis );
         }
         Registry registry = Globals.localIbis.registry();
         if( runForMaestro ){
-            maestro = registry.elect( MAESTRO_ELECTION_NAME );
-            isMaestro = maestro.equals( Globals.localIbis.identifier() );
+            IbisIdentifier m = registry.elect( MAESTRO_ELECTION_NAME );
+            isMaestro = m.equals( Globals.localIbis.identifier() );
             if( isMaestro ) {
                 enableRegistration.set();   // We're maestro, we're allowed to register with others.
             }
@@ -352,13 +348,13 @@ public final class Node extends Thread implements PacketReceiveListener
         nonEssentialSender.removeMessagesToIbis( theIbis );
         ArrayList<TaskInstance> orphans = nodes.removeNode( theIbis );
         masterQueue.add( orphans );
-        boolean noMaestrosLeft = maestros.remove( theIbis );
-        if( noMaestrosLeft ) {
-            Globals.log.reportProgress( "No maestros left; stopping.." );
+        if( maestro != null && theIbis.equals( maestro ) ) {
+            Globals.log.reportProgress( "The maestro has left; stopping.." );
             setStopped();
         }
-        if( theIbis.equals( Globals.localIbis.identifier() ) ) {
+        else if( theIbis.equals( Globals.localIbis.identifier() ) ) {
             // The registry has declared us dead. We might as well stop.
+            Globals.log.reportProgress( "This node has been declared dead, stopping.." );
             setStopped();
         }
     }
@@ -408,17 +404,6 @@ public final class Node extends Thread implements PacketReceiveListener
             unregisteredNodes.registerWithMaster();
         }
         nodes.checkDeadlines( System.nanoTime() );
-    }
-
-    /**
-     * Returns true iff this listener is associated with the given port.
-     * @param port The port it should be associated with.
-     * @return True iff this listener is associated with the port.
-     */
-    public boolean hasReceivePort( ReceivePortIdentifier port )
-    {
-        boolean res = port.equals( receivePort.identifier() );
-        return res;
     }
 
     private void addUnregisteredNode( IbisIdentifier theIbis, boolean local )
@@ -542,7 +527,7 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportInternalError( "Node " + m.ibis + " has zero supported types??" );
         }
         NodeInfo nodeInfo = nodes.subscribeNode( m.ibis, m.supportedTypes );
-        if( maestros.contains( m.ibis ) ) {
+        if( maestro.equals( m.ibis ) ) {
             enableRegistration.set();
             Globals.log.reportProgress( "Registration enableRegistration=" + enableRegistration.isSet() );
             synchronized( this ) {

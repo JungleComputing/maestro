@@ -5,7 +5,6 @@ import ibis.ipl.MessageUpcall;
 import ibis.ipl.PortType;
 import ibis.ipl.ReadMessage;
 import ibis.ipl.ReceivePort;
-import ibis.ipl.ReceivePortIdentifier;
 
 import java.io.IOException;
 
@@ -29,7 +28,7 @@ class PacketUpcallReceivePort implements MessageUpcall {
     PacketUpcallReceivePort( Ibis ibis, String name, PacketReceiveListener listener ) throws IOException
     {
 	this.listener = listener;
-        port = ibis.createReceivePort(portType, name, this );
+        port = ibis.createReceivePort( portType, name, this );
     }
 
     /** Handle the upcall of the ipl port. Only public because the interface requires it.
@@ -39,20 +38,11 @@ class PacketUpcallReceivePort implements MessageUpcall {
      * @throws ClassNotFoundException 
      */
     @SuppressWarnings("unchecked")
-    public void upcall(ReadMessage msg) throws IOException, ClassNotFoundException
+    public void upcall( ReadMessage msg ) throws IOException, ClassNotFoundException
     {
         Message data = (Message) msg.readObject();
         data.arrivalMoment = System.nanoTime();
         listener.messageReceived( data );
-    }
-    
-    /**
-     * Returns the identifier of this port.
-     * @return The port identifier.
-     */
-    public ReceivePortIdentifier identifier()
-    {
-        return port.identifier();
     }
 
     /** Enable this port. */
