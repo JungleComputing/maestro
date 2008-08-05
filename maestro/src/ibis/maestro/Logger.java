@@ -49,6 +49,8 @@ class Logger {
     {
         logfile.print( "Internal error: " );
         logfile.println( msg );
+        Throwable t = new Throwable();
+        t.printStackTrace( logfile );
     }
     
     /** Close the logger. */
