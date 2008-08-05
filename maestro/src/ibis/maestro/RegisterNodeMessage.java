@@ -21,17 +21,20 @@ final class RegisterNodeMessage extends NonEssentialMessage
 
     final long padding[] = new long[Settings.PING_PADDING_SIZE];
 
+    final boolean enableRegistration;
+
     /**
      * Constructs a new worker registration message.
      * @param dest The destination ibis of the message.
      * @param ibis The ibis of the node.
      * @param supportedTypes The list of supported types of this node worker.
      */
-    RegisterNodeMessage( IbisIdentifier dest, IbisIdentifier ibis, TaskType[] supportedTypes )
+    RegisterNodeMessage( IbisIdentifier dest, IbisIdentifier ibis, TaskType[] supportedTypes, boolean enableRegistration )
     {
 	super( dest );
 	this.ibis = ibis;
 	this.supportedTypes = supportedTypes;
+	this.enableRegistration = enableRegistration;
 	this.sendMoment = System.nanoTime();
     }
 

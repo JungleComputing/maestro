@@ -544,7 +544,7 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportInternalError( "Node " + m.ibis + " has zero supported types??" );
         }
         NodeInfo nodeInfo = nodes.subscribeNode( m.ibis, m.supportedTypes );
-        if( maestro.equals( m.ibis ) ) {
+        if( m.enableRegistration ) {
             enableRegistration.set();
             Globals.log.reportProgress( "Registration enableRegistration=" + enableRegistration.isSet() );
             synchronized( this ) {
@@ -923,7 +923,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceWorkerList ) {
             Globals.log.reportProgress( "Node " + Globals.localIbis.identifier() + ": sending registration message to ibis " + ibis );
         }
-        RegisterNodeMessage msg = new RegisterNodeMessage( ibis, Globals.localIbis.identifier(), taskTypes );
+        RegisterNodeMessage msg = new RegisterNodeMessage( ibis, Globals.localIbis.identifier(), taskTypes, isMaestro );
         sendNonEssential( msg );
         registrationMessageCount.add();
     }
