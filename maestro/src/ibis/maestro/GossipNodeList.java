@@ -28,7 +28,7 @@ class GossipNodeList
             int nodeLevel = Math.min( la.numberOfLevels(), lb.numberOfLevels() );
             int matchingLevels = la.numberOfMatchingLevels( lb );
             boolean res = matchingLevels>=(nodeLevel-1);
-            Globals.log.reportProgress( "areInSameCluster: a=" + a + " b=" + " nodeLevel = " + nodeLevel + " matchingLevels=" + matchingLevels + " res=" + res );
+            Globals.log.reportProgress( "areInSameCluster: a=" + a + " b=" + b + " nodeLevel = " + nodeLevel + " matchingLevels=" + matchingLevels + " res=" + res );
             return res;
         }
 

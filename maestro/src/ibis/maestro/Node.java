@@ -266,6 +266,11 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     public boolean isMaestro() { return isMaestro; }
 
+    private synchronized void kickAllWorkers()
+    {
+        this.notifyAll();
+    }
+
     /** Registers the ibis with the given identifier as one that has left the
      * computation.
      * @param theIbis The ibis that has left.
@@ -279,11 +284,13 @@ public final class Node extends Thread implements PacketReceiveListener
         if( maestro != null && theIbis.equals( maestro ) ) {
             Globals.log.reportProgress( "The maestro has left; stopping.." );
             setStopped();
+            kickAllWorkers();
         }
         else if( theIbis.equals( Globals.localIbis.identifier() ) ) {
             // The registry has declared us dead. We might as well stop.
             Globals.log.reportProgress( "This node has been declared dead, stopping.." );
             setStopped();
+            kickAllWorkers();
         }
     }
 
@@ -709,11 +716,7 @@ public final class Node extends Thread implements PacketReceiveListener
                     System.out.println( "Work thread: completed " + message );
                 }
             }
-            synchronized( this ){
-                // This thread has stopped. Wake up all others, since they
-                // will want to stop too.
-                this.notifyAll();
-            }
+            kickAllWorkers();
         }
     }
 
