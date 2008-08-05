@@ -227,15 +227,7 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "Set node to stopped state" );
         }
         stopped.set();
-        synchronized( this ) {
-            // That's worth telling everyone.
-            this.notifyAll();
-        }
-    }
-
-    private boolean isStopped()
-    {
-        return stopped.isSet();
+        kickAllWorkers();
     }
 
     /**
@@ -674,7 +666,9 @@ public final class Node extends Thread implements PacketReceiveListener
                 // Wait a little, there is nothing to do.
                 try{
                     synchronized( this ) {
-                        this.wait( sleepTime );
+                        if( keepRunning() ) {
+                            this.wait( sleepTime );
+                        }
                     }
                 }
                 catch( InterruptedException e ){
