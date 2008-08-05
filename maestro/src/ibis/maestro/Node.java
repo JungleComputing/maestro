@@ -641,8 +641,14 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private boolean keepRunning()
     {
-	boolean res = !stopped.isSet() || runningTasks.isAbove( 0 );
-	return res;
+        if( !stopped.isSet() ) {
+            return true;
+        }
+        if( runningTasks.isAbove( 0 ) ) {
+            System.out.println( "Node is in stopped mode, but there are still " + runningTasks.get() " running tasks" );
+            return true;
+        }
+	return false;
     }
 
     /** Run a work thread. Only return when we want to shut down the node. */
