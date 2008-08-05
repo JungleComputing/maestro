@@ -143,17 +143,27 @@ final class NodeList {
         }
     }
 
+    /** FIXME.
+     * @param source
+     * @return
+     */
+    private NodeInfo getNodeInfo( IbisIdentifier source )
+    {
+        NodeInfo nodeInfo = ibisToNodeMap.get( source );
+        if( nodeInfo == null ) {
+            nodeInfo = registerNode( source, false );  // This must be a remote node, since we certainly have registered the local node.
+        }
+        return nodeInfo;
+    }
+
     synchronized NodeInfo get( IbisIdentifier id )
     {
-        return ibisToNodeMap.get( id );
+        return getNodeInfo( id );
     }
 
     synchronized boolean registerAsCommunicating( IbisIdentifier ibisIdentifier )
     {
-        NodeInfo nodeInfo = ibisToNodeMap.get( ibisIdentifier );
-        if( nodeInfo == null ) {
-            return false;
-        }
+        NodeInfo nodeInfo = getNodeInfo( ibisIdentifier );
         return nodeInfo.registerAsCommunicating();
     }
 
@@ -186,10 +196,7 @@ final class NodeList {
 
     void registerNodeUpdateInformation( NodeUpdateInfo l )
     {
-        NodeInfo nodeInfo = ibisToNodeMap.get( l.source );
-        if( nodeInfo == null ) {
-            nodeInfo = registerNode( l.source, false );  // This must be a remote node, since we certainly have registered the local node.
-        }
+        NodeInfo nodeInfo = getNodeInfo( l.source );
         nodeInfo.registerNodeInfo( l.workerQueueInfo, l.completionInfo );
     }
 
