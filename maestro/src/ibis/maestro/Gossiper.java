@@ -99,7 +99,7 @@ class Gossiper extends Thread
         }
     }
     
-    void addNode( IbisIdentifier ibis )
+    void registerNode( IbisIdentifier ibis )
     {
         nodes.add( ibis );
         synchronized( this ) {

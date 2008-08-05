@@ -86,8 +86,8 @@ public final class Node extends Thread implements PacketReceiveListener
         public void joined( IbisIdentifier theIbis )
         {
             boolean local = theIbis.equals( Globals.localIbis.identifier() );
-            sendPort.registerDestination( theIbis, local );
-            gossiper.addNode( theIbis );
+            sendPort.registerDestination( theIbis );
+            gossiper.registerNode( theIbis );
             nodes.registerNode( theIbis, local );
         }
 
@@ -197,8 +197,7 @@ public final class Node extends Thread implements PacketReceiveListener
             t.start();
         }
         receivePort = new PacketUpcallReceivePort( localIbis, Globals.receivePortName, this );
-        sendPort = new PacketSendPort( this );
-        sendPort.setLocalListener( this );    // FIXME: no longer necessary
+        sendPort = new PacketSendPort( this, localIbis.identifier() );
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
         startTime = System.nanoTime();
         start();

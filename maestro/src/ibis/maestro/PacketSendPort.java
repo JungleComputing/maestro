@@ -29,7 +29,6 @@ class PacketSendPort {
     private int evictions = 0;
     private Counter localSentCount = new Counter();
     private final CacheInfo cache[] = new CacheInfo[Settings.CONNECTION_CACHE_SIZE];
-    private PacketReceiveListener localListener = null;
     private int clockHand = 0;
 
     /** The list of known destinations.
@@ -140,18 +139,11 @@ class PacketSendPort {
         }
     }
 
-    PacketSendPort( Node node )
+    @SuppressWarnings("synthetic-access")
+    PacketSendPort( Node node, IbisIdentifier localIbis )
     {
         this.node = node;
-    }
-
-    synchronized void setLocalListener( PacketReceiveListener localListener )
-    {
-        if( this.localListener != null ) {
-            System.err.println( "Cannot change the local listener" );
-            return;
-        }
-        this.localListener = localListener;
+        destinations.put( localIbis, new DestinationInfo( localIbis, true ) );
     }
 
     /** Return an empty slot in the cache.
@@ -220,17 +212,16 @@ class PacketSendPort {
     /**
      * Given a receive port, registers it with this packet send port, and returns an identifier of the port.
      * @param theIbis The port to register.
-     * @param identifier The identifier we will use for it.
      */
     @SuppressWarnings("synthetic-access")
-    synchronized void registerDestination( IbisIdentifier theIbis, boolean local )
+    synchronized void registerDestination( IbisIdentifier theIbis )
     {
         DestinationInfo destinationInfo = destinations.get( theIbis );
         if( destinationInfo != null ) {
             // Already registered. Don't worry about the duplication.
             return;
         }
-        destinations.put( theIbis, new DestinationInfo( theIbis, local ) );
+        destinations.put( theIbis, new DestinationInfo( theIbis, false ) );
     }
 
     /**
@@ -241,18 +232,23 @@ class PacketSendPort {
      * @return The length of the transmitted data.
      * @throws IOException Thrown if there is a communication error.
      */
+    @SuppressWarnings("synthetic-access")
     private boolean send( IbisIdentifier theIbis, Message message, int timeout ) throws IOException
     {
         long len;
         boolean ok = true;
         DestinationInfo info = destinations.get( theIbis );
 
+        if( info == null ) {
+            info = new DestinationInfo( theIbis, false );  // We know the local node has registered itself.
+            destinations.put( theIbis, info );
+        }
         info.incrementSentCount();
         if( info.local ) {
             // This is the local destination. Use the back door to get
             // the info to the destination.
             message.arrivalMoment = System.nanoTime();
-            localListener.messageReceived( message );
+            node.messageReceived( message );
             len = 0;  // We're not going to compute a size just for the statistics.
             localSentCount.add();
             if( Settings.traceSends ) {
