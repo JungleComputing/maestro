@@ -324,6 +324,9 @@ final class MasterQueue
 	return res;
     }
 
+    // Only exists to serve as a lock on the reservation info in the node list.
+    private Flag reservationsLock = new Flag( false );
+
     /**
      * @param nodes  
      * @return
@@ -334,20 +337,21 @@ final class MasterQueue
 	int reserved = 0;  // How many tasks are reserved for future submission.
 	HashSet<TaskType> noReadyWorkers = new HashSet<TaskType>();
 
-	nodes.resetReservations();   // FIXME: store reservations in a separate structure.
-	while( true ) {
-	    if( isEmpty() ) {
-		// Mission accomplished.
-		break;
+	synchronized( reservationsLock ) {
+	    nodes.resetReservations();   // FIXME: store reservations in a separate structure.
+	    while( true ) {
+	        if( isEmpty() ) {
+	            // Mission accomplished.
+	            break;
+	        }
+	        Submission sub = new Submission();
+	        reserved = selectSubmisson( reserved, sub, nodes, noReadyWorkers );
+	        if( sub.worker == null ){
+	            break;
+	        }
+	        submissions.add( sub );
 	    }
-	    Submission sub = new Submission();
-	    reserved = selectSubmisson( reserved, sub, nodes, noReadyWorkers );
-	    if( sub.worker == null ){
-		break;
-	    }
-	    submissions.add( sub );
 	}
-        nodes.resetReservations();   // FIXME: store reservations in a separate structure.
 	return submissions;
     }
 
