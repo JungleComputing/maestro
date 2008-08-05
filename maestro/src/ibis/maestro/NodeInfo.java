@@ -362,15 +362,6 @@ final class NodeInfo
         }
     }
 
-    protected void resetReservations()
-    {
-        for( NodeTaskInfo info: nodeTaskInfoList ) {
-            if( info != null ) {
-                info.resetReservations();
-            }
-        }
-    }
-
     /**
      * Returns true iff this worker is ready to do work. Specifically, if it is not marked
      * as suspect, and if it is enabled.

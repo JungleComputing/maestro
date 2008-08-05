@@ -12,9 +12,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Properties;
-import java.util.concurrent.Semaphore;
 
 /**
  * A node in the Maestro dataflow network.
@@ -53,10 +51,10 @@ public final class Node extends Thread implements PacketReceiveListener
     private final RunningJobs runningJobs = new RunningJobs();
 
     /** Info about all tasks. */
-    private final TaskInfoList taskInfoList = new TaskInfoList();
+    private final TaskInfoList taskInfoList;
 
     /** The list of nodes we know about. */
-    private final NodeList nodes = new NodeList( taskInfoList );
+    private final NodeList nodes;
 
     private boolean isMaestro;
 
@@ -77,7 +75,6 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private UpDownCounter runningTasks = new UpDownCounter( 0 );
     private final JobList jobs;
-    private Semaphore drainingQueue = new Semaphore( 1, false );
 
     private final class NodeRegistryEventHandler implements RegistryEventHandler {
         /**
@@ -161,6 +158,8 @@ public final class Node extends Thread implements PacketReceiveListener
 
         this.jobs = jobs;
         TaskType taskTypes[] = jobs.getSupportedTaskTypes();
+        taskInfoList = new TaskInfoList( taskTypes, Job.getTaskCount() );
+        nodes = new NodeList( taskInfoList );
         masterQueue = new MasterQueue( taskTypes );
         workerQueue = new WorkerQueue( taskTypes );
         taskInfoList.registerLocalTasks( taskTypes, jobs );
@@ -535,7 +534,7 @@ public final class Node extends Thread implements PacketReceiveListener
         nodes.registerTaskCompleted( result );
         handledTaskCount.add();
     }
-    
+
     private void handleJobResultMessage( JobResultMessage m )
     {
         completedJobList.add( new CompletedJob( m.job, m.result ) );
@@ -598,43 +597,41 @@ public final class Node extends Thread implements PacketReceiveListener
     /** On a locked queue, try to send out as many task as we can. */
     private void drainMasterQueue()
     {
-        if( drainingQueue.tryAcquire() ) {
-            // Only bother to drain the queue if no other thread is working on it.
-            LinkedList<Submission> submissions = masterQueue.getSubmissions( nodes );
-            if( Settings.traceNodeProgress && !submissions.isEmpty() ){
-                System.out.println( "Got " + submissions.size() + " submissions from master queue" );
+        while( true ) {
+            Submission submission = masterQueue.getSubmission( nodes );
+            if( submission == null ) {
+                break;
             }
-            drainingQueue.release();
-            sendSubmissionsToWorkers( submissions );
+            if( Settings.traceNodeProgress ){
+                System.out.println( "Got " + submission + " from master queue" );
+            }
+            sendSubmissionToWorkers( submission );
         }
     }
 
     /**
-     * @param submissions The list of submissions to send.
+     * @param submission The list of submissions to send.
      */
-    private void sendSubmissionsToWorkers( LinkedList<Submission> submissions )
+    private void sendSubmissionToWorkers( Submission sub )
     {
-        while( !submissions.isEmpty() ) {
-            Submission sub = submissions.removeFirst();
-            NodeTaskInfo wti = sub.worker;
-            TaskInstance task = sub.task;
-            NodeInfo worker = wti.nodeInfo;
-            long taskId = nextTaskId++;
-            worker.registerTaskStart( task, taskId, sub.predictedDuration );
-            if( Settings.traceMasterQueue ) {
-                System.out.println( "Selected " + worker + " as best for task " + task );
-            }
-
-            RunTaskMessage msg = new RunTaskMessage( worker.ibis, task, taskId );
-            boolean ok = sendPort.tryToSend( worker.ibis, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-            if( !ok ){
-                // Try to put the paste back in the tube.
-                // The send port has already registered the trouble.
-                worker.retractTask( msg.taskId );
-                masterQueue.add( msg.taskInstance );
-            }
-            submitMessageCount.add();
+        NodeTaskInfo wti = sub.worker;
+        TaskInstance task = sub.task;
+        NodeInfo worker = wti.nodeInfo;
+        long taskId = nextTaskId++;
+        worker.registerTaskStart( task, taskId, sub.predictedDuration );
+        if( Settings.traceMasterQueue ) {
+            System.out.println( "Selected " + worker + " as best for task " + task );
         }
+
+        RunTaskMessage msg = new RunTaskMessage( worker.ibis, task, taskId );
+        boolean ok = sendPort.tryToSend( worker.ibis, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        if( !ok ){
+            // Try to put the paste back in the tube.
+            // The send port has already registered the trouble.
+            worker.retractTask( msg.taskId );
+            masterQueue.add( msg.taskInstance );
+        }
+        submitMessageCount.add();
     }
 
     /**
@@ -660,7 +657,7 @@ public final class Node extends Thread implements PacketReceiveListener
             System.out.println( "Node is in stopped mode, but there are still " + runningTasks.get() + " running tasks" );
             return true;
         }
-	return false;
+        return false;
     }
 
     /** Run a work thread. Only return when we want to shut down the node. */
@@ -672,8 +669,8 @@ public final class Node extends Thread implements PacketReceiveListener
             updateAdministration();
             updateLocalGossip();
             if( runningTasks.isBelow( numberOfProcessors ) ) {
-        	// Only try to start a new task when there are idle
-        	// processors.
+                // Only try to start a new task when there are idle
+                // processors.
                 message = workerQueue.remove();
             }
             if( message == null ) {

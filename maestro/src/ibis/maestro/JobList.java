@@ -74,7 +74,7 @@ public final class JobList
             if( t.isSupported() ) {
                 final TaskType taskType = job.taskTypes[i];
                 if( Settings.traceTypeHandling ) {
-                    System.out.println( "Node supports task type " + taskType);
+                    System.out.println( "Node supports task type " + taskType );
                 }
                 taskTypes.add( taskType );
             }
@@ -124,5 +124,13 @@ public final class JobList
     {
         Job job = findJob( type );
         return job.getNextTaskType( type );
+    }
+
+    /** FIXME.
+     * @return
+     */
+    int getNumberOfTaskTypes()
+    {
+        return jobCounter;
     }
 }

@@ -1,7 +1,6 @@
 package ibis.maestro;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
 
 /**
  * Information about all tasks.
@@ -10,27 +9,21 @@ import java.util.ArrayList;
  */
 public class TaskInfoList
 {
-    private final ArrayList<TaskInfo> taskInfoList = new ArrayList<TaskInfo>();
+    private final TaskInfo taskInfoList[];
 
-    /**
-     * Returns the TaskInfoOnMaster instance for the given task type. If
-     * necessary, extend the taskInfoList to cover this type. If necessary,
-     * create a new class instance for this type.
-     * @param type The type we want info for.
-     * @return The info structure for the given type.
-     */
+    TaskInfoList( TaskType[] taskTypes, int n )
+    {
+        taskInfoList = new TaskInfo[n];
+        for( TaskType type: taskTypes ) {
+            int ix = type.index;
+            taskInfoList[ix] = new TaskInfo( type );
+        }
+    }
+    
     TaskInfo getTaskInfo( TaskType type )
     {
         int ix = type.index;
-        while( ix+1>taskInfoList.size() ) {
-            taskInfoList.add( null );
-        }
-        TaskInfo res = taskInfoList.get( ix );
-        if( res == null ) {
-            res = new TaskInfo( type );
-            taskInfoList.set( ix, res );
-        }
-        return res;
+        return taskInfoList[ix];
     }
     
     private void registerLocalTask( TaskType type, JobList jobs )

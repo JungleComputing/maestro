@@ -19,12 +19,6 @@ final class NodeTaskInfo {
     /** How many instances of this task does this worker currently have? */
     private int outstandingTasks = 0;
 
-    /** How many instance of this task do we reserve for this worker? */
-    private int reservations = 0;
-    
-    /** How many instances of this task have been removed from the queue for submission. */
-    private int latentSubmissions = 0;
-
     /** How many task instances has this worker executed until now? */
     private int executedTasks = 0;
 
@@ -80,7 +74,7 @@ final class NodeTaskInfo {
     @Override
     public String toString()
     {
-        return "[taskInfo=" + taskInfo + " worker=" + nodeInfo + " transmissionTimeEstimate=" + transmissionTimeEstimate + " remainingJobTime=" + Service.formatNanoseconds(remainingJobTime) + ",outstandingTasks=" + outstandingTasks + ",latentSubmissions=" + latentSubmissions + ",maximalAllowance=" + maximalAllowance + "]";
+        return "[taskInfo=" + taskInfo + " worker=" + nodeInfo + " transmissionTimeEstimate=" + transmissionTimeEstimate + " remainingJobTime=" + Service.formatNanoseconds(remainingJobTime) + ",outstandingTasks=" + outstandingTasks + ",maximalAllowance=" + maximalAllowance + "]";
     }
 
     /**
@@ -147,7 +141,7 @@ final class NodeTaskInfo {
      */
     long estimateJobCompletion()
     {
-        return getAverageCompletionTime( outstandingTasks+latentSubmissions, reservations+1 );
+        return getAverageCompletionTime( outstandingTasks, 1 );
     }
 
     /**
@@ -195,7 +189,6 @@ final class NodeTaskInfo {
     void incrementOutstandingTasks()
     {
         outstandingTasks++;
-        latentSubmissions = Math.max( 0, latentSubmissions-1 );
     }
 
     /**
@@ -203,7 +196,7 @@ final class NodeTaskInfo {
      */
     private boolean didWork()
     {
-        return (executedTasks != 0) || ((outstandingTasks+latentSubmissions) != 0);
+        return (executedTasks != 0) || (outstandingTasks != 0);
     }
 
     /** Given a queue length on the worker, manipulate the allowance to
@@ -248,7 +241,7 @@ final class NodeTaskInfo {
      */
     boolean isIdle()
     {
-        return ( !nodeInfo.isReady() && (outstandingTasks+latentSubmissions)==0 && remainingJobTime != Long.MAX_VALUE );
+        return ( !nodeInfo.isReady() && outstandingTasks==0 && remainingJobTime != Long.MAX_VALUE );
     }
 
     /**
@@ -256,7 +249,7 @@ final class NodeTaskInfo {
      */
     boolean canProcessNow()
     {
-        return (outstandingTasks+latentSubmissions)<maximalAllowance;
+        return outstandingTasks<maximalAllowance;
     }
 
     /** We now know this worker has the given ping time. Use this as the first estimate
@@ -277,27 +270,6 @@ final class NodeTaskInfo {
     protected int getSubmissions()
     {
         return executedTasks;
-    }
-
-    protected void resetReservations()
-    {
-        reservations = 0;
-        latentSubmissions = 0;
-    }
-
-    /**
-     * Reserve a slot with this worker if necessary, and return true; or return false
-     * if reservations are not necessary.
-     * @return True if we did a reservation.
-     */
-    protected boolean reserveIfNeeded()
-    {
-        if( (outstandingTasks+latentSubmissions)>=maximalAllowance ) {
-            reservations++;
-            return true;
-        }
-        latentSubmissions++;
-        return false;
     }
 
     protected long estimateRoundtripTime()

@@ -183,4 +183,9 @@ public final class Job
     {
 	s.println( "Job '" + name + "': " + jobTime.toString() );
     }
+    
+    static int getTaskCount()
+    {
+        return index;
+    }
 }

@@ -85,6 +85,9 @@ final class NodeList {
     NodeTaskInfo selectBestWorker( TaskType type )
     {
         TaskInfo taskInfo = taskInfoList.getTaskInfo( type );
+        if( taskInfo == null ) {
+            return null;
+        }
         NodeTaskInfo worker = taskInfo.getBestWorker();
         return worker;
     }
@@ -115,23 +118,15 @@ final class NodeList {
     synchronized long getAverageCompletionTime( TaskType taskType )
     {
         TaskInfo taskInfo = taskInfoList.getTaskInfo( taskType );
+        if( taskInfo == null ) {
+            return Long.MAX_VALUE;
+        }
         return taskInfo.getAverageCompletionTime();
     }
 
     int size()
     {
         return ibisToNodeMap.size();
-    }
-
-    synchronized protected void resetReservations()
-    {
-	for( Map.Entry<IbisIdentifier, NodeInfo> entry : ibisToNodeMap.entrySet() ) {
-	    NodeInfo nodeInfo = entry.getValue();
-
-	    if( nodeInfo != null ) {
-                nodeInfo.resetReservations();
-            }
-        }
     }
 
     protected synchronized void setSuspect( IbisIdentifier theIbis )
