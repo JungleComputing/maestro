@@ -645,7 +645,7 @@ public final class Node extends Thread implements PacketReceiveListener
             return true;
         }
         if( runningTasks.isAbove( 0 ) ) {
-            System.out.println( "Node is in stopped mode, but there are still " + runningTasks.get() " running tasks" );
+            System.out.println( "Node is in stopped mode, but there are still " + runningTasks.get() + " running tasks" );
             return true;
         }
 	return false;
