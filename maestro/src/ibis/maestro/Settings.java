@@ -98,9 +98,12 @@ class Settings {
     // FIXME: change again after competition.
     static final int PING_PADDING_SIZE = 10;
 
-    /** The maximal time in ms before we get more gossip quotum.  */
-    static final long MAXIMUM_GOSSIP_WAIT = 10;
+    /** The maximal time in ms before the gossiper gets more quotum.  */
+    static final long MAXIMUM_GOSSIPER_WAIT = 10;
 
-    /** Time in ms when gossip goes stale. */
-    static final long GOSSIP_EXPIRATION_TIME = 100;
+    /** Time in ms when gossip goes stale for nodes in the same cluster. */
+    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 30;
+
+    /** Time in ms when gossip goes stale for nodes not in the same cluster. */
+    static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 30;
 }

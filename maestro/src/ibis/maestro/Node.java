@@ -448,8 +448,10 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress || Settings.traceRegistration || Settings.traceGossip ){
             Globals.log.reportProgress( "Received gossip message " + m );
         }
-        nodes.registerNodeUpdateInformation( m.gossip );
-        gossiper.registerGossip( m.gossip );
+        boolean changed = gossiper.registerGossip( m.gossip );
+        if( changed ) {
+            nodes.registerNodeUpdateInformation( m.gossip );
+        }
         if( m.needsReply ) {
             gossiper.sendGossipReply( m.source );
         }

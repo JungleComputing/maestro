@@ -61,7 +61,7 @@ class Gossiper extends Thread
         if( gossipQuotum.isAbove( 0 ) ) {
             return nodes.computeWaitTimeInMilliseconds();
         }
-        return Settings.MAXIMUM_GOSSIP_WAIT;
+        return Settings.MAXIMUM_GOSSIPER_WAIT;
     }
 
     /** Runs this thread. */
@@ -125,7 +125,7 @@ class Gossiper extends Thread
         return isnew;
     }
 
-    void registerGossip( NodeUpdateInfo updates[] )
+    boolean registerGossip( NodeUpdateInfo updates[] )
     {
         boolean changed = false;
         for( NodeUpdateInfo update: updates ) {
@@ -134,6 +134,7 @@ class Gossiper extends Thread
         if( changed ) {
             gossipQuotum.up();
         }
+        return changed;
     }
 
     void printStatistics( PrintStream s )

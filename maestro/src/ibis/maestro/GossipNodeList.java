@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.Location;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;
@@ -20,11 +21,29 @@ class GossipNodeList
         long nextUpdateMoment;    // The moment in time in ms for the next update.
         final long updateInterval;      // Time interval in ms for each new update. 
 
-        GossipNode( IbisIdentifier ibis, long updateInterval )
+        private static boolean areInSameCluster( IbisIdentifier a, IbisIdentifier b )
+        {
+            Location la = a.location();
+            Location lb = b.location();
+            int nodeLevel = Math.min( la.numberOfLevels(), lb.numberOfLevels() );
+            int matchingLevels = la.numberOfMatchingLevels( lb );
+            boolean res = matchingLevels>=(nodeLevel-1);
+            Globals.log.reportProgress( "areInSameCluster: a=" + a + " b=" + " nodeLevel = " + nodeLevel + " matchingLevels=" + matchingLevels + " res=" + res );
+            return res;
+        }
+
+        private static long computeUpdateInterval( IbisIdentifier ibis )
+        {
+            boolean sameCluster = areInSameCluster( Globals.localIbis.identifier(), ibis );
+            return sameCluster ? Settings.GOSSIP_EXPIRATION_IN_CLUSTER : Settings.GOSSIP_EXPIRATION_BETWEEN_CLUSTERS;
+        }
+
+
+        GossipNode( IbisIdentifier ibis )
         {
             this.ibis = ibis;
             this.nextUpdateMoment = 0L;
-            this.updateInterval = updateInterval;
+            this.updateInterval = computeUpdateInterval( ibis );
         }
 
     }
@@ -53,10 +72,7 @@ class GossipNodeList
 
     }
 
-    /** FIXME.
-     * @return
-     */
-    IbisIdentifier getStaleNode( long now )
+    synchronized IbisIdentifier getStaleNode( long now )
     {
         GossipNode node = nodes.peek();
         if( node != null && node.nextUpdateMoment<=now ) {
@@ -79,7 +95,7 @@ class GossipNodeList
 
     synchronized void add( IbisIdentifier ibis )
     {
-        nodes.add( new GossipNode( ibis, Settings.GOSSIP_EXPIRATION_TIME ) );
+        nodes.add( new GossipNode( ibis ) );
     }
 
     synchronized void remove( IbisIdentifier ibis )
@@ -108,7 +124,7 @@ class GossipNodeList
     {
         GossipNode node = extractGossipNode( source );
         if( node == null ) {
-            return;   // A bit early...
+            node = new GossipNode( source );
         }
         node.nextUpdateMoment = System.currentTimeMillis() + node.updateInterval;
         nodes.add( node );
@@ -121,7 +137,7 @@ class GossipNodeList
     {
         GossipNode node = extractGossipNode( source );
         if( node == null ){
-            return;    // A bit early...
+            node = new GossipNode( source );
         }
         node.nextUpdateMoment = Math.min( node.nextUpdateMoment, System.currentTimeMillis() );
         nodes.add( node );
