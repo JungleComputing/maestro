@@ -11,6 +11,7 @@ import ibis.ipl.RegistryEventHandler;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.concurrent.Semaphore;
@@ -31,6 +32,8 @@ public final class Node extends Thread implements PacketReceiveListener
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
 
     private RegistryEventHandler registryEventHandler;
+
+    private final HashSet<IbisIdentifier> deadNodesBeforeElection = new HashSet<IbisIdentifier>();
 
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private static final int workThreadCount = numberOfProcessors+2;
@@ -126,6 +129,10 @@ public final class Node extends Thread implements PacketReceiveListener
             if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
                 System.out.println( "Ibis " + theIbis + " was elected maestro" );
                 maestro = theIbis;
+                if( deadNodesBeforeElection.contains( theIbis ) ) {
+                    setStopped();
+                }
+                deadNodesBeforeElection.clear();
             }
         }
 
@@ -269,6 +276,11 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void registerIbisLeft( IbisIdentifier theIbis )
     {
+        if( maestro == null ) {
+            // This might be the maestro, but we don't know because we don't have
+            // the result of the election yet.
+            deadNodesBeforeElection.add( theIbis );
+        }
         gossiper.removeNode( theIbis );
         nonEssentialSender.removeMessagesToIbis( theIbis );
         ArrayList<TaskInstance> orphans = nodes.removeNode( theIbis );
