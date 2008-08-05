@@ -188,8 +188,7 @@ final class NodeList {
     {
         NodeInfo nodeInfo = ibisToNodeMap.get( l.source );
         if( nodeInfo == null ) {
-            Globals.log.reportInternalError( "No NodeInfo for " + l.source );
-            return;
+            nodeInfo = registerNode( l.source, false );  // This must be a remote node, since we certainly have registered the local node.
         }
         nodeInfo.registerNodeInfo( l.workerQueueInfo, l.completionInfo );
     }
