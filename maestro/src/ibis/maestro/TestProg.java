@@ -18,9 +18,12 @@ public class TestProg {
 	int jobsCompleted = 0;
 	private final int jobCount;
 
-	Listener( int jobCount )
+	Listener( Node node, int jobCount )
 	{
 	    this.jobCount = jobCount;
+	    if( jobCount == 0 ) {
+	        node.setStopped();
+	    }
 	}
 
 	/** Handle the completion of task 'j': the result is 'result'.
@@ -224,7 +227,6 @@ public class TestProg {
     @SuppressWarnings("synthetic-access")
     private void run( int taskCount, boolean goForMaestro ) throws Exception
     {
-	Listener listener = new Listener( taskCount );
 	JobList jobs = new JobList();
 
 	Job createJob = jobs.createJob("createarray", new CreateArrayTask() );
@@ -238,6 +240,7 @@ public class TestProg {
 		new AdditionTask()
 	);
 	Node node = new Node( jobs, goForMaestro );
+        Listener listener = new Listener( node, taskCount );
 	System.out.println( "Node created" );
 	long startTime = System.nanoTime();
 	if( node.isMaestro() ) {
