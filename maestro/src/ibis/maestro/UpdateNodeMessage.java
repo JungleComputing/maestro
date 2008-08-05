@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import ibis.ipl.IbisIdentifier;
 
 
 /**
@@ -10,83 +9,21 @@ import ibis.ipl.IbisIdentifier;
  * @author Kees van Reeuwijk
  *
  */
-final class UpdateNodeMessage extends NonEssentialMessage {
+final class UpdateNodeMessage extends Message
+{
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
-    /** For each type of task we know, the estimated time it will
-     * take to complete the remaining tasks of this job.
-     */
-    final CompletionInfo[] completionInfo;
-
-    /** For each type of task we know, the queue length on this worker. */
-    final WorkerQueueInfo[] workerQueueInfo;
-
-    final IbisIdentifier source;
-
-    final boolean masterHasWork;
+    final NodeUpdateInfo update;
 
     /**
      * Constructs a new work request message.
      * @param identifier The identifier to use.
      * @param masterHasWork 
      */
-    UpdateNodeMessage( IbisIdentifier destination, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo, boolean masterHasWork )
+    UpdateNodeMessage( NodeUpdateInfo update )
     {
-        super( destination );
-        source = Globals.localIbis.identifier();
-        this.completionInfo = completionInfo;
-        this.workerQueueInfo = workerQueueInfo;
-        this.masterHasWork = masterHasWork;
+        this.update = update;
     }
 
-    private String buildCompletionString()
-    {
-        StringBuilder b = new StringBuilder( "[" );
-        boolean first = true;
-        for( CompletionInfo i: completionInfo ) {
-            if( i != null ) {
-                if( first ) {
-                    first = false;
-                }
-                else {
-                    b.append( ',' );
-                }
-                b.append( i.toString() );
-            }
-        }
-        b.append( ']' );
-        return b.toString();
-    }
-
-    private String buildWorkerQueue()
-    {
-        StringBuilder b = new StringBuilder( "[" );
-        boolean first = true;
-        for( WorkerQueueInfo i: workerQueueInfo ) {
-            if( i != null ) {
-                if( first ) {
-                    first = false;
-                }
-                else {
-                    b.append( ',' );
-                }
-                b.append( i.toString() );
-            }
-        }
-        b.append( ']' );
-        return b.toString();
-    }
-
-    /**
-     * Returns a string representation of update message. (Overrides method in superclass.)
-     * @return The string representation.
-     */
-    @Override
-    public String toString()
-    {
-        String completion = buildCompletionString();
-        String workerQueue = buildWorkerQueue();
-        return "Update " + completion + " " + workerQueue;
-    }
 }

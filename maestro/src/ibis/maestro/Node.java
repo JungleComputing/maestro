@@ -34,10 +34,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private static final int workThreadCount = numberOfProcessors+2;
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
-    private final UpdateThread updaters[] = new UpdateThread[2];
-
-    /** The list of ibises we haven't (successfully) registered with yet. */
-    private final UnregisteredNodeList unregisteredNodes;
+    private final Gossiper gossiper;
 
     private final TaskSources taskSources = new TaskSources();
 
@@ -74,82 +71,9 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private Flag stopped = new Flag( false );
 
-    private UpDownCounter runningTasks = new UpDownCounter();
+    private UpDownCounter runningTasks = new UpDownCounter( 0 );
     private final JobList jobs;
     private Semaphore drainingQueue = new Semaphore( 1, false );
-
-    /**
-     * Regularly send update messages to all neighbours.
-     *
-     * @author Kees van Reeuwijk.
-     */
-    private final class UpdateThread extends Thread {
-        private ArrayList<NodeInfo> targets = new ArrayList<NodeInfo>();
-
-        UpdateThread()
-        {
-            super( "update thread" );
-            setPriority( Thread.MIN_PRIORITY );
-            setDaemon( true );
-        }
-        
-        synchronized void addTarget( NodeInfo target )
-        {
-            targets.add( target );
-            notify();
-        }
-
-        synchronized void removeTarget( NodeInfo theIbis )
-        {
-            targets.remove( theIbis );
-        }
-
-        /** Runs this thread. (Overrides method in superclass.) */
-        @SuppressWarnings("synthetic-access")
-        @Override
-        public void run()
-        {
-            int ix = 0;
-            while( true ) {
-                // This is a daemon thread, it will be killed when all threads stop.
-                NodeInfo target = null;
-
-                while( !targets.isEmpty() ) {
-                    if( ix>=targets.size() ) {
-                        ix = 0;
-                    }
-                    target = targets.get( ix++ );
-                    if( !target.isDead() ) {
-                        // We have a target.
-                        break;
-                    }
-                    // The target is dead, remove it from our list.
-                    targets.remove( target );
-                    target = null;
-                }
-                // At this point we either have a target, or the list is empty, and target is null.
-                try{
-                    if( target == null ) {
-                        // The list of targets is empty. Wake us when there is something to do.
-                        synchronized( this ) {
-                            this.wait();
-                        }
-                    }
-                    else {
-                        if( target.isReady() ) {
-                            postUpdateNodeMessage( target.ibis );
-                        }
-                        synchronized( this ) {
-                            this.wait( Settings.UPDATE_INTERVAL );
-                        }
-                    }
-                }
-                catch( InterruptedException e ){
-                    // Nothing.
-                }
-            }
-        }
-    }
 
     private final class NodeRegistryEventHandler implements RegistryEventHandler {
         /**
@@ -162,7 +86,8 @@ public final class Node extends Thread implements PacketReceiveListener
         {
             boolean local = theIbis.equals( Globals.localIbis.identifier() );
             sendPort.registerDestination( theIbis, local );
-            addUnregisteredNode( theIbis, local );
+            gossiper.addNode( theIbis );
+            nodes.registerNode( theIbis, local );
         }
 
         /**
@@ -228,7 +153,6 @@ public final class Node extends Thread implements PacketReceiveListener
 
         this.jobs = jobs;
         TaskType taskTypes[] = jobs.getSupportedTaskTypes();
-        unregisteredNodes = new UnregisteredNodeList( this, taskTypes );
         masterQueue = new MasterQueue( taskTypes );
         workerQueue = new WorkerQueue( taskTypes );
         taskInfoList.registerLocalTasks( taskTypes, jobs );
@@ -262,6 +186,8 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodes ) {
             Globals.log.reportProgress( "Ibis " + Globals.localIbis.identifier() + ": isMaestro=" + isMaestro );
         }
+        gossiper = new Gossiper( this, isMaestro );
+        gossiper.start();
         for( int i=0; i<workThreads.length; i++ ) {
             WorkThread t = new WorkThread( this );
             workThreads[i] = t;
@@ -271,11 +197,6 @@ public final class Node extends Thread implements PacketReceiveListener
         sendPort = new PacketSendPort( this );
         sendPort.setLocalListener( this );    // FIXME: no longer necessary
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
-        for( int i=0; i<updaters.length; i++ ) {
-            UpdateThread updater = new UpdateThread();
-            updater.start();
-            updaters[i] = updater;
-        }
         startTime = System.nanoTime();
         start();
         registry.enableEvents();
@@ -349,13 +270,7 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void registerIbisLeft( IbisIdentifier theIbis )
     {
-        NodeInfo nodeInfo = nodes.get( theIbis );
-        if( nodeInfo != null ) {
-            for( UpdateThread updater: updaters ) {
-                updater.removeTarget( nodeInfo );
-            }
-        }
-        unregisteredNodes.remove( theIbis );
+        gossiper.removeNode( theIbis );
         nonEssentialSender.removeMessagesToIbis( theIbis );
         ArrayList<TaskInstance> orphans = nodes.removeNode( theIbis );
         masterQueue.add( orphans );
@@ -422,21 +337,7 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         drainCompletedJobList();
         drainMasterQueue();
-        if( enableRegistration.isSet() ) {
-            unregisteredNodes.registerWithMaster();
-        }
         nodes.checkDeadlines( System.nanoTime() );
-    }
-
-    private void addUnregisteredNode( IbisIdentifier theIbis, boolean local )
-    {
-        NodeInfo info = nodes.registerNode( theIbis, local );
-        if( info.isReady() ) {
-            // We already know everything there is to know about this node.
-            // (Presumably because it registered itself with us.)
-            return;
-        }
-        unregisteredNodes.add( info );
     }
 
     private int getIdleTasks()
@@ -472,7 +373,7 @@ public final class Node extends Thread implements PacketReceiveListener
         s.printf(  "Master: # handled tasks  = %5d\n", handledTaskCount.get() );
     }
 
-    private void sendNonEssential( NonEssentialMessage msg )
+    void sendNonEssential( NonEssentialMessage msg )
     {
         if( msg.destination.equals( Globals.localIbis.identifier() ) ) {
             // Don't go through all the bureaucracy for a local message.
@@ -484,29 +385,39 @@ public final class Node extends Thread implements PacketReceiveListener
         }
     }
 
-    private void postAcceptNodeMessage( NodeInfo node, long sendTime )
+    private void postUpdateNodeMessage( IbisIdentifier node )
     {
-        AcceptNodeMessage msg = new AcceptNodeMessage( node.ibis, sendTime );
-        
+        NodeUpdateInfo update = buildLocalUpdate();
+        UpdateNodeMessage msg = new UpdateNodeMessage( update );
+
         if( Settings.traceUpdateMessages ) {
             Globals.log.reportProgress( "Sending " + msg );
         }
-        sendNonEssential( msg );
-        acceptMessageCount.add();
+        sendPort.tryToSend( node, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        updateMessageCount.add();
+        gossiper.registerGossip( update );
     }
 
-    private void postUpdateNodeMessage( IbisIdentifier node )
+    /** FIXME.
+     * @return
+     */
+    private NodeUpdateInfo buildLocalUpdate()
     {
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleTasks() );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
         boolean masterHasWork = masterQueue.hasWork();
-        UpdateNodeMessage msg = new UpdateNodeMessage( node, completionInfo, workerQueueInfo, masterHasWork );
+        NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier(), masterHasWork );
+        return update;
+    }
 
-        if( Settings.traceUpdateMessages ) {
-            Globals.log.reportProgress( "Sending " + msg );
+    private void updateLocalGossip()
+    {
+        NodeUpdateInfo update = buildLocalUpdate();
+        gossiper.registerGossip( update );
+        NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() );
+        if( nodeInfo != null ) {
+            nodeInfo.registerNodeInfo( update.workerQueueInfo, update.completionInfo );
         }
-        sendNonEssential( msg );
-        updateMessageCount.add();
     }
 
     /**
@@ -525,51 +436,22 @@ public final class Node extends Thread implements PacketReceiveListener
     }
 
     /**
-     * A worker has sent us a message to register itself with us. This is
-     * just to tell us that it's out there. We tell it what our receive port is,
-     * and which handle we have assigned to it, so that it can then inform us
-     * of the types of tasks it supports.
-     * @param m The worker registration message.
-     */
-    private void handleRegisterNodeMessage( RegisterNodeMessage m )
-    {
-        if( Settings.traceNodeProgress || Settings.traceRegistration ){
-            Globals.log.reportProgress( "received registration message from node " + m.ibis );
-        }
-        if( m.supportedTypes.length == 0 ) {
-            Globals.log.reportInternalError( "Node " + m.ibis + " has zero supported types??" );
-        }
-        NodeInfo nodeInfo = nodes.subscribeNode( m.ibis, m.supportedTypes );
-        if( m.enableRegistration ) {
-            enableRegistration.set();
-            Globals.log.reportProgress( "Registration enableRegistration=" + enableRegistration.isSet() );
-            synchronized( this ) {
-                // Time to wake all our threads.
-                this.notifyAll();
-            }
-        }
-        postAcceptNodeMessage( nodeInfo, m.sendMoment );
-    }
-
-    /**
      * A node has sent us an accept message, handle it.
      * @param m The update message.
      */
-    private void handleAcceptNodeMessage( AcceptNodeMessage m )
+    private void handleGossipMessage( GossipMessage m )
     {
-        if( Settings.traceNodeProgress || Settings.traceRegistration ){
-            Globals.log.reportProgress( "Received node accept message " + m );
+        if( Settings.traceNodeProgress || Settings.traceRegistration || Settings.traceGossip ){
+            Globals.log.reportProgress( "Received gossip message " + m );
         }
-        final NodeInfo nodeInfo = nodes.get( m.source );
-        long pingTime = m.arrivalMoment-m.pingSendMoment;
-        if( Settings.traceRegistration ){
-            Globals.log.reportProgress( "Ping time to " + m.source + " is " + Service.formatNanoseconds( pingTime ) );
+        nodes.registerNodeUpdateInformation( m.gossip );
+        gossiper.registerGossip( m.gossip );
+        if( m.needsReply ) {
+            gossiper.sendGossipReply( m.source );
         }
-        nodeInfo.setPingTime( pingTime );
-        for( UpdateThread updater: updaters ) {
-            updater.addTarget( nodeInfo );
+        synchronized( this ) {
+            this.notify();
         }
-        taskSources.add( nodeInfo );
     }
 
     /**
@@ -589,6 +471,27 @@ public final class Node extends Thread implements PacketReceiveListener
                 taskSources.add( nodeInfo );
             }
         }
+        updateLocalGossip();
+    }
+
+    /**
+     * A worker has sent us a message with its current status, handle it.
+     * @param m The update message.
+     */
+    private void handleNodeUpdateInfo( NodeUpdateInfo m )
+    {
+        if( Settings.traceNodeProgress ){
+            Globals.log.reportProgress( "Received node update message " + m );
+        }
+        NodeInfo nodeInfo = nodes.get( m.source );
+        if( nodeInfo != null ) {
+            nodeInfo.registerNodeInfo( m.workerQueueInfo, m.completionInfo );
+            nodeInfo.registerAsCommunicating();
+            if( m.masterHasWork ) {
+                // A node that has work deserves a message about our capabilities.
+                taskSources.add( nodeInfo );
+            }
+        }
     }
 
     /**
@@ -600,15 +503,8 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
         }
-        NodeInfo nodeInfo = nodes.get( m.source );
-        if( nodeInfo != null ) {
-            nodeInfo.registerWorkerInfo( m.workerQueueInfo, m.completionInfo );
-            nodeInfo.registerAsCommunicating();
-            if( m.masterHasWork ) {
-        	// A node that has work deserves a message about our capabilities.
-        	taskSources.add( nodeInfo );
-            }
-        }
+        handleNodeUpdateInfo( m.update );
+        gossiper.registerGossip( m.update );
     }
 
     /**
@@ -640,7 +536,7 @@ public final class Node extends Thread implements PacketReceiveListener
     }
 
     /** Handle the given message. */
-    private void handleMessage( Message msg )
+    void handleMessage( Message msg )
     {
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received message " + msg );
@@ -656,11 +552,8 @@ public final class Node extends Thread implements PacketReceiveListener
         else if( msg instanceof UpdateNodeMessage ) {
             handleNodeUpdateMessage( (UpdateNodeMessage) msg );
         }
-        else if( msg instanceof RegisterNodeMessage ) {
-            handleRegisterNodeMessage( (RegisterNodeMessage) msg );
-        }
-        else if( msg instanceof AcceptNodeMessage ) {
-            handleAcceptNodeMessage( (AcceptNodeMessage) msg );
+        else if( msg instanceof GossipMessage ) {
+            handleGossipMessage( (GossipMessage) msg );
         }
         else if( msg instanceof RunTaskMessage ){
             handleRunTaskMessage( (RunTaskMessage) msg );
@@ -683,36 +576,6 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         synchronized( this ) {
             stopTime = System.nanoTime();
-        }
-    }
-
-    private void askMoreWork()
-    {
-        // Try to tell a known master we want more tasks. We do this by
-        // telling it about our current state.
-        NodeInfo taskSource = taskSources.getRandomWorkSource();
-        if( taskSource != null ){
-            if( Settings.traceNodeProgress ){
-                Globals.log.reportProgress( "Asking node " + taskSource.ibis + " for work" );
-            }
-            if( isStopped() ) {
-                return;
-            }
-            postUpdateNodeMessage( taskSource.ibis );
-            return;
-        }
-        if( masterQueue.hasWork() ){
-            // We have work in our queue, try to get more workers to help us.
-            taskSource = nodes.getRandomReadyNode();
-            if( taskSource != null ){
-                if( Settings.traceNodeProgress ){
-                    Globals.log.reportProgress( "Updating node " + taskSource.ibis );
-                }
-                if( isStopped() ) {
-                    return;
-                }
-                postUpdateNodeMessage( taskSource.ibis );
-            }
         }
     }
 
@@ -769,6 +632,7 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         masterQueue.add( task );
         drainMasterQueue();
+        updateLocalGossip();
     }
 
     private boolean keepRunning()
@@ -784,19 +648,13 @@ public final class Node extends Thread implements PacketReceiveListener
             RunTaskMessage message = null;
 
             updateAdministration();
+            updateLocalGossip();
             if( runningTasks.isBelow( numberOfProcessors ) ) {
         	// Only try to start a new task when there are idle
         	// processors.
                 message = workerQueue.remove();
             }
             if( message == null ) {
-                if( false ) {
-                    // TODO: remove this code, or enable again.
-                    if( runningTasks.isBelow( numberOfProcessors ) ) {
-                        // No work in the worker queue, not all processors are busy, See if we can get more work.
-                        askMoreWork();
-                    }
-                }
                 long sleepTime = 3;
                 if( Settings.traceWaits ) {
                     System.out.println( "Worker: waiting for " + sleepTime + "ms for new tasks in queue" );
@@ -912,15 +770,5 @@ public final class Node extends Thread implements PacketReceiveListener
     public int waitForReadyNodes( int n, long waittime )
     {
         return nodes.waitForReadyNodes( n, waittime );
-    }
-
-    void sendRegisterNodeMessage( TaskType taskTypes[], IbisIdentifier ibis )
-    {
-        if( Settings.traceWorkerList ) {
-            Globals.log.reportProgress( "Node " + Globals.localIbis.identifier() + ": sending registration message to ibis " + ibis );
-        }
-        RegisterNodeMessage msg = new RegisterNodeMessage( ibis, Globals.localIbis.identifier(), taskTypes, isMaestro );
-        sendNonEssential( msg );
-        registrationMessageCount.add();
     }
 }

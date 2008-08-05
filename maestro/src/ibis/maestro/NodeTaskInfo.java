@@ -104,7 +104,7 @@ final class NodeTaskInfo {
         if( transmissionTime == Long.MAX_VALUE ) {
             total = Long.MAX_VALUE;
         }
-        else if( futureTasks>(executedTasks/2+1) ){
+        else if( futureTasks>1 ){
             // Don't venture to predict about more future jobs
             // than you've already handled.
             total = Long.MAX_VALUE;

@@ -9,6 +9,11 @@ public class UpDownCounter
 {
     private int value = 0;
 
+    UpDownCounter( int i )
+    {
+        value = i;
+    }
+
     synchronized void up()
     {
         value++;

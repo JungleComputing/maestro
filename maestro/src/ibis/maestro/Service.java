@@ -2,6 +2,9 @@
 
 package ibis.maestro;
 
+import ibis.ipl.IbisIdentifier;
+import ibis.ipl.Location;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -152,6 +155,43 @@ public class Service
             return divideRoundUp( n, 1000000000L ) + "GB";
         }
             return divideRoundUp( n, 1000000000000L ) + "TB";        
+    }
+
+    static int rankIbisIdentifiers( IbisIdentifier local, IbisIdentifier a, IbisIdentifier b )
+    {
+        if( local == null ) {
+            // No way to compare if we don't know what our local ibis is.
+            return 0;
+        }
+        Location la = a.location();
+        Location lb = b.location();
+        Location home = local.location();
+        int na = la.numberOfMatchingLevels( home );
+        int nb = lb.numberOfMatchingLevels( home );
+        if( na>nb ) {
+            return -1;
+        }
+        if( na<nb ) {
+            return 1;
+        }
+        // Since the number of matching levels is the same, try to
+        // rank on another criterium. Since we don't have access to
+        // anything more meaningful, use the difference in hash values of the level 0 string.
+        // Although not particularly meaningful, at least the local
+        // node will have distance 0, and every node will have a different
+        // notion of local.
+        int hl = home.getLevel( 0 ).hashCode();
+        int ha = la.getLevel( 0 ).hashCode();
+        int hb = lb.getLevel( 0 ).hashCode();
+        int da = Math.abs( hl-ha );
+        int db = Math.abs( hl-hb );
+        if( da<db ) {
+            return -1;
+        }
+        if( da>db ) {
+            return 1;
+        }
+        return 0;
     }
 
 }

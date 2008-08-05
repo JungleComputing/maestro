@@ -59,7 +59,7 @@ class Settings {
     static final boolean traceWaits = false;
 
     /** Print the reason a particular worker was selected. */
-    static final boolean traceWorkerSelection = false;
+    static final boolean traceWorkerSelection = true;
 
     /** Trace the adventures of the map/reduce handler. */
     static final boolean traceMapReduce = false;
@@ -72,6 +72,9 @@ class Settings {
 
     /** Trace the adventures of the non-essential sender. */
     static final boolean traceNonEssentialSender = false;
+
+    /** Trace the adventures of the gossip engine? */
+    static final boolean traceGossip = false;
 
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.
@@ -94,4 +97,10 @@ class Settings {
     /** The size in longs of the padding array in a ping message. */
     // FIXME: change again after competition.
     static final int PING_PADDING_SIZE = 10;
+
+    /** The maximal time in ms before we get more gossip quotum.  */
+    static final long MAXIMUM_GOSSIP_WAIT = 10;
+
+    /** Time in ms when gossip goes stale. */
+    static final long GOSSIP_EXPIRATION_TIME = 100;
 }

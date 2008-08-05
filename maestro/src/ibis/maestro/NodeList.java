@@ -15,7 +15,7 @@ import java.util.Map;
 final class NodeList {
     private HashMap<IbisIdentifier,NodeInfo> ibisToNodeMap = new HashMap<IbisIdentifier, NodeInfo>();
     private final TaskInfoList taskInfoList;
-    private UpDownCounter readyNodeCounter = new UpDownCounter();
+    private UpDownCounter readyNodeCounter = new UpDownCounter( 0 );
 
     NodeList( TaskInfoList taskInfoList )
     {
@@ -53,41 +53,9 @@ final class NodeList {
         if( info != null ) {
             return info;
         }
-        info = new NodeInfo( theIbis, local );
+        info = new NodeInfo( theIbis, taskInfoList, local );
         ibisToNodeMap.put( theIbis, info );
         return info;
-    }
-
-    /**
-     * Add a node to our node administration.
-     * We may, or may not, have info for this node. Create or update an entry. 
-     * Add some registration info to the node info we already have.
-     * @param ibis The receive port of this node.
-     * @param types The types it supports.
-     * @return Our local identifier of this node.
-     */
-    synchronized NodeInfo subscribeNode( IbisIdentifier ibis, TaskType[] types )
-    {
-        NodeInfo node = ibisToNodeMap.get( ibis );
-        if( node == null ) {
-            boolean local = Globals.localIbis.identifier().equals( ibis );
-    
-            // The node isn't in our administration, add it.
-            node = new NodeInfo( ibis, local );
-            if( Settings.traceRegistration ) {
-                Globals.log.reportProgress( "Ibis " + ibis + " isn't in our admistration; creating new entry " + node );
-            }
-        }
-        for( TaskType t: types ) {
-            TaskInfo info = taskInfoList.getTaskInfo( t );
-            NodeTaskInfo wti = node.registerTaskType( info );
-            info.addWorker( wti );
-        }
-        if( Settings.traceNodeProgress || Settings.traceRegistration ){
-            System.out.println( "Subscribing node " + ibis );
-        }
-        readyNodeCounter.up();
-        return node;
     }
 
     /**
@@ -175,40 +143,6 @@ final class NodeList {
         }
     }
 
-    /** Returns a random registered master.
-     * @return
-     */
-    synchronized NodeInfo getRandomReadyNode()
-    {
-        NodeInfo res = null;
-        int size = ibisToNodeMap.size();
-        if( size == 0 ) {
-            // No masters at all, give up.
-            return null;
-        }
-        int ix = Globals.rng.nextInt( size );
-        int n = size;
-        while( n>0 ) {
-            // We have picked a random place in the list of known masters, don't
-            // return a dead or unregistered one, so keep walking the list until we
-            // encounter a good one.
-            // We only try 'n' times, since the list may consist entirely of duds.
-            // (And yes, these duds skew the probabilities, we don't care.)
-            res = ibisToNodeMap.get( ix );
-            if( res.isReady() ) {
-                return res;
-            }
-            ix++;
-            if( ix>=ibisToNodeMap.size() ) {
-                // Wrap around.
-                ix = 0;
-            }
-            n--;
-        }
-        // We tried all elements in the list with no luck.
-        return null;
-    }
-
     synchronized NodeInfo get( IbisIdentifier id )
     {
         return ibisToNodeMap.get( id );
@@ -247,6 +181,23 @@ final class NodeList {
 	    if( nodeInfo != null ) {
                 nodeInfo.checkDeadlines( now );
             }
+        }
+    }
+
+    void registerNodeUpdateInformation( NodeUpdateInfo l )
+    {
+        NodeInfo nodeInfo = ibisToNodeMap.get( l.source );
+        if( nodeInfo == null ) {
+            Globals.log.reportInternalError( "No NodeInfo for " + l.source );
+            return;
+        }
+        nodeInfo.registerNodeInfo( l.workerQueueInfo, l.completionInfo );
+    }
+
+    void registerNodeUpdateInformation( NodeUpdateInfo[] l )
+    {
+        for( NodeUpdateInfo info: l ) {
+            registerNodeUpdateInformation( info );
         }
     }
 }

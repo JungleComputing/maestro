@@ -19,7 +19,9 @@ final class NodeInfo
     /** Info about the tasks for this particular node. */
     private final ArrayList<NodeTaskInfo> nodeTaskInfoList = new ArrayList<NodeTaskInfo>();
 
-    private boolean suspect = true;   // A node starts as suspect.
+    private final TaskInfoList taskInfoList;
+
+    private boolean suspect = false;
 
     private boolean dead = false;     // This node is known to be dead.
 
@@ -39,9 +41,10 @@ final class NodeInfo
      * @param ibis The ibis identifier of the node.
      * @param local Is this the local node?
      */
-    protected NodeInfo( IbisIdentifier ibis, boolean local )
+    protected NodeInfo( IbisIdentifier ibis, TaskInfoList taskInfoList, boolean local )
     {
         this.ibis = ibis;
+        this.taskInfoList = taskInfoList;
         this.local = local;
         // For non-local nodes, start with a very pessimistic ping time.
         // This means that if we really need another node, we use it, otherwise
@@ -73,12 +76,7 @@ final class NodeInfo
         if( completionInfo == null ) {
             return;
         }
-        int ix = completionInfo.type.index;
-        if( ix>=nodeTaskInfoList.size() ){
-            // Adminstration doesn't have this type. We don't care.
-            return;
-        }
-        NodeTaskInfo workerTaskInfo = nodeTaskInfoList.get( ix );
+        NodeTaskInfo workerTaskInfo = getNodeTaskInfo(completionInfo.type );
 
         if( workerTaskInfo == null ) {
             return;
@@ -90,18 +88,32 @@ final class NodeInfo
             workerTaskInfo.setCompletionTime( completionInfo.completionInterval );
         }
     }
+    
+    synchronized NodeTaskInfo getNodeTaskInfo( TaskType type )
+    {
+        int ix = type.index;
+        
+        while( nodeTaskInfoList.size()<=ix ) {
+            nodeTaskInfoList.add( null );
+        }
+        NodeTaskInfo info = nodeTaskInfoList.get( ix  );
+
+        if( info == null ) {
+            TaskInfo taskInfo = taskInfoList.getTaskInfo( type );
+            info = new NodeTaskInfo( taskInfo, this, local, pingTime );
+            taskInfo.addWorker( info );
+            nodeTaskInfoList.set( ix, info );
+        }
+        return info;
+    }
 
     private void registerWorkerQueueInfo( WorkerQueueInfo info )
     {
         if( info == null ) {
             return;
         }
-        int ix = info.type.index;
-        if( ix>=nodeTaskInfoList.size() ){
-            // Adminstration doesn't have this type. We don't care.
-            return;
-        }
-        NodeTaskInfo workerTaskInfo = nodeTaskInfoList.get( ix  );
+        
+        NodeTaskInfo workerTaskInfo = getNodeTaskInfo( info.type  );
 
         if( workerTaskInfo == null ) {
             return;
@@ -183,7 +195,7 @@ final class NodeInfo
         }	
     }
 
-    synchronized void registerWorkerInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
+    synchronized void registerNodeInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
     {
         if( dead ) {
             // It is strange to get info from a dead worker, but we're not going to try and
@@ -265,7 +277,7 @@ final class NodeInfo
             }
             missedRescheduleDeadlines++;
         }
-        registerWorkerInfo( result.workerQueueInfo, result.completionInfo );
+        registerNodeInfo( result.workerQueueInfo, result.completionInfo );
         task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime, roundtripError );
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress(
@@ -324,32 +336,6 @@ final class NodeInfo
         }
         ActiveTask task = activeTasks.remove( ix );
         System.out.println( "Master: retracted task " + task );
-    }
-
-    /**
-     * @param taskInfo The task type to register for.
-     */
-    synchronized NodeTaskInfo registerTaskType( TaskInfo taskInfo )
-    {
-        int ix = taskInfo.type.index;
-        while( ix+1>nodeTaskInfoList.size() ) {
-            nodeTaskInfoList.add( null );
-        }
-        NodeTaskInfo info = nodeTaskInfoList.get( ix );
-        if( info == null ) {
-            // This is new information.
-            info = new NodeTaskInfo( taskInfo, this, local, pingTime );
-            nodeTaskInfoList.set( ix, info );
-            if( Settings.traceTypeHandling ){
-                System.out.println( "node " + ibis + " can handle " + taskInfo + ", local=" + local + " xmitTime=" + Service.formatNanoseconds( pingTime ) );
-            }
-        }
-        return info;
-    }
-    
-    synchronized NodeTaskInfo getNodeTaskInfo( TaskType taskType )
-    {
-        return nodeTaskInfoList.get( taskType.index );
     }
 
     /**

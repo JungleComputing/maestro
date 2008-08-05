@@ -83,12 +83,15 @@ public class TaskInfo
                 }
             }
             if( Settings.traceRemainingJobTime || Settings.traceWorkerSelection ) {
-                System.out.print( "Worker for " + type + ":" );
+                System.out.print( "Workers for " + type + ":" );
                 for( NodeTaskInfo wi: workers ) {
                     NodeInfo worker = wi.nodeInfo;
                     System.out.print( " " + worker + "=" );
-                    if( worker.isReady() ) {
-                        System.out.print( "NOT READY" );
+                    if( worker.isDead() ) {
+                        System.out.print( "DEAD" );
+                    }
+                    else if( worker.isSuspect() ) {
+                        System.out.print( "SUSPECT" );
                     }
                     else {
                         long val = wi.estimateJobCompletion();

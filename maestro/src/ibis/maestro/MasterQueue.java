@@ -328,7 +328,7 @@ final class MasterQueue
      * @param nodes  
      * @return
      */
-    synchronized LinkedList<Submission> getSubmissions(NodeList nodes )
+    synchronized LinkedList<Submission> getSubmissions( NodeList nodes )
     {
 	LinkedList<Submission> submissions = new LinkedList<Submission>();
 	int reserved = 0;  // How many tasks are reserved for future submission.
