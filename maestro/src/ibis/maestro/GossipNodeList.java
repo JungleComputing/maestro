@@ -108,7 +108,7 @@ class GossipNodeList
     {
         GossipNode node = extractGossipNode( source );
         if( node == null ) {
-            return;   // A bit early...;
+            return;   // A bit early...
         }
         node.nextUpdateMoment = System.currentTimeMillis() + node.updateInterval;
         nodes.add( node );
@@ -120,6 +120,9 @@ class GossipNodeList
     synchronized void needsUrgentUpdate( IbisIdentifier source )
     {
         GossipNode node = extractGossipNode( source );
+        if( node == null ){
+            return;    // A bit early...
+        }
         node.nextUpdateMoment = Math.min( node.nextUpdateMoment, System.currentTimeMillis() );
         nodes.add( node );
     }

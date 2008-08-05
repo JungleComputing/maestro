@@ -364,6 +364,7 @@ public final class Node extends Thread implements PacketReceiveListener
         s.printf( "submit       messages:   %5d sent\n", submitMessageCount.get() );
         s.printf( "task result  messages:   %5d sent\n", taskResultMessageCount.get() );
         s.printf( "job result   messages:   %5d sent\n", jobResultMessageCount.get() );
+        gossiper.printStatistics( s );
         nonEssentialSender.printStatistics( s );
         sendPort.printStatistics( s, "send port" );
         long activeTime = workerQueue.getActiveTime( startTime );

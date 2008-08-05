@@ -20,8 +20,10 @@ class Gossiper extends Thread
 
     Gossiper( Node node, boolean isMaestro )
     {
+        super( "Gossiper" );
         this.node = node;
         this.gossipQuotum = new UpDownCounter( isMaestro?40:4 );
+        setDaemon( true );
     }
 
     /** FIXME.
