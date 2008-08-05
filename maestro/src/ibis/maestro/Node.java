@@ -1,5 +1,6 @@
 package ibis.maestro;
 
+import ibis.ipl.Ibis;
 import ibis.ipl.IbisCapabilities;
 import ibis.ipl.IbisCreationFailedException;
 import ibis.ipl.IbisFactory;
@@ -168,13 +169,15 @@ public final class Node extends Thread implements PacketReceiveListener
             PacketSendPort.portType,
             PacketUpcallReceivePort.portType
         );
+        Ibis localIbis = Globals.localIbis;
         if( Settings.traceNodes ) {
-            Globals.log.reportProgress( "Created ibis " + Globals.localIbis );
+            Globals.log.reportProgress( "Created ibis " + localIbis );
         }
-        Registry registry = Globals.localIbis.registry();
+        nodes.registerNode( localIbis.identifier(), true );
+        Registry registry = localIbis.registry();
         if( runForMaestro ){
             IbisIdentifier m = registry.elect( MAESTRO_ELECTION_NAME );
-            isMaestro = m.equals( Globals.localIbis.identifier() );
+            isMaestro = m.equals( localIbis.identifier() );
             if( isMaestro ) {
                 enableRegistration.set();   // We're maestro, we're allowed to register with others.
             }
@@ -184,7 +187,7 @@ public final class Node extends Thread implements PacketReceiveListener
 
         }
         if( Settings.traceNodes ) {
-            Globals.log.reportProgress( "Ibis " + Globals.localIbis.identifier() + ": isMaestro=" + isMaestro );
+            Globals.log.reportProgress( "Ibis " + localIbis.identifier() + ": isMaestro=" + isMaestro );
         }
         gossiper = new Gossiper( this, isMaestro );
         gossiper.start();
@@ -193,7 +196,7 @@ public final class Node extends Thread implements PacketReceiveListener
             workThreads[i] = t;
             t.start();
         }
-        receivePort = new PacketUpcallReceivePort( Globals.localIbis, Globals.receivePortName, this );
+        receivePort = new PacketUpcallReceivePort( localIbis, Globals.receivePortName, this );
         sendPort = new PacketSendPort( this );
         sendPort.setLocalListener( this );    // FIXME: no longer necessary
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
