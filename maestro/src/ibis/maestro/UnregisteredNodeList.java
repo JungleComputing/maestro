@@ -137,4 +137,9 @@ class UnregisteredNodeList extends Thread
         }
     }
 
+    synchronized void remove( IbisIdentifier theIbis )
+    {
+        list.remove( theIbis );
+    }
+
 }

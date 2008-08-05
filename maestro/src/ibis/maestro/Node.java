@@ -99,6 +99,11 @@ public final class Node extends Thread implements PacketReceiveListener
             notify();
         }
 
+        synchronized void removeTarget( NodeInfo theIbis )
+        {
+            targets.remove( theIbis );
+        }
+
         /** Runs this thread. (Overrides method in superclass.) */
         @SuppressWarnings("synthetic-access")
         @Override
@@ -344,6 +349,13 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void registerIbisLeft( IbisIdentifier theIbis )
     {
+        NodeInfo nodeInfo = nodes.get( theIbis );
+        if( nodeInfo != null ) {
+            for( UpdateThread updater: updaters ) {
+                updater.removeTarget( nodeInfo );
+            }
+        }
+        unregisteredNodes.remove( theIbis );
         nonEssentialSender.removeMessagesToIbis( theIbis );
         ArrayList<TaskInstance> orphans = nodes.removeNode( theIbis );
         masterQueue.add( orphans );
