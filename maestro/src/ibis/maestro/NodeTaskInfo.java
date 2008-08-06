@@ -103,13 +103,7 @@ final class NodeTaskInfo {
         }
         long transmissionTime = transmissionTimeEstimate.getAverage();
         int allTasks = currentTasks+1;
-        long total;
-        if( transmissionTime == Long.MAX_VALUE ) {
-            total = Long.MAX_VALUE;
-        }
-        else {
-            total = transmissionTime + this.dequeueTime*allTasks + this.computeTime + remainingJobTime;
-        }
+        long total = transmissionTime + this.dequeueTime*allTasks + this.computeTime + remainingJobTime;
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress(
                 "getAverageCompletionTime(): type=" + taskInfo
@@ -131,7 +125,7 @@ final class NodeTaskInfo {
      * complete it, and all remaining tasks in the job.
      * @return The completion time.
      */
-    long getAverageCompletionTime()
+    synchronized long getAverageCompletionTime()
     {
         return getAverageCompletionTime( maximalAllowance-1 );
     }
@@ -142,7 +136,7 @@ final class NodeTaskInfo {
      * Long.MAX_VALUE if currently there are no task slots.
      * @return The completion time.
      */
-    long estimateJobCompletion()
+    synchronized long estimateJobCompletion()
     {
         return getAverageCompletionTime( outstandingTasks );
     }
@@ -153,7 +147,7 @@ final class NodeTaskInfo {
      * @param roundtripTime The total roundtrip time of this task.
      * @param roundtripError The error in the previously predicted roundtrip time of this task.
      */
-    void registerTaskCompleted( long transmissionTime, long roundtripTime, long roundtripError )
+    synchronized void registerTaskCompleted( long transmissionTime, long roundtripTime, long roundtripError )
     {
         executedTasks++;
         outstandingTasks--;
@@ -173,19 +167,9 @@ final class NodeTaskInfo {
         }
     }
 
-    void setCompletionTime( long remainingJobTime )
+    synchronized void setCompletionTime( long remainingJobTime )
     {
         this.remainingJobTime = remainingJobTime;
-    }
-
-    void setComputeTime( long computeTime )
-    {
-        this.computeTime = computeTime;
-    }
-
-    void setDequeueTime( long dequeueTime )
-    {
-        this.dequeueTime = dequeueTime;
     }
 
     /** Register a new outstanding task. */
@@ -206,7 +190,7 @@ final class NodeTaskInfo {
      * ensure the queue lengths stays within very reasonable limits.
      * @param queueLength The worker queue length.
      */
-    protected void controlAllowance( int queueLength )
+    private void controlAllowance( int queueLength )
     {
         if( maximalAllowance == outstandingTasks ) {
             // We can only regulate the allowance if we are
@@ -240,55 +224,60 @@ final class NodeTaskInfo {
     }
 
     /**
-     * @return True iff this worker is ready to handle this task and is idle.
-     */
-    boolean isIdle()
-    {
-        return ( !nodeInfo.isReady() && outstandingTasks==0 && remainingJobTime != Long.MAX_VALUE );
-    }
-
-    /**
      * @return True iff this worker is ready to handle this task.
      */
-    boolean canProcessNow()
+    synchronized boolean canProcessNow()
     {
         return outstandingTasks<maximalAllowance;
     }
 
-    /** We now know this worker has the given ping time. Use this as the first estimate
-     * for the transmission time if we don't have anything better.
-     * @param pingTime The time in ns to ping this worker.
-     */
-    void setInitialTransmissionTimeEstimate( long pingTime )
-    {
-        if( Settings.traceRegistration ) {
-            Globals.log.reportProgress( "Setting transimssion time estimate for " + nodeInfo.ibis + " for " + taskInfo.type + " to " + Service.formatNanoseconds( pingTime ));
-        }
-        transmissionTimeEstimate.setInitialEstimate( pingTime );
-        if( Settings.traceRegistration ) {
-            Globals.log.reportProgress( "Transimssion time estimate for " + nodeInfo.ibis + " for " + taskInfo.type + " is now " + transmissionTimeEstimate );
-        }
-    }
-
-    protected int getSubmissions()
+    int getSubmissions()
     {
         return executedTasks;
     }
 
-    protected long estimateRoundtripTime()
+    synchronized long estimateRoundtripTime()
     {
         return roundtripTimeEstimate.getAverage();
     }
 
-    void printStatistics( PrintStream s )
+    synchronized void printStatistics( PrintStream s )
     {
         if( true || didWork() ) {
             s.println( "  " + taskInfo.type + ": executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + " dequeueTime=" + Service.formatNanoseconds( dequeueTime )+ " computeTime=" + Service.formatNanoseconds( computeTime )+ ", remaining time " + Service.formatNanoseconds( remainingJobTime ) );
         }
     }
 
-    void updateRoundtripTimeEstimate( long t )
+    synchronized void updateRoundtripTimeEstimate( long t )
     {
         roundtripTimeEstimate.addSample( t );
+    }
+
+    /** FIXME.
+     * @param info
+     */
+    synchronized void setWorkerQueueInfo( WorkerQueueInfo info )
+    {
+        this.dequeueTime = info.dequeueTime;
+        this.computeTime = info.computeTime;
+        controlAllowance( info.queueLength );        
+    }
+
+    synchronized int getCurrentTasks()
+    {
+        return outstandingTasks;
+    }
+
+    synchronized long getTransmissionTime()
+    {
+        return transmissionTimeEstimate.getAverage();
+    }
+
+    /** FIXME.
+     * @return
+     */
+    synchronized long getPredictedDuration()
+    {
+        return roundtripTimeEstimate.getAverage();
     }
 }

@@ -123,7 +123,6 @@ class PacketSendPort {
 
     /** One entry in the connection cache administration. */
     static class CacheInfo {
-        DestinationInfo destination;
         int useCount;                  // If >0, port is currently used. Never evict such an entry.
         boolean recentlyUsed;
         SendPort port;
@@ -135,7 +134,6 @@ class PacketSendPort {
                 port = null;
             }
             recentlyUsed = false;
-            destination = null;
         }
     }
 
@@ -199,7 +197,6 @@ class PacketSendPort {
             cacheInfo.close();
             evictions++;
         }
-        cacheInfo.destination = newDestination;
         newDestination.cacheSlot = cacheInfo;
         SendPort port = Globals.localIbis.createSendPort( portType );
         port.connect( newDestination.ibisIdentifier, Globals.receivePortName, timeout, true );

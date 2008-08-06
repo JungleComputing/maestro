@@ -108,23 +108,7 @@ final class NodeInfo
         }
         TaskInfo taskInfo = nodeTaskInfo.taskInfo;
         taskInfo.registerNode( nodeTaskInfo );
-        nodeTaskInfo.setDequeueTime( info.dequeueTime );
-        nodeTaskInfo.setComputeTime( info.computeTime );
-        nodeTaskInfo.controlAllowance( info.queueLength );
-    }
-
-    /** Update all task info to take into account the given ping time. If somewhere the initial
-     * estimate is used, at least this is a slightly more accurate one.
-     * @param nodes The task info table to update.
-     * @param pingTime The ping time to this worker.
-     */
-    private static void setPingTime( NodeTaskInfo[] nodes, long pingTime )
-    {
-        for( NodeTaskInfo wi: nodes ) {
-            if( wi != null ) {
-                wi.setInitialTransmissionTimeEstimate( pingTime );
-            }
-        }        
+        nodeTaskInfo.setWorkerQueueInfo( info );
     }
 
     /** Mark this worker as dead, and return a list of active tasks
@@ -167,21 +151,6 @@ final class NodeInfo
             System.out.println( "Cannot communicate with node " + ibis );
             suspect = true;
         }
-    }
-    
-    void setPingTime( long t )
-    {
-        synchronized( this ) {
-            pingTime = t;
-        }
-        if( !dead ) {
-            // We seem to be communicating.
-            suspect = false;
-        }
-        setPingTime( nodeTaskInfoList, pingTime );
-        if( Settings.traceRemainingJobTime || Settings.traceRegistration ) {
-            Globals.log.reportProgress( "Ping time to node " + ibis + " is " + Service.formatNanoseconds( pingTime ) );
-        }	
     }
 
     synchronized void registerNodeInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
@@ -391,5 +360,22 @@ final class NodeInfo
                 task.setAllowanceDeadline( t );
             }
         }
+    }
+
+    /** FIXME.
+     * @return
+     */
+    synchronized LocalNodeInfo getLocalInfo()
+    {
+        int currentTasks[] = new int[nodeTaskInfoList.length];
+        long transmissionTime[] = new long[nodeTaskInfoList.length];
+        long predictedDuration[] = new long[nodeTaskInfoList.length];
+
+        for( int i=0; i<nodeTaskInfoList.length; i++ ) {
+            currentTasks[i] = nodeTaskInfoList[i].getCurrentTasks();
+            transmissionTime[i] = nodeTaskInfoList[i].getTransmissionTime();
+            predictedDuration[i] = nodeTaskInfoList[i].getPredictedDuration();
+        }
+        return new LocalNodeInfo( suspect, currentTasks, transmissionTime, predictedDuration );
     }
 }

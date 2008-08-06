@@ -1,7 +1,10 @@
 package ibis.maestro;
 
+import ibis.ipl.IbisIdentifier;
+
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 /**
@@ -265,27 +268,67 @@ final class MasterQueue
     }
 
     /**
-     * @param nodes  
+     * Given a task type, select the best worker from the list that has a
+     * free slot. In this context 'best' is simply the worker with the
+     * shortest overall completion time.
+     *  
+     * @param type The type of task we want to execute.
+     * @return The info of the best worker for this task, or <code>null</code>
+     *         if there currently aren't any workers for this task type.
+     */
+    private boolean selectBestWorker( Submission sub, HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap, NodeUpdateInfo tables[], TaskType type )
+    {
+        NodeUpdateInfo best = null;
+        long bestInterval = Long.MAX_VALUE;
+        long predictedDuration = 0l;
+
+        for( NodeUpdateInfo info: tables ) {
+            LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
+            long val = info.estimateJobCompletion( localNodeInfo, type );
+
+            if( val<Long.MAX_VALUE ) {
+                if( val<bestInterval ) {
+                    bestInterval = val;
+                    best = info;
+                    predictedDuration = localNodeInfo.getPredictedDuration( type );
+                }
+            }
+        }
+
+        if( best == null ) {
+            if( Settings.traceMasterQueue ){
+                Globals.log.reportProgress( "No workers for task of type " + type );
+            }
+            return false;
+        }
+        if( Settings.traceMasterQueue ){
+            Globals.log.reportProgress( "Selected worker " + best.source + " for task of type " + type );
+        }
+        sub.worker = best.source;
+        sub.predictedDuration = predictedDuration;
+        return true;
+    }
+
+    /**
+     * @param tables  
      * @return
      */
-    synchronized Submission getSubmission( NodeList nodes )
+    synchronized Submission getSubmission( HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap, NodeUpdateInfo[] tables )
     {
         int ix = 0;
         Submission sub = new Submission();
         while( ix<queue.size() ) {
             TaskInstance task = queue.get( ix );
             TaskType type = task.type;
-            NodeTaskInfo worker = nodes.selectBestWorker( type );
-            if( worker != null ) {
+            boolean ok = selectBestWorker( sub, localNodeInfoMap, tables, type );
+            if( ok ) {
                 queue.remove( ix );
                 TypeInfo info = getTypeInfo( type );
                 int length = info.registerRemove();
                 if( Settings.traceMasterQueue || Settings.traceQueuing ) {
-                    Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type + " nodeTaskInfo=" + worker );
+                    Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type );
                 }
                 sub.task = task;
-                sub.worker = worker;
-                sub.predictedDuration = worker.estimateRoundtripTime();
                 return sub;
             }
             if( Settings.traceMasterQueue ){

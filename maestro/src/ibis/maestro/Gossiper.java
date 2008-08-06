@@ -25,6 +25,11 @@ class Gossiper extends Thread
         this.gossipQuotum = new UpDownCounter( isMaestro?40:4 );
         setDaemon( true );
     }
+    
+    NodeUpdateInfo[] getGossipCopy()
+    {
+        return gossip.getCopy();
+    }
 
     /** FIXME.
      * @param target

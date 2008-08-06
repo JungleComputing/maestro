@@ -19,8 +19,17 @@ class Gossip
      */
     synchronized GossipMessage constructMessage( IbisIdentifier target, boolean needsReply )
     {
-        NodeUpdateInfo content[] = l.toArray( new NodeUpdateInfo[l.size()] );
+        NodeUpdateInfo content[] = getCopy();
         return new GossipMessage( target, content, needsReply );
+    }
+
+    synchronized NodeUpdateInfo[] getCopy()
+    {
+        NodeUpdateInfo content[] = new NodeUpdateInfo[l.size()];
+        for( int i=0; i<content.length; i++ ) {
+            content[i] = l.get( i ).getDeepCopy();
+        }
+        return content;
     }
 
     /** FIXME.

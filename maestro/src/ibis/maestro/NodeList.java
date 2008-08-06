@@ -74,25 +74,6 @@ final class NodeList {
     }
 
     /**
-     * Given a task type, select the best worker from the list that has a
-     * free slot. In this context 'best' is simply the worker with the
-     * shortest round-trip interval.
-     *  
-     * @param type The type of task we want to execute.
-     * @return The info of the best worker for this task, or <code>null</code>
-     *         if there currently aren't any workers for this task type.
-     */
-    NodeTaskInfo selectBestWorker( TaskType type )
-    {
-        TaskInfo taskInfo = taskInfoList.getTaskInfo( type );
-        if( taskInfo == null ) {
-            return null;
-        }
-        NodeTaskInfo worker = taskInfo.getBestWorker();
-        return worker;
-    }
-
-    /**
      * Given a print stream, print some statistics about the workers
      * to this stream.
      * @param out The stream to print to.
@@ -200,5 +181,19 @@ final class NodeList {
         for( NodeUpdateInfo info: l ) {
             registerNodeUpdateInformation( info );
         }
+    }
+
+    /** FIXME.
+     * @return
+     */
+    synchronized HashMap<IbisIdentifier, LocalNodeInfo> getLocalNodeInfo()
+    {
+        HashMap<IbisIdentifier, LocalNodeInfo> res = new HashMap<IbisIdentifier, LocalNodeInfo>();
+        for( Map.Entry<IbisIdentifier, NodeInfo> entry : ibisToNodeMap.entrySet() ) {
+            NodeInfo nodeInfo = entry.getValue();
+            
+            res.put( entry.getKey(), nodeInfo.getLocalInfo() );
+        }
+        return res;
     }
 }

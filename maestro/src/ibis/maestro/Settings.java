@@ -105,5 +105,5 @@ class Settings {
     static final long GOSSIP_EXPIRATION_IN_CLUSTER = 30;
 
     /** Time in ms when gossip goes stale for nodes not in the same cluster. */
-    static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 30;
+    static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 100;
 }

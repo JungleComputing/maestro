@@ -3,6 +3,7 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * A packet of node update info.
@@ -35,6 +36,18 @@ public class NodeUpdateInfo implements Serializable
         this.source = source;
         this.masterHasWork = masterHasWork;
         this.timestamp = System.nanoTime();
+    }
+
+    NodeUpdateInfo getDeepCopy()
+    {
+        CompletionInfo completionInfoCopy[] = Arrays.copyOf( completionInfo, completionInfo.length );
+        WorkerQueueInfo workerQueueInfoCopy[] = Arrays.copyOf( workerQueueInfo, workerQueueInfo.length );
+        return new NodeUpdateInfo(
+            completionInfoCopy,
+            workerQueueInfoCopy,
+            source,
+            masterHasWork
+        );
     }
 
     private String buildCompletionString()
@@ -85,5 +98,65 @@ public class NodeUpdateInfo implements Serializable
         String completion = buildCompletionString();
         String workerQueue = buildWorkerQueue();
         return "Update " + completion + " " + workerQueue;
+    }
+    
+    private CompletionInfo searchCompletionInfoForType( TaskType type )
+    {
+        for( CompletionInfo ci: completionInfo )
+        {
+            if( ci != null ) {
+                if( ci.type.index == type.index ) {
+                    return ci;
+                }
+            }
+        }
+        return null;
+    }
+    
+    private WorkerQueueInfo searchWorkerQueueInfo( TaskType type )
+    {
+        for( WorkerQueueInfo info: workerQueueInfo ) {
+            if( info != null ) {
+                if( info.type.index == type.index ) {
+                    return info;
+                }
+            }
+        }
+        return null;
+    }
+
+    long estimateJobCompletion( LocalNodeInfo localNodeInfo, TaskType type )
+    {
+        WorkerQueueInfo queueInfo = searchWorkerQueueInfo( type );
+        CompletionInfo typeCompletionInfo = searchCompletionInfoForType( type );
+        
+        if( queueInfo == null ) {
+            if( Settings.traceRemainingJobTime ) {
+                Globals.log.reportError( "Node " + source + " does not provide queue info for type " + type );
+            }
+            return Long.MAX_VALUE;
+        }
+        if( localNodeInfo.suspect ){
+            if( Settings.traceRemainingJobTime ) {
+                Globals.log.reportError( "Node " + source + " is suspect, no completion estimate" );
+            }
+            return Long.MAX_VALUE;
+        }
+        if( typeCompletionInfo != null && typeCompletionInfo.completionInterval == Long.MAX_VALUE  ) {
+            if( Settings.traceRemainingJobTime ) {
+                Globals.log.reportError( "Node " + source + " has infinite completion time" );
+            }
+            return Long.MAX_VALUE;
+        }
+        long transmissionTime = localNodeInfo.getTransmissionTime( type );
+        int allTasks = localNodeInfo.getCurrentTasks( type )+1;
+        long total = transmissionTime + queueInfo.dequeueTime*allTasks + queueInfo.computeTime;
+        if( typeCompletionInfo != null ) {
+            total += typeCompletionInfo.completionInterval;
+        }
+        if( Settings.traceRemainingJobTime ) {
+            Globals.log.reportProgress( "Estimated completion time for " + source + " is " + Service.formatNanoseconds( total ) );
+        }
+        return total;
     }
 }

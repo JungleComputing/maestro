@@ -11,6 +11,7 @@ import ibis.ipl.RegistryEventHandler;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
 
@@ -599,8 +600,10 @@ public final class Node extends Thread implements PacketReceiveListener
     /** On a locked queue, try to send out as many task as we can. */
     private void drainMasterQueue()
     {
+        NodeUpdateInfo[] tables = gossiper.getGossipCopy();
         while( true ) {
-            Submission submission = masterQueue.getSubmission( nodes );
+            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
+            Submission submission = masterQueue.getSubmission( localNodeInfoMap, tables );
             if( submission == null ) {
                 break;
             }
@@ -616,17 +619,17 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void sendSubmissionToWorkers( Submission sub )
     {
-        NodeTaskInfo wti = sub.worker;
+        IbisIdentifier node = sub.worker;
         TaskInstance task = sub.task;
-        NodeInfo worker = wti.nodeInfo;
+        NodeInfo worker = nodes.get( node );
         long taskId = nextTaskId++;
         worker.registerTaskStart( task, taskId, sub.predictedDuration );
         if( Settings.traceMasterQueue ) {
-            System.out.println( "Selected " + worker + " as best for task " + task );
+            System.out.println( "Selected " + node + " as best for task " + task );
         }
 
-        RunTaskMessage msg = new RunTaskMessage( worker.ibis, task, taskId );
-        boolean ok = sendPort.tryToSend( worker.ibis, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        RunTaskMessage msg = new RunTaskMessage( node, task, taskId );
+        boolean ok = sendPort.tryToSend( node, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( !ok ){
             // Try to put the paste back in the tube.
             // The send port has already registered the trouble.
@@ -675,7 +678,7 @@ public final class Node extends Thread implements PacketReceiveListener
                 message = workerQueue.remove();
             }
             if( message == null ) {
-                long sleepTime = 3;
+                long sleepTime = 30;
                 if( Settings.traceWaits ) {
                     System.out.println( "Worker: waiting for " + sleepTime + "ms for new tasks in queue" );
                 }
