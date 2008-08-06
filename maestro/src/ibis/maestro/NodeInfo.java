@@ -332,10 +332,18 @@ final class NodeInfo
 
         for( int i=0; i<nodeTaskInfoList.length; i++ ) {
             NodeTaskInfo nodeTaskInfo = nodeTaskInfoList[i];
-            currentTasks[i] = nodeTaskInfo.getCurrentTasks();
-            transmissionTime[i] = nodeTaskInfo.getTransmissionTime();
-            predictedDuration[i] = nodeTaskInfo.getPredictedDuration();
-            allowance[i] = nodeTaskInfo.getAllowance();
+            if( nodeTaskInfo == null ) {
+                currentTasks[i] = 0;
+                transmissionTime[i] = 0;
+                predictedDuration[i] = Long.MAX_VALUE;
+                allowance[i] = 0;
+            }
+            else {
+                currentTasks[i] = nodeTaskInfo.getCurrentTasks();
+                transmissionTime[i] = nodeTaskInfo.getTransmissionTime();
+                predictedDuration[i] = nodeTaskInfo.getPredictedDuration();
+                allowance[i] = nodeTaskInfo.getAllowance();
+            }
         }
         return new LocalNodeInfo( suspect, currentTasks, allowance, transmissionTime, predictedDuration );
     }

@@ -113,11 +113,11 @@ final class MasterQueue
      * Constructs a new MasterQueue.
      * @param taskTypes The supported types.
      */
-    MasterQueue()
+    MasterQueue( TaskType allTypes[] )
     {
         queueTypes = new TypeInfo[Globals.numberOfTaskTypes];
-        for( int i=0; i<Globals.supportedTaskTypes.length; i++ ) {
-            queueTypes[i] = new TypeInfo( Globals.supportedTaskTypes[i] );
+        for( TaskType type: allTypes ) {
+            queueTypes[type.index] = new TypeInfo( type );
         }
     }
 
