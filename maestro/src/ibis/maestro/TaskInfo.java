@@ -127,7 +127,7 @@ public class TaskInfo
      * We compute this by taking the minimum over all our workers.
      * @return The best average completion time of our workers.
      */
-    long getAverageCompletionTime()
+    synchronized long getAverageCompletionTime()
     {
         long res = Long.MAX_VALUE;
 
