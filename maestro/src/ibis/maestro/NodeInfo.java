@@ -135,7 +135,7 @@ final class NodeInfo
         }
     }
 
-    synchronized void registerNodeInfo( WorkerQueueInfo[] workerQueueInfo )
+    void registerNodeInfo( WorkerQueueInfo[] workerQueueInfo )
     {
         if( dead ) {
             // It is strange to get info from a dead worker, but we're not going to try and
