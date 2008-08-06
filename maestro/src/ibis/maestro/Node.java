@@ -161,11 +161,10 @@ public final class Node extends Thread implements PacketReceiveListener
         TaskType taskTypes[] = jobs.getSupportedTaskTypes();
         Globals.numberOfTaskTypes = Job.getTaskCount();
         Globals.supportedTaskTypes = taskTypes;
-        taskInfoList = new TaskInfoList( taskTypes, Job.getTaskCount() );
+        taskInfoList = new TaskInfoList( taskTypes );
         nodes = new NodeList( taskInfoList );
         masterQueue = new MasterQueue( jobs.getAllTypes() );
-        workerQueue = new WorkerQueue( taskTypes );
-        taskInfoList.registerLocalTasks( taskTypes, jobs );
+        workerQueue = new WorkerQueue( taskTypes, jobs );
         nonEssentialSender = new NonEssentialSender();
         nonEssentialSender.start();
         ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
@@ -382,7 +381,6 @@ public final class Node extends Thread implements PacketReceiveListener
         long activeTime = workerQueue.getActiveTime( startTime );
         long workInterval = stopTime-activeTime;
         workerQueue.printStatistics( s, workInterval );
-        taskInfoList.printStatistics( s, workInterval );
         s.println( "Worker: run time        = " + Service.formatNanoseconds( workInterval ) );
         s.println( "Worker: activated after = " + Service.formatNanoseconds( activeTime-startTime ) );
         masterQueue.printStatistics( s );
@@ -700,7 +698,7 @@ public final class Node extends Thread implements PacketReceiveListener
                 TaskType type = message.taskInstance.type;
                 long queueInterval = runMoment-message.getQueueMoment();
                 int queueLength = message.getQueueLength();
-                taskInfoList.setQueueTimePerTask( type, queueInterval, queueLength );
+                workerQueue.setQueueTimePerTask( type, queueInterval, queueLength );
                 Task task = jobs.getTask( type );
 
                 runningTasks.up();
@@ -770,7 +768,7 @@ public final class Node extends Thread implements PacketReceiveListener
 
         // Update statistics.
         final long computeInterval = taskCompletionMoment-runMoment;
-        taskInfoList.countTask( type, computeInterval );
+        workerQueue.countTask( type, computeInterval );
         runningTasks.down();
         if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
             long queueInterval = runMoment-message.getQueueMoment();

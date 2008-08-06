@@ -25,11 +25,18 @@ final class WorkerQueue {
      * @param taskTypes The list of types we support.
      * @param jobs 
      */
-    WorkerQueue( TaskType[] taskTypes )
+    WorkerQueue( TaskType[] taskTypes, JobList jobs )
     {
 	queueTypes = new WorkerQueueTypeInfo[Globals.numberOfTaskTypes];
         for( TaskType t: taskTypes ) {
-            queueTypes[t.index] = new WorkerQueueTypeInfo( t );
+            WorkerQueueTypeInfo queueTypeInfo = new WorkerQueueTypeInfo( t );
+	    queueTypes[t.index] = queueTypeInfo;
+            Task task = jobs.getTask( t );
+            if( task instanceof TaskExecutionTimeEstimator ) {
+                TaskExecutionTimeEstimator estimator = (TaskExecutionTimeEstimator) task;
+                queueTypeInfo.setInitialComputeTimeEstimate( estimator.estimateTaskExecutionTime() );
+            }
+            
         }
     }
 
@@ -37,14 +44,9 @@ final class WorkerQueue {
      * Returns true iff the entire queue is empty.
      * @return
      */
-    protected boolean isEmpty()
+    synchronized boolean isEmpty()
     {
         return queue.isEmpty();
-    }
-
-    private WorkerQueueTypeInfo getTypeInfo( TaskType t )
-    {
-        return queueTypes[t.index];
     }
 
     private static int findInsertionPoint( ArrayList<RunTaskMessage> queue, RunTaskMessage msg )
@@ -92,16 +94,7 @@ final class WorkerQueue {
             WorkerQueueTypeInfo q = queueTypes[i];
 
             if( q != null ){
-                TaskInfo stats = taskInfoList.getTaskInfo( q.type );
-
-                if( stats == null ) {
-                    res[i] = null;
-                }
-                else {
-                    // FIXME: maintain this stat in this structure.
-                    long computeTime = stats.getEstimatedComputeTime();
-                    res[i] = q.getWorkerQueueInfo( computeTime );
-                }
+        	res[i] = q.getWorkerQueueInfo();
             }
         }
         return res;
@@ -124,7 +117,7 @@ final class WorkerQueue {
             queueEmptyMoment = 0L;
         }
         TaskType type = msg.taskInstance.type;
-        WorkerQueueTypeInfo info = getTypeInfo( type );
+        WorkerQueueTypeInfo info = queueTypes[type.index];
         int length = info.registerAdd();
         int pos = findInsertionPoint( queue, msg );
         queue.add( pos, msg );
@@ -132,6 +125,18 @@ final class WorkerQueue {
             Globals.log.reportProgress( "Adding " + msg.taskInstance.formatJobAndType() + " at position " + pos + " of worker queue; length is now " + queue.size() + "; " + length + " of type " + type );
         }
         msg.setQueueMoment( msg.arrivalMoment, length );
+    }
+
+    void countTask( TaskType type, long computeInterval )
+    {
+        WorkerQueueTypeInfo info = queueTypes[type.index];
+        info.countTask( computeInterval );
+    }
+
+    void setQueueTimePerTask( TaskType type, long queueTime, int queueLength )
+    {
+        WorkerQueueTypeInfo info = queueTypes[type.index];
+        info.setQueueTimePerTask( queueTime/(queueLength+1) );
     }
 
     synchronized RunTaskMessage remove()
@@ -143,7 +148,7 @@ final class WorkerQueue {
             return null;
         }
         RunTaskMessage res = queue.remove( 0 );
-        WorkerQueueTypeInfo info = getTypeInfo( res.taskInstance.type );
+        WorkerQueueTypeInfo info = queueTypes[res.taskInstance.type.index];
         int length = info.registerRemove();
         if( Settings.traceQueuing ) {
             Globals.log.reportProgress( "Removing " + res.taskInstance.formatJobAndType() + " from worker queue; length is now " + queue.size() + "; " + length + " of type " + res.taskInstance.type );
@@ -160,13 +165,14 @@ final class WorkerQueue {
         return activeTime;
     }
 
+
     synchronized void printStatistics( PrintStream s, long workInterval )
     {
         double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
         s.println( "Worker: total idle time = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
         for( WorkerQueueTypeInfo t: queueTypes ) {
             if( t != null ) {
-                t.printStatistics( s );
+                t.printStatistics( s, workInterval );
             }
         }
     }

@@ -25,16 +25,35 @@ final class WorkerQueueTypeInfo
     private long frontChangedTime = 0;
 
     /** The estimated time interval between tasks being dequeued. */
-    final TimeEstimate dequeueInterval = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
+    private final TimeEstimate dequeueInterval = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
+
+    private int outGoingTaskCount = 0;
+    private long totalWorkTime = 0;        
+    private long totalQueueTime = 0;     // Cumulative queue time of all tasks.
+    final TimeEstimate averageComputeTime = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
+    final TimeEstimate queueTimePerTask = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
 
     WorkerQueueTypeInfo( TaskType type  )
     {
         this.type = type;
     }
 
-    void printStatistics( PrintStream s )
+    void printStatistics( PrintStream s, long workTime )
     {
         s.println( "worker queue for " + type + ": " + incompingTaskCount + " tasks; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxElements );
+        double workPercentage = 100.0*(totalWorkTime/workTime);
+        PrintStream out = s;
+        if( outGoingTaskCount>0 ) {
+            out.println( "Worker: " + type + ":" );
+            out.printf( "    # tasks          = %5d\n", outGoingTaskCount );
+            out.println( "    total work time = " + Service.formatNanoseconds( totalWorkTime ) + String.format( " (%.1f%%)", workPercentage )  );
+            out.println( "    queue time/task  = " + Service.formatNanoseconds( totalQueueTime/outGoingTaskCount ) );
+            out.println( "    work time/task   = " + Service.formatNanoseconds( totalWorkTime/outGoingTaskCount ) );
+            out.println( "    aver. dwell time = " + Service.formatNanoseconds( (totalWorkTime+totalQueueTime)/outGoingTaskCount ) );
+        }
+        else {
+            out.println( "Worker: " + type + " is unused" );
+        }
     }
 
     int registerAdd()
@@ -72,8 +91,40 @@ final class WorkerQueueTypeInfo
         return elements;
     }
 
-    synchronized WorkerQueueInfo getWorkerQueueInfo( long dwellTime )
+    /**
+     * Registers the completion of a task of this particular type, with the
+     * given queue interval and the given work interval.
+     * @param queueTime The time this task spent in the queue.
+     * @param workTime The time it took to execute this task.
+     */
+    synchronized void countTask( long workTime )
     {
-        return new WorkerQueueInfo( type, elements, dequeueInterval.getAverage(), dwellTime );
+        outGoingTaskCount++;
+        totalWorkTime += workTime;
+        averageComputeTime.addSample( workTime );
+    }
+
+    /** 
+     * Sets the initial compute time estimate of this task to the given value.
+     * @param estimate The initial estimate.
+     */
+    void setInitialComputeTimeEstimate( long estimate )
+    {
+        averageComputeTime.setInitialEstimate( estimate );
+    }
+
+    synchronized WorkerQueueInfo getWorkerQueueInfo()
+    {
+        return new WorkerQueueInfo( type, elements, dequeueInterval.getAverage(), averageComputeTime.getAverage() );
+    }
+
+    /**
+     * Update the estimate for the queue time per task.
+     * @param v The new value for the queue time per task.
+     */
+    synchronized void setQueueTimePerTask( long v )
+    {
+        totalQueueTime += v;
+        queueTimePerTask.addSample( v );
     }
 }

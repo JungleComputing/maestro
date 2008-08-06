@@ -254,9 +254,6 @@ final class NodeTaskInfo {
         roundtripTimeEstimate.addSample( t );
     }
 
-    /** FIXME.
-     * @param info
-     */
     synchronized void setWorkerQueueInfo( WorkerQueueInfo info )
     {
         this.dequeueTime = info.dequeueTime;
@@ -274,17 +271,11 @@ final class NodeTaskInfo {
         return transmissionTimeEstimate.getAverage();
     }
 
-    /** FIXME.
-     * @return
-     */
     synchronized long getPredictedDuration()
     {
         return roundtripTimeEstimate.getAverage();
     }
 
-    /** FIXME.
-     * @return
-     */
     int getAllowance()
     {
         return maximalAllowance;
