@@ -47,4 +47,14 @@ public class TaskInfo
         return res;
     }
 
+    void registerNode( NodeInfo nodeInfo )
+    {
+        NodeTaskInfo nodeTaskInfo = nodeInfo.get( type );
+        synchronized( this ) {
+            if( nodeTaskInfo != null ) {
+                workers.add( nodeTaskInfo );
+            }
+        }
+    }
+
 }

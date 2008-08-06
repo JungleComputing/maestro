@@ -53,6 +53,12 @@ final class NodeInfo
             TaskInfo taskInfo = taskInfoList.getTaskInfo( type );
             nodeTaskInfoList[ix] = new NodeTaskInfo( taskInfo, this, local, pingTime );
         }
+        taskInfoList.registerNode( this );
+    }
+    
+    NodeTaskInfo get( TaskType t )
+    {
+        return nodeTaskInfoList[t.index];
     }
 
     /**

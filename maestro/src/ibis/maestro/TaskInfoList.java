@@ -1,5 +1,6 @@
 package ibis.maestro;
 
+
 /**
  * Information about all tasks.
  *
@@ -20,5 +21,15 @@ public class TaskInfoList
     TaskInfo getTaskInfo( TaskType type )
     {
         return taskInfoList[type.index];
+    }
+
+    void registerNode( NodeInfo nodeInfo )
+    {
+        for( TaskInfo info: taskInfoList )
+        {
+            if( info != null ) {
+                info.registerNode( nodeInfo );
+            }
+        }
     }
 }

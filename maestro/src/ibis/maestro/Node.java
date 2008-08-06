@@ -598,7 +598,7 @@ public final class Node extends Thread implements PacketReceiveListener
     /** On a locked queue, try to send out as many task as we can. */
     private void drainMasterQueue()
     {
-        NodeUpdateInfo[] tables = gossiper.getGossipCopy();
+        NodeUpdateInfo[] tables = gossiper.getGossipCopy();  // TODO: Check if there is work before we get the info.
         while( true ) {
             HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
             Submission submission = masterQueue.getSubmission( localNodeInfoMap, tables );
@@ -727,8 +727,8 @@ public final class Node extends Thread implements PacketReceiveListener
                     System.out.println( "Work thread: completed " + message );
                 }
             }
-            kickAllWorkers();
         }
+        kickAllWorkers();
     }
 
     /**
