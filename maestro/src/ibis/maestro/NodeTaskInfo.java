@@ -83,28 +83,32 @@ final class NodeTaskInfo {
      * @param tasks The number of tasks currently on the worker.
      * @return The completion time.
      */
-    private long getAverageCompletionTime( int currentTasks, int futureTasks )
+    private long getAverageCompletionTime( int currentTasks )
     {
         /**
          * Don't give an estimate if we have to predict the future too far,
          * or of we just don't have the information.
          */
         if( nodeInfo.isSuspect() || remainingJobTime == Long.MAX_VALUE  ) {
+            if( Settings.traceRemainingJobTime ) {
+                Globals.log.reportProgress(
+                    "getAverageCompletionTime(): type=" + taskInfo
+                    + " worker=" + nodeInfo
+                    + " infinite: "
+                    + " isSuspect=" + nodeInfo.isSuspect()
+                    + " remainingJobTime=" + Service.formatNanoseconds( remainingJobTime )
+                );
+            }
             return Long.MAX_VALUE;
         }
         long transmissionTime = transmissionTimeEstimate.getAverage();
-        int allTasks = currentTasks+futureTasks;
+        int allTasks = currentTasks+1;
         long total;
         if( transmissionTime == Long.MAX_VALUE ) {
             total = Long.MAX_VALUE;
         }
-        else if( futureTasks>1 ){
-            // Don't venture to predict about more future jobs
-            // than you've already handled.
-            total = Long.MAX_VALUE;
-        }
         else {
-            total = futureTasks*transmissionTime + this.dequeueTime*allTasks + this.computeTime + remainingJobTime;
+            total = transmissionTime + this.dequeueTime*allTasks + this.computeTime + remainingJobTime;
         }
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress(
@@ -112,7 +116,6 @@ final class NodeTaskInfo {
                 + " worker=" + nodeInfo
                 + " maximalAllowance=" + maximalAllowance
                 + " currentTasks=" + currentTasks
-                + " futureTasks=" + futureTasks
                 + " xmitTime=" + Service.formatNanoseconds( transmissionTime )
                 + " dequeueTime=" + Service.formatNanoseconds( dequeueTime )
                 + " computeTime=" + Service.formatNanoseconds( computeTime )
@@ -130,7 +133,7 @@ final class NodeTaskInfo {
      */
     long getAverageCompletionTime()
     {
-        return getAverageCompletionTime( maximalAllowance-1, 1 );
+        return getAverageCompletionTime( maximalAllowance-1 );
     }
 
     /**
@@ -141,7 +144,7 @@ final class NodeTaskInfo {
      */
     long estimateJobCompletion()
     {
-        return getAverageCompletionTime( outstandingTasks, 1 );
+        return getAverageCompletionTime( outstandingTasks );
     }
 
     /**
