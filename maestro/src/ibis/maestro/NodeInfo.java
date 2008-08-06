@@ -146,28 +146,33 @@ final class NodeInfo
             registerWorkerQueueInfo( i );
         }
     }
+    
+    synchronized ActiveTask extractActiveTask( long id )
+    {
+        int ix = searchActiveTask( id );
+        if( ix<0 ) {
+            Globals.log.reportInternalError( "Ignoring reported result from task with unknown id " + id );
+            return null;
+        }
+        return activeTasks.remove( ix );
+    }
 
     /**
      * Register a task result for an outstanding task.
      * @param result The task result message that tells about this task.
      * @param arrivalMoment The time in ns the message arrived.
      */
-    synchronized TaskType registerTaskCompleted( TaskCompletedMessage result )
+    TaskType registerTaskCompleted( TaskCompletedMessage result )
     {
         final long id = result.taskId;    // The identifier of the task, as handed out by us.
 
-        int ix = searchActiveTask( id );
-        if( ix<0 ) {
-            Globals.log.reportInternalError( "Ignoring reported result from task with unknown id " + id + ": " + result );
-            return null;
-        }
-        ActiveTask task = activeTasks.remove( ix );
+        ActiveTask task = extractActiveTask( id );
         long roundtripTime = result.arrivalMoment-task.startTime;
         long roundtripError = Math.abs( task.predictedDuration-roundtripTime );
         long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
 
         if( task.getAllowanceDeadline()<result.arrivalMoment ) {
-            missedAllowanceDeadlines++;
+            missedAllowanceDeadlines++; // TODO: locked
             if( Settings.traceMissedDeadlines ){
                 Globals.log.reportProgress(
                     "Missed allowance deadline for " + task.task.type + " task: "
@@ -186,7 +191,7 @@ final class NodeInfo
                     + " realDuration=" + Service.formatNanoseconds( roundtripTime )
                 );
             }
-            missedRescheduleDeadlines++;
+            missedRescheduleDeadlines++;  // TODO: locked
         }
         registerNodeInfo( result.workerQueueInfo );
         task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime, roundtripError );
