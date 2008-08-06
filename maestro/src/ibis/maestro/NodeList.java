@@ -15,7 +15,6 @@ import java.util.Map;
 final class NodeList {
     private HashMap<IbisIdentifier,NodeInfo> ibisToNodeMap = new HashMap<IbisIdentifier, NodeInfo>();
     private final TaskInfoList taskInfoList;
-    private UpDownCounter readyNodeCounter = new UpDownCounter( 0 );
 
     NodeList( TaskInfoList taskInfoList )
     {
@@ -38,7 +37,6 @@ final class NodeList {
         if( wi != null ) {
             orphans = wi.setDead();
         }
-        readyNodeCounter.down();
         return orphans;
     }
 
@@ -105,11 +103,6 @@ final class NodeList {
         return taskInfo.getAverageCompletionTime();
     }
 
-    int size()
-    {
-        return ibisToNodeMap.size();
-    }
-
     protected void setSuspect( IbisIdentifier theIbis )
     {
         NodeInfo wi = get( theIbis );
@@ -119,9 +112,9 @@ final class NodeList {
         }
     }
 
-    /** FIXME.
-     * @param source
-     * @return
+    /** Given an ibis, return its NodeInfo. If necessary create one.
+     * @param source The ibis.
+     * @return Its NodeInfo.
      */
     private NodeInfo getNodeInfo( IbisIdentifier source )
     {
@@ -144,19 +137,6 @@ final class NodeList {
     }
 
     /**
-     * Wait until at least the given number of nodes have been registered with this node.
-     * Since nodes will never register themselves instantaneously with other nodes,
-     * the first jobs that are submitted may be executed on the first available node, instead
-     * of the best one. Waiting until there is some choice can therefore be an advantage.
-     * Of course, it must be certain that the given number of nodes will ever join the computation.
-     * @param n The number of nodes to wait for.
-     */
-    int waitForReadyNodes( int n, long waittime )
-    {
-        return readyNodeCounter.waitForGreaterOrEqual( n, waittime );
-    }
-
-    /**
      * Check the deadlines of the nodes.
      */
     synchronized void checkDeadlines( long now )
@@ -172,7 +152,7 @@ final class NodeList {
 
     void registerNodeUpdateInformation( NodeUpdateInfo l )
     {
-        NodeInfo nodeInfo = getNodeInfo( l.source );
+        NodeInfo nodeInfo = get( l.source );
         nodeInfo.registerNodeInfo( l.workerQueueInfo );
     }
 

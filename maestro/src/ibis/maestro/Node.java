@@ -777,19 +777,4 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
         }
     }
-
-    /**
-     * Wait until at least the given number of nodes have been registered with this node.
-     * Since nodes will never register themselves instantaneously with other nodes,
-     * the first jobs that are submitted may be executed on the first available node, instead
-     * of the best one. Waiting until there is some choice can therefore be an advantage.
-     * Of course, it must be certain that the given number of nodes will ever join the computation.
-     * @param n The number of nodes to wait for.
-     * @param waittime The maximal time in milliseconds to wait for these nodes.
-     * @return The actual number of nodes at the moment we stopped waiting.
-     */
-    public int waitForReadyNodes( int n, long waittime )
-    {
-        return nodes.waitForReadyNodes( n, waittime );
-    }
 }

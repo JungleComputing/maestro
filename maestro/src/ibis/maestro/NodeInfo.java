@@ -88,8 +88,6 @@ final class NodeInfo
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "Master: worker " + ibis + ":" + info );
         }
-        TaskInfo taskInfo = nodeTaskInfo.taskInfo;
-        taskInfo.registerNode( nodeTaskInfo );
         nodeTaskInfo.setWorkerQueueInfo( info );
     }
 
@@ -147,7 +145,7 @@ final class NodeInfo
         }
     }
     
-    synchronized ActiveTask extractActiveTask( long id )
+    private synchronized ActiveTask extractActiveTask( long id )
     {
         int ix = searchActiveTask( id );
         if( ix<0 ) {
@@ -206,51 +204,41 @@ final class NodeInfo
         return task.task.type;
     }
 
-    /**
-     * Returns true iff this worker is in a state where the master can finish.
-     * @return True iff the master is allowed to finish.
-     */
-    synchronized boolean allowMasterToFinish()
-    {
-        return activeTasks.isEmpty();
-    }
-
     /** Register the start of a new task.
      * 
      * @param task The task that was started.
      * @param id The id given to the task.
      * @param predictedDuration The predicted duration in ns of the task.
-     * @return If true, this task was added to the reservations, not
-     *         to the collection of outstanding tasks.
      */
-    synchronized boolean registerTaskStart( TaskInstance task, long id, long predictedDuration )
+    void registerTaskStart( TaskInstance task, long id, long predictedDuration )
     {
         NodeTaskInfo workerTaskInfo = nodeTaskInfoList[task.type.index];
         if( workerTaskInfo == null ) {
             System.err.println( "No worker task info for task type " + task.type );
-            return true;
         }
-        workerTaskInfo.incrementOutstandingTasks();
+        else {
+            workerTaskInfo.incrementOutstandingTasks();
+        }
         long now = System.nanoTime();
         long allowanceDeadline = now + predictedDuration*Settings.ALLOWANCE_DEADLINE_MARGIN;
         long rescheduleDeadline = now + predictedDuration*Settings.RESCHEDULE_DEADLINE_MARGIN;
         ActiveTask j = new ActiveTask( task, id, now, workerTaskInfo, predictedDuration, allowanceDeadline, rescheduleDeadline );
-        activeTasks.add( j );
-        return false;
+        synchronized( this ) {
+            activeTasks.add( j );
+        }
     }
 
     /** Given a task id, retract it from the administration.
      * For some reason we could not send this task to the worker.
      * @param id The identifier of the task.
      */
-    synchronized void retractTask( long id )
+    void retractTask( long id )
     {
-        int ix = searchActiveTask( id );
-        if( ix<0 ) {
+	ActiveTask task = extractActiveTask( id );
+        if( task == null ) {
             Globals.log.reportInternalError( "ignoring task retraction for unknown id " + id );
             return;
         }
-        ActiveTask task = activeTasks.remove( ix );
         System.out.println( "Master: retracted task " + task );
     }
 

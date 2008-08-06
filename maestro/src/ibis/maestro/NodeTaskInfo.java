@@ -8,7 +8,7 @@ import java.io.PrintStream;
 final class NodeTaskInfo {
     final TaskInfo taskInfo;
 
-    final NodeInfo nodeInfo;
+    private final NodeInfo nodeInfo;
 
     private final TimeEstimate transmissionTimeEstimate;
 

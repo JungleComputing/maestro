@@ -125,13 +125,13 @@ public class TaskInfo
      * Make sure it exists in our administration.
      * @param nodeTaskInfo
      */
-    synchronized void registerNode( NodeTaskInfo node )
+    private synchronized void registerNode( NodeTaskInfo node )
     {
         if( workers.contains( node ) ) {
             return;
         }
         if( Settings.traceTypeHandling ){
-            System.out.println( "task " + type + " is supported by node " + node.nodeInfo.ibis );
+            System.out.println( "task " + type + " is supported by node " + node );
         }
         workers.add( node );
     }
