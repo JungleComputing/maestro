@@ -163,7 +163,7 @@ public final class Node extends Thread implements PacketReceiveListener
         Globals.supportedTaskTypes = taskTypes;
         taskInfoList = new TaskInfoList( taskTypes, Job.getTaskCount() );
         nodes = new NodeList( taskInfoList );
-        masterQueue = new MasterQueue( taskTypes );
+        masterQueue = new MasterQueue();
         workerQueue = new WorkerQueue( taskTypes );
         taskInfoList.registerLocalTasks( taskTypes, jobs );
         nonEssentialSender = new NonEssentialSender();

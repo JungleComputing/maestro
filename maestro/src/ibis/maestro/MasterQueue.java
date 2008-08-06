@@ -20,7 +20,7 @@ import java.util.List;
 final class MasterQueue
 {
     int taskCount = 0;
-    private final ArrayList<TypeInfo> queueTypes = new ArrayList<TypeInfo>();
+    private final TypeInfo queueTypes[];
     protected final ArrayList<TaskInstance> queue = new ArrayList<TaskInstance>();
 
     /**
@@ -51,12 +51,12 @@ final class MasterQueue
             this.type = type;
         }
 
-        private void printStatistics( PrintStream s )
+        private synchronized void printStatistics( PrintStream s )
         {
             s.println( "master queue for " + type + ": " + taskCount + " tasks; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxElements );
         }
 
-        private int registerAdd()
+        synchronized private int registerAdd()
         {
             elements++;
             if( elements>maxElements ) {
@@ -71,7 +71,7 @@ final class MasterQueue
             return elements;
         }
 
-        int registerRemove()
+        synchronized int registerRemove()
         {
             long now = System.nanoTime();
             if( frontChangedTime != 0 ) {
@@ -96,7 +96,7 @@ final class MasterQueue
          * @return The estimated time in ns it will take to drain all
          *          current tasks from the queue.
          */
-        private long estimateQueueTime( int idleProcessors )
+        private synchronized long estimateQueueTime( int idleProcessors )
         {
             long timePerEntry = dequeueInterval.getAverage();
             // Since at least one processor isn't working on a task (or we
@@ -107,7 +107,7 @@ final class MasterQueue
             return res;
         }
 
-        private CompletionInfo getCompletionInfo( JobList jobs, NodeList workers, int idleProcessors )
+        private synchronized CompletionInfo getCompletionInfo( JobList jobs, NodeList workers, int idleProcessors )
         {
             TaskType previousType = jobs.getPreviousTaskType( type );
             if( previousType == null ) {
@@ -131,27 +131,12 @@ final class MasterQueue
      * Constructs a new MasterQueue.
      * @param taskTypes The supported types.
      */
-    MasterQueue( TaskType[] taskTypes )
+    MasterQueue()
     {
-        // FIXME: create a plain array.
-        for( TaskType t: taskTypes ) {
-            getTypeInfo( t );  // Make sure the type administration is there.
+        queueTypes = new TypeInfo[Globals.numberOfTaskTypes];
+        for( int i=0; i<Globals.supportedTaskTypes.length; i++ ) {
+            queueTypes[i] = new TypeInfo( Globals.supportedTaskTypes[i] );
         }
-        // TODO: after this point no new types should have to be added.
-    }
-
-    private TypeInfo getTypeInfo( TaskType t )
-    {
-        int ix = t.index;
-        while( queueTypes.size()<ix+1 ) {
-            queueTypes.add( null );
-        }
-        TypeInfo res = queueTypes.get( ix );
-        if( res == null ) {
-            res = new TypeInfo( t );
-            queueTypes.set( ix, res );
-        }
-        return res;
     }
 
     private static int findInsertionPoint( ArrayList<TaskInstance> queue, TaskInstance e )
@@ -204,7 +189,7 @@ final class MasterQueue
     {
         taskCount++;
         TaskType type = task.type;
-        TypeInfo info = getTypeInfo( type );
+        TypeInfo info = queueTypes[type.index];
         int length = info.registerAdd();
         int pos = findInsertionPoint( queue, task );
         queue.add( pos, task );
@@ -254,12 +239,12 @@ final class MasterQueue
     }
 
     @SuppressWarnings("synthetic-access")
-    synchronized CompletionInfo[] getCompletionInfo( JobList jobs, NodeList workers, int idleProcessors )
+    CompletionInfo[] getCompletionInfo( JobList jobs, NodeList workers, int idleProcessors )
     {
-        CompletionInfo res[] = new CompletionInfo[queueTypes.size()];
+        CompletionInfo res[] = new CompletionInfo[queueTypes.length];
 
         for( int i=0; i<res.length; i++ ) {
-            TypeInfo q = queueTypes.get( i );
+            TypeInfo q = queueTypes[i];
             if( q != null ){
                 res[i] = q.getCompletionInfo( jobs, workers, idleProcessors );
             }
@@ -323,7 +308,7 @@ final class MasterQueue
             boolean ok = selectBestWorker( sub, localNodeInfoMap, tables, type );
             if( ok ) {
                 queue.remove( ix );
-                TypeInfo info = getTypeInfo( type );
+                TypeInfo info = queueTypes[type.index];
                 int length = info.registerRemove();
                 if( Settings.traceMasterQueue || Settings.traceQueuing ) {
                     Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type );
