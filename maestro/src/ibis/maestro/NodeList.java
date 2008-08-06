@@ -96,7 +96,7 @@ final class NodeList {
      * @param taskType The type of the task.
      * @return The estimated time in nanoseconds.
      */
-    synchronized long getAverageCompletionTime( TaskType taskType )
+    long getAverageCompletionTime( TaskType taskType )
     {
         TaskInfo taskInfo = taskInfoList.getTaskInfo( taskType );
         if( taskInfo == null ) {
@@ -110,9 +110,9 @@ final class NodeList {
         return ibisToNodeMap.size();
     }
 
-    protected synchronized void setSuspect( IbisIdentifier theIbis )
+    protected void setSuspect( IbisIdentifier theIbis )
     {
-        NodeInfo wi = ibisToNodeMap.get( theIbis );
+        NodeInfo wi = get( theIbis );
 
         if( wi != null ) {
             wi.setSuspect();
@@ -137,9 +137,9 @@ final class NodeList {
         return getNodeInfo( id );
     }
 
-    synchronized boolean registerAsCommunicating( IbisIdentifier ibisIdentifier )
+    boolean registerAsCommunicating( IbisIdentifier ibisIdentifier )
     {
-        NodeInfo nodeInfo = getNodeInfo( ibisIdentifier );
+        NodeInfo nodeInfo = get( ibisIdentifier );
         return nodeInfo.registerAsCommunicating();
     }
 
