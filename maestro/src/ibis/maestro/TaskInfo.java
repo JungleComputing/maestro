@@ -57,12 +57,11 @@ public class TaskInfo
                     long val = wi.estimateJobCompletion();
 
                     if( wi.canProcessNow() ) {
-                        readyWorker = true;
-                    }
-                    if( val<Long.MAX_VALUE ) {
-                        if( val<bestInterval ) {
-                            bestInterval = val;
-                            best = wi;
+                        if( val<Long.MAX_VALUE ) {
+                            if( val<bestInterval ) {
+                                bestInterval = val;
+                                best = wi;
+                            }
                         }
                     }
                 }
@@ -83,12 +82,7 @@ public class TaskInfo
                         System.out.print( Service.formatNanoseconds( val ) );
                     }
                     if( wi == best ) {
-                        if( wi.canProcessNow() ){
-                            System.out.print( "(submit)" );
-                        }
-                        else {
-                            System.out.print( "(reserve)" );
-                        }
+                        System.out.print( "(submit)" );
                     }
                 }
                 if( readyWorker ) {

@@ -236,7 +236,7 @@ final class NodeInfo
 
         int ix = searchActiveTask( id );
         if( ix<0 ) {
-            Globals.log.reportInternalError( "Master: ignoring reported result from task with unknown id " + id );
+            Globals.log.reportInternalError( "Ignoring reported result from task with unknown id " + id + ": " + result );
             return null;
         }
         ActiveTask task = activeTasks.remove( ix );
@@ -296,7 +296,7 @@ final class NodeInfo
      * @return If true, this task was added to the reservations, not
      *         to the collection of outstanding tasks.
      */
-    boolean registerTaskStart( TaskInstance task, long id, long predictedDuration )
+    synchronized boolean registerTaskStart( TaskInstance task, long id, long predictedDuration )
     {
         NodeTaskInfo workerTaskInfo = nodeTaskInfoList[task.type.index];
         if( workerTaskInfo == null ) {
