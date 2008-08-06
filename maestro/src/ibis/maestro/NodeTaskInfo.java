@@ -83,13 +83,13 @@ final class NodeTaskInfo {
      * @param tasks The number of tasks currently on the worker.
      * @return The completion time.
      */
-    private long getAverageCompletionTime( int currentTasks )
+    private synchronized long getAverageCompletionTime( int currentTasks )
     {
         /**
          * Don't give an estimate if we have to predict the future too far,
          * or of we just don't have the information.
          */
-        if( nodeInfo.isSuspect() || remainingJobTime == Long.MAX_VALUE  ) {
+        if( remainingJobTime == Long.MAX_VALUE  ) {
             if( Settings.traceRemainingJobTime ) {
                 Globals.log.reportProgress(
                     "getAverageCompletionTime(): type=" + taskInfo
@@ -125,8 +125,11 @@ final class NodeTaskInfo {
      * complete it, and all remaining tasks in the job.
      * @return The completion time.
      */
-    synchronized long getAverageCompletionTime()
+    long getAverageCompletionTime()
     {
+        if( nodeInfo.isSuspect() ) {
+            return Long.MAX_VALUE;
+        }
         return getAverageCompletionTime( maximalAllowance-1 );
     }
 
@@ -136,8 +139,11 @@ final class NodeTaskInfo {
      * Long.MAX_VALUE if currently there are no task slots.
      * @return The completion time.
      */
-    synchronized long estimateJobCompletion()
+    long estimateJobCompletion()
     {
+        if( nodeInfo.isSuspect() ) {
+            return Long.MAX_VALUE;
+        }
         return getAverageCompletionTime( outstandingTasks );
     }
 
