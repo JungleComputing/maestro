@@ -21,5 +21,9 @@ class Globals {
     /** A random-number generator. */
     static final Random rng = new Random();
 
+    static TaskType[] supportedTaskTypes = null;
+
     static Ibis localIbis;
+
+    static int numberOfTaskTypes;
 }

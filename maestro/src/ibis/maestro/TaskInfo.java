@@ -33,21 +33,6 @@ public class TaskInfo
         return String.format( "type=" + type + " workers: ", workers.size() );
     }
 
-    /**
-     * Add a new worker to our list of supporting workers.
-     * @param worker The worker to add.
-     */
-    protected void addWorker( NodeTaskInfo worker )
-    {
-        if( workers.contains( worker ) ) {
-            return;
-        }
-        if( Settings.traceTypeHandling ){
-            System.out.println( "task " + type + " is supported by node " + worker.nodeInfo.ibis );
-        }
-	workers.add( worker );
-    }
-
     protected NodeTaskInfo getBestWorker()
     {
         if( Settings.useShuffleRouting ) {
@@ -221,6 +206,22 @@ public class TaskInfo
     void setInitialComputeTimeEstimate( long estimate )
     {
         averageComputeTime.setInitialEstimate( estimate );
+    }
+
+    /** 
+     * The given node can handle this task, since it reports statistics for it.
+     * Make sure it exists in our administration.
+     * @param nodeTaskInfo
+     */
+    void registerNode( NodeTaskInfo node )
+    {
+        if( workers.contains( node ) ) {
+            return;
+        }
+        if( Settings.traceTypeHandling ){
+            System.out.println( "task " + type + " is supported by node " + node.nodeInfo.ibis );
+        }
+        workers.add( node );
     }
 
 }

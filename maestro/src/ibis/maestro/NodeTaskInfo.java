@@ -186,7 +186,7 @@ final class NodeTaskInfo {
     }
 
     /** Register a new outstanding task. */
-    void incrementOutstandingTasks()
+    synchronized void incrementOutstandingTasks()
     {
         outstandingTasks++;
     }

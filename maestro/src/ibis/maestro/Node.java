@@ -158,6 +158,8 @@ public final class Node extends Thread implements PacketReceiveListener
 
         this.jobs = jobs;
         TaskType taskTypes[] = jobs.getSupportedTaskTypes();
+        Globals.numberOfTaskTypes = Job.getTaskCount();
+        Globals.supportedTaskTypes = taskTypes;
         taskInfoList = new TaskInfoList( taskTypes, Job.getTaskCount() );
         nodes = new NodeList( taskInfoList );
         masterQueue = new MasterQueue( taskTypes );
@@ -498,14 +500,12 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
         }
-        NodeInfo nodeInfo = nodes.get( m.source );
-        if( nodeInfo != null ) {
-            nodeInfo.registerNodeInfo( m.workerQueueInfo, m.completionInfo );
-            nodeInfo.registerAsCommunicating();
-            if( m.masterHasWork ) {
-                // A node that has work deserves a message about our capabilities.
-                taskSources.add( nodeInfo );
-            }
+        NodeInfo nodeInfo = nodes.get( m.source );   // The get will create an entry if necessary.
+        nodeInfo.registerNodeInfo( m.workerQueueInfo, m.completionInfo );
+        nodeInfo.registerAsCommunicating();
+        if( m.masterHasWork ) {
+            // A node that has work deserves a message about our capabilities.
+            taskSources.add( nodeInfo );
         }
     }
 
@@ -518,8 +518,10 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
         }
-        handleNodeUpdateInfo( m.update );
-        gossiper.registerGossip( m.update );
+        boolean isnew = gossiper.registerGossip( m.update );
+        if( isnew ) {
+            handleNodeUpdateInfo( m.update );
+        }
     }
 
     /**
@@ -654,7 +656,6 @@ public final class Node extends Thread implements PacketReceiveListener
             return true;
         }
         if( runningTasks.isAbove( 0 ) ) {
-            System.out.println( "Node is in stopped mode, but there are still " + runningTasks.get() + " running tasks" );
             return true;
         }
         return false;

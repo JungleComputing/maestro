@@ -15,15 +15,13 @@ public class TaskInfoList
     {
         taskInfoList = new TaskInfo[n];
         for( TaskType type: taskTypes ) {
-            int ix = type.index;
-            taskInfoList[ix] = new TaskInfo( type );
+            taskInfoList[type.index] = new TaskInfo( type );
         }
     }
     
     TaskInfo getTaskInfo( TaskType type )
     {
-        int ix = type.index;
-        return taskInfoList[ix];
+        return taskInfoList[type.index];
     }
     
     private void registerLocalTask( TaskType type, JobList jobs )

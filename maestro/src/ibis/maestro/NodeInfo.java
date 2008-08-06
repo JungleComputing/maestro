@@ -17,9 +17,7 @@ final class NodeInfo
     private final ArrayList<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
 
     /** Info about the tasks for this particular node. */
-    private final ArrayList<NodeTaskInfo> nodeTaskInfoList = new ArrayList<NodeTaskInfo>();
-
-    private final TaskInfoList taskInfoList;
+    private final NodeTaskInfo nodeTaskInfoList[];
 
     private boolean suspect = false;
 
@@ -44,12 +42,17 @@ final class NodeInfo
     protected NodeInfo( IbisIdentifier ibis, TaskInfoList taskInfoList, boolean local )
     {
         this.ibis = ibis;
-        this.taskInfoList = taskInfoList;
         this.local = local;
+        nodeTaskInfoList = new NodeTaskInfo[Globals.numberOfTaskTypes];
         // For non-local nodes, start with a very pessimistic ping time.
         // This means that if we really need another node, we use it, otherwise
         // we wait for the measurement of the real ping time.
-        pingTime = local?0L:Service.HOUR_IN_NANOSECONDS;
+        pingTime = local?0L:Service.HOUR_IN_NANOSECONDS;   // TODO: still needs to be a field?
+        for( TaskType type: Globals.supportedTaskTypes ) {
+            int ix = type.index;
+            TaskInfo taskInfo = taskInfoList.getTaskInfo( type );
+            nodeTaskInfoList[ix] = new NodeTaskInfo( taskInfo, this, local, pingTime );
+        }
     }
 
     /**
@@ -76,7 +79,7 @@ final class NodeInfo
         if( completionInfo == null ) {
             return;
         }
-        NodeTaskInfo workerTaskInfo = getNodeTaskInfo(completionInfo.type );
+        NodeTaskInfo workerTaskInfo = nodeTaskInfoList[completionInfo.type.index];
 
         if( workerTaskInfo == null ) {
             return;
@@ -88,52 +91,36 @@ final class NodeInfo
             workerTaskInfo.setCompletionTime( completionInfo.completionInterval );
         }
     }
-    
-    synchronized NodeTaskInfo getNodeTaskInfo( TaskType type )
-    {
-        int ix = type.index;
-        
-        while( nodeTaskInfoList.size()<=ix ) {
-            nodeTaskInfoList.add( null );
-        }
-        NodeTaskInfo info = nodeTaskInfoList.get( ix  );
-
-        if( info == null ) {
-            TaskInfo taskInfo = taskInfoList.getTaskInfo( type );
-            info = new NodeTaskInfo( taskInfo, this, local, pingTime );
-            taskInfo.addWorker( info );
-            nodeTaskInfoList.set( ix, info );
-        }
-        return info;
-    }
 
     private void registerWorkerQueueInfo( WorkerQueueInfo info )
     {
         if( info == null ) {
             return;
         }
-        
-        NodeTaskInfo workerTaskInfo = getNodeTaskInfo( info.type  );
 
-        if( workerTaskInfo == null ) {
+        NodeTaskInfo nodeTaskInfo = nodeTaskInfoList[info.type.index];
+
+        if( nodeTaskInfo == null ) {
             return;
         }
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "Master: worker " + ibis + ":" + info );
         }
-        workerTaskInfo.setDequeueTime( info.dequeueTime );
-        workerTaskInfo.setComputeTime( info.computeTime );
-        workerTaskInfo.controlAllowance( info.queueLength );
+        TaskInfo taskInfo = nodeTaskInfo.taskInfo;
+        taskInfo.registerNode( nodeTaskInfo );
+        nodeTaskInfo.setDequeueTime( info.dequeueTime );
+        nodeTaskInfo.setComputeTime( info.computeTime );
+        nodeTaskInfo.controlAllowance( info.queueLength );
     }
 
     /** Update all task info to take into account the given ping time. If somewhere the initial
      * estimate is used, at least this is a slightly more accurate one.
-     * @param l The task info table to update.
+     * @param nodes The task info table to update.
      * @param pingTime The ping time to this worker.
      */
-    private static void setPingTime( ArrayList<NodeTaskInfo> l, long pingTime )
+    private static void setPingTime( NodeTaskInfo[] nodes, long pingTime )
     {
-        for( NodeTaskInfo wi: l ) {
+        for( NodeTaskInfo wi: nodes ) {
             if( wi != null ) {
                 wi.setInitialTransmissionTimeEstimate( pingTime );
             }
@@ -182,9 +169,11 @@ final class NodeInfo
         }
     }
     
-    synchronized void setPingTime( long t )
+    void setPingTime( long t )
     {
-	pingTime = t;
+        synchronized( this ) {
+            pingTime = t;
+        }
         if( !dead ) {
             // We seem to be communicating.
             suspect = false;
@@ -307,9 +296,9 @@ final class NodeInfo
      * @return If true, this task was added to the reservations, not
      *         to the collection of outstanding tasks.
      */
-    synchronized boolean registerTaskStart( TaskInstance task, long id, long predictedDuration )
+    boolean registerTaskStart( TaskInstance task, long id, long predictedDuration )
     {
-        NodeTaskInfo workerTaskInfo = nodeTaskInfoList.get( task.type.index );
+        NodeTaskInfo workerTaskInfo = nodeTaskInfoList[task.type.index];
         if( workerTaskInfo == null ) {
             System.err.println( "No worker task info for task type " + task.type );
             return true;

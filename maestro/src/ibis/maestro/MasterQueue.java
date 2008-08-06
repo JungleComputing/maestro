@@ -130,6 +130,7 @@ final class MasterQueue
      */
     MasterQueue( TaskType[] taskTypes )
     {
+        // FIXME: create a plain array.
         for( TaskType t: taskTypes ) {
             getTypeInfo( t );  // Make sure the type administration is there.
         }
