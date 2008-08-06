@@ -13,14 +13,15 @@ class Gossip
 {
     private ArrayList<NodeUpdateInfo> l = new ArrayList<NodeUpdateInfo>();
 
-    /** FIXME.
-     * @param needsReply 
-     * @return
-     */
     synchronized GossipMessage constructMessage( IbisIdentifier target, boolean needsReply )
     {
         NodeUpdateInfo content[] = getCopy();
         return new GossipMessage( target, content, needsReply );
+    }
+
+    synchronized boolean isEmpty()
+    {
+        return l.isEmpty();
     }
 
     synchronized NodeUpdateInfo[] getCopy()

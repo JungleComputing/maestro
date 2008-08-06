@@ -45,20 +45,22 @@ class Gossiper extends Thread
         messageCount.add();
     }
 
-    private boolean sendCurrentGossipMessages()
+    private void sendCurrentGossipMessages()
     {
-        boolean progress = false;
         long now = System.currentTimeMillis();
 
+        if( gossip.isEmpty() ){
+            // There is nothing in the gossip yet, don't waste
+            // our quotum.
+            return;
+        }
         while( gossipQuotum.isAbove( 0 ) ) {
             IbisIdentifier target = nodes.getStaleNode( now );
             if( target != null ) {
                 sendGossip( target, true );
                 gossipQuotum.down();
-                progress = true;
             }
         }
-        return progress;
     }
     
     private long computeWaitTimeInMilliseconds()
