@@ -125,7 +125,7 @@ public class TaskInfo
      * Make sure it exists in our administration.
      * @param nodeTaskInfo
      */
-    void registerNode( NodeTaskInfo node )
+    synchronized void registerNode( NodeTaskInfo node )
     {
         if( workers.contains( node ) ) {
             return;
