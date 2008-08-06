@@ -13,7 +13,7 @@ final class WorkerQueueTypeInfo
     final TaskType type;
 
     /** The total number of tasks of this type that entered the queue. */
-    private long taskCount = 0;
+    private long incompingTaskCount = 0;
 
     /** Current number of elements of this type in the queue. */
     private int elements = 0;
@@ -34,7 +34,7 @@ final class WorkerQueueTypeInfo
 
     void printStatistics( PrintStream s )
     {
-        s.println( "worker queue for " + type + ": " + taskCount + " tasks; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxElements );
+        s.println( "worker queue for " + type + ": " + incompingTaskCount + " tasks; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxElements );
     }
 
     int registerAdd()
@@ -48,7 +48,7 @@ final class WorkerQueueTypeInfo
             // record the time it became this.
             frontChangedTime = System.nanoTime();
         }
-        taskCount++;
+        incompingTaskCount++;
         return elements;
     }
 

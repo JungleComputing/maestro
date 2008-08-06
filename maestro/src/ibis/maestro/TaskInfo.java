@@ -12,7 +12,7 @@ public class TaskInfo
 {
     private LinkedList<NodeTaskInfo> workers = new LinkedList<NodeTaskInfo>();
     final TaskType type;
-    private int taskCount = 0;
+    private int outGoingTaskCount = 0;
     private long totalWorkTime = 0;        
     private long totalQueueTime = 0;     // Cumulative queue time of all tasks.
     final TimeEstimate averageComputeTime = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
@@ -62,7 +62,7 @@ public class TaskInfo
      */
     void countTask( long workTime )
     {
-        taskCount++;
+        outGoingTaskCount++;
         totalWorkTime += workTime;
         averageComputeTime.addSample( workTime );
     }
@@ -70,13 +70,13 @@ public class TaskInfo
     void reportStats( PrintStream out, double workTime )
     {
         double workPercentage = 100.0*(totalWorkTime/workTime);
-        if( taskCount>0 ) {
+        if( outGoingTaskCount>0 ) {
             out.println( "Worker: " + type + ":" );
-            out.printf( "    # tasks          = %5d\n", taskCount );
+            out.printf( "    # tasks          = %5d\n", outGoingTaskCount );
             out.println( "    total work time = " + Service.formatNanoseconds( totalWorkTime ) + String.format( " (%.1f%%)", workPercentage )  );
-            out.println( "    queue time/task  = " + Service.formatNanoseconds( totalQueueTime/taskCount ) );
-            out.println( "    work time/task   = " + Service.formatNanoseconds( totalWorkTime/taskCount ) );
-            out.println( "    aver. dwell time = " + Service.formatNanoseconds( (totalWorkTime+totalQueueTime)/taskCount ) );
+            out.println( "    queue time/task  = " + Service.formatNanoseconds( totalQueueTime/outGoingTaskCount ) );
+            out.println( "    work time/task   = " + Service.formatNanoseconds( totalWorkTime/outGoingTaskCount ) );
+            out.println( "    aver. dwell time = " + Service.formatNanoseconds( (totalWorkTime+totalQueueTime)/outGoingTaskCount ) );
         }
         else {
             out.println( "Worker: " + type + " is unused" );
