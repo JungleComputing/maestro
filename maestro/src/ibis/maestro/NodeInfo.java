@@ -74,24 +74,6 @@ final class NodeInfo
         return -1;
     }
 
-    private void registerCompletionInfo( CompletionInfo completionInfo )
-    {
-        if( completionInfo == null ) {
-            return;
-        }
-        NodeTaskInfo workerTaskInfo = nodeTaskInfoList[completionInfo.type.index];
-
-        if( workerTaskInfo == null ) {
-            return;
-        }
-        if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "Master: worker " + ibis + ":" + completionInfo );
-        }
-        if( completionInfo.completionInterval != Long.MAX_VALUE ) {
-            workerTaskInfo.setCompletionTime( completionInfo.completionInterval );
-        }
-    }
-
     private void registerWorkerQueueInfo( WorkerQueueInfo info )
     {
         if( info == null ) {
@@ -153,44 +135,15 @@ final class NodeInfo
         }
     }
 
-    synchronized void registerNodeInfo( WorkerQueueInfo[] workerQueueInfo, CompletionInfo[] completionInfo )
+    synchronized void registerNodeInfo( WorkerQueueInfo[] workerQueueInfo )
     {
         if( dead ) {
             // It is strange to get info from a dead worker, but we're not going to try and
             // revive the worker.
             return;
         }
-        if( Settings.traceRemainingJobTime ) {
-            String s = "workerQueueInfo=[";
-            boolean first = true;
-            for( WorkerQueueInfo i: workerQueueInfo ) {
-                if( first ) {
-                    first = false;
-                }
-                else {
-                    s += ",";
-                }
-                s += i;
-            }
-            s += "] completionInfo=[";
-            first = true;
-            for( CompletionInfo i: completionInfo ) {
-                if( first ) {
-                    first = false;
-                }
-                else {
-                    s += ",";
-                }
-                s += i;
-            }
-            s += ']';
-            Globals.log.reportProgress( "Master: got new information from " + ibis + ": " +  s );
-        }
         for( WorkerQueueInfo i: workerQueueInfo ) {
             registerWorkerQueueInfo( i );
-        }
-        for( CompletionInfo i: completionInfo ) {
-            registerCompletionInfo( i );
         }
     }
 
@@ -235,7 +188,7 @@ final class NodeInfo
             }
             missedRescheduleDeadlines++;
         }
-        registerNodeInfo( result.workerQueueInfo, result.completionInfo );
+        registerNodeInfo( result.workerQueueInfo );
         task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime, roundtripError );
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress(

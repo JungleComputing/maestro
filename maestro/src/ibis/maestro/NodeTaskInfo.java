@@ -167,11 +167,6 @@ final class NodeTaskInfo {
         }
     }
 
-    synchronized void setCompletionTime( long remainingJobTime )
-    {
-        this.remainingJobTime = remainingJobTime;
-    }
-
     /** Register a new outstanding task. */
     synchronized void incrementOutstandingTasks()
     {

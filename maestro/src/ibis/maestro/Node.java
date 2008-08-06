@@ -432,7 +432,7 @@ public final class Node extends Thread implements PacketReceiveListener
         gossiper.registerGossip( update );
         NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() );
         if( nodeInfo != null ) {
-            nodeInfo.registerNodeInfo( update.workerQueueInfo, update.completionInfo );
+            nodeInfo.registerNodeInfo( update.workerQueueInfo );
         }
     }
 
@@ -502,7 +502,7 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "Received node update message " + m );
         }
         NodeInfo nodeInfo = nodes.get( m.source );   // The get will create an entry if necessary.
-        nodeInfo.registerNodeInfo( m.workerQueueInfo, m.completionInfo );
+        nodeInfo.registerNodeInfo( m.workerQueueInfo );
         nodeInfo.registerAsCommunicating();
         if( m.masterHasWork ) {
             // A node that has work deserves a message about our capabilities.

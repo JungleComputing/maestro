@@ -173,7 +173,7 @@ final class NodeList {
     void registerNodeUpdateInformation( NodeUpdateInfo l )
     {
         NodeInfo nodeInfo = getNodeInfo( l.source );
-        nodeInfo.registerNodeInfo( l.workerQueueInfo, l.completionInfo );
+        nodeInfo.registerNodeInfo( l.workerQueueInfo );
     }
 
     void registerNodeUpdateInformation( NodeUpdateInfo[] l )
