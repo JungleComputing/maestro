@@ -9,14 +9,16 @@ public class LocalNodeInfo
 {
     final boolean suspect;
     final int currentTasks[];
+    final int allowance[];
     final long transmissionTime[];
     final long predictedDuration[];
 
     
-    LocalNodeInfo( boolean suspect, int[] currentTasks, long[] transmissionTime, long predictedDuration[] )
+    LocalNodeInfo( boolean suspect, int[] currentTasks, int allowance[], long[] transmissionTime, long predictedDuration[] )
     {
         this.suspect = suspect;
         this.currentTasks = currentTasks;
+        this.allowance = allowance;
         this.transmissionTime = transmissionTime;
         this.predictedDuration = predictedDuration;
     }
@@ -24,6 +26,11 @@ public class LocalNodeInfo
     int getCurrentTasks( TaskType type )
     {
         return currentTasks[type.index];
+    }
+
+    int getAllowance( TaskType type )
+    {
+        return allowance[type.index];
     }
 
     long getTransmissionTime( TaskType type )

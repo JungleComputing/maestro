@@ -326,14 +326,17 @@ final class NodeInfo
     synchronized LocalNodeInfo getLocalInfo()
     {
         int currentTasks[] = new int[nodeTaskInfoList.length];
+        int allowance[] = new int[nodeTaskInfoList.length];
         long transmissionTime[] = new long[nodeTaskInfoList.length];
         long predictedDuration[] = new long[nodeTaskInfoList.length];
 
         for( int i=0; i<nodeTaskInfoList.length; i++ ) {
-            currentTasks[i] = nodeTaskInfoList[i].getCurrentTasks();
-            transmissionTime[i] = nodeTaskInfoList[i].getTransmissionTime();
-            predictedDuration[i] = nodeTaskInfoList[i].getPredictedDuration();
+            NodeTaskInfo nodeTaskInfo = nodeTaskInfoList[i];
+            currentTasks[i] = nodeTaskInfo.getCurrentTasks();
+            transmissionTime[i] = nodeTaskInfo.getTransmissionTime();
+            predictedDuration[i] = nodeTaskInfo.getPredictedDuration();
+            allowance[i] = nodeTaskInfo.getAllowance();
         }
-        return new LocalNodeInfo( suspect, currentTasks, transmissionTime, predictedDuration );
+        return new LocalNodeInfo( suspect, currentTasks, allowance, transmissionTime, predictedDuration );
     }
 }

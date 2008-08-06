@@ -129,7 +129,12 @@ public class NodeUpdateInfo implements Serializable
     {
         WorkerQueueInfo queueInfo = searchWorkerQueueInfo( type );
         CompletionInfo typeCompletionInfo = searchCompletionInfoForType( type );
-        
+
+        int currentTasks = localNodeInfo.getCurrentTasks( type );
+        int allowance = localNodeInfo.getAllowance( type );
+        if( currentTasks>=allowance ) {
+            return Long.MAX_VALUE;
+        }
         if( queueInfo == null ) {
             if( Settings.traceRemainingJobTime ) {
                 Globals.log.reportError( "Node " + source + " does not provide queue info for type " + type );
@@ -149,7 +154,7 @@ public class NodeUpdateInfo implements Serializable
             return Long.MAX_VALUE;
         }
         long transmissionTime = localNodeInfo.getTransmissionTime( type );
-        int allTasks = localNodeInfo.getCurrentTasks( type )+1;
+        int allTasks = currentTasks+1;
         long total = transmissionTime + queueInfo.dequeueTime*allTasks + queueInfo.computeTime;
         if( typeCompletionInfo != null ) {
             total += typeCompletionInfo.completionInterval;

@@ -281,4 +281,12 @@ final class NodeTaskInfo {
     {
         return roundtripTimeEstimate.getAverage();
     }
+
+    /** FIXME.
+     * @return
+     */
+    int getAllowance()
+    {
+        return maximalAllowance;
+    }
 }
