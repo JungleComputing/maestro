@@ -14,9 +14,9 @@ import java.util.ArrayList;
  *
  */
 final class WorkerQueue {
-    protected final ArrayList<RunTaskMessage> queue = new ArrayList<RunTaskMessage>();
-    private final ArrayList<TypeInfo> queueTypes = new ArrayList<TypeInfo>();
-    long queueEmptyMoment = System.nanoTime();
+    private final ArrayList<RunTaskMessage> queue = new ArrayList<RunTaskMessage>();
+    private final WorkerQueueTypeInfo queueTypes[];
+    private long queueEmptyMoment = System.nanoTime();
     private long idleDuration = 0;
     private long activeTime = 0L;
 
@@ -27,10 +27,10 @@ final class WorkerQueue {
      */
     WorkerQueue( TaskType[] taskTypes )
     {
-        for( TaskType type: taskTypes ) {
-            getTypeInfo( type );  // Make sure the type administration is there.
+	queueTypes = new WorkerQueueTypeInfo[Globals.numberOfTaskTypes];
+        for( TaskType t: taskTypes ) {
+            queueTypes[t.index] = new WorkerQueueTypeInfo( t );
         }
-        // TODO: after this point no new types should have to be added.
     }
 
     /**
@@ -42,92 +42,9 @@ final class WorkerQueue {
         return queue.isEmpty();
     }
 
-    /**
-     * Statistics per type for the different task types in the queue.
-     * 
-     * @author Kees van Reeuwijk
-     */
-    private static final class TypeInfo {
-        /** The type these statistics are about. */
-        final TaskType type;
-
-        /** The total number of tasks of this type that entered the queue. */
-        private long taskCount = 0;
-
-        /** Current number of elements of this type in the queue. */
-        private int elements = 0;
-
-        /** Maximal ever number of elements in the queue. */
-        private int maxElements = 0;
-
-        private long frontChangedTime = 0;
-
-        /** The estimated time interval between tasks being dequeued. */
-        final TimeEstimate dequeueInterval = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
-
-        TypeInfo( TaskType type  )
-        {
-            this.type = type;
-        }
-
-        void printStatistics( PrintStream s )
-        {
-            s.println( "worker queue for " + type + ": " + taskCount + " tasks; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxElements );
-        }
-
-        int registerAdd()
-        {
-            elements++;
-            if( elements>maxElements ) {
-                maxElements = elements;
-            }
-            if( frontChangedTime == 0 ) {
-                // This entry is the front of the queue,
-                // record the time it became this.
-                frontChangedTime = System.nanoTime();
-            }
-            taskCount++;
-            return elements;
-        }
-
-        int registerRemove()
-        {
-            long now = System.nanoTime();
-            if( frontChangedTime != 0 ) {
-                // We know when this entry became the front of the queue.
-                long i = now - frontChangedTime;
-                dequeueInterval.addSample( i );
-            }
-            elements--;
-            if( elements == 0 ) {
-                // Don't take the next dequeuing into account,
-                // since the queue is now empty.
-                frontChangedTime = 0l;
-            }
-            else {
-                frontChangedTime = now;
-            }
-            return elements;
-        }
-
-        WorkerQueueInfo getWorkerQueueInfo( long dwellTime )
-        {
-            return new WorkerQueueInfo( type, elements, dequeueInterval.getAverage(), dwellTime );
-        }
-    }
-
-    private TypeInfo getTypeInfo( TaskType t )
+    private WorkerQueueTypeInfo getTypeInfo( TaskType t )
     {
-        int ix = t.index;
-        while( queueTypes.size()<ix+1 ) {
-            queueTypes.add( null );
-        }
-        TypeInfo res = queueTypes.get( ix );
-        if( res == null ) {
-            res = new TypeInfo( t );
-            queueTypes.set( ix, res );
-        }
-        return res;
+        return queueTypes[t.index];
     }
 
     private static int findInsertionPoint( ArrayList<RunTaskMessage> queue, RunTaskMessage msg )
@@ -167,12 +84,12 @@ final class WorkerQueue {
     }
 
     @SuppressWarnings("synthetic-access")
-    protected synchronized WorkerQueueInfo[] getWorkerQueueInfo( TaskInfoList taskInfoList )
+    protected WorkerQueueInfo[] getWorkerQueueInfo( TaskInfoList taskInfoList )
     {
-        WorkerQueueInfo res[] = new WorkerQueueInfo[queueTypes.size()];
+        WorkerQueueInfo res[] = new WorkerQueueInfo[queueTypes.length];
 
         for( int i=0; i<res.length; i++ ) {
-            TypeInfo q = queueTypes.get( i );
+            WorkerQueueTypeInfo q = queueTypes[i];
 
             if( q != null ){
                 TaskInfo stats = taskInfoList.getTaskInfo( q.type );
@@ -181,6 +98,7 @@ final class WorkerQueue {
                     res[i] = null;
                 }
                 else {
+                    // FIXME: maintain this stat in this structure.
                     long computeTime = stats.getEstimatedComputeTime();
                     res[i] = q.getWorkerQueueInfo( computeTime );
                 }
@@ -206,7 +124,7 @@ final class WorkerQueue {
             queueEmptyMoment = 0L;
         }
         TaskType type = msg.taskInstance.type;
-        TypeInfo info = getTypeInfo( type );
+        WorkerQueueTypeInfo info = getTypeInfo( type );
         int length = info.registerAdd();
         int pos = findInsertionPoint( queue, msg );
         queue.add( pos, msg );
@@ -225,7 +143,7 @@ final class WorkerQueue {
             return null;
         }
         RunTaskMessage res = queue.remove( 0 );
-        TypeInfo info = getTypeInfo( res.taskInstance.type );
+        WorkerQueueTypeInfo info = getTypeInfo( res.taskInstance.type );
         int length = info.registerRemove();
         if( Settings.traceQueuing ) {
             Globals.log.reportProgress( "Removing " + res.taskInstance.formatJobAndType() + " from worker queue; length is now " + queue.size() + "; " + length + " of type " + res.taskInstance.type );
@@ -246,7 +164,7 @@ final class WorkerQueue {
     {
         double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
         s.println( "Worker: total idle time = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
-        for( TypeInfo t: queueTypes ) {
+        for( WorkerQueueTypeInfo t: queueTypes ) {
             if( t != null ) {
                 t.printStatistics( s );
             }

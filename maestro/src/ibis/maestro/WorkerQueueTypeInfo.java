@@ -7,7 +7,8 @@ import java.io.PrintStream;
  * 
  * @author Kees van Reeuwijk
  */
-final class WorkerQueueTypeInfo {
+final class WorkerQueueTypeInfo
+{
     /** The type these statistics are about. */
     final TaskType type;
 
@@ -20,6 +21,7 @@ final class WorkerQueueTypeInfo {
     /** Maximal ever number of elements in the queue. */
     private int maxElements = 0;
 
+    /** The last moment in ns that the front of the queue changed. */
     private long frontChangedTime = 0;
 
     /** The estimated time interval between tasks being dequeued. */
@@ -70,7 +72,7 @@ final class WorkerQueueTypeInfo {
         return elements;
     }
 
-    WorkerQueueInfo getWorkerQueueInfo( long dwellTime )
+    synchronized WorkerQueueInfo getWorkerQueueInfo( long dwellTime )
     {
         return new WorkerQueueInfo( type, elements, dequeueInterval.getAverage(), dwellTime );
     }

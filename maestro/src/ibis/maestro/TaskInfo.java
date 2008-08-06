@@ -97,7 +97,7 @@ public class TaskInfo
      * Update the estimate for the queue time per task.
      * @param v The new value for the queue time per task.
      */
-    public void setQueueTimePerTask( long v )
+    void setQueueTimePerTask( long v )
     {
         totalQueueTime += v;
         queueTimePerTask.addSample( v );
@@ -106,7 +106,7 @@ public class TaskInfo
     /** Returns the estimated time to compute this task.
      * @return The estimated time.
      */
-    long getEstimatedComputeTime()
+    synchronized long getEstimatedComputeTime()
     {
         return averageComputeTime.getAverage();
     }
@@ -118,22 +118,6 @@ public class TaskInfo
     void setInitialComputeTimeEstimate( long estimate )
     {
         averageComputeTime.setInitialEstimate( estimate );
-    }
-
-    /** 
-     * The given node can handle this task, since it reports statistics for it.
-     * Make sure it exists in our administration.
-     * @param nodeTaskInfo
-     */
-    private synchronized void registerNode( NodeTaskInfo node )
-    {
-        if( workers.contains( node ) ) {
-            return;
-        }
-        if( Settings.traceTypeHandling ){
-            System.out.println( "task " + type + " is supported by node " + node );
-        }
-        workers.add( node );
     }
 
 }
