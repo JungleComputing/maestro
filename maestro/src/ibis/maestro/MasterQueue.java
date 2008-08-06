@@ -96,7 +96,7 @@ final class MasterQueue
          * @return The estimated time in ns it will take to drain all
          *          current tasks from the queue.
          */
-        private synchronized long estimateQueueTime( int idleProcessors )
+        synchronized long estimateQueueTime( int idleProcessors )
         {
             long timePerEntry = dequeueInterval.getAverage();
             // Since at least one processor isn't working on a task (or we
@@ -107,24 +107,6 @@ final class MasterQueue
             return res;
         }
 
-        private synchronized CompletionInfo getCompletionInfo( JobList jobs, NodeList workers, int idleProcessors )
-        {
-            TaskType previousType = jobs.getPreviousTaskType( type );
-            if( previousType == null ) {
-                return null;
-            }
-            long averageCompletionTime = workers.getAverageCompletionTime( type );
-            long duration;
-
-            if( averageCompletionTime == Long.MAX_VALUE ) {
-                duration = Long.MAX_VALUE;
-            }
-            else {
-                long queueTime = estimateQueueTime( idleProcessors );
-                duration = queueTime + averageCompletionTime;
-            }
-            return new CompletionInfo( previousType, duration );
-        }
     }
 
     /**
@@ -238,6 +220,38 @@ final class MasterQueue
         s.printf(  "Master: # incoming tasks = %5d\n", taskCount );
     }
 
+    /** FIXME.
+     * @param idleProcessors
+     * @param averageCompletionTime
+     * @return
+     */
+    private long getDuration( TypeInfo q, int idleProcessors, long averageCompletionTime )
+    {
+        long duration;
+
+        synchronized( this ) {
+            if( averageCompletionTime == Long.MAX_VALUE ) {
+                duration = Long.MAX_VALUE;
+            }
+            else {
+                long queueTime = q.estimateQueueTime( idleProcessors );
+                duration = queueTime + averageCompletionTime;
+            }
+        }
+        return duration;
+    }
+    private CompletionInfo getCompletionInfo( TypeInfo q, JobList jobs, NodeList workers, int idleProcessors )
+    {
+        TaskType previousType = jobs.getPreviousTaskType( q.type );
+        if( previousType == null ) {
+            return null;
+        }
+        long averageCompletionTime = workers.getAverageCompletionTime( q.type );
+        long duration = getDuration( q, idleProcessors, averageCompletionTime );
+        return new CompletionInfo( previousType, duration );
+    }
+
+
     @SuppressWarnings("synthetic-access")
     CompletionInfo[] getCompletionInfo( JobList jobs, NodeList workers, int idleProcessors )
     {
@@ -246,7 +260,7 @@ final class MasterQueue
         for( int i=0; i<res.length; i++ ) {
             TypeInfo q = queueTypes[i];
             if( q != null ){
-                res[i] = q.getCompletionInfo( jobs, workers, idleProcessors );
+                res[i] = getCompletionInfo( q, jobs, workers, idleProcessors );
             }
         }
         return res;
