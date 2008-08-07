@@ -18,20 +18,9 @@ public class AlternativesTask implements Task {
      * @return The name, composed of the names of the alternatives.
      */
     @Override
-    public String getName() {
-	StringBuffer buf = new StringBuffer( "alternatives[" );
-	boolean first = true;
-	for( Task t: alternatives ) {
-	    if( first ) {
-		first = false;
-	    }
-	    else {
-		buf.append( ',' );
-	    }
-	    buf.append( t.getName() );
-	}
-	buf.append( ']' );
-	return buf.toString();
+    public String getName()
+    {
+	return "alternatives" + java.util.Arrays.deepToString( alternatives );
     }
 
     /**

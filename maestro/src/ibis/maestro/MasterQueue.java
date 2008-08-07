@@ -291,7 +291,6 @@ final class MasterQueue
                 predictedDuration = localNodeInfo.getPredictedDuration( task.type );
             }
         }
-
         if( best == null ) {
             if( Settings.traceMasterQueue ){
                 Globals.log.reportProgress( "No workers for task of type " + task.type );
@@ -305,8 +304,11 @@ final class MasterQueue
     }
 
     /**
-     * @param tables  
-     * @return
+     * Get a job submission from the queue. The entries are tried from front
+     * to back, and the first one for which a worker can be found is returned.
+     * @param tables Timing tables for the different workers.
+     * @return A job submission, or <code>null</code> if there are no
+     *   free workers for any of the jobs in the queue.
      */
     synchronized Submission getSubmission( HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap, NodeUpdateInfo[] tables )
     {

@@ -401,7 +401,7 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleProcessorCount() );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
-        NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier() );
+        NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier(), getIdleProcessorCount() );
         return update;
     }
 
@@ -667,6 +667,27 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         return false;
     }
+    
+    private void executeTask( RunTaskMessage message, Task task, Object input, long runMoment )
+    {
+        if( task instanceof AtomicTask ) {
+            AtomicTask at = (AtomicTask) task;
+            Object result = at.run( input, this );
+            transferResult( message, result, runMoment );
+        }
+        else if( task instanceof MapReduceTask ) {
+            MapReduceTask mrt = (MapReduceTask) task;
+            MapReduceHandler handler = new MapReduceHandler( this, mrt, message, runMoment );
+            mrt.map( input, handler );
+            handler.start();
+        }
+        else if( task instanceof AlternativesTask ) {
+            Globals.log.reportInternalError( "AlternativesTask should have been selected by the master " + task );
+        }
+        else {
+            Globals.log.reportInternalError( "Don't know what to do with a task of type " + task.getClass() );
+        }
+    }
 
     /** Run a work thread. Only return when we want to shut down the node. */
     void runWorkThread()
@@ -711,23 +732,7 @@ public final class Node extends Thread implements PacketReceiveListener
                     System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueInterval ) + "; there are now " + runningTasks + " running tasks" );
                 }
                 Object input = message.taskInstance.input;
-                if( task instanceof AtomicTask ) {
-                    AtomicTask at = (AtomicTask) task;
-                    Object result = at.run( input, this );
-                    transferResult( message, result, runMoment );
-                }
-                else if( task instanceof MapReduceTask ) {
-                    MapReduceTask mrt = (MapReduceTask) task;
-                    MapReduceHandler handler = new MapReduceHandler( this, mrt, message, runMoment );
-                    mrt.map( input, handler );
-                    handler.start();
-                }
-                else if( task instanceof AlternativesTask ) {
-                    // FIXME: implement this.
-                }
-                else {
-                    Globals.log.reportInternalError( "Don't know what to do with a task of type " + task.getClass() );
-                }
+                executeTask( message, task, input, runMoment );
                 if( Settings.traceNodeProgress ) {
                     System.out.println( "Work thread: completed " + message );
                 }
@@ -770,7 +775,7 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleProcessorCount() );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
-	NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier() );
+	NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier(), getIdleProcessorCount() );
 	gossiper.registerGossip( update );
         long workerDwellTime = taskCompletionMoment-message.getQueueMoment();
         if( traceStats ) {

@@ -26,12 +26,15 @@ public class NodeUpdateInfo implements Serializable
 
     final long timestamp;
 
+    final int idleProcessors;
+
     NodeUpdateInfo( CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo,
-        IbisIdentifier source )
+        IbisIdentifier source, int idleProcessors )
     {
         this.completionInfo = completionInfo;
         this.workerQueueInfo = workerQueueInfo;
         this.source = source;
+        this.idleProcessors = idleProcessors;
         this.timestamp = System.nanoTime();
     }
 
@@ -42,7 +45,8 @@ public class NodeUpdateInfo implements Serializable
         return new NodeUpdateInfo(
             completionInfoCopy,
             workerQueueInfoCopy,
-            source
+            source,
+            idleProcessors
         );
     }
 
@@ -126,16 +130,27 @@ public class NodeUpdateInfo implements Serializable
         WorkerQueueInfo queueInfo = searchWorkerQueueInfo( type );
         CompletionInfo typeCompletionInfo = searchCompletionInfoForType( type );
 
-        int currentTasks = localNodeInfo.getCurrentTasks( type );
-        int allowance = localNodeInfo.getAllowance( type );
-        if( currentTasks>=allowance ) {
-            return Long.MAX_VALUE;
-        }
         if( queueInfo == null ) {
             if( Settings.traceRemainingJobTime ) {
                 Globals.log.reportError( "Node " + source + " does not provide queue info for type " + type );
             }
             return Long.MAX_VALUE;
+        }
+        int currentTasks = localNodeInfo.getCurrentTasks( type );
+        if( type.unpredictable ) {
+            if( idleProcessors == 0 ) {
+        	// Don't 
+                if( Settings.traceRemainingJobTime ) {
+                    Globals.log.reportError( "Node " + source + " has no idle processors" );
+                }
+        	return Long.MAX_VALUE;
+            }
+        }
+        else {
+            int allowance = localNodeInfo.getAllowance( type );
+            if( currentTasks>=allowance ) {
+        	return Long.MAX_VALUE;
+            }
         }
         if( localNodeInfo.suspect ){
             if( Settings.traceRemainingJobTime ) {

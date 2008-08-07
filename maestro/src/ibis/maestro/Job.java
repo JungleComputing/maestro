@@ -75,8 +75,16 @@ public final class Job
     private TaskType[] buildTaskTypes( Task[] taskList )
     {
 	TaskType res[] = new TaskType[taskList.length];
+	int ix = taskList.length;
+	boolean unpredictable = false;
+	// Walk the list from back to front to allow
+	// earlier tasks to be marked unpredictable if one
+	// it or one of the following tasks is unpredictable.
 	for( int i=0; i<taskList.length; i++ ) {
-	    res[i] = new TaskType( id, i, (taskList.length-1)-i, index++ );
+	    if( taskList[i] instanceof UnpredictableTask ) {
+		unpredictable = true;
+	    }
+	    res[i] = new TaskType( id, i, (taskList.length-1)-i, unpredictable, index++ );
 	}
 	return res;
     }

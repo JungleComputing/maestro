@@ -17,6 +17,7 @@ final class TaskType implements Serializable
     final int remainingTasks;
     final int index;
     final JobIdentifier job;
+    final boolean unpredictable;
 
     /** Constructs a new task type.
      * 
@@ -24,11 +25,12 @@ final class TaskType implements Serializable
      * @param taskNo The sequence number within the job.
      * @param remainingTasks The number of tasks after this one in the job.
      */
-    TaskType( JobIdentifier id, int taskNo, int remainingTasks, int index )
+    TaskType( JobIdentifier id, int taskNo, int remainingTasks, boolean unpredictable, int index )
     {
         this.job = id;
         this.taskNo = taskNo;
         this.remainingTasks = remainingTasks;
+        this.unpredictable = unpredictable;
         this.index = index;
     }
 

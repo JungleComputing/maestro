@@ -41,7 +41,7 @@ public class WorkerQueueTest extends TestCase
     public void testAdd()
     {
 	JobIdentifier id = null;
-	TaskType type = new TaskType( id, 0, 1, 0 );
+	TaskType type = new TaskType( id, 0, 1, false, 0 );
         TaskType l[] = new TaskType[] { type };
 	WorkerQueue queue = new WorkerQueue( l, null );   // FIXME: the null will cause a crash
 
