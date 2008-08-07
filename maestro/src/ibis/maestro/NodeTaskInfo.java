@@ -6,7 +6,7 @@ import java.io.PrintStream;
  * Information the node has about a particular task type on a particular node.
  */
 final class NodeTaskInfo {
-    final TaskInfo taskInfo;
+    final WorkerQueueTaskInfo taskInfo;
 
     private final NodeInfo nodeInfo;
 
@@ -48,7 +48,7 @@ final class NodeTaskInfo {
      * @param local True iff this is the local worker.
      * @param pingTime The ping time of this worker.
      */
-    NodeTaskInfo( TaskInfo taskInfo, NodeInfo worker, boolean local, long pingTime )
+    NodeTaskInfo( WorkerQueueTaskInfo taskInfo, NodeInfo worker, boolean local, long pingTime )
     {
         this.taskInfo = taskInfo;
         this.nodeInfo = worker;
@@ -62,7 +62,7 @@ final class NodeTaskInfo {
         this.roundtripErrorEstimate = new TimeEstimate( 2*pingTime );
         this.computeTime = 2*pingTime;
         this.dequeueTime = 1*pingTime;
-        this.remainingJobTime = taskInfo.type.remainingTasks*(computeTime+dequeueTime+pingTime);
+        this.remainingJobTime = taskInfo.type.remainingTasks*( computeTime+dequeueTime+pingTime );
         if( Settings.traceWorkerList || Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "Created new WorkerTaskInfo " + toString() );
         }

@@ -1,19 +1,26 @@
 package ibis.maestro;
 
 import java.io.PrintStream;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Statistics per type for the different task types in the queue.
  * 
  * @author Kees van Reeuwijk
  */
-final class WorkerQueueTypeInfo
+final class WorkerQueueTaskInfo
 {
     /** The type these statistics are about. */
     final TaskType type;
 
+    /** The workers that are willing to execute this task. */
+    private final List<NodeTaskInfo> workers = new LinkedList<NodeTaskInfo>(); 
+
     /** The total number of tasks of this type that entered the queue. */
     private long incompingTaskCount = 0;
+
+    private int outGoingTaskCount = 0;
 
     /** Current number of elements of this type in the queue. */
     private int elements = 0;
@@ -24,16 +31,16 @@ final class WorkerQueueTypeInfo
     /** The last moment in ns that the front of the queue changed. */
     private long frontChangedTime = 0;
 
+    private final TimeEstimate queueTimePerTask = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
+
     /** The estimated time interval between tasks being dequeued. */
     private final TimeEstimate dequeueInterval = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
 
-    private int outGoingTaskCount = 0;
     private long totalWorkTime = 0;        
     private long totalQueueTime = 0;     // Cumulative queue time of all tasks.
-    final TimeEstimate averageComputeTime = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
-    final TimeEstimate queueTimePerTask = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
+    private final TimeEstimate averageComputeTime = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
 
-    WorkerQueueTypeInfo( TaskType type  )
+    WorkerQueueTaskInfo( TaskType type  )
     {
         this.type = type;
     }
@@ -126,5 +133,34 @@ final class WorkerQueueTypeInfo
     {
         totalQueueTime += v;
         queueTimePerTask.addSample( v );
+    }
+
+    /**
+     * Returns the best average completion time for this task.
+     * We compute this by taking the minimum over all our workers.
+     * @return The best average completion time of our workers.
+     */
+    synchronized long getAverageCompletionTime()
+    {
+        long res = Long.MAX_VALUE;
+
+        for( NodeTaskInfo wi: workers ) {
+            long val = wi.getAverageCompletionTime();
+
+            if( val<res ) {
+                res = val;
+            }
+        }
+        return res;
+    }
+
+    void registerNode( NodeInfo nodeInfo )
+    {
+        NodeTaskInfo nodeTaskInfo = nodeInfo.get( type );
+        synchronized( this ) {
+            if( nodeTaskInfo != null ) {
+                workers.add( nodeTaskInfo );
+            }
+        }
     }
 }

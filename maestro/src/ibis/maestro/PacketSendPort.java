@@ -199,7 +199,7 @@ class PacketSendPort {
      * old entry.
      */
     @SuppressWarnings("synthetic-access")
-    private CacheInfo ensureOpenDestination( DestinationInfo newDestination, int timeout )
+    private CacheInfo getAndReserveCacheInfo( DestinationInfo newDestination, int timeout )
     {
         CacheInfo cacheInfo;
         long tStart;
@@ -271,11 +271,14 @@ class PacketSendPort {
     {
         long len;
         boolean ok = true;
-        DestinationInfo info = destinations.get( theIbis );
+        DestinationInfo info;
+        synchronized( this ) {
+            info = destinations.get( theIbis );
 
-        if( info == null ) {
-            info = new DestinationInfo( theIbis, false );  // We know the local node has registered itself.
-            destinations.put( theIbis, info );
+            if( info == null ) {
+        	info = new DestinationInfo( theIbis, false );  // We know the local node has registered itself.
+        	destinations.put( theIbis, info );
+            }
         }
         info.incrementSentCount();
         if( info.local ) {
@@ -293,7 +296,7 @@ class PacketSendPort {
             long t;
 
             try {
-                final CacheInfo cacheInfo = ensureOpenDestination( info, timeout );
+                final CacheInfo cacheInfo = getAndReserveCacheInfo( info, timeout );
                 if( cacheInfo == null ){
                     // Couldn't open a connection to the destination.
                     return false;
@@ -372,8 +375,7 @@ class PacketSendPort {
             ok = send( id, msg, timeout );
         }
         catch (IOException e) {
-            DestinationInfo info = destinations.get( id );
-            node.setSuspect( info.ibisIdentifier );
+            node.setSuspect( id );
             Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to master " + id );
             e.printStackTrace( Globals.log.getPrintStream() );
         }

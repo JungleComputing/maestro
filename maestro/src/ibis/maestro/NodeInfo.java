@@ -4,6 +4,7 @@ import ibis.ipl.IbisIdentifier;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Information that the worker maintains for a master.
@@ -14,7 +15,7 @@ import java.util.ArrayList;
 final class NodeInfo
 {
     /** The active tasks of this worker. */
-    private final ArrayList<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
+    private final List<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
 
     /** Info about the tasks for this particular node. */
     private final NodeTaskInfo nodeTaskInfoList[];
@@ -36,7 +37,7 @@ final class NodeInfo
      * @param ibis The ibis identifier of the node.
      * @param local Is this the local node?
      */
-    protected NodeInfo( IbisIdentifier ibis, TaskInfoList taskInfoList, boolean local )
+    protected NodeInfo( IbisIdentifier ibis, WorkerQueue workerQueue, boolean local )
     {
         this.ibis = ibis;
         this.local = local;
@@ -47,10 +48,10 @@ final class NodeInfo
         long pessimisticPingTime = local?0L:Service.HOUR_IN_NANOSECONDS;
         for( TaskType type: Globals.supportedTaskTypes ) {
             int ix = type.index;
-            TaskInfo taskInfo = taskInfoList.getTaskInfo( type );
+            WorkerQueueTaskInfo taskInfo = workerQueue.getTaskInfo( type );
             nodeTaskInfoList[ix] = new NodeTaskInfo( taskInfo, this, local, pessimisticPingTime );
         }
-        taskInfoList.registerNode( this );
+        workerQueue.registerNode( this );
     }
     
     NodeTaskInfo get( TaskType t )

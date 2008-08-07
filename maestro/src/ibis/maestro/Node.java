@@ -51,9 +51,6 @@ public final class Node extends Thread implements PacketReceiveListener
     /** The list of running jobs with their completion listeners. */
     private final RunningJobs runningJobs = new RunningJobs();
 
-    /** Info about all tasks. */
-    private final TaskInfoList taskInfoList;
-
     /** The list of nodes we know about. */
     private final NodeList nodes;
 
@@ -161,10 +158,9 @@ public final class Node extends Thread implements PacketReceiveListener
         TaskType taskTypes[] = jobs.getSupportedTaskTypes();
         Globals.numberOfTaskTypes = Job.getTaskCount();
         Globals.supportedTaskTypes = taskTypes;
-        taskInfoList = new TaskInfoList( taskTypes );
-        nodes = new NodeList( taskInfoList );
         masterQueue = new MasterQueue( jobs.getAllTypes() );
         workerQueue = new WorkerQueue( taskTypes, jobs );
+        nodes = new NodeList( workerQueue );
         nonEssentialSender = new NonEssentialSender();
         nonEssentialSender.start();
         ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
@@ -404,7 +400,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private NodeUpdateInfo buildLocalUpdate()
     {
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleProcessorCount() );
-        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
+        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
         NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier() );
         return update;
     }
@@ -773,7 +769,7 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
         }
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleProcessorCount() );
-        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
+        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
 	NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier() );
 	gossiper.registerGossip( update );
         long workerDwellTime = taskCompletionMoment-message.getQueueMoment();

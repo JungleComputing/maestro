@@ -14,11 +14,11 @@ import java.util.Map;
  */
 final class NodeList {
     private HashMap<IbisIdentifier,NodeInfo> ibisToNodeMap = new HashMap<IbisIdentifier, NodeInfo>();
-    private final TaskInfoList taskInfoList;
+    WorkerQueue workerQueue;
 
-    NodeList( TaskInfoList taskInfoList )
+    NodeList( WorkerQueue taskInfoList )
     {
-        this.taskInfoList = taskInfoList;
+        this.workerQueue = taskInfoList;
     }
 
     /**
@@ -51,7 +51,7 @@ final class NodeList {
         if( info != null ) {
             return info;
         }
-        info = new NodeInfo( theIbis, taskInfoList, local );
+        info = new NodeInfo( theIbis, workerQueue, local );
         ibisToNodeMap.put( theIbis, info );
         return info;
     }
@@ -96,7 +96,7 @@ final class NodeList {
      */
     long getAverageCompletionTime( TaskType taskType )
     {
-        TaskInfo taskInfo = taskInfoList.getTaskInfo( taskType );
+        WorkerQueueTaskInfo taskInfo = workerQueue.getTaskInfo( taskType );
         if( taskInfo == null ) {
             return Long.MAX_VALUE;
         }
@@ -163,8 +163,8 @@ final class NodeList {
         }
     }
 
-    /** FIXME.
-     * @return
+    /** Returns a table of local information for every known node.
+     * @return The information table.
      */
     synchronized HashMap<IbisIdentifier, LocalNodeInfo> getLocalNodeInfo()
     {

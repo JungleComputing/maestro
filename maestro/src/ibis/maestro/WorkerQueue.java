@@ -15,7 +15,7 @@ import java.util.ArrayList;
  */
 final class WorkerQueue {
     private final ArrayList<RunTaskMessage> queue = new ArrayList<RunTaskMessage>();
-    private final WorkerQueueTypeInfo queueTypes[];
+    private final WorkerQueueTaskInfo queueTypes[];
     private long queueEmptyMoment = System.nanoTime();
     private long idleDuration = 0;
     private long activeTime = 0L;
@@ -27,9 +27,9 @@ final class WorkerQueue {
      */
     WorkerQueue( TaskType[] taskTypes, JobList jobs )
     {
-	queueTypes = new WorkerQueueTypeInfo[Globals.numberOfTaskTypes];
+	queueTypes = new WorkerQueueTaskInfo[Globals.numberOfTaskTypes];
         for( TaskType t: taskTypes ) {
-            WorkerQueueTypeInfo queueTypeInfo = new WorkerQueueTypeInfo( t );
+            WorkerQueueTaskInfo queueTypeInfo = new WorkerQueueTaskInfo( t );
 	    queueTypes[t.index] = queueTypeInfo;
             Task task = jobs.getTask( t );
             if( task instanceof TaskExecutionTimeEstimator ) {
@@ -86,12 +86,12 @@ final class WorkerQueue {
     }
 
     @SuppressWarnings("synthetic-access")
-    protected WorkerQueueInfo[] getWorkerQueueInfo( TaskInfoList taskInfoList )
+    protected WorkerQueueInfo[] getWorkerQueueInfo()
     {
         WorkerQueueInfo res[] = new WorkerQueueInfo[queueTypes.length];
 
         for( int i=0; i<res.length; i++ ) {
-            WorkerQueueTypeInfo q = queueTypes[i];
+            WorkerQueueTaskInfo q = queueTypes[i];
 
             if( q != null ){
         	res[i] = q.getWorkerQueueInfo();
@@ -117,7 +117,7 @@ final class WorkerQueue {
             queueEmptyMoment = 0L;
         }
         TaskType type = msg.taskInstance.type;
-        WorkerQueueTypeInfo info = queueTypes[type.index];
+        WorkerQueueTaskInfo info = queueTypes[type.index];
         int length = info.registerAdd();
         int pos = findInsertionPoint( queue, msg );
         queue.add( pos, msg );
@@ -129,13 +129,13 @@ final class WorkerQueue {
 
     void countTask( TaskType type, long computeInterval )
     {
-        WorkerQueueTypeInfo info = queueTypes[type.index];
+        WorkerQueueTaskInfo info = queueTypes[type.index];
         info.countTask( computeInterval );
     }
 
     void setQueueTimePerTask( TaskType type, long queueTime, int queueLength )
     {
-        WorkerQueueTypeInfo info = queueTypes[type.index];
+        WorkerQueueTaskInfo info = queueTypes[type.index];
         info.setQueueTimePerTask( queueTime/(queueLength+1) );
     }
 
@@ -148,7 +148,7 @@ final class WorkerQueue {
             return null;
         }
         RunTaskMessage res = queue.remove( 0 );
-        WorkerQueueTypeInfo info = queueTypes[res.taskInstance.type.index];
+        WorkerQueueTaskInfo info = queueTypes[res.taskInstance.type.index];
         int length = info.registerRemove();
         if( Settings.traceQueuing ) {
             Globals.log.reportProgress( "Removing " + res.taskInstance.formatJobAndType() + " from worker queue; length is now " + queue.size() + "; " + length + " of type " + res.taskInstance.type );
@@ -170,9 +170,24 @@ final class WorkerQueue {
     {
         double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
         s.println( "Worker: total idle time = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
-        for( WorkerQueueTypeInfo t: queueTypes ) {
+        for( WorkerQueueTaskInfo t: queueTypes ) {
             if( t != null ) {
                 t.printStatistics( s, workInterval );
+            }
+        }
+    }
+
+    WorkerQueueTaskInfo getTaskInfo( TaskType type )
+    {
+        return queueTypes[type.index];
+    }
+
+    void registerNode( NodeInfo nodeInfo )
+    {
+        for( WorkerQueueTaskInfo info: queueTypes )
+        {
+            if( info != null ) {
+                info.registerNode( nodeInfo );
             }
         }
     }
