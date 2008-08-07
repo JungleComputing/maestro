@@ -167,14 +167,14 @@ final class NodeInfo
         final long id = result.taskId;    // The identifier of the task, as handed out by us.
 
         ActiveTask task = extractActiveTask( id );
-        long roundtripTime = result.arrivalMoment-task.startTime;
-        long roundtripError = Math.abs( task.predictedDuration-roundtripTime );
-        long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
 
         if( task == null ){
             Globals.log.reportInternalError( "Ignoring reported result from task with unknown id " + id );
             return;
         }
+        long roundtripTime = result.arrivalMoment-task.startTime;
+        long roundtripError = Math.abs( task.predictedDuration-roundtripTime );
+        long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
         if( task.getAllowanceDeadline()<result.arrivalMoment ) {
             missedAllowanceDeadlines++; // TODO: locked
             if( Settings.traceMissedDeadlines ){

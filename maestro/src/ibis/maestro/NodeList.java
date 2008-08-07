@@ -62,13 +62,13 @@ final class NodeList {
      */
     synchronized void registerTaskCompleted( TaskCompletedMessage result )
     {
-        NodeInfo w = ibisToNodeMap.get( result.source );
-        if( w == null ) {
-            Globals.log.reportError( "Worker status message from unknown worker " + result.source );
+        NodeInfo node = ibisToNodeMap.get( result.source );
+        if( node == null ) {
+            Globals.log.reportError( "Task completed message from unknown node " + result.source );
             return;
         }
-        w.registerTaskCompleted( result );
-        w.registerAsCommunicating();
+        node.registerTaskCompleted( result );
+        node.registerAsCommunicating();
     }
 
     /**
