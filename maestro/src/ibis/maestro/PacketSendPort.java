@@ -144,6 +144,21 @@ class PacketSendPort {
         destinations.put( localIbis, new DestinationInfo( localIbis, true ) );
     }
 
+    /**
+     * Given a receive port, registers it with this packet send port, and returns an identifier of the port.
+     * @param theIbis The port to register.
+     */
+    @SuppressWarnings("synthetic-access")
+    synchronized void registerDestination( IbisIdentifier theIbis )
+    {
+        DestinationInfo destinationInfo = destinations.get( theIbis );
+        if( destinationInfo != null ) {
+            // Already registered. Don't worry about the duplication.
+            return;
+        }
+        destinations.put( theIbis, new DestinationInfo( theIbis, false ) );
+    }
+
     /** Return an empty slot in the cache.
      * Assumes there is a lock on 'this'.
      */
@@ -156,6 +171,7 @@ class PacketSendPort {
                 return clockHand;
             }
             if( e.useCount<=0 ) {
+                // Only consider slots that are not in use.
                 if( e.recentlyUsed ){
                     // Next round it will not be considered recently used,
                     // unless it is used. For now don't consider it an
@@ -176,49 +192,64 @@ class PacketSendPort {
     /**
      * Create a cache slot for the given connection. If necessary evict the
      * old entry.
-     * @throws IOException 
      */
     @SuppressWarnings("synthetic-access")
-    private void ensureOpenDestination( DestinationInfo newDestination, int timeout ) throws IOException
+    private CacheInfo ensureOpenDestination( DestinationInfo newDestination, int timeout )
     {
-        if( newDestination.local || newDestination.cacheSlot != null ){
-            return;
-        }
-        long tStart = System.nanoTime();
-        int ix = searchCacheEmptySlot();
+        CacheInfo cacheInfo;
+        long tStart;
 
-        CacheInfo cacheInfo = cache[ix];
-        if( cacheInfo == null ){
-            // An unused cache slot. Start to use it.
-            cacheInfo = cache[ix] = new CacheInfo();
+        synchronized( this ){
+            // We need a lock as long as we don't have a cache slot with
+            // a non-zero use count.
+            if( newDestination.local || newDestination.cacheSlot != null ){
+                cacheInfo = newDestination.cacheSlot;
+                cacheInfo.recentlyUsed = true;
+                cacheInfo.useCount++;
+                return cacheInfo;
+            }
+            tStart = System.nanoTime();
+            int ix = searchCacheEmptySlot();
+
+            cacheInfo = cache[ix];
+            if( cacheInfo == null ){
+                // An unused cache slot. Start to use it.
+                cacheInfo = cache[ix] = new CacheInfo();
+            }
+            else {
+                // Somebody was using this cache slot. Evict him.
+                try {
+                    cacheInfo.close();
+                }
+                catch ( IOException x ){
+                    // The previous connection could not be closed.
+                    // Too bad, but there is nothing we can do about it.
+                }
+                evictions++;
+            }
+            cacheInfo.recentlyUsed = true;
+            cacheInfo.useCount = 1;
+            newDestination.cacheSlot = cacheInfo;
         }
-        else {
-            // Somebody was using this cache slot. Evict him.
-            cacheInfo.close();
-            evictions++;
+        SendPort port;
+        try {
+            port = Globals.localIbis.createSendPort( portType );
+            port.connect( newDestination.ibisIdentifier, Globals.receivePortName, timeout, true );
         }
-        newDestination.cacheSlot = cacheInfo;
-        SendPort port = Globals.localIbis.createSendPort( portType );
-        port.connect( newDestination.ibisIdentifier, Globals.receivePortName, timeout, true );
+        catch( IOException x ){
+            synchronized( this ){
+                // Release our hold on this cache slot; we're
+                // not going to use it.
+                cacheInfo.useCount--;
+            }
+            return null;
+        }
         long tEnd = System.nanoTime();
-        adminTime += (tEnd-tStart);
         cacheInfo.port = port;
-        cacheInfo.useCount = 0;  // Should be 0, but paranoia doesn't hurt here.
-    }
-
-    /**
-     * Given a receive port, registers it with this packet send port, and returns an identifier of the port.
-     * @param theIbis The port to register.
-     */
-    @SuppressWarnings("synthetic-access")
-    synchronized void registerDestination( IbisIdentifier theIbis )
-    {
-        DestinationInfo destinationInfo = destinations.get( theIbis );
-        if( destinationInfo != null ) {
-            // Already registered. Don't worry about the duplication.
-            return;
+        synchronized( this ){
+            adminTime += (tEnd-tStart);
         }
-        destinations.put( theIbis, new DestinationInfo( theIbis, false ) );
+        return cacheInfo;
     }
 
     /**
@@ -226,7 +257,7 @@ class PacketSendPort {
      * @param theIbis The port to send it to.
      * @param message The data to send.
      * @param timeout The timeout of the transmission.
-     * @return The length of the transmitted data.
+     * @return <code>true</code> if we managed to send the data.
      * @throws IOException Thrown if there is a communication error.
      */
     @SuppressWarnings("synthetic-access")
@@ -256,18 +287,13 @@ class PacketSendPort {
             long t;
 
             try {
-                SendPort port;
-                long startTime;
-                final CacheInfo cacheInfo;
-
-                synchronized( this ) {
-                    ensureOpenDestination( info, timeout );
-                    startTime = System.nanoTime();
-                    cacheInfo = info.cacheSlot;
-                    cacheInfo.recentlyUsed = true;
-                    cacheInfo.useCount++;
-                    port = cacheInfo.port;
+                final CacheInfo cacheInfo = ensureOpenDestination( info, timeout );
+                if( cacheInfo == null ){
+                    // Couldn't open a connection to the destination.
+                    return false;
                 }
+                SendPort port = cacheInfo.port;
+                long startTime = System.nanoTime();
                 WriteMessage msg = port.newMessage();
                 msg.writeObject( message );
                 len = msg.finish();

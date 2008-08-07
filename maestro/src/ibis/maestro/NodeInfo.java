@@ -152,7 +152,6 @@ final class NodeInfo
     {
         int ix = searchActiveTask( id );
         if( ix<0 ) {
-            Globals.log.reportInternalError( "Ignoring reported result from task with unknown id " + id );
             return null;
         }
         return activeTasks.remove( ix );
@@ -163,7 +162,7 @@ final class NodeInfo
      * @param result The task result message that tells about this task.
      * @param arrivalMoment The time in ns the message arrived.
      */
-    TaskType registerTaskCompleted( TaskCompletedMessage result )
+    void registerTaskCompleted( TaskCompletedMessage result )
     {
         final long id = result.taskId;    // The identifier of the task, as handed out by us.
 
@@ -172,6 +171,10 @@ final class NodeInfo
         long roundtripError = Math.abs( task.predictedDuration-roundtripTime );
         long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
 
+        if( task == null ){
+            Globals.log.reportInternalError( "Ignoring reported result from task with unknown id " + id );
+            return;
+        }
         if( task.getAllowanceDeadline()<result.arrivalMoment ) {
             missedAllowanceDeadlines++; // TODO: locked
             if( Settings.traceMissedDeadlines ){
@@ -194,7 +197,6 @@ final class NodeInfo
             }
             missedRescheduleDeadlines++;  // TODO: locked
         }
-        registerNodeInfo( result.workerQueueInfo );
         task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime, roundtripError );
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress(
@@ -204,7 +206,6 @@ final class NodeInfo
                 + " transmissionTime=" + Service.formatNanoseconds( newTransmissionTime )
             );
         }
-        return task.task.type;
     }
 
     /** Register the start of a new task.
@@ -229,20 +230,6 @@ final class NodeInfo
         synchronized( this ) {
             activeTasks.add( j );
         }
-    }
-
-    /** Given a task id, retract it from the administration.
-     * For some reason we could not send this task to the worker.
-     * @param id The identifier of the task.
-     */
-    void retractTask( long id )
-    {
-	ActiveTask task = extractActiveTask( id );
-        if( task == null ) {
-            Globals.log.reportInternalError( "ignoring task retraction for unknown id " + id );
-            return;
-        }
-        System.out.println( "Master: retracted task " + task );
     }
 
     /**

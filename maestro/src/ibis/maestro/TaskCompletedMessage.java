@@ -14,14 +14,6 @@ final class TaskCompletedMessage extends Message {
     /** The identifier of the task. */
     final long taskId;
 
-    /** For each type of task we know, the estimated time it will
-     * take to complete the remaining tasks of this job.
-     */
-    final CompletionInfo[] completionInfo;
-
-    /** For each type of task we know, the worker queue length. */
-    final WorkerQueueInfo[] workerQueueInfo;
-
     /** The time in ns this task spent on the worker, from arrival of work to transmission
      * of this message.
      */
@@ -36,13 +28,11 @@ final class TaskCompletedMessage extends Message {
      *     worker to complete the remaining tasks of this job.
      * @param workerQueueInfo The queue length for the different types of task.
      */
-    TaskCompletedMessage( long taskId, long workerDwellTime, CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo )
+    TaskCompletedMessage( long taskId, long workerDwellTime )
     {
         source = Globals.localIbis.identifier();
         this.taskId = taskId;
         this.workerDwellTime = workerDwellTime;
-        this.completionInfo = completionInfo;
-        this.workerQueueInfo = workerQueueInfo;
     }
 
     /**

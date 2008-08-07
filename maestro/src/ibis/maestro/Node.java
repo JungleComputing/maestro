@@ -34,13 +34,12 @@ public final class Node extends Thread implements PacketReceiveListener
     private RegistryEventHandler registryEventHandler;
 
     private final Set<IbisIdentifier> deadNodesBeforeElection = new HashSet<IbisIdentifier>();
+    private final RecentMasterList recentMasterList = new RecentMasterList();
 
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private static final int workThreadCount = numberOfProcessors+2;
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
     private final Gossiper gossiper;
-
-    private final TaskSources taskSources = new TaskSources();
 
     /** The sender of non-essential messages. */
     private final NonEssentialSender nonEssentialSender;
@@ -286,6 +285,7 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         gossiper.removeNode( theIbis );
         nonEssentialSender.removeMessagesToIbis( theIbis );
+        recentMasterList.remove( theIbis );
         ArrayList<TaskInstance> orphans = nodes.removeNode( theIbis );
         masterQueue.add( orphans );
         if( maestro != null && theIbis.equals( maestro ) ) {
@@ -405,8 +405,7 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleProcessorCount() );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
-        boolean masterHasWork = masterQueue.hasWork();
-        NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier(), masterHasWork );
+        NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier() );
         return update;
     }
 
@@ -472,6 +471,13 @@ public final class Node extends Thread implements PacketReceiveListener
             nodeInfo.registerNodeInfo( update.workerQueueInfo );
         }
     }
+    
+    private void updateRecentMasters()
+    {
+        for( IbisIdentifier ibis: recentMasterList.getArray() ){
+            postUpdateNodeMessage( ibis );
+        }
+    }
 
     /**
      * Handle a message containing a new task to run.
@@ -482,14 +488,11 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         workerQueue.add( msg );
         IbisIdentifier source = msg.source;
-        NodeInfo nodeInfo = nodes.get( source );
         boolean isDead = nodes.registerAsCommunicating( source );
         if( !isDead ) {
-            postUpdateNodeMessage( source );
-            if( nodeInfo != null ) {
-                taskSources.add( nodeInfo );
-            }
+            recentMasterList.register( source );
         }
+        updateRecentMasters();
     }
 
     /**
@@ -504,10 +507,6 @@ public final class Node extends Thread implements PacketReceiveListener
         NodeInfo nodeInfo = nodes.get( m.source );   // The get will create an entry if necessary.
         nodeInfo.registerNodeInfo( m.workerQueueInfo );
         nodeInfo.registerAsCommunicating();
-        if( m.masterHasWork ) {
-            // A node that has work deserves a message about our capabilities.
-            taskSources.add( nodeInfo );
-        }
     }
 
     /**
@@ -536,6 +535,7 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         nodes.registerTaskCompleted( result );
         handledTaskCount.add();
+        updateRecentMasters();
     }
 
     private void handleJobResultMessage( JobResultMessage m )
@@ -632,7 +632,6 @@ public final class Node extends Thread implements PacketReceiveListener
         TaskInstance task = sub.task;
         NodeInfo worker = nodes.get( node );
         long taskId = nextTaskId++;
-        worker.registerTaskStart( task, taskId, sub.predictedDuration );
         if( Settings.traceMasterQueue ) {
             System.out.println( "Selected " + node + " as best for task " + task );
         }
@@ -642,9 +641,10 @@ public final class Node extends Thread implements PacketReceiveListener
         if( !ok ){
             // Try to put the paste back in the tube.
             // The send port has already registered the trouble.
-            worker.retractTask( msg.taskId );
             masterQueue.add( msg.taskInstance );
+            return;
         }
+        worker.registerTaskStart( task, taskId, sub.predictedDuration );
         submitMessageCount.add();
     }
 
@@ -774,15 +774,14 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleProcessorCount() );
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
-	boolean masterHasWork = masterQueue.hasWork();
-	NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier(), masterHasWork );
+	NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier() );
 	gossiper.registerGossip( update );
         long workerDwellTime = taskCompletionMoment-message.getQueueMoment();
         if( traceStats ) {
             double now = 1e-9*(System.nanoTime()-startTime);
             System.out.println( "TRACE:workerDwellTime " + type + " " + now + " " + 1e-9*workerDwellTime );
         }
-        Message msg = new TaskCompletedMessage( message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
+        Message msg = new TaskCompletedMessage( message.taskId, workerDwellTime );
         boolean ok = sendPort.tryToSend( message.source, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 
         NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() );
@@ -791,5 +790,6 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         // FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
 
+        updateRecentMasters();
     }
 }

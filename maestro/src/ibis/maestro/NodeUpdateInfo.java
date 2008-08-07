@@ -24,17 +24,14 @@ public class NodeUpdateInfo implements Serializable
 
     final IbisIdentifier source;
 
-    final boolean masterHasWork;
-
     final long timestamp;
 
     NodeUpdateInfo( CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo,
-        IbisIdentifier source, boolean masterHasWork )
+        IbisIdentifier source )
     {
         this.completionInfo = completionInfo;
         this.workerQueueInfo = workerQueueInfo;
         this.source = source;
-        this.masterHasWork = masterHasWork;
         this.timestamp = System.nanoTime();
     }
 
@@ -45,8 +42,7 @@ public class NodeUpdateInfo implements Serializable
         return new NodeUpdateInfo(
             completionInfoCopy,
             workerQueueInfoCopy,
-            source,
-            masterHasWork
+            source
         );
     }
 

@@ -97,4 +97,9 @@ class Settings {
 
     /** Time in ms when gossip goes stale for nodes not in the same cluster. */
     static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 100;
+
+    /** This many nodes that recently sent a task will be kept directly up to
+     * date with our state changes (instead of through the gossip system).
+     */
+    static final int MAXIMAL_RECENT_MASTERS = 4;
 }
