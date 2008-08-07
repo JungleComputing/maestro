@@ -25,9 +25,6 @@ final class NodeInfo
 
     final boolean local;
 
-    /** The duration of the ping round-trip for this worker. */
-    private long pingTime;
-
     private int missedAllowanceDeadlines = 0;
     private int missedRescheduleDeadlines = 0;
 
@@ -47,11 +44,11 @@ final class NodeInfo
         // For non-local nodes, start with a very pessimistic ping time.
         // This means that if we really need another node, we use it, otherwise
         // we wait for the measurement of the real ping time.
-        pingTime = local?0L:Service.HOUR_IN_NANOSECONDS;   // TODO: still needs to be a field?
+        long pessimisticPingTime = local?0L:Service.HOUR_IN_NANOSECONDS;
         for( TaskType type: Globals.supportedTaskTypes ) {
             int ix = type.index;
             TaskInfo taskInfo = taskInfoList.getTaskInfo( type );
-            nodeTaskInfoList[ix] = new NodeTaskInfo( taskInfo, this, local, pingTime );
+            nodeTaskInfoList[ix] = new NodeTaskInfo( taskInfo, this, local, pessimisticPingTime );
         }
         taskInfoList.registerNode( this );
     }
@@ -279,7 +276,7 @@ final class NodeInfo
      */
     synchronized boolean isReady()
     {
-        return !suspect && pingTime != Long.MAX_VALUE;
+        return !suspect;
     }
 
     /** 

@@ -76,6 +76,9 @@ class Settings {
     /** Trace the adventures of the gossip engine? */
     static final boolean traceGossip = false;
 
+    // --- Configuration (tuning) constants. ----
+    // Unfortunately we still need some magic numbers.
+    
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.
      */
@@ -85,18 +88,6 @@ class Settings {
      * get a reschedule deadline for a task.
      */
     static final long RESCHEDULE_DEADLINE_MARGIN = 6;
-
-    /** If set, routes tasks based on worker list shuffling instead of measured times. */
-    static final boolean useShuffleRouting = false;
-
-    static final boolean noStealRequests = true;
-
-    /** The time in >>ms<<< between node updates. */
-    static final long UPDATE_INTERVAL = 30;
-
-    /** The size in longs of the padding array in a ping message. */
-    // FIXME: change again after competition.
-    static final int PING_PADDING_SIZE = 10;
 
     /** The maximal time in ms before the gossiper gets more quotum.  */
     static final long MAXIMUM_GOSSIPER_WAIT = 10;

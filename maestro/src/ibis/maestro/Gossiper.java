@@ -5,7 +5,14 @@ import ibis.ipl.IbisIdentifier;
 import java.io.PrintStream;
 
 /**
- * FIXME.
+ * A thread that gossips with the other ibises to exchange performance information.
+ * The strategy is to try and keep recent information on all nodes by exchanging
+ * information with all other nodes.
+ * 
+ * Since different nodes will have a different idea of time, we timestamp
+ * gossip information ourselves. Info from many hops away may in fact
+ * be stale, but at least every provider also puts a timestamp on
+ * the info, and we will never replace info with older info.
  *
  * @author Kees van Reeuwijk.
  */
@@ -31,9 +38,6 @@ class Gossiper extends Thread
         return gossip.getCopy();
     }
 
-    /** FIXME.
-     * @param target
-     */
     private void sendGossip( IbisIdentifier target, boolean needsReply )
     {
         if( Settings.traceGossip ) {

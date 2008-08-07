@@ -275,7 +275,7 @@ final class MasterQueue
      * @return The info of the best worker for this task, or <code>null</code>
      *         if there currently aren't any workers for this task type.
      */
-    private boolean selectBestWorker( Submission sub, HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap, NodeUpdateInfo tables[], TaskType type )
+    private Submission selectBestWorker( HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap, NodeUpdateInfo tables[], TaskInstance task )
     {
         NodeUpdateInfo best = null;
         long bestInterval = Long.MAX_VALUE;
@@ -283,29 +283,27 @@ final class MasterQueue
 
         for( NodeUpdateInfo info: tables ) {
             LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
-            long val = info.estimateJobCompletion( localNodeInfo, type );
+            long val = info.estimateJobCompletion( localNodeInfo, task.type );
 
             if( val<Long.MAX_VALUE ) {
                 if( val<bestInterval ) {
                     bestInterval = val;
                     best = info;
-                    predictedDuration = localNodeInfo.getPredictedDuration( type );
+                    predictedDuration = localNodeInfo.getPredictedDuration( task.type );
                 }
             }
         }
 
         if( best == null ) {
             if( Settings.traceMasterQueue ){
-                Globals.log.reportProgress( "No workers for task of type " + type );
+                Globals.log.reportProgress( "No workers for task of type " + task.type );
             }
-            return false;
+            return null;
         }
         if( Settings.traceMasterQueue ){
-            Globals.log.reportProgress( "Selected worker " + best.source + " for task of type " + type );
+            Globals.log.reportProgress( "Selected worker " + best.source + " for task of type " + task.type );
         }
-        sub.worker = best.source;
-        sub.predictedDuration = predictedDuration;
-        return true;
+        return new Submission( task, best.source, predictedDuration );
     }
 
     /**
@@ -315,19 +313,17 @@ final class MasterQueue
     synchronized Submission getSubmission( HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap, NodeUpdateInfo[] tables )
     {
         int ix = 0;
-        Submission sub = new Submission();
         while( ix<queue.size() ) {
             TaskInstance task = queue.get( ix );
             TaskType type = task.type;
-            boolean ok = selectBestWorker( sub, localNodeInfoMap, tables, type );
-            if( ok ) {
+            Submission sub = selectBestWorker( localNodeInfoMap, tables, task );
+            if( sub != null ) {
                 queue.remove( ix );
                 TypeInfo info = queueTypes[type.index];
                 int length = info.registerRemove();
                 if( Settings.traceMasterQueue || Settings.traceQueuing ) {
                     Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type );
                 }
-                sub.task = task;
                 return sub;
             }
             if( Settings.traceMasterQueue ){

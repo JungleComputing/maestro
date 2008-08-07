@@ -102,8 +102,11 @@ class GossipNodeList
         extractGossipNode( ibis );
     }
 
-    /** FIXME.
-     * @param ibis
+    /** Given an ibis identifier, remove and return any GossipNode for this
+     * ibis from the list.
+     * @param ibis The ibis to extract.
+     * @return The GossipNode of the ibis, or <code>null</code> if there
+     *      wasn't any.
      */
     private GossipNode extractGossipNode( IbisIdentifier ibis )
     {
@@ -116,8 +119,9 @@ class GossipNodeList
         return null;
     }
 
-    /** FIXME.
-     * @param source
+    /** Registers that we had a recent update from this ibis (so that we
+     * don't have to bother to ask for it ourselves).
+     * @param source The ibis for which we had a recent update.
      */
     synchronized void hadRecentUpdate( IbisIdentifier source )
     {
@@ -129,8 +133,9 @@ class GossipNodeList
         nodes.add( node );
     }
 
-    /** FIXME.
-     * @param source
+    /** Tells the administration that we would urgently like to see
+     * an update from the given source.
+     * @param source The ibis for which we want an urgent update.
      */
     synchronized void needsUrgentUpdate( IbisIdentifier source )
     {

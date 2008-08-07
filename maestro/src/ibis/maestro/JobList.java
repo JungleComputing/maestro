@@ -126,17 +126,11 @@ public final class JobList
         return job.getNextTaskType( type );
     }
 
-    /** FIXME.
-     * @return
-     */
     int getNumberOfTaskTypes()
     {
         return jobCounter;
     }
 
-    /** FIXME.
-     * @return
-     */
     TaskType[] getAllTypes()
     {
         return taskTypes.toArray( new TaskType[taskTypes.size()] );

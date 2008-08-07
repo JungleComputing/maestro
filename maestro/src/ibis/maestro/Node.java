@@ -354,7 +354,7 @@ public final class Node extends Thread implements PacketReceiveListener
         nodes.checkDeadlines( System.nanoTime() );
     }
 
-    private int getIdleTasks()
+    private int getIdleProcessorCount()
     {
         return Math.max( numberOfProcessors-runningTasks.get(), 0 );
     }
@@ -399,6 +399,15 @@ public final class Node extends Thread implements PacketReceiveListener
         }
     }
 
+    private NodeUpdateInfo buildLocalUpdate()
+    {
+        CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleProcessorCount() );
+        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
+        boolean masterHasWork = masterQueue.hasWork();
+        NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier(), masterHasWork );
+        return update;
+    }
+
     private void postUpdateNodeMessage( IbisIdentifier node )
     {
         NodeUpdateInfo update = buildLocalUpdate();
@@ -409,24 +418,6 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         sendPort.tryToSend( node, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         updateMessageCount.add();
-        gossiper.registerGossip( update );
-    }
-
-    /** FIXME.
-     * @return
-     */
-    private NodeUpdateInfo buildLocalUpdate()
-    {
-        CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleTasks() );
-        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
-        boolean masterHasWork = masterQueue.hasWork();
-        NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier(), masterHasWork );
-        return update;
-    }
-
-    private void updateLocalGossip()
-    {
-        NodeUpdateInfo update = buildLocalUpdate();
         gossiper.registerGossip( update );
         NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() );
         if( nodeInfo != null ) {
@@ -470,6 +461,16 @@ public final class Node extends Thread implements PacketReceiveListener
         }
     }
 
+    private void updateLocalGossip()
+    {
+        NodeUpdateInfo update = buildLocalUpdate();
+        gossiper.registerGossip( update );
+        NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() );
+        if( nodeInfo != null ) {
+            nodeInfo.registerNodeInfo( update.workerQueueInfo );
+        }
+    }
+
     /**
      * Handle a message containing a new task to run.
      * 
@@ -487,7 +488,6 @@ public final class Node extends Thread implements PacketReceiveListener
                 taskSources.add( nodeInfo );
             }
         }
-        updateLocalGossip();
     }
 
     /**
@@ -598,7 +598,12 @@ public final class Node extends Thread implements PacketReceiveListener
     /** On a locked queue, try to send out as many task as we can. */
     private void drainMasterQueue()
     {
-        NodeUpdateInfo[] tables = gossiper.getGossipCopy();  // TODO: Check if there is work before we get the info.
+	if( masterQueue.isEmpty() ) {
+	    // Nothing to do, don't bother with the gossip.
+	    return;
+	}
+	boolean changed = false;
+        NodeUpdateInfo[] tables = gossiper.getGossipCopy();
         while( true ) {
             HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
             Submission submission = masterQueue.getSubmission( localNodeInfoMap, tables );
@@ -608,14 +613,18 @@ public final class Node extends Thread implements PacketReceiveListener
             if( Settings.traceNodeProgress ){
                 System.out.println( "Got " + submission + " from master queue" );
             }
-            sendSubmissionToWorkers( submission );
+            sendSubmissionToWorker( submission );
+            changed = true;
+        }
+        if( changed ) {
+            updateLocalGossip();
         }
     }
 
     /**
      * @param submission The list of submissions to send.
      */
-    private void sendSubmissionToWorkers( Submission sub )
+    private void sendSubmissionToWorker( Submission sub )
     {
         IbisIdentifier node = sub.worker;
         TaskInstance task = sub.task;
@@ -648,7 +657,6 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         masterQueue.add( task );
         drainMasterQueue();
-        updateLocalGossip();
     }
 
     private boolean keepRunning()
@@ -669,7 +677,6 @@ public final class Node extends Thread implements PacketReceiveListener
             RunTaskMessage message = null;
 
             updateAdministration();
-            updateLocalGossip();
             if( runningTasks.isBelow( numberOfProcessors ) ) {
                 // Only try to start a new task when there are idle
                 // processors.
@@ -741,18 +748,7 @@ public final class Node extends Thread implements PacketReceiveListener
         long taskCompletionMoment = System.nanoTime();
 
         TaskType type = message.taskInstance.type;
-        CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleTasks() );
-        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
-        long workerDwellTime = taskCompletionMoment-message.getQueueMoment();
-        if( traceStats ) {
-            double now = 1e-9*(System.nanoTime()-startTime);
-            System.out.println( "TRACE:workerDwellTime " + type + " " + now + " " + 1e-9*workerDwellTime );
-        }
-        Message msg = new TaskCompletedMessage( message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
-        boolean ok = sendPort.tryToSend( message.source, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         taskResultMessageCount.add();
-
-        // FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
 
         TaskType nextTaskType = jobs.getNextTaskType( type );
         if( nextTaskType == null ){
@@ -774,5 +770,24 @@ public final class Node extends Thread implements PacketReceiveListener
             long queueInterval = runMoment-message.getQueueMoment();
             Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
         }
+        CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleProcessorCount() );
+        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo( taskInfoList );
+	boolean masterHasWork = masterQueue.hasWork();
+	NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier(), masterHasWork );
+	gossiper.registerGossip( update );
+        long workerDwellTime = taskCompletionMoment-message.getQueueMoment();
+        if( traceStats ) {
+            double now = 1e-9*(System.nanoTime()-startTime);
+            System.out.println( "TRACE:workerDwellTime " + type + " " + now + " " + 1e-9*workerDwellTime );
+        }
+        Message msg = new TaskCompletedMessage( message.taskId, workerDwellTime, completionInfo, workerQueueInfo );
+        boolean ok = sendPort.tryToSend( message.source, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+
+        NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() );
+        if( nodeInfo != null ) {
+            nodeInfo.registerNodeInfo( update.workerQueueInfo );
+        }
+        // FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
+
     }
 }

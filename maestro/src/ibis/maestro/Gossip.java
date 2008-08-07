@@ -33,9 +33,9 @@ class Gossip
         return content;
     }
 
-    /** FIXME.
-     * @param update
-     * @return
+    /** Registers the given information in our collection of gossip.
+     * @param update The information to register.
+     * @return True iff we learned something new.
      */
     synchronized boolean register( NodeUpdateInfo update )
     {

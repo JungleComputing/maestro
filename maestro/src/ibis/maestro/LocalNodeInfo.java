@@ -1,7 +1,7 @@
 package ibis.maestro;
 
 /**
- * FIXME.
+ * Local information about the nodes. 
  *
  * @author Kees van Reeuwijk.
  */
