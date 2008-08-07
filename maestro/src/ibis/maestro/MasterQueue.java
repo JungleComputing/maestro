@@ -285,7 +285,7 @@ final class MasterQueue
             LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
             long val = info.estimateJobCompletion( localNodeInfo, task.type );
 
-            if( val<Long.MAX_VALUE && val<bestInterval ) {
+            if( val<bestInterval ) {
                 bestInterval = val;
                 best = info;
                 predictedDuration = localNodeInfo.getPredictedDuration( task.type );

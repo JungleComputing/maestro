@@ -209,6 +209,7 @@ public final class Node extends Thread implements PacketReceiveListener
         sendPort = new PacketSendPort( this, localIbis.identifier() );
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
         startTime = System.nanoTime();
+        updateLocalGossip();
         start();
         registry.enableEvents();
         if( Settings.traceNodes ) {
