@@ -116,7 +116,6 @@ class PacketSendPort {
         {
             if( cacheSlot != null ) {
                 cacheSlot.close();
-                cacheSlot = null;
             }
         }
     }
@@ -125,6 +124,7 @@ class PacketSendPort {
     static class CacheInfo {
         int useCount;                  // If >0, port is currently used. Never evict such an entry.
         boolean recentlyUsed;
+        DestinationInfo owner;
         SendPort port;
 
         void close() throws IOException
@@ -133,6 +133,8 @@ class PacketSendPort {
                 port.close();
                 port = null;
             }
+            owner.cacheSlot = null;
+            owner = null;
             recentlyUsed = false;
         }
     }
@@ -162,7 +164,7 @@ class PacketSendPort {
     /** Return an empty slot in the cache.
      * Assumes there is a lock on 'this'.
      */
-    private int searchCacheEmptySlot()
+    private int searchEmptyCacheSlot()
     {
         for(;;){
             CacheInfo e = cache[clockHand];
@@ -209,7 +211,7 @@ class PacketSendPort {
                 return cacheInfo;
             }
             tStart = System.nanoTime();
-            int ix = searchCacheEmptySlot();
+            int ix = searchEmptyCacheSlot();
 
             cacheInfo = cache[ix];
             if( cacheInfo == null ){
@@ -230,6 +232,7 @@ class PacketSendPort {
             cacheInfo.recentlyUsed = true;
             cacheInfo.useCount = 1;
             newDestination.cacheSlot = cacheInfo;
+            cacheInfo.owner = newDestination;
         }
         SendPort port;
         try {
