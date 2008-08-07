@@ -168,11 +168,14 @@ class PacketSendPort {
     {
         for(;;){
             CacheInfo e = cache[clockHand];
-            if( e == null || e.port == null ){
-                // Prefer empty cache slots, or slots with null ports.
+            if( e == null ){
                 return clockHand;
             }
             if( e.useCount<=0 ) {
+                if( e.port == null ){
+                    // Prefer empty cache slots, or slots with null ports.
+                    return clockHand;
+                }
                 // Only consider slots that are not in use.
                 if( e.recentlyUsed ){
                     // Next round it will not be considered recently used,
