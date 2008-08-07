@@ -138,7 +138,7 @@ final class NodeInfo
 
     void registerNodeInfo( WorkerQueueInfo[] workerQueueInfo )
     {
-        if( dead ) {
+        if( isDead() ) {
             // It is strange to get info from a dead worker, but we're not going to try and
             // revive the worker.
             return;
@@ -333,7 +333,7 @@ final class NodeInfo
                 currentTasks[i] = nodeTaskInfo.getCurrentTasks();
                 transmissionTime[i] = nodeTaskInfo.getTransmissionTime();
                 predictedDuration[i] = nodeTaskInfo.getPredictedDuration();
-                allowance[i] = nodeTaskInfo.getAllowance();
+                allowance[i] = nodeTaskInfo.getMaximalAllowance();
             }
         }
         return new LocalNodeInfo( suspect, currentTasks, allowance, transmissionTime, predictedDuration );

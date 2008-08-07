@@ -130,7 +130,7 @@ final class NodeTaskInfo {
         if( nodeInfo.isSuspect() ) {
             return Long.MAX_VALUE;
         }
-        return getAverageCompletionTime( maximalAllowance-1 );
+        return getAverageCompletionTime( getMaximalAllowance()-1 );
     }
 
     /**
@@ -144,7 +144,7 @@ final class NodeTaskInfo {
         if( nodeInfo.isSuspect() ) {
             return Long.MAX_VALUE;
         }
-        return getAverageCompletionTime( outstandingTasks );
+        return getAverageCompletionTime( getCurrentTasks() );
     }
 
     /**
@@ -182,7 +182,7 @@ final class NodeTaskInfo {
     /**
      * @return True iff this worker ever executed a task of this type.
      */
-    private boolean didWork()
+    private synchronized boolean didWork()
     {
         return (executedTasks != 0) || (outstandingTasks != 0);
     }
@@ -276,7 +276,7 @@ final class NodeTaskInfo {
         return roundtripTimeEstimate.getAverage();
     }
 
-    int getAllowance()
+    synchronized int getMaximalAllowance()
     {
         return maximalAllowance;
     }

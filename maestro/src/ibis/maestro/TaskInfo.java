@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * Information on a task on the master.
@@ -9,10 +10,10 @@ import java.util.LinkedList;
  */
 public class TaskInfo
 {
-    private LinkedList<NodeTaskInfo> workers = new LinkedList<NodeTaskInfo>();
+    private final List<NodeTaskInfo> workers = new LinkedList<NodeTaskInfo>();
     final TaskType type;
 
-    TaskInfo( TaskType type )
+    TaskInfo( final TaskType type )
     {
         this.type = type;
     }

@@ -46,7 +46,7 @@ final class MasterQueue
         /** The estimated time interval between tasks being dequeued. */
         final TimeEstimate dequeueInterval = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
 
-        TypeInfo( TaskType type  )
+        TypeInfo( final TaskType type  )
         {
             this.type = type;
         }
@@ -285,12 +285,10 @@ final class MasterQueue
             LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
             long val = info.estimateJobCompletion( localNodeInfo, task.type );
 
-            if( val<Long.MAX_VALUE ) {
-                if( val<bestInterval ) {
-                    bestInterval = val;
-                    best = info;
-                    predictedDuration = localNodeInfo.getPredictedDuration( task.type );
-                }
+            if( val<Long.MAX_VALUE && val<bestInterval ) {
+                bestInterval = val;
+                best = info;
+                predictedDuration = localNodeInfo.getPredictedDuration( task.type );
             }
         }
 
@@ -314,8 +312,8 @@ final class MasterQueue
     {
         int ix = 0;
         while( ix<queue.size() ) {
-            TaskInstance task = queue.get( ix );
-            TaskType type = task.type;
+            final TaskInstance task = queue.get( ix );
+            final TaskType type = task.type;
             Submission sub = selectBestWorker( localNodeInfoMap, tables, task );
             if( sub != null ) {
                 queue.remove( ix );
@@ -327,7 +325,7 @@ final class MasterQueue
                 return sub;
             }
             if( Settings.traceMasterQueue ){
-                System.out.println( "No ready worker for task type " + type );
+                Globals.log.reportProgress( "No ready worker for task type " + type );
             }
             ix++;
         }

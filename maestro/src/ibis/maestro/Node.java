@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Properties;
+import java.util.Set;
 
 /**
  * A node in the Maestro dataflow network.
@@ -32,7 +33,7 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private RegistryEventHandler registryEventHandler;
 
-    private final HashSet<IbisIdentifier> deadNodesBeforeElection = new HashSet<IbisIdentifier>();
+    private final Set<IbisIdentifier> deadNodesBeforeElection = new HashSet<IbisIdentifier>();
 
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private static final int workThreadCount = numberOfProcessors+2;

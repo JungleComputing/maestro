@@ -38,10 +38,10 @@ final class WorkerQueueTypeInfo
         this.type = type;
     }
 
-    void printStatistics( PrintStream s, long workTime )
+    synchronized void printStatistics( PrintStream s, long workTime )
     {
         s.println( "worker queue for " + type + ": " + incompingTaskCount + " tasks; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxElements );
-        double workPercentage = 100.0*(totalWorkTime/workTime);
+        double workPercentage = 100.0*((double) totalWorkTime/workTime);
         PrintStream out = s;
         if( outGoingTaskCount>0 ) {
             out.println( "Worker: " + type + ":" );

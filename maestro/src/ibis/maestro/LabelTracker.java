@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import java.io.Serializable;
+import java.util.Set;
 import java.util.TreeSet;
 
 /**
@@ -18,14 +19,15 @@ import java.util.TreeSet;
  * @author Kees van Reeuwijk
  *
  */
-public class LabelTracker {
+public class LabelTracker
+{
     private long labelValue = 0L;
-    private static final boolean trace = false;
+    private static final boolean TRACE = false;
 
     /** The first label not in the bulk range. */
     private long endOfRange = 0L;
 
-    private final TreeSet<Long> set = new TreeSet<Long>();
+    private final Set<Long> set = new TreeSet<Long>();
 
     /**
      * A label as handed out by the tracker. It is entirely opaque.
@@ -34,7 +36,7 @@ public class LabelTracker {
 	private static final long serialVersionUID = 1L;
 	private final long value;
 
-	Label( long value )
+	Label( final long value )
 	{
 	    this.value = value;
 	}
@@ -56,9 +58,9 @@ public class LabelTracker {
      */
     public synchronized Label nextLabel()
     {
-	Label res = new Label( labelValue++ );
-	if( trace ){
-	    System.out.println( "nextLabel(): handed out " + res );
+	final Label res = new Label( labelValue++ );
+	if( TRACE ){
+	    Globals.log.reportProgress( "nextLabel(): handed out " + res );
 	}
 	return res;
     }
@@ -67,15 +69,15 @@ public class LabelTracker {
      * Returns the given label to our administration.
      * We're not shocked if the same label is returned more than once,
      * or out of order.
-     * @param l The label we return.
+     * @param lbl The label we return.
      */
     @SuppressWarnings("synthetic-access")
-    public synchronized void returnLabel( Label l )
+    public synchronized void returnLabel( final Label lbl )
     {
-	if( trace ){
-	    System.out.println( "returnLabel(): got back " + l );
+	if( TRACE ){
+	    Globals.log.reportProgress( "returnLabel(): got back " + lbl );
 	}
-	long val = l.value;
+	final long val = lbl.value;
 	if( val<endOfRange ) {
 	    // Already covered by the range. Nothing to do.
 	    notifyAll();
@@ -95,8 +97,8 @@ public class LabelTracker {
 	    set.remove( endOfRange );
 	    endOfRange++;
 	}
-	if( trace ){
-	    System.out.println( "returnLabel(): endOfRange=" + endOfRange + " labelValue=" + labelValue + " setsize: " + set.size() );
+	if( TRACE ){
+	    Globals.log.reportProgress( "returnLabel(): endOfRange=" + endOfRange + " labelValue=" + labelValue + " setsize: " + set.size() );
 	}
 	notifyAll();  // Wake any return waiters.
     }
@@ -123,13 +125,13 @@ public class LabelTracker {
 		if( endOfRange == labelValue ){
 		    break;
 		}
-		if( trace ){
+		if( TRACE ){
 		    Globals.log.reportProgress( "Waiting for labels: endOfRange=" + endOfRange + " labelValue=" + labelValue );
 		}
 		wait();
 	    }
 	}
-	if( trace ){
+	if( TRACE ){
 	    Globals.log.reportProgress( "Got all labels back" );
 	}
     }

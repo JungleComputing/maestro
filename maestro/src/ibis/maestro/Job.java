@@ -47,12 +47,15 @@ public final class Job
          */
         @Override
         public boolean equals(Object obj) {
-            if (this == obj)
+            if (this == obj){
                 return true;
-            if (obj == null)
+            }
+            if (obj == null){
                 return false;
-            if (getClass() != obj.getClass())
+            }
+            if (getClass() != obj.getClass()){
                 return false;
+            }
             final JobIdentifier other = (JobIdentifier) obj;
             return (id == other.id);
         }
@@ -79,7 +82,7 @@ public final class Job
     }
 
     @SuppressWarnings("synthetic-access")
-    Job( int id, String name, Task[] tasks )
+    Job( final int id, final String name, final Task[] tasks )
     {
         this.id = new JobIdentifier( id );
         this.name = name;
