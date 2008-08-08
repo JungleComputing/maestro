@@ -14,8 +14,6 @@ final class NodeTaskInfo {
 
     private final TimeEstimate roundtripTimeEstimate;
 
-    private final TimeEstimate roundtripErrorEstimate;
-
     /** How many instances of this task does this worker currently have? */
     private int outstandingTasks = 0;
 
@@ -59,7 +57,6 @@ final class NodeTaskInfo {
         // Totally unfounded guesses, but we should learn soon enough what the real values are...
         this.transmissionTimeEstimate = new TimeEstimate( pingTime );
         this.roundtripTimeEstimate = new TimeEstimate( 2*pingTime );
-        this.roundtripErrorEstimate = new TimeEstimate( 2*pingTime );
         this.computeTime = 2*pingTime;
         this.dequeueTime = 1*pingTime;
         this.remainingJobTime = taskInfo.type.remainingTasks*( computeTime+dequeueTime+pingTime );
@@ -151,24 +148,22 @@ final class NodeTaskInfo {
      * Registers the completion of a task.
      * @param transmissionTime The transmission time of this task.
      * @param roundtripTime The total roundtrip time of this task.
-     * @param roundtripError The error in the previously predicted roundtrip time of this task.
      */
-    synchronized void registerTaskCompleted( long transmissionTime, long roundtripTime, long roundtripError )
+    synchronized void registerTaskCompleted( long transmissionTime, long roundtripTime )
     {
         executedTasks++;
         outstandingTasks--;
         roundtripTimeEstimate.addSample(roundtripTime );
-        roundtripErrorEstimate.addSample( roundtripError );
         transmissionTimeEstimate.addSample( transmissionTime );
         String label = "task=" + taskInfo + " worker=" + nodeInfo;
         if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( label + ": roundTripTimeEstimate=" + roundtripTimeEstimate + " roundTripErrorEstimate=" + roundtripErrorEstimate + " transimssionTimeEstimate=" + transmissionTimeEstimate );
+            Globals.log.reportProgress( label + ": roundTripTimeEstimate=" + roundtripTimeEstimate + " transimssionTimeEstimate=" + transmissionTimeEstimate );
         }
         if( traceStats ) {
             double now = 1e-9*(System.nanoTime()-startTime);
             System.out.println( "TRACE:newRoundtripTime " + label + " " + now + " " + 1e-9*roundtripTime );
             System.out.println( "TRACE:newTransmissionTime " + label + " " + now + " " + 1e-9*transmissionTime );
-            System.out.println( "TRACE:roundtripTime " + label + " " + now + " " + 1e-9*roundtripTimeEstimate.getAverage() + " " + 1e-9*roundtripErrorEstimate.getAverage() );
+            System.out.println( "TRACE:roundtripTime " + label + " " + now + " " + 1e-9*roundtripTimeEstimate.getAverage() );
             System.out.println( "TRACE:transmissionTime " + label + " " + now + " " + 1e-9*transmissionTimeEstimate.getAverage() );
         }
     }

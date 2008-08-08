@@ -9,4 +9,5 @@ package ibis.maestro;
  */
 public interface UnpredictableTask extends Task, TaskExecutionTimeEstimator
 {
+    // Just a marker interface.
 }

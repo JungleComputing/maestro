@@ -54,7 +54,7 @@ class GossipNodeList
          * 
          * @param arg0
          * @param arg1
-         * @return
+         * @return <code>-1</code> if node arg0 should have priority over arg1, or <code>1</code> for the reverse.
          */
         @Override
         public int compare( GossipNode arg0, GossipNode arg1 )

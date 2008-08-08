@@ -35,6 +35,7 @@ final class NodeInfo
     /**
      * Constructs a new NodeInfo.
      * @param ibis The ibis identifier of the node.
+     * @param workerQueue The worker queue, who contains a WorkerQueueTaskInfo class for each type.
      * @param local Is this the local node?
      */
     protected NodeInfo( IbisIdentifier ibis, WorkerQueue workerQueue, boolean local )
@@ -51,7 +52,6 @@ final class NodeInfo
             WorkerQueueTaskInfo taskInfo = workerQueue.getTaskInfo( type );
             nodeTaskInfoList[ix] = new NodeTaskInfo( taskInfo, this, local, pessimisticPingTime );
         }
-        workerQueue.registerNode( this );
     }
     
     NodeTaskInfo get( TaskType t )
@@ -174,7 +174,6 @@ final class NodeInfo
             return;
         }
         long roundtripTime = result.arrivalMoment-task.startTime;
-        long roundtripError = Math.abs( task.predictedDuration-roundtripTime );
         long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
         if( task.getAllowanceDeadline()<result.arrivalMoment ) {
             missedAllowanceDeadlines++; // TODO: locked
@@ -198,12 +197,11 @@ final class NodeInfo
             }
             missedRescheduleDeadlines++;  // TODO: locked
         }
-        task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime, roundtripError );
+        task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime );
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress(
                 "Master: retired task " + task
                 + " roundtripTime=" + Service.formatNanoseconds( roundtripTime )
-                + " roundtripError=" + Service.formatNanoseconds( roundtripError )
                 + " transmissionTime=" + Service.formatNanoseconds( newTransmissionTime )
             );
         }

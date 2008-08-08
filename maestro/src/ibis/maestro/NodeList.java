@@ -52,6 +52,7 @@ final class NodeList {
             return info;
         }
         info = new NodeInfo( theIbis, workerQueue, local );
+        workerQueue.registerNode( info );
         ibisToNodeMap.put( theIbis, info );
         return info;
     }

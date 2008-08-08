@@ -29,7 +29,7 @@ class PacketSendPort {
     private int evictions = 0;
     private Counter localSentCount = new Counter();
     private final CacheInfo cache[] = new CacheInfo[Settings.CONNECTION_CACHE_SIZE];
-    private int clockHand = 0;
+    private int clockHand = 0;   // The next cache slot we might want to evict, traversing the list circularly
 
     /** The list of known destinations.
      * Register a destination before trying to send to it.
@@ -237,10 +237,10 @@ class PacketSendPort {
             newDestination.cacheSlot = cacheInfo;
             cacheInfo.owner = newDestination;
         }
-        SendPort port;
         try {
-            port = Globals.localIbis.createSendPort( portType );
+            SendPort port = Globals.localIbis.createSendPort( portType );
             port.connect( newDestination.ibisIdentifier, Globals.receivePortName, timeout, true );
+            cacheInfo.port = port;
         }
         catch( IOException x ){
             synchronized( this ){
@@ -251,7 +251,6 @@ class PacketSendPort {
             return null;
         }
         long tEnd = System.nanoTime();
-        cacheInfo.port = port;
         synchronized( this ){
             adminTime += (tEnd-tStart);
         }

@@ -41,7 +41,8 @@ class NonEssentialSender extends Thread
 	 * @return
 	 */
 	@Override
-	public int compare(NonEssentialMessage arg0, NonEssentialMessage arg1) {
+	public int compare( NonEssentialMessage arg0, NonEssentialMessage arg1 )
+	{
 	    if( arg0.tries<arg1.tries ) {
 		return -1;
 	    }
