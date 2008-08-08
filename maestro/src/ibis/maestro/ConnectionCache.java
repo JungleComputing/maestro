@@ -35,7 +35,9 @@ public class ConnectionCache
             port.connect( ibis, Globals.receivePortName, timeout, true );
             WriteMessage msg = port.newMessage();
             msg.writeObject( message );
-            return msg.finish();
+            long len = msg.finish();
+            port.close();
+            return len;
         }
         catch( IOException x ){
             node.setSuspect( ibis );
