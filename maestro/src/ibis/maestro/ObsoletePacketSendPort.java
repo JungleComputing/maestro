@@ -3,6 +3,7 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.PortType;
 import ibis.ipl.SendPort;
+import ibis.ipl.WriteMessage;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -18,16 +19,17 @@ import java.util.Map;
  * @author Kees van Reeuwijk
  *
  */
-class PacketSendPort {
+class ObsoletePacketSendPort {
     static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
     private final Node node;  // The node this runs on.
-    private final ConnectionCache connectionCache;
     private long sentBytes = 0;
     private long sendTime = 0;
     private long adminTime = 0;
     private int sentCount = 0;
     private int evictions = 0;
     private Counter localSentCount = new Counter();
+    private final CacheInfo cache[] = new CacheInfo[Settings.CONNECTION_CACHE_SIZE];
+    private int clockHand = 0;   // The next cache slot we might want to evict, traversing the list circularly
 
     /** The list of known destinations.
      * Register a destination before trying to send to it.
@@ -138,9 +140,8 @@ class PacketSendPort {
     }
 
     @SuppressWarnings("synthetic-access")
-    PacketSendPort( Node node, IbisIdentifier localIbis )
+    ObsoletePacketSendPort( Node node, IbisIdentifier localIbis )
     {
-        connectionCache = new ConnectionCache( node );
         this.node = node;
         destinations.put( localIbis, new DestinationInfo( localIbis, true ) );
     }
@@ -160,6 +161,101 @@ class PacketSendPort {
         destinations.put( theIbis, new DestinationInfo( theIbis, false ) );
     }
 
+    /** Return an empty slot in the cache.
+     * Assumes there is a lock on 'this'.
+     */
+    private int searchEmptyCacheSlot()
+    {
+        for(;;){
+            CacheInfo e = cache[clockHand];
+            if( e == null ){
+                return clockHand;
+            }
+            if( e.useCount<=0 ) {
+                if( e.port == null ){
+                    // Prefer empty cache slots, or slots with null ports.
+                    return clockHand;
+                }
+                // Only consider slots that are not in use.
+                if( e.recentlyUsed ){
+                    // Next round it will not be considered recently used,
+                    // unless it is used. For now don't consider it an
+                    // empty slot.
+                    e.recentlyUsed = false;
+                }
+                else {
+                    return clockHand;
+                }
+            }
+            clockHand++;
+            if( clockHand>=cache.length ){
+                clockHand = 0;
+            }
+        }
+    }
+
+    /**
+     * Create a cache slot for the given connection. If necessary evict the
+     * old entry.
+     */
+    @SuppressWarnings("synthetic-access")
+    private CacheInfo getAndReserveCacheInfo( DestinationInfo newDestination, int timeout )
+    {
+        CacheInfo cacheInfo;
+        long tStart;
+
+        synchronized( this ){
+            // We need a lock as long as we don't have a cache slot with
+            // a non-zero use count.
+            if( newDestination.local || newDestination.cacheSlot != null ){
+                cacheInfo = newDestination.cacheSlot;
+                cacheInfo.recentlyUsed = true;
+                cacheInfo.useCount++;
+                return cacheInfo;
+            }
+            tStart = System.nanoTime();
+            int ix = searchEmptyCacheSlot();
+
+            cacheInfo = cache[ix];
+            if( cacheInfo == null ){
+                // An unused cache slot. Start to use it.
+                cacheInfo = cache[ix] = new CacheInfo();
+            }
+            else {
+                // Somebody was using this cache slot. Evict him.
+                try {
+                    cacheInfo.close();
+                }
+                catch ( IOException x ){
+                    // The previous connection could not be closed.
+                    // Too bad, but there is nothing we can do about it.
+                }
+                evictions++;
+            }
+            cacheInfo.recentlyUsed = true;
+            cacheInfo.useCount = 1;
+            newDestination.cacheSlot = cacheInfo;
+            cacheInfo.owner = newDestination;
+        }
+        try {
+            SendPort port = Globals.localIbis.createSendPort( portType );
+            port.connect( newDestination.ibisIdentifier, Globals.receivePortName, timeout, true );
+            cacheInfo.port = port;
+        }
+        catch( IOException x ){
+            synchronized( this ){
+                // Release our hold on this cache slot; we're
+                // not going to use it.
+                cacheInfo.useCount--;
+            }
+            return null;
+        }
+        long tEnd = System.nanoTime();
+        synchronized( this ){
+            adminTime += (tEnd-tStart);
+        }
+        return cacheInfo;
+    }
 
     /**
      * Sends the given data to the given port.
@@ -167,9 +263,10 @@ class PacketSendPort {
      * @param message The data to send.
      * @param timeout The timeout of the transmission.
      * @return <code>true</code> if we managed to send the data.
+     * @throws IOException Thrown if there is a communication error.
      */
     @SuppressWarnings("synthetic-access")
-    private boolean send( IbisIdentifier theIbis, Message message, int timeout )
+    private boolean send( IbisIdentifier theIbis, Message message, int timeout ) throws IOException
     {
         long len;
         boolean ok = true;
@@ -196,18 +293,33 @@ class PacketSendPort {
         }
         else {
             long t;
-            
-            long startTime = System.nanoTime();
-            len = connectionCache.sendMessage( theIbis, message, timeout );
-            if( len<0 ) {
-                ok = false;
-                len = 0;
+
+            try {
+                final CacheInfo cacheInfo = getAndReserveCacheInfo( info, timeout );
+                if( cacheInfo == null ){
+                    // Couldn't open a connection to the destination.
+                    return false;
+                }
+                SendPort port = cacheInfo.port;
+                long startTime = System.nanoTime();
+                WriteMessage msg = port.newMessage();
+                msg.writeObject( message );
+                len = msg.finish();
+                if( len<0 ) {
+                    ok = false;
+                    len = 0;
+                }
+                synchronized( this ) {
+                    cacheInfo.useCount--;
+                    sentBytes += len;
+                    sentCount++;
+                    t = System.nanoTime()-startTime;
+                    sendTime += t;
+                }
             }
-            synchronized( this ) {
-                sentBytes += len;
-                sentCount++;
-                t = System.nanoTime()-startTime;
-                sendTime += t;
+            catch ( IOException x ) {
+                info.close();
+                throw x;
             }
             info.addSentBytes( len );
             if( Settings.traceSends ) {
@@ -238,7 +350,6 @@ class PacketSendPort {
                 l[sz++] = i;
             }
         }
-	connectionCache.printStatistics( s );
         Comparator<? super DestinationInfo> comparator = new DestinationInfo.InfoComparator();
         Arrays.sort( l, 0, sz, comparator );
         for( int ix=0; ix<sz; ix++ ) {
@@ -258,6 +369,15 @@ class PacketSendPort {
     @SuppressWarnings("synthetic-access")
     boolean tryToSend( IbisIdentifier id, Message msg, int timeout )
     {
-        return send( id, msg, timeout );
+        boolean ok = false;
+        try {
+            ok = send( id, msg, timeout );
+        }
+        catch (IOException e) {
+            node.setSuspect( id );
+            Globals.log.reportError( "Cannot send a " + msg.getClass() + " message to master " + id );
+            e.printStackTrace( Globals.log.getPrintStream() );
+        }
+        return ok;
     }
 }

@@ -61,8 +61,6 @@ public final class Node extends Thread implements PacketReceiveListener
     private final WorkerQueue workerQueue;
     private long nextTaskId = 0;
     private Counter handledTaskCount = new Counter();
-    Counter registrationMessageCount = new Counter();
-    private Counter acceptMessageCount = new Counter();
     private Counter updateMessageCount = new Counter();
     private Counter submitMessageCount = new Counter();
     private Counter taskResultMessageCount = new Counter();
@@ -367,8 +365,6 @@ public final class Node extends Thread implements PacketReceiveListener
         s.printf(  "# threads       = %5d\n", workThreads.length );
         nodes.printStatistics( s );
         jobs.printStatistics( s );
-        s.printf( "registration messages:   %5d sent\n", registrationMessageCount.get() );
-        s.printf( "accept       messages:   %5d sent\n", acceptMessageCount.get() );
         s.printf( "update       messages:   %5d sent\n", updateMessageCount.get() );
         s.printf( "submit       messages:   %5d sent\n", submitMessageCount.get() );
         s.printf( "task result  messages:   %5d sent\n", taskResultMessageCount.get() );
@@ -633,14 +629,15 @@ public final class Node extends Thread implements PacketReceiveListener
         }
 
         RunTaskMessage msg = new RunTaskMessage( node, task, taskId );
+        worker.registerTaskStart( task, taskId, sub.predictedDuration );
         boolean ok = sendPort.tryToSend( node, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         if( !ok ){
             // Try to put the paste back in the tube.
             // The send port has already registered the trouble.
             masterQueue.add( msg.taskInstance );
+            worker.retractTask( taskId );
             return;
         }
-        worker.registerTaskStart( task, taskId, sub.predictedDuration );
         submitMessageCount.add();
     }
 

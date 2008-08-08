@@ -159,6 +159,18 @@ final class NodeInfo
     }
 
     /**
+     * We failed to send the task to the destined worker, rectract it from the
+     * list of active tasks.
+     * @param taskId The task to retract.
+     */
+    void retractTask( long taskId )
+    {
+        // We ignore the result of the extract: it doesn't really matter if the task was
+        // in our list of not.
+        extractActiveTask( taskId );
+    }
+
+    /**
      * Register a task result for an outstanding task.
      * @param result The task result message that tells about this task.
      * @param arrivalMoment The time in ns the message arrived.
@@ -167,6 +179,7 @@ final class NodeInfo
     {
         final long id = result.taskId;    // The identifier of the task, as handed out by us.
 
+        System.out.println( "Task with id " + id + " has been completed" );
         ActiveTask task = extractActiveTask( id );
 
         if( task == null ){
@@ -297,9 +310,6 @@ final class NodeInfo
         }
     }
 
-    /** FIXME.
-     * @return
-     */
     synchronized LocalNodeInfo getLocalInfo()
     {
         int currentTasks[] = new int[nodeTaskInfoList.length];
