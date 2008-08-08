@@ -72,4 +72,10 @@ final class RunTaskMessage extends Message
     {
 	return "Task message for task " + taskId + " of type " + taskInstance.type;
     }
+
+    String label()
+    {
+        // FIXME Edit this auto-generated method stub
+        return taskInstance.shortLabel();
+    }
 }

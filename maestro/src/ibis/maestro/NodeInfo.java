@@ -78,6 +78,30 @@ final class NodeInfo
         return -1;
     }
 
+    void registerWorkerQueueInfo( int ix, WorkerQueueInfo info )
+    {
+        NodeTaskInfo nodeTaskInfo = nodeTaskInfoList[ix];
+
+        if( nodeTaskInfo != null ) {
+            nodeTaskInfo.setWorkerQueueInfo( info );
+        }
+    }
+
+    void registerWorkerQueueInfo( WorkerQueueInfo[] workerQueueInfo )
+    {
+        if( isDead() ) {
+            // It is strange to get info from a dead worker, but we're not going to try and
+            // revive the worker.
+            return;
+        }
+        for( int i=0; i<workerQueueInfo.length; i++ ) {
+            WorkerQueueInfo workerInfo = workerQueueInfo[i];
+            if( workerInfo != null ) {
+                registerWorkerQueueInfo( i, workerInfo );
+            }
+        }
+    }
+    
     /** Mark this worker as dead, and return a list of active tasks
      * of this worker.
      * @return The list of task instances that were outstanding on this worker.

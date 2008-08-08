@@ -59,7 +59,7 @@ class Settings {
     static final boolean traceWaits = false;
 
     /** Print the reason a particular worker was selected. */
-    static final boolean traceWorkerSelection = true;
+    static final boolean traceWorkerSelection = false;
 
     /** Trace the adventures of the map/reduce handler. */
     static final boolean traceMapReduce = false;
@@ -77,6 +77,10 @@ class Settings {
 
     /** Trace the adventures of the gossip engine? */
     static final boolean traceGossip = false;
+
+    static final boolean dumpMasterQueue = false;
+
+    static final boolean dumpWorkerQueue = false;
 
     // --- Configuration (tuning) constants. ----
     // Unfortunately we still need some magic numbers.

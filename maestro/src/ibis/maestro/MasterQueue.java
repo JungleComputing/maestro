@@ -165,6 +165,15 @@ final class MasterQueue
     {
         return queue.isEmpty();
     }
+    
+    private void dumpQueue()
+    {
+        for( TaskInstance e: queue ) {
+            System.out.print( e.shortLabel() );
+            System.out.print( ' ' );
+        }
+        System.out.println();
+    }
 
     @SuppressWarnings("synthetic-access")
     private void unsynchronizedAdd( TaskInstance task )
@@ -177,6 +186,9 @@ final class MasterQueue
         queue.add( pos, task );
         if( Settings.traceQueuing ) {
             Globals.log.reportProgress( "Adding " + task.formatJobAndType() + " at position " + pos + " of master queue; length is now " + queue.size() + "; " + length + " of type " + type );
+        }
+        if( Settings.dumpMasterQueue ) {
+            dumpQueue();
         }
     }
 

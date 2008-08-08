@@ -99,6 +99,16 @@ final class WorkerQueue {
         }
         return res;
     }
+    
+    private void dumpQueue()
+    {
+        System.out.print( "Worker queue: " );
+        for( RunTaskMessage m: queue ) {
+            System.out.print( m.label() );
+            System.out.print( ' ' );
+        }
+        System.out.println();
+    }
 
     /** 
      * Add the given task to our queue.
@@ -125,6 +135,9 @@ final class WorkerQueue {
             Globals.log.reportProgress( "Adding " + msg.taskInstance.formatJobAndType() + " at position " + pos + " of worker queue; length is now " + queue.size() + "; " + length + " of type " + type );
         }
         msg.setQueueMoment( msg.arrivalMoment, length );
+        if( Settings.dumpWorkerQueue ) {
+            dumpQueue();
+        }
     }
 
     void countTask( TaskType type, long computeInterval )

@@ -423,6 +423,20 @@ public final class Node extends Thread implements PacketReceiveListener
     }
 
     /**
+     * A worker has sent us a message with its current status, handle it.
+     * @param m The update message.
+     */
+    private void handleNodeUpdateInfo( NodeUpdateInfo m )
+    {
+        if( Settings.traceNodeProgress ){
+            Globals.log.reportProgress( "Received node update message " + m );
+        }
+        NodeInfo nodeInfo = nodes.get( m.source );   // The get will create an entry if necessary.
+        nodeInfo.registerWorkerQueueInfo( m.workerQueueInfo );
+        nodeInfo.registerAsCommunicating();
+    }
+
+    /**
      * A node has sent us an accept message, handle it.
      * @param m The update message.
      */
@@ -436,6 +450,9 @@ public final class Node extends Thread implements PacketReceiveListener
             gossiper.sendGossipReply( m.source );
         }
         if( changed ) {
+            for( NodeUpdateInfo i: m.gossip ) {
+                handleNodeUpdateInfo( i );
+            }
             synchronized( this ) {
                 this.notify();
             }
@@ -471,19 +488,6 @@ public final class Node extends Thread implements PacketReceiveListener
             recentMasterList.register( source );
         }
         updateRecentMasters();
-    }
-
-    /**
-     * A worker has sent us a message with its current status, handle it.
-     * @param m The update message.
-     */
-    private void handleNodeUpdateInfo( NodeUpdateInfo m )
-    {
-        if( Settings.traceNodeProgress ){
-            Globals.log.reportProgress( "Received node update message " + m );
-        }
-        NodeInfo nodeInfo = nodes.get( m.source );   // The get will create an entry if necessary.
-        nodeInfo.registerAsCommunicating();
     }
 
     /**

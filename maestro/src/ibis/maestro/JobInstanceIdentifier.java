@@ -80,4 +80,12 @@ class JobInstanceIdentifier implements Serializable
         return (id == other.id);
     }
 
+    /** FIXME.
+     * @return
+     */
+    String label()
+    {
+        return "T" + id;
+    }
+
 }

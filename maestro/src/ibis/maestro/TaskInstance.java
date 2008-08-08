@@ -37,4 +37,9 @@ class TaskInstance implements Serializable {
     {
         return "(task instance: job instance=" + jobInstance + " type=" + type + " input=" + input + ")";
     }
+
+    String shortLabel()
+    {
+        return jobInstance.label() + "#" + type;
+    }
 }
