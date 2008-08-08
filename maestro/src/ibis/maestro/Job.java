@@ -15,6 +15,7 @@ public final class Job
     final String name;
     final Task[] tasks;
     final TaskType[] taskTypes;
+    final int updateIndices[];
     final TimeEstimate jobTime = new TimeEstimate( 0 );
     private static int index = 0;
 
@@ -72,31 +73,29 @@ public final class Job
 
     }
 
-    private TaskType[] buildTaskTypes( Task[] taskList )
-    {
-	TaskType res[] = new TaskType[taskList.length];
-	int i = taskList.length;
-	boolean unpredictable = false;
-	// Walk the list from back to front to allow
-	// earlier tasks to be marked unpredictable if one
-	// it or one of the following tasks is unpredictable.
-	while( i>0 ) {
-	    i--;
-	    if( taskList[i] instanceof UnpredictableTask ) {
-		unpredictable = true;
-	    }
-	    res[i] = new TaskType( id, i, (taskList.length-1)-i, unpredictable, index++ );
-	}
-	return res;
-    }
-
     @SuppressWarnings("synthetic-access")
     Job( final int id, final String name, final Task[] tasks )
     {
         this.id = new JobIdentifier( id );
         this.name = name;
         this.tasks = tasks;
-        this.taskTypes = buildTaskTypes( tasks );
+        taskTypes = new TaskType[tasks.length];
+        updateIndices = new int[tasks.length];
+        int i = tasks.length;
+        boolean unpredictable = false;
+        // Walk the list from back to front to allow
+        // earlier tasks to be marked unpredictable if one
+        // it or one of the following tasks is unpredictable.
+        int updateIndex = 0;
+        while( i>0 ) {
+            i--;
+            if( tasks[i] instanceof UnpredictableTask ) {
+        	unpredictable = true;
+            }
+            int newIndex = index++;
+            taskTypes[i] = new TaskType( this.id, i, (tasks.length-1)-i, unpredictable, newIndex );
+            updateIndices[updateIndex++] = newIndex;
+        }
     }
 
     /**

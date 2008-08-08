@@ -2,6 +2,7 @@ package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
 
+import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.Arrays;
 
@@ -17,30 +18,30 @@ public class NodeUpdateInfo implements Serializable
     /** For each type of task we know, the estimated time it will
      * take to complete the remaining tasks of this job.
      */
-    final CompletionInfo[] completionInfo;
+    final long[] completionInfo;
 
     /** For each type of task we know, the queue length on this worker. */
-    final WorkerQueueInfo[] workerQueueInfo;
+    WorkerQueueInfo[] workerQueueInfo;
 
     final IbisIdentifier source;
 
-    final long timestamp;
+    long timeStamp;
 
     final int idleProcessors;
 
-    NodeUpdateInfo( CompletionInfo[] completionInfo, WorkerQueueInfo[] workerQueueInfo,
+    NodeUpdateInfo( long[] completionInfo, WorkerQueueInfo[] workerQueueInfo,
         IbisIdentifier source, int idleProcessors )
     {
         this.completionInfo = completionInfo;
         this.workerQueueInfo = workerQueueInfo;
         this.source = source;
         this.idleProcessors = idleProcessors;
-        this.timestamp = System.nanoTime();
+        this.timeStamp = System.nanoTime();
     }
 
     NodeUpdateInfo getDeepCopy()
     {
-        CompletionInfo completionInfoCopy[] = Arrays.copyOf( completionInfo, completionInfo.length );
+        long completionInfoCopy[] = Arrays.copyOf( completionInfo, completionInfo.length );
         WorkerQueueInfo workerQueueInfoCopy[] = Arrays.copyOf( workerQueueInfo, workerQueueInfo.length );
         return new NodeUpdateInfo(
             completionInfoCopy,
@@ -53,17 +54,8 @@ public class NodeUpdateInfo implements Serializable
     private String buildCompletionString()
     {
         StringBuilder b = new StringBuilder( "[" );
-        boolean first = true;
-        for( CompletionInfo i: completionInfo ) {
-            if( i != null ) {
-                if( first ) {
-                    first = false;
-                }
-                else {
-                    b.append( ',' );
-                }
-                b.append( i.toString() );
-            }
+        for( long i: completionInfo ) {
+            b.append( i );
         }
         b.append( ']' );
         return b.toString();
@@ -100,35 +92,10 @@ public class NodeUpdateInfo implements Serializable
         return "Update " + completion + " " + workerQueue;
     }
     
-    private CompletionInfo searchCompletionInfoForType( TaskType type )
-    {
-        for( CompletionInfo ci: completionInfo )
-        {
-            if( ci != null ) {
-                if( ci.type.index == type.index ) {
-                    return ci;
-                }
-            }
-        }
-        return null;
-    }
-    
-    private WorkerQueueInfo searchWorkerQueueInfo( TaskType type )
-    {
-        for( WorkerQueueInfo info: workerQueueInfo ) {
-            if( info != null ) {
-                if( info.type.index == type.index ) {
-                    return info;
-                }
-            }
-        }
-        return null;
-    }
-
     long estimateJobCompletion( LocalNodeInfo localNodeInfo, TaskType type )
     {
-        WorkerQueueInfo queueInfo = searchWorkerQueueInfo( type );
-        CompletionInfo typeCompletionInfo = searchCompletionInfoForType( type );
+        WorkerQueueInfo queueInfo = workerQueueInfo[type.index];
+        long completionInterval = completionInfo[type.index];
 
         if( queueInfo == null ) {
             if( Settings.traceRemainingJobTime ) {
@@ -158,7 +125,7 @@ public class NodeUpdateInfo implements Serializable
             }
             return Long.MAX_VALUE;
         }
-        if( typeCompletionInfo != null && typeCompletionInfo.completionInterval == Long.MAX_VALUE  ) {
+        if( completionInterval == Long.MAX_VALUE  ) {
             if( Settings.traceRemainingJobTime ) {
                 Globals.log.reportError( "Node " + source + " has infinite completion time" );
             }
@@ -167,12 +134,48 @@ public class NodeUpdateInfo implements Serializable
         long transmissionTime = localNodeInfo.getTransmissionTime( type );
         int allTasks = currentTasks+1;
         long total = transmissionTime + queueInfo.dequeueTime*allTasks + queueInfo.computeTime;
-        if( typeCompletionInfo != null ) {
-            total += typeCompletionInfo.completionInterval;
-        }
+        total += completionInterval;
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "Estimated completion time for " + source + " is " + Service.formatNanoseconds( total ) );
         }
         return total;
+    }
+
+    /**
+     * Given the index of a type, return the interval in nanoseconds it
+     * will take from the moment a task of this type leaves the master queue
+     * until the entire job it belongs to is completed on the node we have
+     * this update info for.
+     * @param ix The index of the type we're interested in.
+     */
+    long getCompletionOnWorker( int ix, int nextIx )
+    {
+       WorkerQueueInfo info = workerQueueInfo[ix];
+       long nextCompletionInterval;
+       
+       if( nextIx>=0 ) {
+           nextCompletionInterval = completionInfo[nextIx];
+       }
+       else {
+           nextCompletionInterval = 0L;
+       }
+
+       return Service.safeAdd( info.dequeueTime, info.computeTime, nextCompletionInterval );
+    }
+
+    /** FIXME.
+     * @param s
+     */
+    void print( PrintStream s )
+    {
+        for( WorkerQueueInfo i: workerQueueInfo ) {
+            s.print( i.format() );
+            s.print( ' ' );
+        }
+        s.print( " | " );
+        for( long t: completionInfo ) {
+            s.printf( "%8s ", Service.formatNanoseconds( t ) );
+        }
+        s.println( source );
     }
 }

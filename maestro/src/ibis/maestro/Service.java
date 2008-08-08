@@ -194,4 +194,20 @@ public class Service
         return 0;
     }
 
+    static long safeAdd( long a, long b )
+    {
+        if( a == Long.MAX_VALUE || b == Long.MAX_VALUE ) {
+            return Long.MAX_VALUE;
+        }
+        return a+b;
+    }
+
+
+    static long safeAdd( long a, long b, long c )
+    {
+        if( a == Long.MAX_VALUE || b == Long.MAX_VALUE || c == Long.MAX_VALUE ) {
+            return Long.MAX_VALUE;
+        }
+        return a+b+c;
+    }
 }

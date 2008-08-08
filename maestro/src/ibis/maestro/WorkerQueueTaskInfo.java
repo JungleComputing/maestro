@@ -122,7 +122,7 @@ final class WorkerQueueTaskInfo
 
     synchronized WorkerQueueInfo getWorkerQueueInfo()
     {
-        return new WorkerQueueInfo( type, elements, dequeueInterval.getAverage(), averageComputeTime.getAverage() );
+        return new WorkerQueueInfo( elements, dequeueInterval.getAverage(), averageComputeTime.getAverage() );
     }
 
     /**
@@ -133,25 +133,6 @@ final class WorkerQueueTaskInfo
     {
         totalQueueTime += v;
         queueTimePerTask.addSample( v );
-    }
-
-    /**
-     * Returns the best average completion time for this task.
-     * We compute this by taking the minimum over all our workers.
-     * @return The best average completion time of our workers.
-     */
-    synchronized long getAverageCompletionTime()
-    {
-        long res = Long.MAX_VALUE;
-
-        for( NodeTaskInfo wi: workers ) {
-            long val = wi.getAverageCompletionTime();
-
-            if( val<res ) {
-                res = val;
-            }
-        }
-        return res;
     }
 
     void registerNode( NodeInfo nodeInfo )

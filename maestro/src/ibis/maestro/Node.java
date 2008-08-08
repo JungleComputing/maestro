@@ -393,17 +393,10 @@ public final class Node extends Thread implements PacketReceiveListener
         }
     }
 
-    private NodeUpdateInfo buildLocalUpdate()
-    {
-        CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleProcessorCount() );
-        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
-        NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier(), getIdleProcessorCount() );
-        return update;
-    }
-
     private void postUpdateNodeMessage( IbisIdentifier node )
     {
-        NodeUpdateInfo update = buildLocalUpdate();
+        updateLocalGossip();
+        NodeUpdateInfo update = gossiper.getLocalUpdate();
         UpdateNodeMessage msg = new UpdateNodeMessage( update );
 
         if( Settings.traceUpdateMessages ) {
@@ -412,10 +405,6 @@ public final class Node extends Thread implements PacketReceiveListener
         sendPort.tryToSend( node, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
         updateMessageCount.add();
         gossiper.registerGossip( update );
-        NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() );
-        if( nodeInfo != null ) {
-            nodeInfo.registerNodeInfo( update.workerQueueInfo );
-        }
     }
 
     /**
@@ -443,25 +432,22 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "Received gossip message " + m );
         }
         boolean changed = gossiper.registerGossip( m.gossip );
-        if( changed ) {
-            nodes.registerNodeUpdateInformation( m.gossip );
-        }
         if( m.needsReply ) {
             gossiper.sendGossipReply( m.source );
         }
-        synchronized( this ) {
-            this.notify();
+        if( changed ) {
+            synchronized( this ) {
+                this.notify();
+            }
         }
     }
 
     private void updateLocalGossip()
     {
-        NodeUpdateInfo update = buildLocalUpdate();
-        gossiper.registerGossip( update );
-        NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() );
-        if( nodeInfo != null ) {
-            nodeInfo.registerNodeInfo( update.workerQueueInfo );
-        }
+        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
+        gossiper.registerWorkerQueueInfo( workerQueueInfo );
+        long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
+        gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
     }
     
     private void updateRecentMasters()
@@ -497,7 +483,6 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "Received node update message " + m );
         }
         NodeInfo nodeInfo = nodes.get( m.source );   // The get will create an entry if necessary.
-        nodeInfo.registerNodeInfo( m.workerQueueInfo );
         nodeInfo.registerAsCommunicating();
     }
 
@@ -512,6 +497,8 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         boolean isnew = gossiper.registerGossip( m.update );
         if( isnew ) {
+            long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
+            gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
             handleNodeUpdateInfo( m.update );
         }
     }
@@ -770,10 +757,7 @@ public final class Node extends Thread implements PacketReceiveListener
             long queueInterval = runMoment-message.getQueueMoment();
             Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
         }
-        CompletionInfo[] completionInfo = masterQueue.getCompletionInfo( jobs, nodes, getIdleProcessorCount() );
-        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
-	NodeUpdateInfo update = new NodeUpdateInfo( completionInfo, workerQueueInfo, Globals.localIbis.identifier(), getIdleProcessorCount() );
-	gossiper.registerGossip( update );
+        updateLocalGossip();
         long workerDwellTime = taskCompletionMoment-message.getQueueMoment();
         if( traceStats ) {
             double now = 1e-9*(System.nanoTime()-startTime);
@@ -782,10 +766,6 @@ public final class Node extends Thread implements PacketReceiveListener
         Message msg = new TaskCompletedMessage( message.taskId, workerDwellTime );
         boolean ok = sendPort.tryToSend( message.source, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
 
-        NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() );
-        if( nodeInfo != null ) {
-            nodeInfo.registerNodeInfo( update.workerQueueInfo );
-        }
         // FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
 
         updateRecentMasters();

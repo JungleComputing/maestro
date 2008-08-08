@@ -11,7 +11,8 @@ import java.util.ArrayList;
 public final class JobList
 {
     private final ArrayList<Job> jobs = new ArrayList<Job>();
-    private final ArrayList<TaskType> taskTypes = new ArrayList<TaskType>();
+    private final ArrayList<TaskType> allTaskTypes = new ArrayList<TaskType>();
+    private final ArrayList<TaskType> supportedTaskTypes = new ArrayList<TaskType>();
     private int jobCounter = 0;
 
     /** Add a new jobs to this list.
@@ -71,13 +72,21 @@ public final class JobList
         for( int i=0; i<tasks.length; i++ ){
             Task t = tasks[i];
 
+            final TaskType taskType = job.taskTypes[i];
             if( t.isSupported() ) {
-                final TaskType taskType = job.taskTypes[i];
                 if( Settings.traceTypeHandling ) {
                     System.out.println( "Node supports task type " + taskType );
                 }
-                taskTypes.add( taskType );
+                supportedTaskTypes.add( taskType );
             }
+            int ix = taskType.index;
+            while( allTaskTypes.size()<=ix ) {
+                allTaskTypes.add( null );
+            }
+            if( allTaskTypes.get( ix ) != null ) {
+                Globals.log.reportInternalError( "Duplicate type index " + ix );
+            }
+            allTaskTypes.set( ix, taskType );
         }
     }
 
@@ -103,9 +112,7 @@ public final class JobList
      */
     TaskType[] getSupportedTaskTypes()
     {
-        TaskType res[] = new TaskType[taskTypes.size()];
-        taskTypes.toArray( res );
-        return res;
+        return supportedTaskTypes.toArray( new TaskType[supportedTaskTypes.size()] );
     }
 
     Job findJob( TaskType type )
@@ -133,6 +140,37 @@ public final class JobList
 
     TaskType[] getAllTypes()
     {
-        return taskTypes.toArray( new TaskType[taskTypes.size()] );
+        return allTaskTypes.toArray( new TaskType[allTaskTypes.size()] );
+    }
+
+    /** Given the index of a type, return the next one in the job, or -1 if there isn't one.
+     * @param ix The index of a type.
+     * @return The index of the next type.
+     */
+    int getNextIndex( int ix )
+    {
+        TaskType type = allTaskTypes.get( ix );
+        if( type == null ) {
+            return -1;
+        }
+        TaskType nextType = getNextTaskType( type );
+        if( nextType == null ) {
+            return -1;
+        }
+        return nextType.index;
+    }
+
+    /** Returns an array of arrays with type indices that should be updated in
+     * the given order from front to back.
+     * @return
+     */
+    int[][] getIndexLists()
+    {
+        int res[][] = new int[jobs.size()][];
+        int jobno = 0;
+        for( Job job: jobs ) {
+            res[jobno++] = job.updateIndices;
+        }
+        return res;
     }
 }

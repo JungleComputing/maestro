@@ -78,23 +78,6 @@ final class NodeInfo
         return -1;
     }
 
-    private void registerWorkerQueueInfo( WorkerQueueInfo info )
-    {
-        if( info == null ) {
-            return;
-        }
-
-        NodeTaskInfo nodeTaskInfo = nodeTaskInfoList[info.type.index];
-
-        if( nodeTaskInfo == null ) {
-            return;
-        }
-        if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "Master: worker " + ibis + ":" + info );
-        }
-        nodeTaskInfo.setWorkerQueueInfo( info );
-    }
-
     /** Mark this worker as dead, and return a list of active tasks
      * of this worker.
      * @return The list of task instances that were outstanding on this worker.
@@ -137,18 +120,6 @@ final class NodeInfo
         }
     }
 
-    void registerNodeInfo( WorkerQueueInfo[] workerQueueInfo )
-    {
-        if( isDead() ) {
-            // It is strange to get info from a dead worker, but we're not going to try and
-            // revive the worker.
-            return;
-        }
-        for( WorkerQueueInfo i: workerQueueInfo ) {
-            registerWorkerQueueInfo( i );
-        }
-    }
-    
     private synchronized ActiveTask extractActiveTask( long id )
     {
         int ix = searchActiveTask( id );
@@ -327,7 +298,7 @@ final class NodeInfo
             else {
                 currentTasks[i] = nodeTaskInfo.getCurrentTasks();
                 transmissionTime[i] = nodeTaskInfo.getTransmissionTime();
-                predictedDuration[i] = nodeTaskInfo.getPredictedDuration();
+                predictedDuration[i] = nodeTaskInfo.estimateRoundtripTime();
                 allowance[i] = nodeTaskInfo.getMaximalAllowance();
             }
         }

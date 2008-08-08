@@ -220,52 +220,6 @@ final class MasterQueue
         s.printf(  "Master: # incoming tasks = %5d\n", taskCount );
     }
 
-    /** FIXME.
-     * @param idleProcessors
-     * @param averageCompletionTime
-     * @return
-     */
-    private long getDuration( TypeInfo q, int idleProcessors, long averageCompletionTime )
-    {
-        long duration;
-
-        synchronized( this ) {
-            if( averageCompletionTime == Long.MAX_VALUE ) {
-                duration = Long.MAX_VALUE;
-            }
-            else {
-                long queueTime = q.estimateQueueTime( idleProcessors );
-                duration = queueTime + averageCompletionTime;
-            }
-        }
-        return duration;
-    }
-    private CompletionInfo getCompletionInfo( TypeInfo q, JobList jobs, NodeList workers, int idleProcessors )
-    {
-        TaskType previousType = jobs.getPreviousTaskType( q.type );
-        if( previousType == null ) {
-            return null;
-        }
-        long averageCompletionTime = workers.getAverageCompletionTime( q.type );
-        long duration = getDuration( q, idleProcessors, averageCompletionTime );
-        return new CompletionInfo( previousType, duration );
-    }
-
-
-    @SuppressWarnings("synthetic-access")
-    CompletionInfo[] getCompletionInfo( JobList jobs, NodeList workers, int idleProcessors )
-    {
-        CompletionInfo res[] = new CompletionInfo[queueTypes.length];
-
-        for( int i=0; i<res.length; i++ ) {
-            TypeInfo q = queueTypes[i];
-            if( q != null ){
-                res[i] = getCompletionInfo( q, jobs, workers, idleProcessors );
-            }
-        }
-        return res;
-    }
-
     /**
      * Given a task type, select the best worker from the list that has a
      * free slot. In this context 'best' is simply the worker with the
@@ -337,5 +291,15 @@ final class MasterQueue
     synchronized boolean hasWork()
     {
         return !queue.isEmpty();
+    }
+
+    long[] getQueueIntervals( int idleProcessors )
+    {
+        long res[] = new long[queueTypes.length];
+        
+        for( int ix=0; ix<queueTypes.length; ix++ ) {
+            res[ix] = queueTypes[ix].estimateQueueTime( idleProcessors );
+        }
+        return res;
     }
 }

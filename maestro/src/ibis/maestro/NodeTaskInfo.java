@@ -26,18 +26,6 @@ final class NodeTaskInfo {
     /** How many outstanding instances of this task should this worker maximally have? */
     private int maximalAllowance;
 
-    /** How long in ns between dequeueings. */
-    private long dequeueTime;
-
-    /** How long in ns is a task estimated to compute. */
-    private long computeTime;
-
-    /** How long in ns it takes to complete the rest of the job this task belongs to. */
-    private long remainingJobTime;
-
-    private final boolean traceStats;
-
-    private final long startTime = System.nanoTime();
     /**
      * Constructs a new information class for a particular task type
      * for a particular worker.
@@ -53,13 +41,9 @@ final class NodeTaskInfo {
         this.maximalAllowance = local?1:0;
         this.maximalEverAllowance = maximalAllowance;
 
-        this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
         // Totally unfounded guesses, but we should learn soon enough what the real values are...
         this.transmissionTimeEstimate = new TimeEstimate( pingTime );
         this.roundtripTimeEstimate = new TimeEstimate( 2*pingTime );
-        this.computeTime = 2*pingTime;
-        this.dequeueTime = 1*pingTime;
-        this.remainingJobTime = taskInfo.type.remainingTasks*( computeTime+dequeueTime+pingTime );
         if( Settings.traceWorkerList || Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "Created new WorkerTaskInfo " + toString() );
         }
@@ -71,77 +55,7 @@ final class NodeTaskInfo {
     @Override
     public String toString()
     {
-        return "[taskInfo=" + taskInfo + " worker=" + nodeInfo + " transmissionTimeEstimate=" + transmissionTimeEstimate + " remainingJobTime=" + Service.formatNanoseconds(remainingJobTime) + ",outstandingTasks=" + outstandingTasks + ",maximalAllowance=" + maximalAllowance + "]";
-    }
-
-    /**
-     * Returns the estimated time this worker will take to transmit this task to this worker,
-     * complete it, and all remaining tasks in the job.
-     * @param tasks The number of tasks currently on the worker.
-     * @return The completion time.
-     */
-    private synchronized long getAverageCompletionTime( int currentTasks )
-    {
-        /**
-         * Don't give an estimate if we have to predict the future too far,
-         * or of we just don't have the information.
-         */
-        if( remainingJobTime == Long.MAX_VALUE  ) {
-            if( Settings.traceRemainingJobTime ) {
-                Globals.log.reportProgress(
-                    "getAverageCompletionTime(): type=" + taskInfo
-                    + " worker=" + nodeInfo
-                    + " infinite: "
-                    + " isSuspect=" + nodeInfo.isSuspect()
-                    + " remainingJobTime=" + Service.formatNanoseconds( remainingJobTime )
-                );
-            }
-            return Long.MAX_VALUE;
-        }
-        long transmissionTime = transmissionTimeEstimate.getAverage();
-        int allTasks = currentTasks+1;
-        long total = transmissionTime + this.dequeueTime*allTasks + this.computeTime + remainingJobTime;
-        if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress(
-                "getAverageCompletionTime(): type=" + taskInfo
-                + " worker=" + nodeInfo
-                + " maximalAllowance=" + maximalAllowance
-                + " currentTasks=" + currentTasks
-                + " xmitTime=" + Service.formatNanoseconds( transmissionTime )
-                + " dequeueTime=" + Service.formatNanoseconds( dequeueTime )
-                + " computeTime=" + Service.formatNanoseconds( computeTime )
-                + " remainingJobTime=" + Service.formatNanoseconds( remainingJobTime )
-                + " total=" + Service.formatNanoseconds( total )
-            );
-        }
-        return total;
-    }
-
-    /**
-     * Returns the estimated time this worker will take to transmit this task to this worker,
-     * complete it, and all remaining tasks in the job.
-     * @return The completion time.
-     */
-    long getAverageCompletionTime()
-    {
-        if( nodeInfo.isSuspect() ) {
-            return Long.MAX_VALUE;
-        }
-        return getAverageCompletionTime( getMaximalAllowance()-1 );
-    }
-
-    /**
-     * Returns the estimated time this worker will take to transmit this task to this worker,
-     * complete it, and all remaining tasks in the job. Return
-     * Long.MAX_VALUE if currently there are no task slots.
-     * @return The completion time.
-     */
-    long estimateJobCompletion()
-    {
-        if( nodeInfo.isSuspect() ) {
-            return Long.MAX_VALUE;
-        }
-        return getAverageCompletionTime( getCurrentTasks() );
+        return "[taskInfo=" + taskInfo + " worker=" + nodeInfo + " transmissionTimeEstimate=" + transmissionTimeEstimate + " outstandingTasks=" + outstandingTasks + " maximalAllowance=" + maximalAllowance + "]";
     }
 
     /**
@@ -158,13 +72,6 @@ final class NodeTaskInfo {
         String label = "task=" + taskInfo + " worker=" + nodeInfo;
         if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( label + ": roundTripTimeEstimate=" + roundtripTimeEstimate + " transimssionTimeEstimate=" + transmissionTimeEstimate );
-        }
-        if( traceStats ) {
-            double now = 1e-9*(System.nanoTime()-startTime);
-            System.out.println( "TRACE:newRoundtripTime " + label + " " + now + " " + 1e-9*roundtripTime );
-            System.out.println( "TRACE:newTransmissionTime " + label + " " + now + " " + 1e-9*transmissionTime );
-            System.out.println( "TRACE:roundtripTime " + label + " " + now + " " + 1e-9*roundtripTimeEstimate.getAverage() );
-            System.out.println( "TRACE:transmissionTime " + label + " " + now + " " + 1e-9*transmissionTimeEstimate.getAverage() );
         }
     }
 
@@ -219,14 +126,6 @@ final class NodeTaskInfo {
         }
     }
 
-    /**
-     * @return True iff this worker is ready to handle this task.
-     */
-    synchronized boolean canProcessNow()
-    {
-        return outstandingTasks<maximalAllowance;
-    }
-
     int getSubmissions()
     {
         return executedTasks;
@@ -239,8 +138,8 @@ final class NodeTaskInfo {
 
     synchronized void printStatistics( PrintStream s )
     {
-        if( true || didWork() ) {
-            s.println( "  " + taskInfo.type + ": executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + " dequeueTime=" + Service.formatNanoseconds( dequeueTime )+ " computeTime=" + Service.formatNanoseconds( computeTime )+ ", remaining time " + Service.formatNanoseconds( remainingJobTime ) );
+        if( didWork() ) {
+            s.println( "  " + taskInfo.type + ": executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate );
         }
     }
 
@@ -251,8 +150,6 @@ final class NodeTaskInfo {
 
     synchronized void setWorkerQueueInfo( WorkerQueueInfo info )
     {
-        this.dequeueTime = info.dequeueTime;
-        this.computeTime = info.computeTime;
         controlAllowance( info.queueLength );        
     }
 
@@ -264,11 +161,6 @@ final class NodeTaskInfo {
     synchronized long getTransmissionTime()
     {
         return transmissionTimeEstimate.getAverage();
-    }
-
-    synchronized long getPredictedDuration()
-    {
-        return roundtripTimeEstimate.getAverage();
     }
 
     synchronized int getMaximalAllowance()

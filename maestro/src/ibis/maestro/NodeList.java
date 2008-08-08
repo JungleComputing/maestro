@@ -87,23 +87,6 @@ final class NodeList {
         }
     }
 
-    /**
-     * Given a task type, return the estimated average time it will take
-     * to execute this task and all subsequent tasks in the job by
-     * the fastest route.
-     * 
-     * @param taskType The type of the task.
-     * @return The estimated time in nanoseconds.
-     */
-    long getAverageCompletionTime( TaskType taskType )
-    {
-        WorkerQueueTaskInfo taskInfo = workerQueue.getTaskInfo( taskType );
-        if( taskInfo == null ) {
-            return Long.MAX_VALUE;
-        }
-        return taskInfo.getAverageCompletionTime();
-    }
-
     protected void setSuspect( IbisIdentifier theIbis )
     {
         NodeInfo wi = get( theIbis );
@@ -148,19 +131,6 @@ final class NodeList {
 	    if( nodeInfo != null ) {
                 nodeInfo.checkDeadlines( now );
             }
-        }
-    }
-
-    void registerNodeUpdateInformation( NodeUpdateInfo l )
-    {
-        NodeInfo nodeInfo = get( l.source );
-        nodeInfo.registerNodeInfo( l.workerQueueInfo );
-    }
-
-    void registerNodeUpdateInformation( NodeUpdateInfo[] l )
-    {
-        for( NodeUpdateInfo info: l ) {
-            registerNodeUpdateInformation( info );
         }
     }
 

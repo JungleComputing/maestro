@@ -148,16 +148,33 @@ class Gossiper extends Thread
         return changed;
     }
 
+    void recomputeCompletionTimes( long masterQueueIntervals[], JobList jobs )
+    {
+        gossip.recomputeCompletionTimes( masterQueueIntervals, jobs );
+    }
+
     void printStatistics( PrintStream s )
     {
         s.println( "Sent " + messageCount.get() + " gossip messages" );
+        gossip.print( s );
     }
 
-    /** FIXME.
-     * @param source
+    /**
+     * Directly sends a gossip message to the given node.
+     * @param source The node to send the gossip to.
      */
     void sendGossipReply( IbisIdentifier source )
     {
         sendGossip( source, false );
+    }
+
+    void registerWorkerQueueInfo( WorkerQueueInfo[] update )
+    {
+        gossip.registerWorkerQueueInfo( update );
+    }
+
+    NodeUpdateInfo getLocalUpdate( )
+    {
+        return gossip.getLocalUpgate();
     }
 }
