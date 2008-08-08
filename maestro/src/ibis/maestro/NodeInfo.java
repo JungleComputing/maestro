@@ -179,7 +179,6 @@ final class NodeInfo
     {
         final long id = result.taskId;    // The identifier of the task, as handed out by us.
 
-        System.out.println( "Task with id " + id + " has been completed" );
         ActiveTask task = extractActiveTask( id );
 
         if( task == null ){
