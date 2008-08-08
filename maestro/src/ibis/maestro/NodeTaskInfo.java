@@ -96,6 +96,10 @@ final class NodeTaskInfo {
     private void controlAllowance( int queueLength )
     {
         if( maximalAllowance == outstandingTasks ) {
+            if( Settings.traceAllowance ){
+            String label = "task=" + taskInfo + " worker=" + nodeInfo;
+                System.out.println( "controlAllowance(): " + label + " queueLength=" + queueLength + " allowance=" + maximalAllowance );
+            }
             // We can only regulate the allowance if we are
             // at our current maximal allowance.
             if( queueLength<1 ) {
@@ -123,6 +127,10 @@ final class NodeTaskInfo {
             if( maximalEverAllowance<maximalAllowance ) {
                 maximalEverAllowance = maximalAllowance;
             }
+            if( Settings.traceAllowance ){
+                System.out.println( "->" + maximalAllowance );
+            }
+
         }
     }
 

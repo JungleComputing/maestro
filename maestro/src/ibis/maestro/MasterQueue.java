@@ -245,6 +245,22 @@ final class MasterQueue
                 predictedDuration = localNodeInfo.getPredictedDuration( task.type );
             }
         }
+        if( Settings.traceWorkerSelection ){
+            for( NodeUpdateInfo i: tables ){
+                i.print( System.out );
+            }
+            System.out.print( "Best worker: " );
+            for( NodeUpdateInfo info: tables ) {
+                LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
+                long val = info.estimateJobCompletion( localNodeInfo, task.type );
+                System.out.print( Service.formatNanoseconds( val ) );
+                if( val == bestInterval ){
+                    System.out.print( '$' );
+                }
+                System.out.print( ' ' );
+            }
+            System.out.println();
+        }
         if( best == null ) {
             if( Settings.traceMasterQueue ){
                 Globals.log.reportProgress( "No workers for task of type " + task.type );
