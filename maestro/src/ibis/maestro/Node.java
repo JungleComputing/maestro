@@ -443,7 +443,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private void handleGossipMessage( GossipMessage m )
     {
         if( Settings.traceNodeProgress || Settings.traceRegistration || Settings.traceGossip ){
-            Globals.log.reportProgress( "Received gossip message " + m );
+            Globals.log.reportProgress( "Received gossip message from " + m.source + " with " + m.gossip.length + " items"  );
         }
         boolean changed = gossiper.registerGossip( m.gossip );
         if( m.needsReply ) {

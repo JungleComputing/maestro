@@ -25,7 +25,7 @@ class Gossiper extends Thread
     private UpDownCounter gossipQuotum; 
     private Counter messageCount = new Counter();
     private Counter gossipItemCount = new Counter();
-    private Counter gossipNewItemCount = new Counter();
+    private Counter newGossipItemCount = new Counter();
 
     Gossiper( Node node, boolean isMaestro )
     {
@@ -134,7 +134,7 @@ class Gossiper extends Thread
         gossipItemCount.add();
         boolean isnew = gossip.register( update );
         if( isnew ) {
-            gossipNewItemCount.add();
+            newGossipItemCount.add();
             nodes.hadRecentUpdate( update.source );
         }
         return isnew;
@@ -164,7 +164,7 @@ class Gossiper extends Thread
 
     void printStatistics( PrintStream s )
     {
-        s.println( "Sent " + messageCount.get() + " gossip messages, received " + gossipItemCount.get()  + " gossip items" );
+        s.println( "Sent " + messageCount.get() + " gossip messages, received " + gossipItemCount.get()  + " gossip items, " + newGossipItemCount.get() + " new" );
         gossip.print( s );
     }
 
