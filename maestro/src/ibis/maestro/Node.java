@@ -445,7 +445,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress || Settings.traceRegistration || Settings.traceGossip ){
             Globals.log.reportProgress( "Received gossip message from " + m.source + " with " + m.gossip.length + " items"  );
         }
-        boolean changed = gossiper.registerGossip( m.gossip );
+        boolean changed = gossiper.registerGossip( m.gossip, m.source );
         if( m.needsReply ) {
             gossiper.sendGossipReply( m.source );
         }
@@ -774,5 +774,17 @@ public final class Node extends Thread implements PacketReceiveListener
         // FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
 
         updateRecentMasters();
+    }
+
+    /**
+     * Given a number of nodes to wait for, keep waiting until we have gossip information about
+     * at least this many nodes, or until the given time has elapsed.
+     * @param n The number of nodes to wait for.
+     * @param maximalWaitTime The maximal time in ms to wait for these nodes.
+     * @return The actual number of nodes there was information for at the moment we stopped waiting.
+     */
+    public int waitForReadyNodes( int n, long maximalWaitTime )
+    {
+        return gossiper.waitForReadyNodes( n, maximalWaitTime );
     }
 }

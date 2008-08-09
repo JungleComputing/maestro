@@ -126,6 +126,7 @@ class Gossip
         }
         // If we reach this point, we didn't have info about this node.
         gossipList.add( update );
+        this.notifyAll();  // Wake any waiters for ready nodes
         return true;
     }
 
@@ -176,6 +177,39 @@ class Gossip
     {
         for( NodeUpdateInfo entry: gossipList ) {
             entry.print( s );
+        }
+    }
+
+    synchronized int size()
+    {
+        return gossipList.size();
+    }
+
+    /**
+     * Given a number of nodes to wait for, keep waiting until we have gossip information about
+     * at least this many nodes, or until the given time has elapsed.
+     * @param nodes The number of nodes to wait for.
+     * @param maximalWaitTime The maximal time in ms to wait for these nodes.
+     * @return The actual number of nodes there was information for at the moment we stopped waiting.
+     */
+    int waitForReadyNodes( int nodes, long maximalWaitTime )
+    {
+        final long deadline = System.currentTimeMillis()+maximalWaitTime;
+        while( true ) {
+            long now = System.currentTimeMillis();
+            long sleepTime = Math.max( 1L, deadline-now );
+            synchronized( this ) {
+                int sz = size();
+                if( sz>=nodes || now>deadline ) {
+                    return sz;
+                }
+                try{
+                    wait( sleepTime );
+                }
+                catch( InterruptedException e ){
+                    // Ignore
+               }
+            }
         }
     }
 }

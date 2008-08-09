@@ -299,7 +299,7 @@ class NonEssentialSender extends Thread
     {
         s.println( "Non-essential sender:" );
         s.printf(  "  sent messages  %5d\n", sentCount );
-        s.printf(  "  sent bytes     %5d\n", sentBytes );
+        s.printf(  "  sent bytes     %6s\n", Service.formatByteCount( sentBytes ) );
         s.println( "  admin time     " + Service.formatNanoseconds( adminTime ) );
         s.println( "  send time      " + Service.formatNanoseconds( sendTime ) );
     }

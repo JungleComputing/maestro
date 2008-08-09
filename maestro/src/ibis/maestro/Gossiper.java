@@ -143,14 +143,18 @@ class Gossiper extends Thread
         return isnew;
     }
 
-    boolean registerGossip( NodeUpdateInfo updates[] )
+    boolean registerGossip( NodeUpdateInfo updates[], IbisIdentifier source )
     {
         boolean changed = false;
+        boolean incomplete = updates.length<gossip.size();
         for( NodeUpdateInfo update: updates ) {
             changed |= registerGossip( update );
         }
         if( changed ) {
             gossipQuotum.up();
+        }
+        if( source != null && (!changed || incomplete) ) {
+            nodes.needsUrgentUpdate( source );
         }
         return changed;
     }
@@ -163,6 +167,9 @@ class Gossiper extends Thread
     void addQuotum()
     {
         gossipQuotum.up();
+        synchronized( this ) {
+            notifyAll();
+        }
     }
 
     void printStatistics( PrintStream s )
@@ -188,5 +195,17 @@ class Gossiper extends Thread
     NodeUpdateInfo getLocalUpdate( )
     {
         return gossip.getLocalUpgate();
+    }
+
+    /**
+     * Given a number of nodes to wait for, keep waiting until we have gossip information about
+     * at least this many nodes, or until the given time has elapsed.
+     * @param n The number of nodes to wait for.
+     * @param maximalWaitTime The maximal time in ms to wait for these nodes.
+     * @return The actual number of nodes there was information for at the moment we stopped waiting.
+     */
+    int waitForReadyNodes( int n, long maximalWaitTime )
+    {
+        return gossip.waitForReadyNodes( n, maximalWaitTime );
     }
 }

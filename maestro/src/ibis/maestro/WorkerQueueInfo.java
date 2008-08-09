@@ -37,6 +37,6 @@ class WorkerQueueInfo implements Serializable
 
     String format()
     {
-        return String.format( "%3d %8s %8s", queueLength, Service.formatNanoseconds( dequeueTime ), Service.formatNanoseconds( computeTime ) );
+        return String.format( "%3d %9s %9s", queueLength, Service.formatNanoseconds( dequeueTime ), Service.formatNanoseconds( computeTime ) );
     }
 }
