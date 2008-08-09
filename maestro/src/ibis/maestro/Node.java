@@ -690,7 +690,8 @@ public final class Node extends Thread implements PacketReceiveListener
                 message = workerQueue.remove();
             }
             if( message == null ) {
-                long sleepTime = 30;
+                long sleepTime = 20;
+                gossiper.addQuotum();
                 if( Settings.traceWaits ) {
                     System.out.println( "Worker: waiting for " + sleepTime + "ms for new tasks in queue" );
                 }
