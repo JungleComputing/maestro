@@ -271,6 +271,7 @@ public class MasterWorkerProgram
         if( node.isMaestro() ) {
             boolean goodToSubmit = true;
             if( waitNodes>0 ) {
+                System.out.println( "Waiting for " + waitNodes + " ready nodes" );
                 int n = node.waitForReadyNodes( waitNodes, 3*60*1000 ); // Wait for maximally 3 minutes for this many nodes.
                 System.out.println( "There are now " + n + " nodes available" );
                 if( n*3<waitNodes ) {
@@ -326,6 +327,7 @@ public class MasterWorkerProgram
             }
             else {
                 taskCount = Integer.parseInt( args[i] );
+                goForMaestro = true;
             }
         }
         System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro + "; taskCount=" + taskCount );
