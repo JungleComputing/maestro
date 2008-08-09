@@ -50,8 +50,8 @@ public class MasterWorkerProgram
         private static final long serialVersionUID = 7652370809998864296L;
 
         private static final int BANDS = 3;
-        private static final int width = 100;
-        private static final int height = 100;
+        private static final int width = 600;
+        private static final int height = 600;
 
         /** Given a byte
          * returns an unsigned int.
