@@ -1,5 +1,6 @@
 package ibis.maestro;
 
+import java.io.PrintStream;
 import java.util.Random;
 
 
@@ -255,7 +256,7 @@ public class MasterWorkerProgram
     }
 
     @SuppressWarnings("synthetic-access")
-    private void run( int taskCount, boolean goForMaestro ) throws Exception
+    private void run( int taskCount, boolean goForMaestro, int waitNodes ) throws Exception
     {
         JobList jobs = new JobList();
 
@@ -268,15 +269,36 @@ public class MasterWorkerProgram
         System.out.println( "Node created" );
         long startTime = System.nanoTime();
         if( node.isMaestro() ) {
-            System.out.println( "I am maestro; submitting " + taskCount + " tasks" );
-            for( int i=0; i<taskCount; i++ ){
-                Integer length = 12*i;
-                job.submit( node, length, i, listener );
+            boolean goodToSubmit = true;
+            if( waitNodes>0 ) {
+                int n = node.waitForReadyNodes( waitNodes, 3*60*1000 ); // Wait for maximally 3 minutes for this many nodes.
+                System.out.println( "There are now " + n + " nodes available" );
+                if( n*3<waitNodes ) {
+                    System.out.println( "That is less than a third of the required nodes; goodbye!");
+                    goodToSubmit = false;
+                }
+            }
+            if( goodToSubmit ) {
+                System.out.println( "I am maestro; submitting " + taskCount + " tasks" );
+                for( int i=0; i<taskCount; i++ ){
+                    Integer length = 12*i;
+                    job.submit( node, length, i, listener );
+                }
+            }
+            else {
+                node.setStopped();
             }
         }
         node.waitToTerminate();
         long stopTime = System.nanoTime();
         System.out.println( "Duration of this run: " + Service.formatNanoseconds( stopTime-startTime ) );
+    }
+
+    private static void usage(PrintStream printStream)
+    {
+
+
+
     }
 
     /** The command-line interface of this program.
@@ -285,23 +307,30 @@ public class MasterWorkerProgram
      */
     public static void main( String args[] )
     {
-        boolean goForMaestro = true;
+        boolean goForMaestro = false;
+        boolean verbose = false;
         int taskCount = 0;
+        int waitNodes = 0;
 
-        if( args.length == 0 ){
-            System.err.println( "Missing parameter: I need a task count, or 'worker'" );
-            System.exit( 1 );
-        }
-        String arg = args[0];
-        if( arg.equalsIgnoreCase( "worker" ) ){
-            goForMaestro = false;
-        }
-        else {
-            taskCount = Integer.parseInt( arg );
+        for (int i=0;i<args.length;i++) { 
+
+            if (args[i].equals("-h") || args[i].equals("--help")) { 
+                usage( System.out );
+                System.exit( 0 );
+            }
+            else if (args[i].equals("-v") || args[i].equals("--verbose")) { 
+                verbose = true;
+            }
+            else if (args[i].equals("-w") || args[i].equals("--waitnodes")) {
+                waitNodes = Integer.parseInt(  args[++i] );
+            }
+            else {
+                taskCount = Integer.parseInt( args[i] );
+            }
         }
         System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro + "; taskCount=" + taskCount );
         try {
-            new MasterWorkerProgram().run( taskCount, goForMaestro );
+            new MasterWorkerProgram().run( taskCount, goForMaestro, waitNodes );
         }
         catch( Exception e ) {
             e.printStackTrace( System.err );
