@@ -62,10 +62,12 @@ class Gossiper extends Thread
         }
         while( gossipQuotum.isAbove( 0 ) ) {
             IbisIdentifier target = nodes.getStaleNode( now );
-            if( target != null ) {
-                sendGossip( target, true );
-                gossipQuotum.down();
+            if( target == null ) {
+                // Nobody to gossip. Stop.
+                break;
             }
+            sendGossip( target, true );
+            gossipQuotum.down();
         }
     }
     
@@ -115,6 +117,7 @@ class Gossiper extends Thread
     void registerNode( IbisIdentifier ibis )
     {
         nodes.add( ibis );
+        gossipQuotum.up();
         synchronized( this ) {
             this.notifyAll();
         }
@@ -133,7 +136,7 @@ class Gossiper extends Thread
     {
         gossipItemCount.add();
         boolean isnew = gossip.register( update );
-        if( isnew ) {
+        if( false && isnew ) {
             newGossipItemCount.add();
             nodes.hadRecentUpdate( update.source );
         }

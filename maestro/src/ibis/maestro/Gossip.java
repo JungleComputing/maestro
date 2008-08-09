@@ -108,9 +108,9 @@ class Gossip
     {
         int ix = searchInfo( update.source );
         if( ix>=0 ) {
+            // This is an update for the same node.
             NodeUpdateInfo i = gossipList.get( ix );
 
-            // This is an update for the same node.
             if( update.timeStamp>i.timeStamp ) {
                 // This is more recent info, overwrite the old entry.
                 if( Settings.traceGossip ) {
@@ -120,6 +120,9 @@ class Gossip
                 return true;
             }
             return false;
+        }
+        if( Settings.traceGossip ) {
+            Globals.log.reportProgress( "Got info about new node " + update.source );
         }
         // If we reach this point, we didn't have info about this node.
         gossipList.add( update );
