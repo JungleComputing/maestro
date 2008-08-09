@@ -20,6 +20,8 @@ import java.util.PriorityQueue;
  */
 class NonEssentialSender extends Thread
 {
+    private boolean stopped = false;
+
     /** The messages that should be sent as soon as possible. */
     private final PriorityQueue<NonEssentialMessage> waitingMessages;
 
@@ -257,7 +259,7 @@ class NonEssentialSender extends Thread
     @SuppressWarnings("synthetic-access")
     NonEssentialSender()
     {
-        super( "Non-essential sender" );
+        super( "Maestro non-essential sender" );
 	ReadyComparator readyComparator = new ReadyComparator();
 	FutureComparator futureComparator = new FutureComparator();
 	this.waitingMessages = new PriorityQueue<NonEssentialMessage>( 4, readyComparator );
@@ -269,7 +271,7 @@ class NonEssentialSender extends Thread
     @Override
     public void run()
     {
-	while( true ) {
+        while( !isStopped() ) {
 	    boolean progress;
 	    do {
 		progress = getMessagesFromFutureQueue();
@@ -293,6 +295,17 @@ class NonEssentialSender extends Thread
 		}
 	    }
 	}
+    }
+
+    synchronized void setStopped()
+    {
+        stopped = true;
+        notifyAll();
+    }
+    
+    synchronized boolean isStopped()
+    {
+        return stopped;
     }
 
     synchronized void printStatistics( PrintStream s )

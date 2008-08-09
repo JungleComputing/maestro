@@ -575,6 +575,8 @@ public final class Node extends Thread implements PacketReceiveListener
             }
             Service.waitToTerminate( t );
         }
+        gossiper.setStopped();
+        nonEssentialSender.setStopped();
         synchronized( this ) {
             stopTime = System.nanoTime();
         }

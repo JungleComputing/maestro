@@ -20,6 +20,7 @@ class Gossiper extends Thread
 {
     private final Node node;
     
+    private boolean stopped = false;
     private final GossipNodeList nodes = new GossipNodeList();
     private final Gossip gossip = new Gossip();
     private UpDownCounter gossipQuotum; 
@@ -29,7 +30,7 @@ class Gossiper extends Thread
 
     Gossiper( Node node, boolean isMaestro )
     {
-        super( "Gossiper" );
+        super( "Maestro gossiper thread" );
         this.node = node;
         this.gossipQuotum = new UpDownCounter( isMaestro?40:4 );
         setDaemon( true );
@@ -83,7 +84,7 @@ class Gossiper extends Thread
     @Override
     public void run()
     {
-        while( true ) {
+        while( !isStopped() ) {
             sendCurrentGossipMessages();
             long waittime = computeWaitTimeInMilliseconds();
             // We are not supposed to wait if there are
@@ -207,5 +208,16 @@ class Gossiper extends Thread
     int waitForReadyNodes( int n, long maximalWaitTime )
     {
         return gossip.waitForReadyNodes( n, maximalWaitTime );
+    }
+
+    synchronized void setStopped()
+    {
+        stopped = true;
+        notifyAll();
+    }
+    
+    synchronized boolean isStopped()
+    {
+        return stopped;
     }
 }
