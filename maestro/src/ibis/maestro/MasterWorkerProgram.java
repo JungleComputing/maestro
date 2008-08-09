@@ -11,8 +11,8 @@ import java.util.Random;
  */
 public class MasterWorkerProgram
 {
-    private static final int MINIMAL_SHARPENS = 4;
-    private static final int MAXIMAL_SHARPENS = 20;
+    private static final int MINIMAL_SHARPENS = 10;
+    private static final int MAXIMAL_SHARPENS = 50;
 
     private static final Random rng = new Random();
 
@@ -50,8 +50,8 @@ public class MasterWorkerProgram
         private static final long serialVersionUID = 7652370809998864296L;
 
         private static final int BANDS = 3;
-        private static final int width = 600;
-        private static final int height = 600;
+        private static final int width = 1000;
+        private static final int height = 1000;
 
         /** Given a byte
          * returns an unsigned int.

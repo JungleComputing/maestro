@@ -156,7 +156,11 @@ public class NodeUpdateInfo implements Serializable
     {
        WorkerQueueInfo info = workerQueueInfo[ix];
        long nextCompletionInterval;
-       
+
+       if( info == null ) {
+           // We don't support this type.
+           return Long.MAX_VALUE;
+       }
        if( nextIx>=0 ) {
            nextCompletionInterval = completionInfo[nextIx];
        }
@@ -170,8 +174,13 @@ public class NodeUpdateInfo implements Serializable
     void print( PrintStream s )
     {
         for( WorkerQueueInfo i: workerQueueInfo ) {
-            s.print( i.format() );
-            s.print( ' ' );
+            if( i == null ) {
+                s.print ( "    --    " );
+            }
+            else {
+                s.print( i.format() );
+                s.print( ' ' );
+            }
         }
         s.print( " | " );
         for( long t: completionInfo ) {

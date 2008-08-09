@@ -10,15 +10,15 @@ class Settings {
     // Timeout values.
     
     /** Message transmission timeout in ms on optional communication. */
-    static final int OPTIONAL_COMMUNICATION_TIMEOUT = 15000;
+    static final int OPTIONAL_COMMUNICATION_TIMEOUT = 20000;
     
     /** Message transmission timeout in ms on essential communications. */
-    static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 20*OPTIONAL_COMMUNICATION_TIMEOUT;
+    static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 30*OPTIONAL_COMMUNICATION_TIMEOUT;
 
     /**
      * How many times do we try to send a registration message to an ibis? 
      */
-    static final int MAXIMAL_REGISTRATION_TRIES = 20;
+    static final int MAXIMAL_REGISTRATION_TRIES = 1;
 
     /** The number of connections we maximally keep open. */
     static final int CONNECTION_CACHE_SIZE = 350;
@@ -99,7 +99,7 @@ class Settings {
     static final long MAXIMUM_GOSSIPER_WAIT = 5;
 
     /** Time in ms when gossip goes stale for nodes in the same cluster. */
-    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 20;
+    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 200;
 
     /** Time in ms when gossip goes stale for nodes not in the same cluster. */
     static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 4*GOSSIP_EXPIRATION_IN_CLUSTER;
