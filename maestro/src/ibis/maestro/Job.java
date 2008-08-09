@@ -89,7 +89,7 @@ public final class Job
         int updateIndex = 0;
         while( i>0 ) {
             i--;
-            if( tasks[i] instanceof UnpredictableTask ) {
+            if( tasks[i] instanceof UnpredictableAtomicTask ) {
         	unpredictable = true;
             }
             int newIndex = index++;

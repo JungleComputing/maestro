@@ -6,7 +6,8 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  *
  */
-public interface Task {
+public interface Task
+{
     /** Returns the name of this task, suitable for human consumption.
      * @return The name.
      */

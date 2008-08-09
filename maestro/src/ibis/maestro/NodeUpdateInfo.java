@@ -27,15 +27,18 @@ public class NodeUpdateInfo implements Serializable
 
     long timeStamp;
 
-    final int idleProcessors;
+    int idleProcessors;   // TODO: is this actually used?
+    
+    final int numberOfProcessors;
 
     NodeUpdateInfo( long[] completionInfo, WorkerQueueInfo[] workerQueueInfo,
-        IbisIdentifier source, int idleProcessors )
+        IbisIdentifier source, int idleProcessors, int numberOfProcessors )
     {
         this.completionInfo = completionInfo;
         this.workerQueueInfo = workerQueueInfo;
         this.source = source;
         this.idleProcessors = idleProcessors;
+        this.numberOfProcessors = numberOfProcessors;
         this.timeStamp = System.nanoTime();
     }
 
@@ -47,7 +50,8 @@ public class NodeUpdateInfo implements Serializable
             completionInfoCopy,
             workerQueueInfoCopy,
             source,
-            idleProcessors
+            idleProcessors,
+            numberOfProcessors
         );
     }
 
@@ -105,8 +109,8 @@ public class NodeUpdateInfo implements Serializable
         }
         int currentTasks = localNodeInfo.getCurrentTasks( type );
         if( type.unpredictable ) {
-            if( idleProcessors == 0 ) {
-        	// Don't 
+            if( currentTasks>=numberOfProcessors ) {
+        	// Don't submit jobs, there are no idle processors.
                 if( Settings.traceRemainingJobTime ) {
                     Globals.log.reportError( "Node " + source + " has no idle processors" );
                 }
@@ -163,9 +167,6 @@ public class NodeUpdateInfo implements Serializable
        return Service.safeAdd( info.dequeueTime, info.computeTime, nextCompletionInterval );
     }
 
-    /** FIXME.
-     * @param s
-     */
     void print( PrintStream s )
     {
         for( WorkerQueueInfo i: workerQueueInfo ) {

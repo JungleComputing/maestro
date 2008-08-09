@@ -291,6 +291,7 @@ public final class Node extends Thread implements PacketReceiveListener
             // The registry has declared us dead. We might as well stop.
             Globals.log.reportProgress( "This node has been declared dead, stopping.." );
             setStopped();
+            masterQueue.clear();    // Nobody seems to be interested in any work we still have.
             kickAllWorkers();
         }
     }
@@ -462,11 +463,11 @@ public final class Node extends Thread implements PacketReceiveListener
     private void updateLocalGossip()
     {
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
-        gossiper.registerWorkerQueueInfo( workerQueueInfo );
+        gossiper.registerWorkerQueueInfo( workerQueueInfo, getIdleProcessorCount(), numberOfProcessors );
         long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
         gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
     }
-    
+
     private void updateRecentMasters()
     {
         for( IbisIdentifier ibis: recentMasterList.getArray() ){
@@ -585,53 +586,50 @@ public final class Node extends Thread implements PacketReceiveListener
     /** On a locked queue, try to send out as many task as we can. */
     private void drainMasterQueue()
     {
-	if( masterQueue.isEmpty() ) {
-	    // Nothing to do, don't bother with the gossip.
-	    return;
-	}
-	boolean changed = false;
-        NodeUpdateInfo[] tables = gossiper.getGossipCopy();
+        if( masterQueue.isEmpty() ) {
+            // Nothing to do, don't bother with the gossip.
+            return;
+        }
+        boolean changed = false;
         while( true ) {
-            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
-            Submission submission = masterQueue.getSubmission( localNodeInfoMap, tables );
-            if( submission == null ) {
-                break;
+            NodeInfo worker;
+            long taskId;
+            IbisIdentifier node;
+            TaskInstance task;
+
+            synchronized( this ) {
+                NodeUpdateInfo[] tables = gossiper.getGossipCopy();
+                HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
+                Submission submission = masterQueue.getSubmission( localNodeInfoMap, tables );
+                if( submission == null ) {
+                    break;
+                }
+                node = submission.worker;
+                task = submission.task;
+                worker = nodes.get( node );
+                taskId = nextTaskId++;
+
+                worker.registerTaskStart( task, taskId, submission.predictedDuration );
             }
-            if( Settings.traceNodeProgress ){
-                System.out.println( "Got " + submission + " from master queue" );
+            if( Settings.traceMasterQueue ) {
+                System.out.println( "Selected " + node + " as best for task " + task );
             }
-            sendSubmissionToWorker( submission );
+            RunTaskMessage msg = new RunTaskMessage( node, task, taskId );
+            boolean ok = sendPort.tryToSend( node, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+            if( ok ){
+                submitMessageCount.add();
+            }
+            else {
+                // Try to put the paste back in the tube.
+                // The send port has already registered the trouble.
+                masterQueue.add( msg.taskInstance );
+                worker.retractTask( taskId );
+            }
             changed = true;
         }
         if( changed ) {
             updateLocalGossip();
         }
-    }
-
-    /**
-     * @param submission The list of submissions to send.
-     */
-    private void sendSubmissionToWorker( Submission sub )
-    {
-        IbisIdentifier node = sub.worker;
-        TaskInstance task = sub.task;
-        NodeInfo worker = nodes.get( node );
-        long taskId = nextTaskId++;
-        if( Settings.traceMasterQueue ) {
-            System.out.println( "Selected " + node + " as best for task " + task );
-        }
-
-        RunTaskMessage msg = new RunTaskMessage( node, task, taskId );
-        worker.registerTaskStart( task, taskId, sub.predictedDuration );
-        boolean ok = sendPort.tryToSend( node, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
-        if( !ok ){
-            // Try to put the paste back in the tube.
-            // The send port has already registered the trouble.
-            masterQueue.add( msg.taskInstance );
-            worker.retractTask( taskId );
-            return;
-        }
-        submitMessageCount.add();
     }
 
     /**
@@ -657,7 +655,7 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         return false;
     }
-    
+
     private void executeTask( RunTaskMessage message, Task task, Object input, long runMoment )
     {
         if( task instanceof AtomicTask ) {

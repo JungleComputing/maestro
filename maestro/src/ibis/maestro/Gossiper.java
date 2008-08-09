@@ -68,7 +68,6 @@ class Gossiper extends Thread
                 break;
             }
             sendGossip( target, true );
-            gossipQuotum.down();
         }
     }
     
@@ -188,9 +187,9 @@ class Gossiper extends Thread
         sendGossip( source, false );
     }
 
-    void registerWorkerQueueInfo( WorkerQueueInfo[] update )
+    void registerWorkerQueueInfo( WorkerQueueInfo[] update, int idleProcessors, int numberOfProcessors )
     {
-        gossip.registerWorkerQueueInfo( update );
+        gossip.registerWorkerQueueInfo( update, idleProcessors, numberOfProcessors );
     }
 
     NodeUpdateInfo getLocalUpdate( )

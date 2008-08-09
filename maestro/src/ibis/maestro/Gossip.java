@@ -141,15 +141,16 @@ class Gossip
 
     /** Overwrite the worker queue info of our local information with the new info.
      * @param update
+     * @param idleProcessors 
      */
-    synchronized void registerWorkerQueueInfo( WorkerQueueInfo[] update )
+    synchronized void registerWorkerQueueInfo( WorkerQueueInfo[] update, int idleProcessors, int numberOfProcessors )
     {
         IbisIdentifier ourIbis = Globals.localIbis.identifier();
         int ix = searchInfo( ourIbis );
         if( ix<0 ) {
             long completionInfo[] = new long[Globals.numberOfTaskTypes];
             Arrays.fill( completionInfo, Long.MAX_VALUE );
-            NodeUpdateInfo localInfo = new NodeUpdateInfo( completionInfo, update, ourIbis, 1 );
+            NodeUpdateInfo localInfo = new NodeUpdateInfo( completionInfo, update, ourIbis, idleProcessors, numberOfProcessors );
             gossipList.add( localInfo );
             return;
         }
@@ -160,6 +161,7 @@ class Gossip
         
         localInfo.workerQueueInfo = update;
         localInfo.timeStamp = System.nanoTime();
+        localInfo.idleProcessors = idleProcessors;
     }
 
     synchronized NodeUpdateInfo getLocalUpgate()

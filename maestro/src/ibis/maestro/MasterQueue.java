@@ -301,8 +301,8 @@ final class MasterQueue
             Submission sub = selectBestWorker( localNodeInfoMap, tables, task );
             if( sub != null ) {
                 queue.remove( ix );
-                TypeInfo info = queueTypes[type.index];
-                int length = info.registerRemove();
+                TypeInfo queueTypeInfo = queueTypes[type.index];
+                int length = queueTypeInfo.registerRemove();
                 if( Settings.traceMasterQueue || Settings.traceQueuing ) {
                     Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type );
                 }
@@ -329,5 +329,14 @@ final class MasterQueue
             res[ix] = queueTypes[ix].estimateQueueTime( idleProcessors );
         }
         return res;
+    }
+
+    /**
+     * Clear the work queue.
+     *
+     */
+    synchronized void clear()
+    {
+        queue.clear();
     }
 }
