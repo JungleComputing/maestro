@@ -1,6 +1,7 @@
 #!/bin/sh
 
 #SERVERHOST=babylon.few.vu.nl
+#SERVERHOST=fs2.das3.science.uva.nl
 SERVERHOST=fs0.das3.cs.vu.nl
 
 # Check setting of MAESTRO_HOME

@@ -137,7 +137,7 @@ class Gossiper extends Thread
     {
         gossipItemCount.add();
         boolean isnew = gossip.register( update );
-        if( false && isnew ) {
+        if( isnew ) {
             newGossipItemCount.add();
             nodes.hadRecentUpdate( update.source );
         }
