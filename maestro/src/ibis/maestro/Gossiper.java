@@ -67,6 +67,9 @@ class Gossiper extends Thread
                 // Nobody to gossip. Stop.
                 break;
             }
+            if( isStopped() ) {
+                return;
+            }
             sendGossip( target, true );
         }
     }

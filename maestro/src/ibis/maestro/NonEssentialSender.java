@@ -275,6 +275,9 @@ class NonEssentialSender extends Thread
 	    boolean progress;
 	    do {
 		progress = getMessagesFromFutureQueue();
+		if( isStopped() ) {
+		    return;
+		}
 		progress |= sendAMessage();
 	    } while( progress );
 	    long waittime = computeWaitTimeInMilliseconds();
