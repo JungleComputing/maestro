@@ -186,9 +186,7 @@ public final class Node extends Thread implements PacketReceiveListener
             isMaestro = false;
 
         }
-        if( Settings.traceNodes ) {
-            Globals.log.reportProgress( "Ibis " + localIbis.identifier() + ": isMaestro=" + isMaestro );
-        }
+        Globals.log.reportProgress( "Started ibis " + localIbis.identifier() + ": isMaestro=" + isMaestro );
         gossiper = new Gossiper( isMaestro );
         gossiper.start();
         for( int i=0; i<workThreads.length; i++ ) {

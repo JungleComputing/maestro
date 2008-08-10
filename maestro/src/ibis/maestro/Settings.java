@@ -96,7 +96,7 @@ class Settings {
     static final long RESCHEDULE_DEADLINE_MARGIN = 6;
 
     /** The maximal time in ms before the gossiper gets more quotum.  */
-    static final long MAXIMUM_GOSSIPER_WAIT = 5;
+    static final long MAXIMUM_GOSSIPER_WAIT = 20;
 
     /** Time in ms when gossip goes stale for nodes in the same cluster. */
     static final long GOSSIP_EXPIRATION_IN_CLUSTER = 200;
