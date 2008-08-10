@@ -32,6 +32,27 @@ public class ConnectionCache
             WriteMessage msg = port.newMessage();
             msg.writeObject( message );
             long len = msg.finish();
+            return len;
+        }
+        catch( IOException x ){
+            node.setSuspect( ibis );
+            return -1;
+        }
+    }
+
+    /**
+     * Given an ibis, returns a WriteMessage to use.
+     * @param ibis The ibis to send to.
+     * @return The WriteMessage to fill.
+     */
+    long uncachedSendMessage( IbisIdentifier ibis, Object message, int timeout )
+    {
+        try {
+            SendPort port = Globals.localIbis.createSendPort( PacketSendPort.portType );
+            port.connect( ibis, Globals.receivePortName, timeout, true );
+            WriteMessage msg = port.newMessage();
+            msg.writeObject( message );
+            long len = msg.finish();
             port.close();
             return len;
         }
@@ -48,19 +69,15 @@ public class ConnectionCache
      */
     long sendMessage( IbisIdentifier ibis, Object message, int timeout )
     {
-        try {
-            SendPort port = Globals.localIbis.createSendPort( PacketSendPort.portType );
-            port.connect( ibis, Globals.receivePortName, timeout, true );
-            WriteMessage msg = port.newMessage();
-            msg.writeObject( message );
-            long len = msg.finish();
-            port.close();
-            return len;
+        long sz;
+
+        if( Settings.CACHE_CONNECTIONS ) {
+            sz = cachedSendMessage( ibis, message, timeout );
         }
-        catch( IOException x ){
-            node.setSuspect( ibis );
-            return -1;
+        else {
+            sz = uncachedSendMessage( ibis, message, timeout );
         }
+        return sz;
     }
 
     void printStatistics( PrintStream s )

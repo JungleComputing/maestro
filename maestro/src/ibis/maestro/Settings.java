@@ -108,4 +108,6 @@ class Settings {
      * date with our state changes (instead of through the gossip system).
      */
     static final int MAXIMAL_RECENT_MASTERS = 4;
+
+    static final boolean CACHE_CONNECTIONS = true;
 }

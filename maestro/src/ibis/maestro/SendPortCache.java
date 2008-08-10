@@ -89,6 +89,7 @@ public class SendPortCache
 
             if( info == null ) {
                 info = new ConnectionInfo();
+                map.put( ibis, info );
             }
         }
         try{
