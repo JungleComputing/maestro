@@ -14,6 +14,8 @@ import java.io.PrintStream;
  */
 public class ConnectionCache
 {
+    private int hits = 0;
+    private int evictions = 0;
     private final Node node;
     private final SendPortCache cache = new SendPortCache( Settings.CONNECTION_CACHE_SIZE );
 
@@ -24,7 +26,7 @@ public class ConnectionCache
 
     // For the moment a connection cache that doesn't cache at all.
 
-    long cachedSendMessage( IbisIdentifier ibis, Object message, int timeout )
+    long cachedSendMessage( IbisIdentifier ibis, Object message )
     {
         try {
             SendPort port = cache.getSendPort( ibis );
@@ -44,11 +46,11 @@ public class ConnectionCache
      * @param ibis The ibis to send to.
      * @return The WriteMessage to fill.
      */
-    long uncachedSendMessage( IbisIdentifier ibis, Object message, int timeout )
+    long uncachedSendMessage( IbisIdentifier ibis, Object message  )
     {
         try {
             SendPort port = Globals.localIbis.createSendPort( PacketSendPort.portType );
-            port.connect( ibis, Globals.receivePortName, timeout, true );
+            port.connect( ibis, Globals.receivePortName, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT, true );
             WriteMessage msg = port.newMessage();
             msg.writeObject( message );
             long len = msg.finish();
@@ -66,22 +68,22 @@ public class ConnectionCache
      * @param ibis The ibis to send to.
      * @return The WriteMessage to fill.
      */
-    long sendMessage( IbisIdentifier ibis, Object message, int timeout )
+    long sendMessage( IbisIdentifier ibis, Object message )
     {
         long sz;
 
         if( Settings.CACHE_CONNECTIONS ) {
-            sz = cachedSendMessage( ibis, message, timeout );
+            sz = cachedSendMessage( ibis, message );
         }
         else {
-            sz = uncachedSendMessage( ibis, message, timeout );
+            sz = uncachedSendMessage( ibis, message );
         }
         return sz;
     }
 
     void printStatistics( PrintStream s )
     {
-        // Nothing at the moment.
+        s.println( "Connection cache: " + hits + " hits, " + evictions + " evictions" );
     }
 
 }

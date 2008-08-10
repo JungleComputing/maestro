@@ -295,11 +295,12 @@ public class MasterWorkerProgram
         System.out.println( "Duration of this run: " + Service.formatNanoseconds( stopTime-startTime ) );
     }
 
-    private static void usage(PrintStream printStream)
+    private static void usage( PrintStream printStream )
     {
-
-
-
+        printStream.println( "Usage: MasterWorkerProgram [<options>] <jobCount>" );
+        printStream.println( " empty <jobCount> for a worker" );
+        printStream.println( " -h      Show this help" );
+        printStream.println( " -w <n>  Wait for at least <n> ready nodes before submitting jobs" );
     }
 
     /** The command-line interface of this program.

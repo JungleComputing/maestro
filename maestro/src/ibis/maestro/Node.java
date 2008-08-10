@@ -385,7 +385,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceUpdateMessages ) {
             Globals.log.reportProgress( "Sending " + msg );
         }
-        sendPort.tryToSend( node, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        sendPort.send( node, msg );
         updateMessageCount.add();
         gossiper.registerGossip( update );
     }
@@ -402,7 +402,7 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         Message msg = new JobResultMessage( id, result );	
         jobResultMessageCount.add();
-        return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        return sendPort.send( port, msg );
     }
 
     private void updateLocalGossip()
@@ -601,7 +601,7 @@ public final class Node extends Thread implements PacketReceiveListener
                 System.out.println( "Selected " + node + " as best for task " + task );
             }
             RunTaskMessage msg = new RunTaskMessage( node, task, taskId );
-            boolean ok = sendPort.tryToSend( node, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+            boolean ok = sendPort.send( node, msg );
             if( ok ){
                 submitMessageCount.add();
             }
@@ -755,7 +755,7 @@ public final class Node extends Thread implements PacketReceiveListener
             System.out.println( "TRACE:workerDwellTime " + type + " " + now + " " + 1e-9*workerDwellTime );
         }
         Message msg = new TaskCompletedMessage( message.taskId, workerDwellTime );
-        boolean ok = sendPort.tryToSend( message.source, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
+        boolean ok = sendPort.send( message.source, msg );
 
         // FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
 

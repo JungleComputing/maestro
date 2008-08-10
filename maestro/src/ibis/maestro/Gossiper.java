@@ -44,28 +44,23 @@ class Gossiper extends Thread
         return gossip.getCopy();
     }
 
-    /** 
-     * Tries to send a message to the given ibis and port name.
-     * @param theIbis The ibis to send the message to.
-     * @param msg The message to send.
-     */
-    private void tryToSendNonEssential( NonEssentialMessage msg )
+    private void sendGossip( IbisIdentifier target, boolean needsReply )
     {
+        GossipMessage msg = gossip.constructMessage( target, needsReply );
         IbisIdentifier theIbis = msg.destination;
         long startTime = System.nanoTime();
         msg.sendMoment = startTime;
         try {
-            long len;
             SendPort port = Globals.localIbis.createSendPort( PacketSendPort.portType );
             port.connect( theIbis, Globals.receivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT, false );
             long setupTime = System.nanoTime();
             WriteMessage writeMessage = port.newMessage();
             writeMessage.writeObject( msg );
-            len = writeMessage.finish();
+            long len = writeMessage.finish();
             port.close();
             long stopTime = System.nanoTime();
             if( Settings.traceSends ) {
-                System.out.println( "Sent non-essential message of " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) + ": " + msg );
+                System.out.println( "Sent gossip message of " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) + ": " + msg );
             }
             synchronized( this ) {
                 adminTime += (setupTime-startTime);
@@ -74,20 +69,10 @@ class Gossiper extends Thread
                     sentBytes += len;
                 }
             }
-        } catch (IOException e) {
-            // Don't declare a node dead just because of this small problem.
-            // node.setSuspect( theIbis );
+        }
+        catch (IOException e) {
             Globals.log.reportError( "Cannot send a gossip message to ibis " + theIbis );
         }
-    }
-
-    private void sendGossip( IbisIdentifier target, boolean needsReply )
-    {
-        if( Settings.traceGossip ) {
-            Globals.log.reportProgress( "Sending gossip message to " + target + " needsReply=" + needsReply );
-        }
-        GossipMessage msg = gossip.constructMessage( target, false );
-        tryToSendNonEssential( msg );
         gossipQuotum.down();
         messageCount.add();
     }

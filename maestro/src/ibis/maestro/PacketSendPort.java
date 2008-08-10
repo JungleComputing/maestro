@@ -165,11 +165,10 @@ class PacketSendPort {
      * Sends the given data to the given port.
      * @param theIbis The port to send it to.
      * @param message The data to send.
-     * @param timeout The timeout of the transmission.
      * @return <code>true</code> if we managed to send the data.
      */
     @SuppressWarnings("synthetic-access")
-    private boolean send( IbisIdentifier theIbis, Message message, int timeout )
+    boolean send( IbisIdentifier theIbis, Message message )
     {
         long len;
         boolean ok = true;
@@ -198,7 +197,7 @@ class PacketSendPort {
             long t;
             
             long startTime = System.nanoTime();
-            len = connectionCache.sendMessage( theIbis, message, timeout );
+            len = connectionCache.sendMessage( theIbis, message );
             if( len<0 ) {
                 ok = false;
                 len = 0;
@@ -246,18 +245,5 @@ class PacketSendPort {
 
             i.printStatistics( s );
         }
-    }
-
-    /**
-     * Sends the given data to the given port.
-     * @param msg The data to send.
-     * @param destination The port to send it to.
-     * @param timeout The timeout of the transmission.
-     * @return <code>true</code> if the message could be sent.
-     */
-    @SuppressWarnings("synthetic-access")
-    boolean tryToSend( IbisIdentifier id, Message msg, int timeout )
-    {
-        return send( id, msg, timeout );
     }
 }
