@@ -28,7 +28,6 @@ public class ConnectionCache
     {
         try {
             SendPort port = cache.getPort( ibis );
-            port.connect( ibis, Globals.receivePortName, timeout, true );
             WriteMessage msg = port.newMessage();
             msg.writeObject( message );
             long len = msg.finish();
