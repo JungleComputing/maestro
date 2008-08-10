@@ -407,6 +407,16 @@ public final class Node extends Thread implements PacketReceiveListener
         return sendPort.tryToSend( port, msg, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT );
     }
 
+    private void updateLocalGossip()
+    {
+        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
+        NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() ); // TODO: more subtle than this.
+        nodeInfo.registerWorkerQueueInfo( workerQueueInfo );        
+        gossiper.registerWorkerQueueInfo( workerQueueInfo, getIdleProcessorCount(), numberOfProcessors );
+        long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
+        gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
+    }
+
     /**
      * A worker has sent us a message with its current status, handle it.
      * @param m The update message.
@@ -442,14 +452,6 @@ public final class Node extends Thread implements PacketReceiveListener
                 this.notify();
             }
         }
-    }
-
-    private void updateLocalGossip()
-    {
-        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
-        gossiper.registerWorkerQueueInfo( workerQueueInfo, getIdleProcessorCount(), numberOfProcessors );
-        long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
-        gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
     }
 
     private void updateRecentMasters()
