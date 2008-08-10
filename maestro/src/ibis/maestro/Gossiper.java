@@ -161,7 +161,7 @@ class Gossiper extends Thread
     void registerNode( IbisIdentifier ibis )
     {
         if( ibis.equals( Globals.localIbis.identifier() ) ) {
-            // I'm going to gossip to myself.
+            // I'm not going to gossip to myself.
             return;
         }
         nodes.add( ibis );
@@ -223,6 +223,7 @@ class Gossiper extends Thread
     void printStatistics( PrintStream s )
     {
         s.println( "Sent " + messageCount.get() + " gossip messages, received " + gossipItemCount.get()  + " gossip items, " + newGossipItemCount.get() + " new" );
+        s.println( "Sent " + Service.formatByteCount( sentBytes ) + " in " + Service.formatNanoseconds( sendTime ) + ", administration time " + Service.formatNanoseconds( adminTime ) );
         gossip.print( s );
     }
 
