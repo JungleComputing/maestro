@@ -411,8 +411,9 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
         NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() ); // TODO: more subtle than this.
-        nodeInfo.registerWorkerQueueInfo( workerQueueInfo );        
-        gossiper.registerWorkerQueueInfo( workerQueueInfo, getIdleProcessorCount(), numberOfProcessors );
+        nodeInfo.registerWorkerQueueInfo( workerQueueInfo );
+        // FIXME: instead of the terrible hack below, use something more sublte.
+        gossiper.registerWorkerQueueInfo( workerQueueInfo, getIdleProcessorCount(), isMaestro?1:numberOfProcessors );
         long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
         gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
     }
