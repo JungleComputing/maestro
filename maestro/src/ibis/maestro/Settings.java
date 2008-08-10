@@ -10,10 +10,10 @@ class Settings {
     // Timeout values.
     
     /** Message transmission timeout in ms on optional communication. */
-    static final int OPTIONAL_COMMUNICATION_TIMEOUT = 20000;
+    static final int OPTIONAL_COMMUNICATION_TIMEOUT = 1000;
     
     /** Message transmission timeout in ms on essential communications. */
-    static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 30*OPTIONAL_COMMUNICATION_TIMEOUT;
+    static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 50*OPTIONAL_COMMUNICATION_TIMEOUT;
 
     /**
      * How many times do we try to send a registration message to an ibis? 

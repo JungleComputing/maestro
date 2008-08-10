@@ -1,7 +1,10 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
+import ibis.ipl.SendPort;
+import ibis.ipl.WriteMessage;
 
+import java.io.IOException;
 import java.io.PrintStream;
 
 /**
@@ -18,8 +21,6 @@ import java.io.PrintStream;
  */
 class Gossiper extends Thread
 {
-    private final Node node;
-    
     private boolean stopped = false;
     private final GossipNodeList nodes = new GossipNodeList();
     private final Gossip gossip = new Gossip();
@@ -27,11 +28,13 @@ class Gossiper extends Thread
     private Counter messageCount = new Counter();
     private Counter gossipItemCount = new Counter();
     private Counter newGossipItemCount = new Counter();
+    private long adminTime = 0;
+    private long sendTime = 0;
+    private long sentBytes = 0;
 
-    Gossiper( Node node, boolean isMaestro )
+    Gossiper( boolean isMaestro )
     {
         super( "Maestro gossiper thread" );
-        this.node = node;
         this.gossipQuotum = new UpDownCounter( isMaestro?40:4 );
         setDaemon( true );
     }
@@ -41,20 +44,57 @@ class Gossiper extends Thread
         return gossip.getCopy();
     }
 
+
+    /** 
+     * Tries to send a message to the given ibis and port name.
+     * @param theIbis The ibis to send the message to.
+     * @param msg The message to send.
+     */
+    private void tryToSendNonEssential( NonEssentialMessage msg )
+    {
+        IbisIdentifier theIbis = msg.destination;
+        long startTime = System.nanoTime();
+        msg.sendMoment = startTime;
+        try {
+            long len;
+            SendPort port = Globals.localIbis.createSendPort( PacketSendPort.portType );
+            port.connect( theIbis, Globals.receivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT, false );
+            long setupTime = System.nanoTime();
+            WriteMessage writeMessage = port.newMessage();
+            writeMessage.writeObject( msg );
+            len = writeMessage.finish();
+            port.close();
+            long stopTime = System.nanoTime();
+            if( Settings.traceSends ) {
+                System.out.println( "Sent non-essential message of " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) + ": " + msg );
+            }
+            synchronized( this ) {
+                adminTime += (setupTime-startTime);
+                sendTime += (stopTime-setupTime);
+                if( len>0 ) {
+                    sentBytes += len;
+                }
+            }
+        } catch (IOException e) {
+            // Don't declare a node dead just because of this small problem.
+            // node.setSuspect( theIbis );
+            Globals.log.reportError( "Cannot send a gossip message to ibis " + theIbis );
+        }
+    }
+
     private void sendGossip( IbisIdentifier target, boolean needsReply )
     {
         if( Settings.traceGossip ) {
             Globals.log.reportProgress( "Sending gossip message to " + target + " needsReply=" + needsReply );
         }
         GossipMessage msg = gossip.constructMessage( target, false );
-        node.sendNonEssential( msg );
+        tryToSendNonEssential( msg );
         gossipQuotum.down();
         messageCount.add();
     }
 
     private void sendCurrentGossipMessages()
     {
-        long now = System.currentTimeMillis();
 
         if( gossip.isEmpty() ){
             // There is nothing in the gossip yet, don't waste
@@ -62,6 +102,7 @@ class Gossiper extends Thread
             return;
         }
         while( gossipQuotum.isAbove( 0 ) ) {
+            long now = System.currentTimeMillis();
             IbisIdentifier target = nodes.getStaleNode( now );
             if( target == null ) {
                 // Nobody to gossip. Stop.
@@ -119,6 +160,10 @@ class Gossiper extends Thread
     
     void registerNode( IbisIdentifier ibis )
     {
+        if( ibis.equals( Globals.localIbis.identifier() ) ) {
+            // I'm going to gossip to myself.
+            return;
+        }
         nodes.add( ibis );
         gossipQuotum.up();
         synchronized( this ) {

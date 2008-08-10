@@ -41,9 +41,6 @@ public final class Node extends Thread implements PacketReceiveListener
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
     private final Gossiper gossiper;
 
-    /** The sender of non-essential messages. */
-    private final NonEssentialSender nonEssentialSender;
-
     private CompletedJobJist completedJobList = new CompletedJobJist();
 
     private IbisIdentifier maestro = null;
@@ -156,11 +153,12 @@ public final class Node extends Thread implements PacketReceiveListener
         TaskType taskTypes[] = jobs.getSupportedTaskTypes();
         Globals.numberOfTaskTypes = Job.getTaskCount();
         Globals.supportedTaskTypes = taskTypes;
+        if( Globals.supportedTaskTypes.length == 0 ) {
+            System.out.println( "This node does not support any types, all it can do is gossip and wait to stop" );
+        }
         masterQueue = new MasterQueue( jobs.getAllTypes() );
         workerQueue = new WorkerQueue( taskTypes, jobs );
         nodes = new NodeList( workerQueue );
-        nonEssentialSender = new NonEssentialSender();
-        nonEssentialSender.start();
         ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
         registryEventHandler = new NodeRegistryEventHandler();
         Globals.localIbis = IbisFactory.createIbis(
@@ -191,7 +189,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodes ) {
             Globals.log.reportProgress( "Ibis " + localIbis.identifier() + ": isMaestro=" + isMaestro );
         }
-        gossiper = new Gossiper( this, isMaestro );
+        gossiper = new Gossiper( isMaestro );
         gossiper.start();
         for( int i=0; i<workThreads.length; i++ ) {
             WorkThread t = new WorkThread( this );
@@ -278,7 +276,6 @@ public final class Node extends Thread implements PacketReceiveListener
             deadNodesBeforeElection.add( theIbis );
         }
         gossiper.removeNode( theIbis );
-        nonEssentialSender.removeMessagesToIbis( theIbis );
         recentMasterList.remove( theIbis );
         ArrayList<TaskInstance> orphans = nodes.removeNode( theIbis );
         masterQueue.add( orphans );
@@ -371,7 +368,6 @@ public final class Node extends Thread implements PacketReceiveListener
         s.printf( "task result  messages:   %5d sent\n", taskResultMessageCount.get() );
         s.printf( "job result   messages:   %5d sent\n", jobResultMessageCount.get() );
         gossiper.printStatistics( s );
-        nonEssentialSender.printStatistics( s );
         sendPort.printStatistics( s, "send port" );
         long activeTime = workerQueue.getActiveTime( startTime );
         long workInterval = stopTime-activeTime;
@@ -380,18 +376,6 @@ public final class Node extends Thread implements PacketReceiveListener
         s.println( "Worker: activated after = " + Service.formatNanoseconds( activeTime-startTime ) );
         masterQueue.printStatistics( s );
         s.printf(  "Master: # handled tasks  = %5d\n", handledTaskCount.get() );
-    }
-
-    void sendNonEssential( NonEssentialMessage msg )
-    {
-        if( msg.destination.equals( Globals.localIbis.identifier() ) ) {
-            // Don't go through all the bureaucracy for a local message.
-            msg.arrivalMoment = msg.sendMoment = System.nanoTime();
-            messageReceived( msg );
-        }
-        else {
-            nonEssentialSender.submit( msg );
-        }
     }
 
     private void postUpdateNodeMessage( IbisIdentifier node )
@@ -577,7 +561,6 @@ public final class Node extends Thread implements PacketReceiveListener
             Service.waitToTerminate( t );
         }
         gossiper.setStopped();
-        nonEssentialSender.setStopped();
         synchronized( this ) {
             stopTime = System.nanoTime();
         }
