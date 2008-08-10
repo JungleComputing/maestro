@@ -94,6 +94,10 @@ class GossipNodeList
 
     synchronized void add( IbisIdentifier ibis )
     {
+        if( ibis.equals( Globals.localIbis.identifier() ) ) {
+            // We're not going to gossip to ourselves.
+            return;
+        }
         nodes.add( new GossipNode( ibis ) );
     }
 

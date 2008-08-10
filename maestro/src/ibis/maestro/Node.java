@@ -441,7 +441,9 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         boolean changed = gossiper.registerGossip( m.gossip, m.source );
         if( m.needsReply ) {
-            gossiper.sendGossipReply( m.source );
+            if( !m.source.equals( Globals.localIbis.identifier()) ) {
+                gossiper.sendGossipReply( m.source );
+            }
         }
         if( changed ) {
             for( NodeUpdateInfo i: m.gossip ) {

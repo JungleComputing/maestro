@@ -21,7 +21,7 @@ class Settings {
     static final int MAXIMAL_REGISTRATION_TRIES = 1;
 
     /** The number of connections we maximally keep open. */
-    static final int CONNECTION_CACHE_SIZE = 350;
+    static final int CONNECTION_CACHE_SIZE = 80;
 
     // Debugging flags.
     

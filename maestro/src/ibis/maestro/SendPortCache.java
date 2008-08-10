@@ -80,7 +80,7 @@ public class SendPortCache
      * @return The SendPort, or <code>null</code> if the ibis could not be reached.
      */
     @SuppressWarnings("synthetic-access")
-    SendPort getPort( IbisIdentifier ibis )
+    SendPort getSendPort( IbisIdentifier ibis )
     {
         ConnectionInfo info;
 

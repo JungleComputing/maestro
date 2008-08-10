@@ -44,7 +44,6 @@ class Gossiper extends Thread
         return gossip.getCopy();
     }
 
-
     /** 
      * Tries to send a message to the given ibis and port name.
      * @param theIbis The ibis to send the message to.
