@@ -232,9 +232,11 @@ class Gossip
 	for( NodeUpdateInfo info: gossipList ) {
 	    LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
 
-	    long t = info.estimateJobCompletion( localNodeInfo, type, !submitIfBusy );
-	    if( t<bestTime ) {
-		bestTime = t;
+	    if( localNodeInfo != null ){
+	        long t = info.estimateJobCompletion( localNodeInfo, type, !submitIfBusy );
+	        if( t<bestTime ) {
+	            bestTime = t;
+	        }
 	    }
 	}
 	return bestTime;

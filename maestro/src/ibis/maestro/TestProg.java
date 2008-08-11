@@ -186,7 +186,7 @@ public class TestProg {
 	{
 	    for( int n=0; n<SIZE; n++ ){
 		Integer userId = n;
-		handler.submit( createJob, input, userId );
+		handler.submit( input, userId, true, createJob );
 	    }
 	}
 

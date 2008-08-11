@@ -59,20 +59,23 @@ public class MapReduceHandler extends Thread implements CompletionListener
     /** Submits a new job instance with the given input for the first task of the job.
      * Internally we keep track of the number of submitted jobs so that
      * we can wait for all of them to complete.
-     * 
-     * @param job The job to submit to.
      * @param input Input for the (first task of the) job.
      * @param userId The identifier the user attaches to this job.
+     * @param job The job to submit to.
      */
     @SuppressWarnings("synthetic-access")
-    public synchronized void submit( Job job, Object input, Object userId )
+    public synchronized boolean submit( Object input, Object userId, boolean submitIfBusy, Job... job )
     {
 	Label label = labeler.nextLabel();
 	Object id = new Id( userId, label );
 	if( Settings.traceMapReduce ){
 	    Globals.log.reportProgress( "MapReduce: Submitting " + id + " to " + job );
 	}
-	job.submit( localNode, input, id, this );
+        boolean submitted = localNode.submit( input, submitIfBusy, this, job );
+        if( !submitted ){
+            labeler.returnLabel( label );
+        }
+        return submitted;
     }
 
     /**

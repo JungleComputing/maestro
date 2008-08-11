@@ -644,22 +644,33 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     boolean submit( Object input, boolean submitIfBusy, CompletionListener listener, Job...choices )
     {
-	TaskType types[] = new TaskType[choices.length];
+        int choice;
 
-	for( int ix=0; ix<choices.length; ix++ ) {
-	    Job job = choices[ix];
+        if( choices.length == 0 ){
+            // No choices? Obviously we won't be able to submit this one.
+            return false;
+        }
+        if( choices.length == 1 && submitIfBusy ){
+            choice = 0;
+        }
+        else {
+            TaskType types[] = new TaskType[choices.length];
 
-	    types[ix] = job.getFirstTaskType();
-	}
-        HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
-	int choice = gossiper.selectFastestTask( types, submitIfBusy, localNodeInfoMap );
-	if( choice<0 ) {
-	    // Couldn't submit the job.
-	    return false;
-	}
-	Job job = choices[choice];
-	job.submit( this, input, job, listener );
-	return true;
+            for( int ix=0; ix<choices.length; ix++ ) {
+                Job job = choices[ix];
+
+                types[ix] = job.getFirstTaskType();
+            }
+            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
+            choice = gossiper.selectFastestTask( types, submitIfBusy, localNodeInfoMap );
+            if( choice<0 ) {
+                // Couldn't submit the job.
+                return false;
+            }
+        }
+        Job job = choices[choice];
+        job.submit( this, input, job, listener );
+        return true;
     }
 
     private boolean keepRunning()
