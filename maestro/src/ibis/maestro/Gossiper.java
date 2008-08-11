@@ -6,6 +6,7 @@ import ibis.ipl.WriteMessage;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.HashMap;
 
 /**
  * A thread that gossips with the other ibises to exchange performance information.
@@ -252,4 +253,35 @@ class Gossiper extends Thread
     {
         return stopped;
     }
+
+    /** Given a task type, return the estimated completion time of this task.
+     * 
+     * @param type The task type for which we want to know the completion time.
+     * @param submitIfBusy If set, take into consideration processors that
+     *    are currently fully occupied with tasks.
+     * @param localNodeInfoMap Local knowledge about the different nodes.
+     * @return
+     */
+    private long computeCompletionTime(TaskType type, boolean submitIfBusy,
+	    HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap )
+    {
+	return gossip.computeCompletionTime( type, submitIfBusy, localNodeInfoMap );
+    }
+
+    int selectFastestTask(TaskType[] types, boolean submitIfBusy,
+	    HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap)
+    {
+	int bestIx = -1;
+	long bestTime = Long.MAX_VALUE;
+	for( int ix=0; ix<types.length; ix++ ) {
+	    TaskType type = types[ix];
+	    long t = computeCompletionTime( type, submitIfBusy, localNodeInfoMap );
+	    if( t<bestTime ) {
+		bestTime = t;
+		bestIx = ix;
+	    }
+	}
+	return bestIx;
+    }
+
 }

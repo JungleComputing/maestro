@@ -630,6 +630,37 @@ public final class Node extends Thread implements PacketReceiveListener
         masterQueue.add( task );
         drainMasterQueue();
     }
+    
+    /**
+     * Given an input and a list of possible jobs to execute, submit
+     * this input as a job with the best promised completion time.
+     * If <code>submitIfBusy</code> is set, also consider jobs where all
+     * workers are currently busy.
+     * @param input The input of the job.
+     * @param submitIfBusy If set, also consider jobs for which all workers are currently busy.
+     * @param listener The completion listener for this job.
+     * @param choices The list of job choices.
+     * @return <code>true</code> if the job could be submitted.
+     */
+    boolean submit( Object input, boolean submitIfBusy, CompletionListener listener, Job...choices )
+    {
+	TaskType types[] = new TaskType[choices.length];
+
+	for( int ix=0; ix<choices.length; ix++ ) {
+	    Job job = choices[ix];
+
+	    types[ix] = job.getFirstTaskType();
+	}
+        HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
+	int choice = gossiper.selectFastestTask( types, submitIfBusy, localNodeInfoMap );
+	if( choice<0 ) {
+	    // Couldn't submit the job.
+	    return false;
+	}
+	Job job = choices[choice];
+	job.submit( this, input, job, listener );
+	return true;
+    }
 
     private boolean keepRunning()
     {

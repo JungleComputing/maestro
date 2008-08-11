@@ -249,7 +249,7 @@ final class MasterQueue
 
         for( NodeUpdateInfo info: tables ) {
             LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
-            long val = info.estimateJobCompletion( localNodeInfo, task.type );
+            long val = info.estimateJobCompletion( localNodeInfo, task.type, true );
 
             if( val<bestInterval ) {
                 bestInterval = val;
@@ -264,7 +264,7 @@ final class MasterQueue
             System.out.print( "Best worker: " );
             for( NodeUpdateInfo info: tables ) {
                 LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
-                long val = info.estimateJobCompletion( localNodeInfo, task.type );
+                long val = info.estimateJobCompletion( localNodeInfo, task.type, true );
                 System.out.print( Service.formatNanoseconds( val ) );
                 if( val == bestInterval ){
                     System.out.print( '$' );

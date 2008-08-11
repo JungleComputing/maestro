@@ -199,4 +199,13 @@ public final class Job
     {
         return index;
     }
+
+    /**
+     * Returns the first task type of this job.
+     * @return The first task type.
+     */
+    TaskType getFirstTaskType()
+    {
+	return taskTypes[0];
+    }
 }

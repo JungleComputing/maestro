@@ -96,7 +96,7 @@ public class NodeUpdateInfo implements Serializable
         return "Update " + completion + " " + workerQueue;
     }
     
-    long estimateJobCompletion( LocalNodeInfo localNodeInfo, TaskType type )
+    long estimateJobCompletion( LocalNodeInfo localNodeInfo, TaskType type, boolean ignoreBusyProcessors )
     {
         WorkerQueueInfo queueInfo = workerQueueInfo[type.index];
         long completionInterval = completionInfo[type.index];
@@ -109,7 +109,7 @@ public class NodeUpdateInfo implements Serializable
         }
         int currentTasks = localNodeInfo.getCurrentTasks( type );
         if( type.unpredictable ) {
-            if( currentTasks>=numberOfProcessors ) {
+            if( ignoreBusyProcessors && currentTasks>=numberOfProcessors ) {
         	// Don't submit jobs, there are no idle processors.
                 if( Settings.traceRemainingJobTime ) {
                     Globals.log.reportError( "Node " + source + " has no idle processors" );
@@ -119,7 +119,7 @@ public class NodeUpdateInfo implements Serializable
         }
         else {
             int allowance = localNodeInfo.getAllowance( type );
-            if( currentTasks>=allowance ) {
+            if( ignoreBusyProcessors && currentTasks>=allowance ) {
         	return Long.MAX_VALUE;
             }
         }

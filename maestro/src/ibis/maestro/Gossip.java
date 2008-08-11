@@ -5,6 +5,7 @@ import ibis.ipl.IbisIdentifier;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 
 /**
  * Gossip information.
@@ -214,5 +215,28 @@ class Gossip
                }
             }
         }
+    }
+
+    /** Given a task type, return the estimated completion time of this task.
+     * 
+     * @param type The task type for which we want to know the completion time.
+     * @param submitIfBusy If set, take into consideration processors that
+     *    are currently fully occupied with tasks.
+     * @param localNodeInfoMap Local knowledge about the different nodes.
+     * @return The estimated completion time for the best worker.
+     */
+    long computeCompletionTime( TaskType type, boolean submitIfBusy, HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap )
+    {
+	long bestTime = Long.MAX_VALUE;
+
+	for( NodeUpdateInfo info: gossipList ) {
+	    LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
+
+	    long t = info.estimateJobCompletion( localNodeInfo, type, !submitIfBusy );
+	    if( t<bestTime ) {
+		bestTime = t;
+	    }
+	}
+	return bestTime;
     }
 }
