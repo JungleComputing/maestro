@@ -11,7 +11,7 @@ import java.util.Arrays;
  *
  * @author Kees van Reeuwijk.
  */
-public class NodeUpdateInfo implements Serializable
+public class NodePerformanceInfo implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -31,7 +31,7 @@ public class NodeUpdateInfo implements Serializable
     
     final int numberOfProcessors;
 
-    NodeUpdateInfo( long[] completionInfo, WorkerQueueInfo[] workerQueueInfo,
+    NodePerformanceInfo( long[] completionInfo, WorkerQueueInfo[] workerQueueInfo,
         IbisIdentifier source, int idleProcessors, int numberOfProcessors )
     {
         this.completionInfo = completionInfo;
@@ -42,11 +42,11 @@ public class NodeUpdateInfo implements Serializable
         this.timeStamp = System.nanoTime();
     }
 
-    NodeUpdateInfo getDeepCopy()
+    NodePerformanceInfo getDeepCopy()
     {
         long completionInfoCopy[] = Arrays.copyOf( completionInfo, completionInfo.length );
         WorkerQueueInfo workerQueueInfoCopy[] = Arrays.copyOf( workerQueueInfo, workerQueueInfo.length );
-        return new NodeUpdateInfo(
+        return new NodePerformanceInfo(
             completionInfoCopy,
             workerQueueInfoCopy,
             source,
@@ -100,6 +100,7 @@ public class NodeUpdateInfo implements Serializable
     {
         WorkerQueueInfo queueInfo = workerQueueInfo[type.index];
         long completionInterval = completionInfo[type.index];
+        long unpredictableOverhead = 0L;
 
         if( queueInfo == null ) {
             if( Settings.traceRemainingJobTime ) {
@@ -116,6 +117,10 @@ public class NodeUpdateInfo implements Serializable
                 }
         	return Long.MAX_VALUE;
             }
+            // The compute time is just based on an initial estimate. Give nodes
+            // already running tasks some penalty to encourage spreading the load
+            // over nodes.
+            unpredictableOverhead = (currentTasks*queueInfo.computeTime)/10;
         }
         else {
             int allowance = localNodeInfo.getAllowance( type );
@@ -137,8 +142,7 @@ public class NodeUpdateInfo implements Serializable
         }
         long transmissionTime = localNodeInfo.getTransmissionTime( type );
         int allTasks = currentTasks+1;
-        long total = transmissionTime + queueInfo.dequeueTime*allTasks + queueInfo.computeTime;
-        total += completionInterval;
+        long total = transmissionTime + queueInfo.dequeueTime*allTasks + queueInfo.computeTime + completionInterval + unpredictableOverhead;
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "Estimated completion time for " + source + " is " + Service.formatNanoseconds( total ) );
         }

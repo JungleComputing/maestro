@@ -14,14 +14,14 @@ final class UpdateNodeMessage extends Message
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
-    final NodeUpdateInfo update;
+    final NodePerformanceInfo update;
 
     /**
      * Constructs a new work request message.
      * @param identifier The identifier to use.
      * @param masterHasWork 
      */
-    UpdateNodeMessage( NodeUpdateInfo update )
+    UpdateNodeMessage( NodePerformanceInfo update )
     {
         this.update = update;
     }

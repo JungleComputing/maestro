@@ -241,13 +241,13 @@ final class MasterQueue
      * @return The info of the best worker for this task, or <code>null</code>
      *         if there currently aren't any workers for this task type.
      */
-    private Submission selectBestWorker( HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap, NodeUpdateInfo tables[], TaskInstance task )
+    private Submission selectBestWorker( HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap, NodePerformanceInfo tables[], TaskInstance task )
     {
-        NodeUpdateInfo best = null;
+        NodePerformanceInfo best = null;
         long bestInterval = Long.MAX_VALUE;
         long predictedDuration = 0l;
 
-        for( NodeUpdateInfo info: tables ) {
+        for( NodePerformanceInfo info: tables ) {
             LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
             long val = info.estimateJobCompletion( localNodeInfo, task.type, true );
 
@@ -258,11 +258,11 @@ final class MasterQueue
             }
         }
         if( Settings.traceWorkerSelection ){
-            for( NodeUpdateInfo i: tables ){
+            for( NodePerformanceInfo i: tables ){
                 i.print( System.out );
             }
             System.out.print( "Best worker: " );
-            for( NodeUpdateInfo info: tables ) {
+            for( NodePerformanceInfo info: tables ) {
                 LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
                 long val = info.estimateJobCompletion( localNodeInfo, task.type, true );
                 System.out.print( Service.formatNanoseconds( val ) );
@@ -292,7 +292,7 @@ final class MasterQueue
      * @return A job submission, or <code>null</code> if there are no
      *   free workers for any of the jobs in the queue.
      */
-    synchronized Submission getSubmission( HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap, NodeUpdateInfo[] tables )
+    synchronized Submission getSubmission( HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap, NodePerformanceInfo[] tables )
     {
         int ix = 0;
         while( ix<queue.size() ) {

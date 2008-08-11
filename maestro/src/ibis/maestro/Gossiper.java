@@ -40,7 +40,7 @@ class Gossiper extends Thread
         setDaemon( true );
     }
     
-    NodeUpdateInfo[] getGossipCopy()
+    NodePerformanceInfo[] getGossipCopy()
     {
         return gossip.getCopy();
     }
@@ -165,7 +165,7 @@ class Gossiper extends Thread
         }
     }
 
-    boolean registerGossip( NodeUpdateInfo update )
+    boolean registerGossip( NodePerformanceInfo update )
     {
         gossipItemCount.add();
         boolean isnew = gossip.register( update );
@@ -176,11 +176,11 @@ class Gossiper extends Thread
         return isnew;
     }
 
-    boolean registerGossip( NodeUpdateInfo updates[], IbisIdentifier source )
+    boolean registerGossip( NodePerformanceInfo updates[], IbisIdentifier source )
     {
         boolean changed = false;
         boolean incomplete = updates.length<gossip.size();
-        for( NodeUpdateInfo update: updates ) {
+        for( NodePerformanceInfo update: updates ) {
             changed |= registerGossip( update );
         }
         if( changed ) {
@@ -226,7 +226,7 @@ class Gossiper extends Thread
         gossip.registerWorkerQueueInfo( update, idleProcessors, numberOfProcessors );
     }
 
-    NodeUpdateInfo getLocalUpdate( )
+    NodePerformanceInfo getLocalUpdate( )
     {
         return gossip.getLocalUpgate();
     }

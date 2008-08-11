@@ -61,7 +61,9 @@ public class MapReduceHandler extends Thread implements CompletionListener
      * we can wait for all of them to complete.
      * @param input Input for the (first task of the) job.
      * @param userId The identifier the user attaches to this job.
+     * @param submitIfBusy If <code>true</code> the job is submitted even if all workers are currently busy.
      * @param job The job to submit to.
+     * @return <code>true</code> iff the job was submitted.
      */
     @SuppressWarnings("synthetic-access")
     public synchronized boolean submit( Object input, Object userId, boolean submitIfBusy, Job... job )

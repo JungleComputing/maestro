@@ -379,7 +379,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private void postUpdateNodeMessage( IbisIdentifier node )
     {
         updateLocalGossip();
-        NodeUpdateInfo update = gossiper.getLocalUpdate();
+        NodePerformanceInfo update = gossiper.getLocalUpdate();
         UpdateNodeMessage msg = new UpdateNodeMessage( update );
 
         if( Settings.traceUpdateMessages ) {
@@ -420,7 +420,7 @@ public final class Node extends Thread implements PacketReceiveListener
      * A worker has sent us a message with its current status, handle it.
      * @param m The update message.
      */
-    private void handleNodeUpdateInfo( NodeUpdateInfo m )
+    private void handleNodeUpdateInfo( NodePerformanceInfo m )
     {
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
@@ -446,7 +446,7 @@ public final class Node extends Thread implements PacketReceiveListener
             }
         }
         if( changed ) {
-            for( NodeUpdateInfo i: m.gossip ) {
+            for( NodePerformanceInfo i: m.gossip ) {
                 handleNodeUpdateInfo( i );
             }
             synchronized( this ) {
@@ -584,7 +584,7 @@ public final class Node extends Thread implements PacketReceiveListener
             TaskInstance task;
 
             synchronized( this ) {
-                NodeUpdateInfo[] tables = gossiper.getGossipCopy();
+                NodePerformanceInfo[] tables = gossiper.getGossipCopy();
                 HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
                 Submission submission = masterQueue.getSubmission( localNodeInfoMap, tables );
                 if( submission == null ) {
@@ -630,7 +630,7 @@ public final class Node extends Thread implements PacketReceiveListener
         masterQueue.add( task );
         drainMasterQueue();
     }
-    
+
     /**
      * Given an input and a list of possible jobs to execute, submit
      * this input as a job with the best promised completion time.
@@ -708,52 +708,58 @@ public final class Node extends Thread implements PacketReceiveListener
     /** Run a work thread. Only return when we want to shut down the node. */
     void runWorkThread()
     {
-        while( keepRunning() ) {
-            RunTaskMessage message = null;
+        try {
+            while( keepRunning() ) {
+                RunTaskMessage message = null;
 
-            updateAdministration();
-            if( runningTasks.isBelow( numberOfProcessors ) ) {
-                // Only try to start a new task when there are idle
-                // processors.
-                message = workerQueue.remove();
-            }
-            if( message == null ) {
-                long sleepTime = 20;
-                gossiper.addQuotum();
-                if( Settings.traceWaits ) {
-                    System.out.println( "Worker: waiting for " + sleepTime + "ms for new tasks in queue" );
+                updateAdministration();
+                if( runningTasks.isBelow( numberOfProcessors ) ) {
+                    // Only try to start a new task when there are idle
+                    // processors.
+                    message = workerQueue.remove();
                 }
-                // Wait a little, there is nothing to do.
-                try{
-                    synchronized( this ) {
-                        if( keepRunning() ) {
-                            this.wait( sleepTime );
+                if( message == null ) {
+                    long sleepTime = 20;
+                    gossiper.addQuotum();
+                    if( Settings.traceWaits ) {
+                        System.out.println( "Worker: waiting for " + sleepTime + "ms for new tasks in queue" );
+                    }
+                    // Wait a little, there is nothing to do.
+                    try{
+                        synchronized( this ) {
+                            if( keepRunning() ) {
+                                this.wait( sleepTime );
+                            }
                         }
                     }
+                    catch( InterruptedException e ){
+                        // Not interesting.
+                    }
                 }
-                catch( InterruptedException e ){
-                    // Not interesting.
-                }
-            }
-            else {
-                // We have a task to execute.
-                long runMoment = System.nanoTime();
-                TaskType type = message.taskInstance.type;
-                long queueInterval = runMoment-message.getQueueMoment();
-                int queueLength = message.getQueueLength();
-                workerQueue.setQueueTimePerTask( type, queueInterval, queueLength );
-                Task task = jobs.getTask( type );
+                else {
+                    // We have a task to execute.
+                    long runMoment = System.nanoTime();
+                    TaskType type = message.taskInstance.type;
+                    long queueInterval = runMoment-message.getQueueMoment();
+                    int queueLength = message.getQueueLength();
+                    workerQueue.setQueueTimePerTask( type, queueInterval, queueLength );
+                    Task task = jobs.getTask( type );
 
-                runningTasks.up();
-                if( Settings.traceNodeProgress ) {
-                    System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueInterval ) + "; there are now " + runningTasks + " running tasks" );
-                }
-                Object input = message.taskInstance.input;
-                executeTask( message, task, input, runMoment );
-                if( Settings.traceNodeProgress ) {
-                    System.out.println( "Work thread: completed " + message );
+                    runningTasks.up();
+                    if( Settings.traceNodeProgress ) {
+                        System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueInterval ) + "; there are now " + runningTasks + " running tasks" );
+                    }
+                    Object input = message.taskInstance.input;
+                    executeTask( message, task, input, runMoment );
+                    if( Settings.traceNodeProgress ) {
+                        System.out.println( "Work thread: completed " + message );
+                    }
                 }
             }
+        }
+        catch( Throwable x ) {
+            Globals.log.reportError( "Uncaught exception in worker thread: " + x.getLocalizedMessage() );
+            x.printStackTrace( Globals.log.getPrintStream() );
         }
         kickAllWorkers();
     }

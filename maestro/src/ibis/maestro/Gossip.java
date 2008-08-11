@@ -14,11 +14,11 @@ import java.util.HashMap;
  */
 class Gossip
 {
-    private ArrayList<NodeUpdateInfo> gossipList = new ArrayList<NodeUpdateInfo>();
+    private ArrayList<NodePerformanceInfo> gossipList = new ArrayList<NodePerformanceInfo>();
 
     synchronized GossipMessage constructMessage( IbisIdentifier target, boolean needsReply )
     {
-        NodeUpdateInfo content[] = getCopy();
+        NodePerformanceInfo content[] = getCopy();
         return new GossipMessage( target, content, needsReply );
     }
 
@@ -27,9 +27,9 @@ class Gossip
         return gossipList.isEmpty();
     }
 
-    synchronized NodeUpdateInfo[] getCopy()
+    synchronized NodePerformanceInfo[] getCopy()
     {
-        NodeUpdateInfo content[] = new NodeUpdateInfo[gossipList.size()];
+        NodePerformanceInfo content[] = new NodePerformanceInfo[gossipList.size()];
         for( int i=0; i<content.length; i++ ) {
             content[i] = gossipList.get( i ).getDeepCopy();
         }
@@ -39,7 +39,7 @@ class Gossip
     private int searchInfo( IbisIdentifier ibis )
     {
         for( int ix = 0; ix<gossipList.size(); ix++ ) {
-            NodeUpdateInfo i = gossipList.get( ix );
+            NodePerformanceInfo i = gossipList.get( ix );
 
             if( i.source.equals( ibis ) ) {
                 return ix;
@@ -57,7 +57,7 @@ class Gossip
     {
         long res = Long.MAX_VALUE;
 
-        for( NodeUpdateInfo node: gossipList ) {
+        for( NodePerformanceInfo node: gossipList ) {
             // FIXME: take into account the transmission time to each worker.
             long val = node.getCompletionOnWorker( ix, nextIx );
 
@@ -88,7 +88,7 @@ class Gossip
         // Note that we recompute the times back to front, since we will need the later
         // times to compute the earlier times.
         
-        NodeUpdateInfo localInfo = gossipList.get( ix );
+        NodePerformanceInfo localInfo = gossipList.get( ix );
 
         for( int indexList[] : indexLists ) {
             int nextIndex = -1;
@@ -105,12 +105,12 @@ class Gossip
      * @param update The information to register.
      * @return True iff we learned something new.
      */
-    synchronized boolean register( NodeUpdateInfo update )
+    synchronized boolean register( NodePerformanceInfo update )
     {
         int ix = searchInfo( update.source );
         if( ix>=0 ) {
             // This is an update for the same node.
-            NodeUpdateInfo i = gossipList.get( ix );
+            NodePerformanceInfo i = gossipList.get( ix );
 
             if( update.timeStamp>i.timeStamp ) {
                 // This is more recent info, overwrite the old entry.
@@ -151,21 +151,21 @@ class Gossip
         if( ix<0 ) {
             long completionInfo[] = new long[Globals.numberOfTaskTypes];
             Arrays.fill( completionInfo, Long.MAX_VALUE );
-            NodeUpdateInfo localInfo = new NodeUpdateInfo( completionInfo, update, ourIbis, idleProcessors, numberOfProcessors );
+            NodePerformanceInfo localInfo = new NodePerformanceInfo( completionInfo, update, ourIbis, idleProcessors, numberOfProcessors );
             gossipList.add( localInfo );
             return;
         }
         // Note that we recompute the times back to front, since we will need the later
         // times to compute the earlier times.
         
-        NodeUpdateInfo localInfo = gossipList.get( ix );
+        NodePerformanceInfo localInfo = gossipList.get( ix );
         
         localInfo.workerQueueInfo = update;
         localInfo.timeStamp = System.nanoTime();
         localInfo.idleProcessors = idleProcessors;
     }
 
-    synchronized NodeUpdateInfo getLocalUpgate()
+    synchronized NodePerformanceInfo getLocalUpgate()
     {
         IbisIdentifier ourIbis = Globals.localIbis.identifier();
         int ix = searchInfo( ourIbis );
@@ -178,7 +178,7 @@ class Gossip
     
     synchronized void print( PrintStream s )
     {
-        for( NodeUpdateInfo entry: gossipList ) {
+        for( NodePerformanceInfo entry: gossipList ) {
             entry.print( s );
         }
     }
@@ -229,7 +229,7 @@ class Gossip
     {
 	long bestTime = Long.MAX_VALUE;
 
-	for( NodeUpdateInfo info: gossipList ) {
+	for( NodePerformanceInfo info: gossipList ) {
 	    LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
 
 	    if( localNodeInfo != null ){
