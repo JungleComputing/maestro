@@ -39,7 +39,7 @@ class Gossiper extends Thread
         this.gossipQuotum = new UpDownCounter( isMaestro?40:4 );
         setDaemon( true );
     }
-    
+
     NodePerformanceInfo[] getGossipCopy()
     {
         return gossip.getCopy();
@@ -47,6 +47,7 @@ class Gossiper extends Thread
 
     private void sendGossip( IbisIdentifier target, boolean needsReply )
     {
+        long len;
         SendPort port = null;
         GossipMessage msg = gossip.constructMessage( target, needsReply );
         IbisIdentifier theIbis = msg.destination;
@@ -57,8 +58,12 @@ class Gossiper extends Thread
             port.connect( theIbis, Globals.receivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT, false );
             long setupTime = System.nanoTime();
             WriteMessage writeMessage = port.newMessage();
-            writeMessage.writeObject( msg );
-            long len = writeMessage.finish();
+            try {
+                writeMessage.writeObject( msg );
+            }
+            finally {
+                len = writeMessage.finish();
+            }
             long stopTime = System.nanoTime();
             if( Settings.traceSends ) {
                 System.out.println( "Sent gossip message of " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) + ": " + msg );
@@ -109,7 +114,7 @@ class Gossiper extends Thread
             sendGossip( target, true );
         }
     }
-    
+
     private long computeWaitTimeInMilliseconds()
     {
         if( gossipQuotum.isAbove( 0 ) ) {
@@ -152,7 +157,7 @@ class Gossiper extends Thread
             }
         }
     }
-    
+
     void registerNode( IbisIdentifier ibis )
     {
         if( ibis.equals( Globals.localIbis.identifier() ) ) {
@@ -258,7 +263,7 @@ class Gossiper extends Thread
         stopped = true;
         notifyAll();
     }
-    
+
     synchronized boolean isStopped()
     {
         return stopped;
@@ -273,25 +278,25 @@ class Gossiper extends Thread
      * @return
      */
     private long computeCompletionTime(TaskType type, boolean submitIfBusy,
-	    HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap )
+        HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap )
     {
-	return gossip.computeCompletionTime( type, submitIfBusy, localNodeInfoMap );
+        return gossip.computeCompletionTime( type, submitIfBusy, localNodeInfoMap );
     }
 
     int selectFastestTask(TaskType[] types, boolean submitIfBusy,
-	    HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap)
+        HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap)
     {
-	int bestIx = -1;
-	long bestTime = Long.MAX_VALUE;
-	for( int ix=0; ix<types.length; ix++ ) {
-	    TaskType type = types[ix];
-	    long t = computeCompletionTime( type, submitIfBusy, localNodeInfoMap );
-	    if( t<bestTime ) {
-		bestTime = t;
-		bestIx = ix;
-	    }
-	}
-	return bestIx;
+        int bestIx = -1;
+        long bestTime = Long.MAX_VALUE;
+        for( int ix=0; ix<types.length; ix++ ) {
+            TaskType type = types[ix];
+            long t = computeCompletionTime( type, submitIfBusy, localNodeInfoMap );
+            if( t<bestTime ) {
+                bestTime = t;
+                bestIx = ix;
+            }
+        }
+        return bestIx;
     }
 
 }

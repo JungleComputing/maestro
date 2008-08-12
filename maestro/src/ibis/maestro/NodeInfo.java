@@ -47,9 +47,8 @@ final class NodeInfo
         // This means that if we really need another node, we use it, otherwise
         // we wait for the measurement of the real ping time.
         long pessimisticPingTime = local?0L:Service.HOUR_IN_NANOSECONDS;
-        for( TaskType type: Globals.supportedTaskTypes ) {
-            int ix = type.index;
-            WorkerQueueTaskInfo taskInfo = workerQueue.getTaskInfo( type );
+        for( int ix=0; ix<Globals.numberOfTaskTypes; ix++  ) {
+            WorkerQueueTaskInfo taskInfo = workerQueue.getTaskInfo( ix );
             nodeTaskInfoList[ix] = new NodeTaskInfo( taskInfo, this, local, pessimisticPingTime );
         }
     }
@@ -294,12 +293,17 @@ final class NodeInfo
 
     synchronized void checkDeadlines( long now )
     {
-        for( ActiveTask task: activeTasks ) {
-            if( task.getAllowanceDeadline()<now ) {
-                // Worker missed an allowance deadline.
-                long t = now-task.startTime+task.predictedDuration;
-                task.workerTaskInfo.updateRoundtripTimeEstimate( t );
-                task.setAllowanceDeadline( t );
+        if( false ) {
+            for( ActiveTask task: activeTasks ) {
+                if( task.getAllowanceDeadline()<now ) {
+                    // Worker missed an allowance deadline.
+                    long t = now-task.startTime+task.predictedDuration;
+                    NodeTaskInfo workerTaskInfo = task.workerTaskInfo;
+                    if( workerTaskInfo != null ) {
+                        workerTaskInfo.updateRoundtripTimeEstimate( t );
+                    }
+                    task.setAllowanceDeadline( t );
+                }
             }
         }
     }

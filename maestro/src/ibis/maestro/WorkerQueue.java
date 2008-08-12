@@ -204,4 +204,13 @@ final class WorkerQueue {
             }
         }
     }
+
+    /** FIXME.
+     * @param ix
+     * @return
+     */
+    WorkerQueueTaskInfo getTaskInfo( int ix )
+    {
+        return queueTypes[ix];
+    }
 }

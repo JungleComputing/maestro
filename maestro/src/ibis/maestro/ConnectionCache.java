@@ -54,9 +54,16 @@ public class ConnectionCache
         try {
             port = Globals.localIbis.createSendPort( PacketSendPort.portType );
             port.connect( ibis, Globals.receivePortName, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT, true );
-            WriteMessage msg = port.newMessage();
-            msg.writeObject( message );
-            len = msg.finish();
+            WriteMessage msg = null;
+            try {
+                msg = port.newMessage();
+                msg.writeObject( message );
+            }
+            finally {
+                if( msg != null ) {
+                    len = msg.finish();
+                }
+            }
             port.close();
             return len;
         }
