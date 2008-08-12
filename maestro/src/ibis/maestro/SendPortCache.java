@@ -26,11 +26,24 @@ public class SendPortCache
     private static final class ConnectionInfo {
         private SendPort port;
         
-        synchronized SendPort getPort( IbisIdentifier ibis ) throws IOException
+        synchronized SendPort getPort( IbisIdentifier ibis )
         {
             if( port == null ) {
-                port  = Globals.localIbis.createSendPort( PacketSendPort.portType );
-                port.connect( ibis, Globals.receivePortName, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT, true );
+                try {
+                    port = Globals.localIbis.createSendPort( PacketSendPort.portType );
+                    port.connect( ibis, Globals.receivePortName, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT, true );
+                }
+                catch( IOException x ) {
+                    try {
+                        if( port != null ) {
+                            port.close();
+                            port = null;
+                        }
+                    }
+                    catch( Throwable e ) {
+                        // Nothing we can do.
+                    }
+                }
             }
             return port;
         }
@@ -92,11 +105,17 @@ public class SendPortCache
                 map.put( ibis, info );
             }
         }
-        try{
-            return info.getPort( ibis );
+        return info.getPort( ibis );
+    }
+
+    void closeSendPort( IbisIdentifier ibis )
+    {
+        ConnectionInfo info;
+        synchronized( map ) {
+            info = map.remove( ibis );
         }
-        catch( IOException e ){
-            return null;
+        if( info != null ) {
+            info.close();
         }
     }
 

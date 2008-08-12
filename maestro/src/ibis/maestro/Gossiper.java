@@ -47,18 +47,18 @@ class Gossiper extends Thread
 
     private void sendGossip( IbisIdentifier target, boolean needsReply )
     {
+        SendPort port = null;
         GossipMessage msg = gossip.constructMessage( target, needsReply );
         IbisIdentifier theIbis = msg.destination;
         long startTime = System.nanoTime();
         msg.sendMoment = startTime;
         try {
-            SendPort port = Globals.localIbis.createSendPort( PacketSendPort.portType );
+            port = Globals.localIbis.createSendPort( PacketSendPort.portType );
             port.connect( theIbis, Globals.receivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT, false );
             long setupTime = System.nanoTime();
             WriteMessage writeMessage = port.newMessage();
             writeMessage.writeObject( msg );
             long len = writeMessage.finish();
-            port.close();
             long stopTime = System.nanoTime();
             if( Settings.traceSends ) {
                 System.out.println( "Sent gossip message of " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) + ": " + msg );
@@ -71,8 +71,18 @@ class Gossiper extends Thread
                 }
             }
         }
-        catch (IOException e) {
+        catch( IOException e ) {
             Globals.log.reportError( "Cannot send a gossip message to ibis " + theIbis );
+        }
+        finally {
+            try {
+                if( port != null ) {
+                    port.close();
+                }
+            }
+            catch( Throwable x ) {
+                // Nothing we can do.
+            }
         }
         gossipQuotum.down();
         messageCount.add();

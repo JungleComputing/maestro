@@ -28,17 +28,18 @@ public class ConnectionCache
 
     long cachedSendMessage( IbisIdentifier ibis, Object message )
     {
+        long len = -1;
         try {
             SendPort port = cache.getSendPort( ibis );
             WriteMessage msg = port.newMessage();
             msg.writeObject( message );
-            long len = msg.finish();
-            return len;
+            len = msg.finish();
         }
         catch( IOException x ){
             node.setSuspect( ibis );
-            return -1;
+            cache.closeSendPort( ibis );
         }
+        return len;
     }
 
     /**
@@ -48,19 +49,31 @@ public class ConnectionCache
      */
     long uncachedSendMessage( IbisIdentifier ibis, Object message  )
     {
+        long len = -1;
+        SendPort port = null;
         try {
-            SendPort port = Globals.localIbis.createSendPort( PacketSendPort.portType );
+            port = Globals.localIbis.createSendPort( PacketSendPort.portType );
             port.connect( ibis, Globals.receivePortName, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT, true );
             WriteMessage msg = port.newMessage();
             msg.writeObject( message );
-            long len = msg.finish();
+            len = msg.finish();
             port.close();
             return len;
         }
         catch( IOException x ){
             node.setSuspect( ibis );
-            return -1;
         }
+        finally {
+            try {
+                if( port != null ) {
+                    port.close();
+                }
+            }
+            catch( Throwable x ) {
+                // Nothing we can do.
+            }
+        }
+        return len;
     }
 
     /**
