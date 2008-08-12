@@ -98,6 +98,12 @@ public class NodePerformanceInfo implements Serializable
     
     long estimateJobCompletion( LocalNodeInfo localNodeInfo, TaskType type, boolean ignoreBusyProcessors )
     {
+        if( localNodeInfo == null ) {
+            if( Settings.traceRemainingJobTime ) {
+                Globals.log.reportError( "No local node info" );
+            }
+            return Long.MAX_VALUE;
+        }
         WorkerQueueInfo queueInfo = workerQueueInfo[type.index];
         long completionInterval = completionInfo[type.index];
         long unpredictableOverhead = 0L;
