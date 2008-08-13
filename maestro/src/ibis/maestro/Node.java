@@ -811,6 +811,7 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         TaskType type = message.taskInstance.type;
         Globals.log.reportError( "Node fails for type " + type );
+        t.printStackTrace( Globals.log.getPrintStream() );
         workerQueue.failTask( type );
         updateLocalGossip();
         sendTaskFailMessage( message.source, message.taskId );

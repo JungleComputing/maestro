@@ -30,7 +30,7 @@ public class LabelTracker
     private final Set<Long> set = new TreeSet<Long>();
 
     /**
-     * A label as handed out by the tracker. It is entirely opaque.
+     * A label as handed out by the tracker. It should be treated as an opaque token.
      */
     public static class Label implements Serializable {
 	private static final long serialVersionUID = 1L;
@@ -70,9 +70,10 @@ public class LabelTracker
      * We're not shocked if the same label is returned more than once,
      * or out of order.
      * @param lbl The label we return.
+     * @return <code>true</code> if this was a duplicate.
      */
     @SuppressWarnings("synthetic-access")
-    public synchronized void returnLabel( final Label lbl )
+    public synchronized boolean returnLabel( final Label lbl )
     {
 	if( TRACE ){
 	    Globals.log.reportProgress( "returnLabel(): got back " + lbl );
@@ -81,15 +82,19 @@ public class LabelTracker
 	if( val<endOfRange ) {
 	    // Already covered by the range. Nothing to do.
 	    notifyAll();
-	    return;
+	    return true;
 	}
+	boolean duplicate = false;
 	if( val == endOfRange ) {
 	    // Don't put it in the set and take it out again
 	    // for a (hopefully) common case.
 	    endOfRange++;
 	}
 	else {
-	    set.add( val );
+	    duplicate = set.contains(  val );
+	    if( !duplicate ) {
+	        set.add( val );
+	    }
 	}
 
 	// Try to enlarge the range with elements in the set.
@@ -101,6 +106,7 @@ public class LabelTracker
 	    Globals.log.reportProgress( "returnLabel(): endOfRange=" + endOfRange + " labelValue=" + labelValue + " setsize: " + set.size() );
 	}
 	notifyAll();  // Wake any return waiters.
+	return duplicate;
     }
 
     /**
@@ -134,5 +140,36 @@ public class LabelTracker
 	if( TRACE ){
 	    Globals.log.reportProgress( "Got all labels back" );
 	}
+    }
+    
+    /**
+     * @return the total number of labels that have been issued.
+     */
+    public synchronized long getIssuedLabels()
+    {
+        return labelValue;
+    }
+    
+    /**
+     * @return The total number of labels that have been returned.
+     */
+    public synchronized long getReturnedLabels()
+    {
+        return endOfRange + set.size();
+    }
+    
+    /** @return An array containing all outstanding labels. */
+    public synchronized Label[] listOutstandingLabels()
+    {
+        int sz = ((int)(labelValue-endOfRange))-set.size();
+        Label res[] = new Label[sz];
+        int ix = 0;
+        
+        for( long val=endOfRange; val<labelValue; val++ ) {
+            if( !set.contains( val ) ) {
+                res[ix++] = new Label( val );
+            }
+        }
+        return res;
     }
 }
