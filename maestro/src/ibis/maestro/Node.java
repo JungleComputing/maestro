@@ -1,4 +1,4 @@
-    package ibis.maestro;
+package ibis.maestro;
 
 import ibis.ipl.Ibis;
 import ibis.ipl.IbisCapabilities;
@@ -378,20 +378,6 @@ public final class Node extends Thread implements PacketReceiveListener
         s.printf(  "Master: # handled tasks  = %5d\n", handledTaskCount.get() );
     }
 
-    private void postUpdateNodeMessage( IbisIdentifier node )
-    {
-        updateLocalGossip();
-        NodePerformanceInfo update = gossiper.getLocalUpdate();
-        UpdateNodeMessage msg = new UpdateNodeMessage( update );
-
-        if( Settings.traceUpdateMessages ) {
-            Globals.log.reportProgress( "Sending " + msg );
-        }
-        sendPort.send( node, msg );
-        updateMessageCount.add();
-        gossiper.registerGossip( update );
-    }
-
     /**
      * Send a result message to the given port, using the given job identifier
      * and the given result value.
@@ -424,8 +410,12 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
         NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() ); // TODO: more subtle than this.
-        nodeInfo.registerWorkerQueueInfo( workerQueueInfo );
+        boolean changed = nodeInfo.registerWorkerQueueInfo( workerQueueInfo );
         // FIXME: instead of the terrible hack below, use something more subtle.
+        // For now we pretend to only have one core if we're the maestro, so
+        // that we keep some free CPU to play maestro in.
+        // We can't say we have zero processors because then nothing would
+        // happen in a single-node run.
         gossiper.registerWorkerQueueInfo( workerQueueInfo, getIdleProcessorCount(), isMaestro?1:numberOfProcessors );
         long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
         gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
@@ -435,14 +425,15 @@ public final class Node extends Thread implements PacketReceiveListener
      * A worker has sent us a message with its current status, handle it.
      * @param m The update message.
      */
-    private void handleNodeUpdateInfo( NodePerformanceInfo m )
+    private boolean handleNodeUpdateInfo( NodePerformanceInfo m )
     {
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
         }
         NodeInfo nodeInfo = nodes.get( m.source );   // The get will create an entry if necessary.
-        nodeInfo.registerWorkerQueueInfo( m.workerQueueInfo );
-        nodeInfo.registerAsCommunicating();
+        boolean changed = nodeInfo.registerWorkerQueueInfo( m.workerQueueInfo );
+        changed |= nodeInfo.registerAsCommunicating();
+        return changed;
     }
 
     /**
@@ -462,6 +453,8 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         if( changed ) {
             for( NodePerformanceInfo i: m.gossip ) {
+        	// We ignore the changed flag from this call,
+        	// we're handling a change anyway.
                 handleNodeUpdateInfo( i );
             }
             synchronized( this ) {
@@ -472,8 +465,14 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private void updateRecentMasters()
     {
-        for( IbisIdentifier ibis: recentMasterList.getArray() ){
-            postUpdateNodeMessage( ibis );
+        NodePerformanceInfo update = gossiper.getLocalUpdate();
+        UpdateNodeMessage msg = new UpdateNodeMessage( update );
+        for( IbisIdentifier ibis: recentMasterList.getArray() ){	    
+	    if( Settings.traceUpdateMessages ) {
+	        Globals.log.reportProgress( "Sending " + msg );
+	    }
+	    sendPort.send( ibis, msg );
+	    updateMessageCount.add();
         }
     }
 
@@ -506,6 +505,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( isnew ) {
             long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
             gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
+            // Changed flag is ignored.
             handleNodeUpdateInfo( m.update );
         }
     }
@@ -519,9 +519,11 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received a worker task completed message " + result );
         }
-        nodes.registerTaskCompleted( result );
         handledTaskCount.add();
-        updateRecentMasters();
+        boolean changed = nodes.registerTaskCompleted( result );
+        if( changed ) {
+            updateRecentMasters();
+        }
     }
 
     /**
@@ -539,6 +541,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( isnew ) {
             long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
             gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
+            // Changed flag is ignored.
             handleNodeUpdateInfo( msg.update );
         }
         masterQueue.add( orphan );
@@ -785,7 +788,10 @@ public final class Node extends Thread implements PacketReceiveListener
                     TaskType type = message.taskInstance.type;
                     long queueInterval = runMoment-message.getQueueMoment();
                     int queueLength = message.getQueueLength();
-                    workerQueue.setQueueTimePerTask( type, queueInterval, queueLength );
+                    boolean changed = workerQueue.setQueueTimePerTask( type, queueInterval, queueLength );
+                    if( changed ) {
+                	updateLocalGossip();
+                    }
                     Task task = jobs.getTask( type );
 
                     runningTasks.up();
@@ -843,13 +849,15 @@ public final class Node extends Thread implements PacketReceiveListener
 
         // Update statistics.
         final long computeInterval = taskCompletionMoment-runMoment;
-        workerQueue.countTask( type, computeInterval );
+        boolean stateChanged = workerQueue.countTask( type, computeInterval );
+        if( stateChanged ) {
+            updateLocalGossip();
+        }
         runningTasks.down();
         if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
             long queueInterval = runMoment-message.getQueueMoment();
             Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
         }
-        updateLocalGossip();
         long workerDwellTime = taskCompletionMoment-message.getQueueMoment();
         if( traceStats ) {
             double now = 1e-9*(System.nanoTime()-startTime);

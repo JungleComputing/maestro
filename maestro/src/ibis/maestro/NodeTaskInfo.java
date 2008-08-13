@@ -64,17 +64,20 @@ final class NodeTaskInfo {
      * Registers the completion of a task.
      * @param transmissionTime The transmission time of this task.
      * @param roundtripTime The total roundtrip time of this task.
+     * @return <code>true</code> if something changed in our state.
      */
-    synchronized void registerTaskCompleted( long transmissionTime, long roundtripTime )
+    synchronized boolean registerTaskCompleted( long transmissionTime, long roundtripTime )
     {
+	boolean changed;
         executedTasks++;
         outstandingTasks--;
-        roundtripTimeEstimate.addSample(roundtripTime );
-        transmissionTimeEstimate.addSample( transmissionTime );
-        String label = "task=" + taskInfo + " worker=" + nodeInfo;
+        changed = roundtripTimeEstimate.addSample( roundtripTime );
+        changed |= transmissionTimeEstimate.addSample( transmissionTime );
         if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
+            String label = "task=" + taskInfo + " worker=" + nodeInfo;
             Globals.log.reportProgress( label + ": roundTripTimeEstimate=" + roundtripTimeEstimate + " transimssionTimeEstimate=" + transmissionTimeEstimate );
         }
+        return changed;
     }
 
     /** Register a new outstanding task. */
@@ -95,13 +98,16 @@ final class NodeTaskInfo {
      * ensure the queue lengths stays within very reasonable limits.
      * @param queueLength The worker queue length.
      */
-    private void controlAllowance( int queueLength )
+    private boolean controlAllowance( int queueLength )
     {
+	boolean changed = false;
+
         if( failed ) {
             maximalAllowance = 0;
-            return;
+            return false;
         }
         if( maximalAllowance == outstandingTasks ) {
+            int oldMaximalAllowance = maximalAllowance;
             if( Settings.traceAllowance ){
             String label = "task=" + taskInfo + " worker=" + nodeInfo;
                 System.out.println( "controlAllowance(): " + label + " queueLength=" + queueLength + " allowance=" + maximalAllowance );
@@ -136,8 +142,9 @@ final class NodeTaskInfo {
             if( Settings.traceAllowance ){
                 System.out.println( "->" + maximalAllowance );
             }
-
+            changed = (maximalAllowance != oldMaximalAllowance);
         }
+        return changed;
     }
 
     int getSubmissions()
@@ -160,14 +167,14 @@ final class NodeTaskInfo {
         }
     }
 
-    synchronized void updateRoundtripTimeEstimate( long t )
+    synchronized boolean updateRoundtripTimeEstimate( long t )
     {
-        roundtripTimeEstimate.addSample( t );
+        return roundtripTimeEstimate.addSample( t );
     }
 
-    synchronized void setWorkerQueueInfo( WorkerQueueInfo info )
+    synchronized boolean setWorkerQueueInfo( WorkerQueueInfo info )
     {
-        controlAllowance( info.queueLength );        
+        return controlAllowance( info.queueLength );
     }
 
     synchronized int getCurrentTasks()

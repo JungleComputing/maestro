@@ -86,6 +86,7 @@ final class WorkerQueueTaskInfo
         if( frontChangedTime != 0 ) {
             // We know when this entry became the front of the queue.
             long i = now - frontChangedTime;
+            // Ignore changed flag, since a remove is a pretty big change anyway.
             dequeueInterval.addSample( i );
         }
         elements--;
@@ -113,8 +114,7 @@ final class WorkerQueueTaskInfo
         outGoingTaskCount++;
         totalWorkTime += workTime;
         if( !unpredictable ) {
-            averageComputeTime.addSample( workTime );
-            changed = true;  // TODO: only if this is a serious change.
+            changed = averageComputeTime.addSample( workTime );
         }
         return changed;
     }
@@ -149,10 +149,10 @@ final class WorkerQueueTaskInfo
      * Update the estimate for the queue time per task.
      * @param v The new value for the queue time per task.
      */
-    synchronized void setQueueTimePerTask( long v )
+    synchronized boolean setQueueTimePerTask( long v )
     {
         totalQueueTime += v;
-        queueTimePerTask.addSample( v );
+        return queueTimePerTask.addSample( v );
     }
 
     void registerNode( NodeInfo nodeInfo )

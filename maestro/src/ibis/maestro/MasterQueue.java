@@ -77,6 +77,7 @@ final class MasterQueue
             if( frontChangedTime != 0 ) {
                 // We know when this entry became the front of the queue.
                 long i = now - frontChangedTime;
+                // Ignore the changed flag returned by this method.
                 dequeueInterval.addSample( i );
             }
             elements--;

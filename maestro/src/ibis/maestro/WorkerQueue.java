@@ -152,10 +152,10 @@ final class WorkerQueue {
         return info.countTask( computeInterval, type.unpredictable );
     }
 
-    void setQueueTimePerTask( TaskType type, long queueTime, int queueLength )
+    boolean setQueueTimePerTask( TaskType type, long queueTime, int queueLength )
     {
         WorkerQueueTaskInfo info = queueTypes[type.index];
-        info.setQueueTimePerTask( queueTime/(queueLength+1) );
+        return info.setQueueTimePerTask( queueTime/(queueLength+1) );
     }
 
     synchronized RunTaskMessage remove()

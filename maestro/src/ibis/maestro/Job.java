@@ -183,6 +183,7 @@ public final class Job
 
     void registerJobTime( long jobInterval )
     {
+	// Changes are not interesting, since this is part of a big change anyway.
 	jobTime.addSample( jobInterval );
     }
 

@@ -77,28 +77,32 @@ final class NodeInfo
         return -1;
     }
 
-    void registerWorkerQueueInfo( int ix, WorkerQueueInfo info )
+    boolean registerWorkerQueueInfo( int ix, WorkerQueueInfo info )
     {
         NodeTaskInfo nodeTaskInfo = nodeTaskInfoList[ix];
+        boolean changed = false;
 
         if( nodeTaskInfo != null ) {
-            nodeTaskInfo.setWorkerQueueInfo( info );
+            changed |= nodeTaskInfo.setWorkerQueueInfo( info );
         }
+        return changed;
     }
 
-    void registerWorkerQueueInfo( WorkerQueueInfo[] workerQueueInfo )
+    boolean registerWorkerQueueInfo( WorkerQueueInfo[] workerQueueInfo )
     {
+	boolean changed = false;
         if( isDead() ) {
             // It is strange to get info from a dead worker, but we're not going to try and
             // revive the worker.
-            return;
+            return false;
         }
         for( int i=0; i<workerQueueInfo.length; i++ ) {
             WorkerQueueInfo workerInfo = workerQueueInfo[i];
             if( workerInfo != null ) {
-                registerWorkerQueueInfo( i, workerInfo );
+                changed |= registerWorkerQueueInfo( i, workerInfo );
             }
         }
+        return changed;
     }
     
     /** Mark this worker as dead, and return a list of active tasks
@@ -178,17 +182,19 @@ final class NodeInfo
     /**
      * Register a task result for an outstanding task.
      * @param result The task result message that tells about this task.
-     * @param arrivalMoment The time in ns the message arrived.
+     * @return <code>true</code> if something changed in our state.
      */
-    void registerTaskCompleted( TaskCompletedMessage result )
+    boolean registerTaskCompleted( TaskCompletedMessage result )
     {
         final long id = result.taskId;    // The identifier of the task, as handed out by us.
+        boolean changed = false;
 
         ActiveTask task = extractActiveTask( id );
 
         if( task == null ){
+            // FIXME: keep track of orphaned tasks, and use any results that still arrive.
             Globals.log.reportInternalError( "Ignoring reported result from task with unknown id " + id );
-            return;
+            return changed;
         }
         long roundtripTime = result.arrivalMoment-task.startTime;
         long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
@@ -214,7 +220,7 @@ final class NodeInfo
             }
             missedRescheduleDeadlines++;  // TODO: locked
         }
-        task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime );
+        changed = task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime );
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress(
                 "Master: retired task " + task
@@ -222,6 +228,7 @@ final class NodeInfo
                 + " transmissionTime=" + Service.formatNanoseconds( newTransmissionTime )
             );
         }
+        return changed;
     }
 
     /** Register the start of a new task.
@@ -302,21 +309,25 @@ final class NodeInfo
         return dead;
     }
 
-    synchronized void checkDeadlines( long now )
+    synchronized boolean checkDeadlines( long now )
     {
-        if( false ) {
+	boolean changed = false;
+
+	if( false ) {
+	    // TODO: enable this again.
             for( ActiveTask task: activeTasks ) {
                 if( task.getAllowanceDeadline()<now ) {
                     // Worker missed an allowance deadline.
                     long t = now-task.startTime+task.predictedDuration;
                     NodeTaskInfo workerTaskInfo = task.workerTaskInfo;
                     if( workerTaskInfo != null ) {
-                        workerTaskInfo.updateRoundtripTimeEstimate( t );
+                        changed |= workerTaskInfo.updateRoundtripTimeEstimate( t );
                     }
                     task.setAllowanceDeadline( t );
                 }
             }
         }
+	return changed;
     }
 
     synchronized LocalNodeInfo getLocalInfo()
