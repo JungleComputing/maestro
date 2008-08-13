@@ -12,7 +12,8 @@ import java.util.Map;
  * 
  * @author Kees van Reeuwijk
  */
-final class NodeList {
+final class NodeList
+{
     private HashMap<IbisIdentifier,NodeInfo> ibisToNodeMap = new HashMap<IbisIdentifier, NodeInfo>();
     WorkerQueue workerQueue;
 
@@ -29,7 +30,7 @@ final class NodeList {
     synchronized ArrayList<TaskInstance> removeNode( IbisIdentifier theIbis )
     {
         if( Settings.traceWorkerList ) {
-            System.out.println( "remove node " + theIbis );
+            Globals.log.reportProgress( "remove node " + theIbis );
         }
         ArrayList<TaskInstance> orphans = null;
         NodeInfo wi = ibisToNodeMap.get( theIbis );

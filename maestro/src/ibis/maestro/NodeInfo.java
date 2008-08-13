@@ -119,7 +119,7 @@ final class NodeInfo
         }
         activeTasks.clear(); // Don't let those orphans take up memory.
         if( !orphans.isEmpty() ) {
-            System.out.println( "Rescued " + orphans.size() + " orphans from dead worker " + ibis );
+            Globals.log.reportProgress( "Rescued " + orphans.size() + " orphans from dead worker " + ibis );
         }
         return orphans;
     }
@@ -139,10 +139,10 @@ final class NodeInfo
     synchronized void setSuspect()
     {
         if( local ) {
-            System.out.println( "Cannot communicate with local node " + ibis + "???" );
+            Globals.log.reportInternalError( "Cannot communicate with local node " + ibis + "???" );
         }
         else {
-            System.out.println( "Cannot communicate with node " + ibis );
+            Globals.log.reportError( "Cannot communicate with node " + ibis );
             suspect = true;
         }
     }
@@ -241,7 +241,7 @@ final class NodeInfo
     {
         NodeTaskInfo workerTaskInfo = nodeTaskInfoList[task.type.index];
         if( workerTaskInfo == null ) {
-            System.err.println( "No worker task info for task type " + task.type );
+            Globals.log.reportInternalError( "No worker task info for task type " + task.type );
         }
         else {
             workerTaskInfo.incrementOutstandingTasks();

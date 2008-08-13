@@ -82,6 +82,9 @@ class Settings {
 
     static final boolean dumpWorkerQueue = false;
 
+    /** Announce all submissions. */
+    static final boolean traceSubmissions = true;
+
     // --- Configuration (tuning) constants. ----
     // Unfortunately we still need some magic numbers.
     

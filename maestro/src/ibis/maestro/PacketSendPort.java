@@ -190,7 +190,7 @@ class PacketSendPort {
             len = 0;  // We're not going to compute a size just for the statistics.
             localSentCount.add();
             if( Settings.traceSends ) {
-                System.out.println( "Sent local message " + message );
+                Globals.log.reportProgress( "Sent local message " + message );
             }
         }
         else {
@@ -210,7 +210,7 @@ class PacketSendPort {
             }
             info.addSentBytes( len );
             if( Settings.traceSends ) {
-                System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds( t ) + ": " + message );
+                Globals.log.reportProgress( "Sent " + len + " bytes in " + Service.formatNanoseconds( t ) + ": " + message );
             }
         }
         return ok;

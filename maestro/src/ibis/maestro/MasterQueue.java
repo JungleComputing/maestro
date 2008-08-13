@@ -167,13 +167,13 @@ final class MasterQueue
         return queue.isEmpty();
     }
     
-    private void dumpQueue()
+    private void dumpQueue( PrintStream s)
     {
         for( TaskInstance e: queue ) {
-            System.out.print( e.shortLabel() );
-            System.out.print( ' ' );
+            s.print( e.shortLabel() );
+            s.print( ' ' );
         }
-        System.out.println();
+        s.println();
     }
 
     @SuppressWarnings("synthetic-access")
@@ -189,7 +189,7 @@ final class MasterQueue
             Globals.log.reportProgress( "Adding " + task.formatJobAndType() + " at position " + pos + " of master queue; length is now " + queue.size() + "; " + length + " of type " + type );
         }
         if( Settings.dumpMasterQueue ) {
-            dumpQueue();
+            dumpQueue( Globals.log.getPrintStream() );
         }
     }
 
@@ -259,20 +259,21 @@ final class MasterQueue
             }
         }
         if( Settings.traceWorkerSelection ){
+            PrintStream s = Globals.log.getPrintStream();
             for( NodePerformanceInfo i: tables ){
-                i.print( System.out );
+                i.print( s );
             }
-            System.out.print( "Best worker: " );
+            s.print( "Best worker: " );
             for( NodePerformanceInfo info: tables ) {
                 LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
                 long val = info.estimateJobCompletion( localNodeInfo, task.type, true );
-                System.out.print( Service.formatNanoseconds( val ) );
+                s.print( Service.formatNanoseconds( val ) );
                 if( val == bestInterval ){
-                    System.out.print( '$' );
+                    s.print( '$' );
                 }
-                System.out.print( ' ' );
+                s.print( ' ' );
             }
-            System.out.println();
+            s.println();
         }
         if( best == null ) {
             if( Settings.traceMasterQueue ){

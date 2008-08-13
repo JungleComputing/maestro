@@ -118,7 +118,7 @@ public final class Node extends Thread implements PacketReceiveListener
         public void electionResult( String name, IbisIdentifier theIbis )
         {
             if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
-                System.out.println( "Ibis " + theIbis + " was elected maestro" );
+                Globals.log.reportProgress( "Ibis " + theIbis + " was elected maestro" );
                 maestro = theIbis;
                 if( deadNodesBeforeElection.contains( theIbis ) ) {
                     setStopped();
@@ -154,9 +154,6 @@ public final class Node extends Thread implements PacketReceiveListener
         TaskType taskTypes[] = jobs.getSupportedTaskTypes();
         Globals.numberOfTaskTypes = Job.getTaskCount();
         Globals.supportedTaskTypes = taskTypes;
-        if( Globals.supportedTaskTypes.length == 0 ) {
-            System.out.println( "This node does not support any types, all it can do is gossip and wait to stop" );
-        }
         masterQueue = new MasterQueue( jobs.getAllTypes() );
         workerQueue = new WorkerQueue( taskTypes, jobs );
         nodes = new NodeList( workerQueue );
@@ -188,6 +185,10 @@ public final class Node extends Thread implements PacketReceiveListener
 
         }
         Globals.log.reportProgress( "Started ibis " + localIbis.identifier() + ": isMaestro=" + isMaestro );
+        if( !isMaestro && Globals.supportedTaskTypes.length == 0 ) {
+            Globals.log.reportProgress( "This node does not support any types, and isn't the maestro. Stopping" );
+            stopped.set();
+        }
         gossiper = new Gossiper( isMaestro );
         gossiper.start();
         for( int i=0; i<workThreads.length; i++ ) {
@@ -249,7 +250,7 @@ public final class Node extends Thread implements PacketReceiveListener
         catch( IOException x ) {
             // Nothing we can do about it.
         }
-        printStatistics( System.out );
+        printStatistics( Globals.log.getPrintStream() );
     }
 
     /**
@@ -356,7 +357,7 @@ public final class Node extends Thread implements PacketReceiveListener
     synchronized void printStatistics( PrintStream s )
     {
         if( stopTime<startTime ) {
-            System.err.println( "Node didn't stop yet" );
+            Globals.log.reportError( "Node didn't stop yet" );
             stopTime = System.nanoTime();
         }
         s.printf(  "# threads       = %5d\n", workThreads.length );
@@ -638,8 +639,8 @@ public final class Node extends Thread implements PacketReceiveListener
 
                 worker.registerTaskStart( task, taskId, submission.predictedDuration );
             }
-            if( Settings.traceMasterQueue ) {
-                System.out.println( "Selected " + node + " as best for task " + task );
+            if( Settings.traceMasterQueue || Settings.traceSubmissions ) {
+                Globals.log.reportProgress( "Submitting task " + task + " to " + node );
             }
             RunTaskMessage msg = new RunTaskMessage( node, task, taskId );
             boolean ok = sendPort.send( node, msg );
@@ -666,7 +667,7 @@ public final class Node extends Thread implements PacketReceiveListener
     void submit( TaskInstance task )
     {
         if( Settings.traceNodeProgress || Settings.traceMasterQueue ) {
-            System.out.println( "Master: received task " + task );
+            Globals.log.reportProgress( "Master: received task " + task );
         }
         masterQueue.add( task );
         drainMasterQueue();
@@ -768,7 +769,7 @@ public final class Node extends Thread implements PacketReceiveListener
                     long sleepTime = 20;
                     gossiper.addQuotum();
                     if( Settings.traceWaits ) {
-                        System.out.println( "Worker: waiting for " + sleepTime + "ms for new tasks in queue" );
+                        Globals.log.reportProgress( "Waiting for " + sleepTime + "ms for new tasks in queue" );
                     }
                     // Wait a little, there is nothing to do.
                     try{
@@ -796,12 +797,12 @@ public final class Node extends Thread implements PacketReceiveListener
 
                     runningTasks.up();
                     if( Settings.traceNodeProgress ) {
-                        System.out.println( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueInterval ) + "; there are now " + runningTasks + " running tasks" );
+                        Globals.log.reportProgress( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueInterval ) + "; there are now " + runningTasks + " running tasks" );
                     }
                     Object input = message.taskInstance.input;
                     executeTask( message, task, input, runMoment );
                     if( Settings.traceNodeProgress ) {
-                        System.out.println( "Work thread: completed " + message );
+                        Globals.log.reportProgress( "Work thread: completed " + message );
                     }
                 }
             }

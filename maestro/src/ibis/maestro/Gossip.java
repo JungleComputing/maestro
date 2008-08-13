@@ -203,7 +203,7 @@ class Gossip
             long sleepTime = Math.max( 1L, deadline-now );
             synchronized( this ) {
                 int sz = size();
-                System.out.println( "There are now " + sz + " ready workers" );
+                Globals.log.reportProgress( "There are now " + sz + " ready workers" );
                 if( sz>=nodes || now>deadline ) {
                     return sz;
                 }

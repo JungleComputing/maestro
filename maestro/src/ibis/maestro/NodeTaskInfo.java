@@ -108,10 +108,6 @@ final class NodeTaskInfo {
         }
         if( maximalAllowance == outstandingTasks ) {
             int oldMaximalAllowance = maximalAllowance;
-            if( Settings.traceAllowance ){
-            String label = "task=" + taskInfo + " worker=" + nodeInfo;
-                System.out.println( "controlAllowance(): " + label + " queueLength=" + queueLength + " allowance=" + maximalAllowance );
-            }
             // We can only regulate the allowance if we are
             // at our current maximal allowance.
             if( queueLength<1 ) {
@@ -140,7 +136,7 @@ final class NodeTaskInfo {
                 maximalEverAllowance = maximalAllowance;
             }
             if( Settings.traceAllowance ){
-                System.out.println( "->" + maximalAllowance );
+                Globals.log.reportProgress( "controlAllowance(): task=" + taskInfo + " node=" + nodeInfo + " queueLength=" + queueLength + " allowance=" + oldMaximalAllowance + "->" + maximalAllowance );
             }
             changed = (maximalAllowance != oldMaximalAllowance);
         }

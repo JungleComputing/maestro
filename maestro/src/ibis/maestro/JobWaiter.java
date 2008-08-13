@@ -60,7 +60,7 @@ public class JobWaiter implements CompletionListener
             outstandingTasks--;
         }
         else {
-            System.err.println( "TaskWaiter: don't know what to do with user identifier " + userId );
+            node.reportError( "TaskWaiter: don't know what to do with user identifier " + userId );
         }
         notifyAll();
     }

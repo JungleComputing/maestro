@@ -102,12 +102,13 @@ final class WorkerQueue {
     
     private void dumpQueue()
     {
-        System.out.print( "Worker queue: " );
+        Globals.log.reportProgress( "Worker queue: " );
+        PrintStream s = Globals.log.getPrintStream();
         for( RunTaskMessage m: queue ) {
-            System.out.print( m.label() );
-            System.out.print( ' ' );
+            s.print( m.label() );
+            s.print( ' ' );
         }
-        System.out.println();
+        s.println();
     }
 
     /** 
@@ -178,7 +179,7 @@ final class WorkerQueue {
     synchronized long getActiveTime( long startTime )
     {
         if( activeTime<startTime ) {
-            System.err.println( "Worker was not used" );
+            Globals.log.reportProgress( "Worker was not used" );
             return startTime;
         }
         return activeTime;

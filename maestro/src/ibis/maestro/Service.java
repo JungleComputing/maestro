@@ -34,13 +34,6 @@ public class Service
         return "Java " + p.getProperty( "java.version" ) + " (" + p.getProperty( "java.vendor" ) + ") on " + p.getProperty( "os.name" ) + ' ' + p.getProperty( "os.version" ) + " (" + p.getProperty( "os.arch" ) + ')';
     }
 
-    /** Prints the given string to the tracing output. 
-     * @param s The string to print to the tracing output.
-     */
-    public static void trace(String s ) {
-        System.out.println( s );
-    }
-
     /** Given an input stream, reads the entire contents of that stream into a String.
      * @param s The input stream to read.
      * @return A string containing the entire stream.

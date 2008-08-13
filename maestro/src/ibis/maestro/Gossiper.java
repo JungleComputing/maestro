@@ -67,7 +67,7 @@ class Gossiper extends Thread
             }
             long stopTime = System.nanoTime();
             if( Settings.traceSends ) {
-                System.out.println( "Sent gossip message of " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) + ": " + msg );
+                Globals.log.reportProgress( "Sent gossip message of " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) + ": " + msg );
             }
             synchronized( this ) {
                 adminTime += (setupTime-startTime);
