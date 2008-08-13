@@ -116,7 +116,7 @@ public class MapReduceHandler extends Thread implements CompletionListener
 	    // Nothing we can do.
 	}
 	Object result = reducer.getResult();
-	localNode.transferResult( message, result, runMoment );
+	localNode.handleTaskResult( message, result, runMoment );
     }
 
 }

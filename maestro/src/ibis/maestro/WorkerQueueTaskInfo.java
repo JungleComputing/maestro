@@ -31,6 +31,8 @@ final class WorkerQueueTaskInfo
     /** The last moment in ns that the front of the queue changed. */
     private long frontChangedTime = 0;
 
+    private boolean failed = false;
+
     private final TimeEstimate queueTimePerTask = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
 
     /** The estimated time interval between tasks being dequeued. */
@@ -104,13 +106,25 @@ final class WorkerQueueTaskInfo
      * @param queueTime The time this task spent in the queue.
      * @param workTime The time it took to execute this task.
      */
-    synchronized void countTask( long workTime, boolean unpredictable )
+    synchronized boolean countTask( long workTime, boolean unpredictable )
     {
+        boolean changed = false;
+
         outGoingTaskCount++;
         totalWorkTime += workTime;
         if( !unpredictable ) {
             averageComputeTime.addSample( workTime );
+            changed = true;  // TODO: only if this is a serious change.
         }
+        return changed;
+    }
+
+    /**
+     * Registers that this node can no longer execute this type of task.
+     */
+    synchronized void failTask()
+    {
+        failed = true;
     }
 
     /** 
@@ -124,7 +138,11 @@ final class WorkerQueueTaskInfo
 
     synchronized WorkerQueueInfo getWorkerQueueInfo()
     {
-        return new WorkerQueueInfo( elements, dequeueInterval.getAverage(), averageComputeTime.getAverage() );
+        long computeTime = averageComputeTime.getAverage();
+        if( failed ) {
+            computeTime = Long.MAX_VALUE;
+        }
+        return new WorkerQueueInfo( elements, dequeueInterval.getAverage(), computeTime );
     }
 
     /**

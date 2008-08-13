@@ -81,12 +81,12 @@ public class Service
 	    return String.format( "%d ns", t );
 	}
 	if( t<1000000L && t>-1000000L ) {
-	    return String.format( "%4.2f us", t/1000.0 );
+	    return String.format( "%4.1f us", t/1000.0 );
 	}
 	if( t<1000000000L && t>-1000000000L ) {
-	    return String.format( "%4.2f ms", t/1000000.0 );
+	    return String.format( "%4.1f ms", t/1000000.0 );
 	}
-	return String.format( "%4.2f s", t/1000000000.0 );
+	return String.format( "%4.1f s", t/1000000000.0 );
     }
 
     /** Wait for the given thread to terminate.

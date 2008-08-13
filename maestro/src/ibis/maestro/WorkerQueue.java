@@ -140,10 +140,16 @@ final class WorkerQueue {
         }
     }
 
-    void countTask( TaskType type, long computeInterval )
+    void failTask( TaskType type )
     {
         WorkerQueueTaskInfo info = queueTypes[type.index];
-        info.countTask( computeInterval, type.unpredictable );
+        info.failTask();
+    }
+
+    boolean countTask( TaskType type, long computeInterval )
+    {
+        WorkerQueueTaskInfo info = queueTypes[type.index];
+        return info.countTask( computeInterval, type.unpredictable );
     }
 
     void setQueueTimePerTask( TaskType type, long queueTime, int queueLength )

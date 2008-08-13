@@ -164,6 +164,17 @@ final class NodeInfo
         extractActiveTask( taskId );
     }
 
+    TaskInstance registerTaskFailed( long id )
+    {
+        ActiveTask task = extractActiveTask( id );
+        if( task == null ) {
+            Globals.log.reportError( "Task with unknown id " + id + " seems to have failed" );
+            return null;
+        }
+        task.workerTaskInfo.registerTaskFailed();
+        return task.task;
+    }
+
     /**
      * Register a task result for an outstanding task.
      * @param result The task result message that tells about this task.

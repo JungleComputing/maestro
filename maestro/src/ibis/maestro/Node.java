@@ -62,6 +62,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private Counter submitMessageCount = new Counter();
     private Counter taskResultMessageCount = new Counter();
     private Counter jobResultMessageCount = new Counter();
+    private Counter taskFailMessageCount = new Counter();
     private Flag enableRegistration = new Flag( false );
 
     private Flag stopped = new Flag( false );
@@ -365,6 +366,7 @@ public final class Node extends Thread implements PacketReceiveListener
         s.printf( "submit       messages:   %5d sent\n", submitMessageCount.get() );
         s.printf( "task result  messages:   %5d sent\n", taskResultMessageCount.get() );
         s.printf( "job result   messages:   %5d sent\n", jobResultMessageCount.get() );
+        s.printf( "job fail     messages:   %5d sent\n", taskFailMessageCount.get() );
         gossiper.printStatistics( s );
         sendPort.printStatistics( s, "send port" );
         long activeTime = workerQueue.getActiveTime( startTime );
@@ -393,16 +395,29 @@ public final class Node extends Thread implements PacketReceiveListener
     /**
      * Send a result message to the given port, using the given job identifier
      * and the given result value.
-     * @param port The port to send the result to.
      * @param id The job instance identifier.
      * @param result The result to send.
      * @return <code>true</code> if the message could be sent.
      */
-    private boolean sendResultMessage( IbisIdentifier port, JobInstanceIdentifier id, Object result )
+    private boolean sendResultMessage( JobInstanceIdentifier id, Object result )
     {
         Message msg = new JobResultMessage( id, result );	
         jobResultMessageCount.add();
-        return sendPort.send( port, msg );
+        return sendPort.send( id.ibis, msg );
+    }
+
+    /**
+     * Send a result message to the given port, using the given job identifier
+     * and the given result value.
+     * @param taskId The task instance that failed.
+     * @return <code>true</code> if the message could be sent.
+     */
+    private boolean sendTaskFailMessage( IbisIdentifier ibis, long taskId )
+    {
+        NodePerformanceInfo update = gossiper.getLocalUpdate();
+        Message msg = new TaskFailMessage( taskId, update );
+        taskFailMessageCount.add();
+        return sendPort.send( ibis, msg );
     }
 
     private void updateLocalGossip()
@@ -410,7 +425,7 @@ public final class Node extends Thread implements PacketReceiveListener
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
         NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() ); // TODO: more subtle than this.
         nodeInfo.registerWorkerQueueInfo( workerQueueInfo );
-        // FIXME: instead of the terrible hack below, use something more sublte.
+        // FIXME: instead of the terrible hack below, use something more subtle.
         gossiper.registerWorkerQueueInfo( workerQueueInfo, getIdleProcessorCount(), isMaestro?1:numberOfProcessors );
         long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
         gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
@@ -509,6 +524,26 @@ public final class Node extends Thread implements PacketReceiveListener
         updateRecentMasters();
     }
 
+    /**
+     * A worker has sent use a completion message for a task. Process it.
+     * @param msg The status message.
+     */
+    private void handleTaskFailMessage( TaskFailMessage msg )
+    {
+        if( Settings.traceNodeProgress ){
+            Globals.log.reportProgress( "Received a worker task failed message " + msg );
+        }
+        TaskInstance orphan = nodes.registerTaskFailed( msg.source, msg.id );
+        Globals.log.reportError( "Node " + msg.source + " failed to execute task with id " + msg.id + "; node will no longer get tasks of this type" );
+        boolean isnew = gossiper.registerGossip( msg.update );
+        if( isnew ) {
+            long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
+            gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
+            handleNodeUpdateInfo( msg.update );
+        }
+        masterQueue.add( orphan );
+    }
+
     private void handleJobResultMessage( JobResultMessage m )
     {
         completedJobList.add( new CompletedJob( m.job, m.result ) );
@@ -546,6 +581,9 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         else if( msg instanceof RunTaskMessage ){
             handleRunTaskMessage( (RunTaskMessage) msg );
+        }
+        else if( msg instanceof TaskFailMessage ) {
+            handleTaskFailMessage( (TaskFailMessage) msg );
         }
         else {
             Globals.log.reportInternalError( "the node should handle message of type " + msg.getClass() );
@@ -688,8 +726,13 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         if( task instanceof AtomicTask ) {
             AtomicTask at = (AtomicTask) task;
-            Object result = at.run( input, this );
-            transferResult( message, result, runMoment );
+            try {
+                Object result = at.run( input, this );
+                handleTaskResult( message, result, runMoment );
+            }
+            catch( TaskFailedException x ) {
+                failNode( message, x );
+            }
         }
         else if( task instanceof MapReduceTask ) {
             MapReduceTask mrt = (MapReduceTask) task;
@@ -764,12 +807,21 @@ public final class Node extends Thread implements PacketReceiveListener
         kickAllWorkers();
     }
 
+    private void failNode( RunTaskMessage message, Throwable t )
+    {
+        TaskType type = message.taskInstance.type;
+        Globals.log.reportError( "Node fails for type " + type );
+        workerQueue.failTask( type );
+        updateLocalGossip();
+        sendTaskFailMessage( message.source, message.taskId );
+    }
+
     /**
      * @param message
      * @param result
      * @param runMoment
      */
-    void transferResult( RunTaskMessage message, Object result, long runMoment )
+    void handleTaskResult( RunTaskMessage message, Object result, long runMoment )
     {
         long taskCompletionMoment = System.nanoTime();
 
@@ -780,7 +832,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( nextTaskType == null ){
             // This was the final step. Report back the result.
             JobInstanceIdentifier identifier = message.taskInstance.jobInstance;
-            sendResultMessage( identifier.ibis, identifier, result );
+            sendResultMessage( identifier, result );
         }
         else {
             // There is a next step to take.
@@ -820,5 +872,33 @@ public final class Node extends Thread implements PacketReceiveListener
     public int waitForReadyNodes( int n, long maximalWaitTime )
     {
         return gossiper.waitForReadyNodes( n, maximalWaitTime );
+    }
+
+    /**
+     * Writes the given progress message to the logger.
+     * @param msg The message to write.
+     */
+    public void reportProgress( String msg )
+    {
+        Globals.log.reportProgress( msg );
+    }
+
+    /**
+     * Writes the given error message to the logger.
+     * @param msg The message to write.
+     */
+    public void reportError( String msg )
+    {
+        Globals.log.reportError( msg );
+    }
+
+
+    /**
+     * Writes the given error message about an internal inconsistency in the program to the logger.
+     * @param msg The message to write.
+     */
+    public void reportInternalError( String msg )
+    {
+        Globals.log.reportInternalError( msg );
     }
 }

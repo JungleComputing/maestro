@@ -73,6 +73,21 @@ final class NodeList {
     }
 
     /**
+     * Register a task result in the info of the worker that handled it.
+     * @param result The task result.
+     */
+    synchronized TaskInstance registerTaskFailed( IbisIdentifier ibis, long taskId )
+    {
+        NodeInfo node = ibisToNodeMap.get( ibis );
+        if( node == null ) {
+            Globals.log.reportError( "Task failed message from unknown node " + ibis );
+            return null;
+        }
+        node.registerAsCommunicating();
+        return node.registerTaskFailed( taskId );
+    }
+
+    /**
      * Given a print stream, print some statistics about the workers
      * to this stream.
      * @param out The stream to print to.

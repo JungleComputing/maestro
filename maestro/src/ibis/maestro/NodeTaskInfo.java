@@ -26,6 +26,8 @@ final class NodeTaskInfo {
     /** How many outstanding instances of this task should this worker maximally have? */
     private int maximalAllowance;
 
+    private boolean failed = false;
+
     /**
      * Constructs a new information class for a particular task type
      * for a particular worker.
@@ -95,6 +97,10 @@ final class NodeTaskInfo {
      */
     private void controlAllowance( int queueLength )
     {
+        if( failed ) {
+            maximalAllowance = 0;
+            return;
+        }
         if( maximalAllowance == outstandingTasks ) {
             if( Settings.traceAllowance ){
             String label = "task=" + taskInfo + " worker=" + nodeInfo;
@@ -141,13 +147,16 @@ final class NodeTaskInfo {
 
     synchronized long estimateRoundtripTime()
     {
+        if( failed ) {
+            return Long.MAX_VALUE;
+        }
         return roundtripTimeEstimate.getAverage();
     }
 
     synchronized void printStatistics( PrintStream s )
     {
         if( didWork() ) {
-            s.println( "  " + taskInfo.type + ": executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate );
+            s.println( "  " + taskInfo.type + ": executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + (failed?" FAILED":"") );
         }
     }
 
@@ -174,5 +183,23 @@ final class NodeTaskInfo {
     synchronized int getMaximalAllowance()
     {
         return maximalAllowance;
+    }
+
+    synchronized void registerTaskFailed()
+    {
+        if( false ) {
+            // This crashes with a null pointer exception???
+            if( taskInfo != null ) {
+                Globals.log.reportError( "Node " + nodeInfo.ibis + " failed for task " + taskInfo.type );
+            }
+            else {
+                Globals.log.reportError( "Node " + nodeInfo.ibis + " failed for unknown task" );
+            }
+        }
+        else {
+            Globals.log.reportError( "A node failed a task" );
+        }
+        maximalAllowance = 0;
+        failed = true;
     }
 }

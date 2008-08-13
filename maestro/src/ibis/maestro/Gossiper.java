@@ -29,6 +29,7 @@ class Gossiper extends Thread
     private Counter messageCount = new Counter();
     private Counter gossipItemCount = new Counter();
     private Counter newGossipItemCount = new Counter();
+    private Counter failedGossipMessageCount = new Counter();
     private long adminTime = 0;
     private long sendTime = 0;
     private long sentBytes = 0;
@@ -77,7 +78,7 @@ class Gossiper extends Thread
             }
         }
         catch( IOException e ) {
-            Globals.log.reportError( "Cannot send a gossip message to ibis " + theIbis );
+            failedGossipMessageCount.add();
         }
         finally {
             try {
@@ -222,7 +223,7 @@ class Gossiper extends Thread
 
     void printStatistics( PrintStream s )
     {
-        s.println( "Sent " + messageCount.get() + " gossip messages, received " + gossipItemCount.get()  + " gossip items, " + newGossipItemCount.get() + " new" );
+        s.println( "Sent " + messageCount.get() + " gossip messages, with " + failedGossipMessageCount.get() + " failures, received " + gossipItemCount.get()  + " gossip items, " + newGossipItemCount.get() + " new" );
         s.println( "Sent " + Service.formatByteCount( sentBytes ) + " in " + Service.formatNanoseconds( sendTime ) + ", administration time " + Service.formatNanoseconds( adminTime ) );
         gossip.print( s );
     }

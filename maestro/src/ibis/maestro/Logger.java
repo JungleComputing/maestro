@@ -1,6 +1,8 @@
 package ibis.maestro;
 
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 
 /**
  * Handle logging events.
@@ -9,7 +11,8 @@ import java.io.PrintStream;
  */
 class Logger {
     private final PrintStream logfile;
-    
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss z" );
+
     /** Create a new logger. */
     Logger()
     {
@@ -28,6 +31,8 @@ class Logger {
      */
     void reportProgress( String msg )
     {
+        logfile.print( dateFormat.format( new Date() ) );
+        logfile.print( ' ' );
         logfile.println( msg );
         logfile.flush();
     }
@@ -38,7 +43,8 @@ class Logger {
      */
     void reportError( String msg )
     {
-	logfile.print( "Error: " );
+        logfile.print( dateFormat.format( new Date() ) );
+	logfile.print( " Error: " );
 	logfile.println( msg );
     }
 
@@ -47,7 +53,8 @@ class Logger {
      */
     void reportInternalError( String msg )
     {
-        logfile.print( "Internal error: " );
+        logfile.print( dateFormat.format( new Date() ) );
+        logfile.print( " Internal error: " );
         logfile.println( msg );
         Throwable t = new Throwable();
         t.printStackTrace( logfile );
