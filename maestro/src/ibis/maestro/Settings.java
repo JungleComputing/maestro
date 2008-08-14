@@ -11,7 +11,7 @@ class Settings {
     
     /** Message transmission timeout in ms on optional communication. */
     static final int OPTIONAL_COMMUNICATION_TIMEOUT = 2000;
-    
+
     /** Message transmission timeout in ms on essential communications. */
     static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 50*OPTIONAL_COMMUNICATION_TIMEOUT;
 
@@ -99,13 +99,13 @@ class Settings {
     static final long RESCHEDULE_DEADLINE_MARGIN = 6;
 
     /** The maximal time in ms before the gossiper gets more quotum.  */
-    static final long MAXIMUM_GOSSIPER_WAIT = 50;
+    static final long MAXIMUM_GOSSIPER_WAIT = 100;
 
     /** Time in ms when gossip goes stale for nodes in the same cluster. */
-    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 400;
+    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 500;
 
     /** Time in ms when gossip goes stale for nodes not in the same cluster. */
-    static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 4*GOSSIP_EXPIRATION_IN_CLUSTER;
+    static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 5*GOSSIP_EXPIRATION_IN_CLUSTER;
 
     /** This many nodes that recently sent a task will be kept directly up to
      * date with our state changes (instead of through the gossip system).
