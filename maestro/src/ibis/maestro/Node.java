@@ -625,7 +625,7 @@ public final class Node extends Thread implements PacketReceiveListener
             IbisIdentifier node;
             TaskInstance task;
 
-            synchronized( this ) {
+            synchronized( this ) { // FIXME: since the same lock is used for the central wait/notify, we're interfering with the smooth running here. Use a different lock!
                 NodePerformanceInfo[] tables = gossiper.getGossipCopy();
                 HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
                 Submission submission = masterQueue.getSubmission( localNodeInfoMap, tables );
@@ -670,7 +670,10 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "Master: received task " + task );
         }
         masterQueue.add( task );
-        drainMasterQueue();
+        // drainMasterQueue(); FIXME: temporarily disabled.
+        synchronized( this ) {
+            this.notify();   // Wake a thread to handle this.
+        }
     }
 
     /**
