@@ -7,6 +7,7 @@ import ibis.ipl.WriteMessage;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.HashMap;
+import java.util.LinkedList;
 
 /**
  * A thread that gossips with the other ibises to exchange performance information.
@@ -30,6 +31,7 @@ class Gossiper extends Thread
     private Counter gossipItemCount = new Counter();
     private Counter newGossipItemCount = new Counter();
     private Counter failedGossipMessageCount = new Counter();
+    private LinkedList<IbisIdentifier> nodesToReplyTo = new LinkedList<IbisIdentifier>();
     private long adminTime = 0;
     private long sendTime = 0;
     private long sentBytes = 0;
@@ -129,6 +131,7 @@ class Gossiper extends Thread
     public void run()
     {
         while( !isStopped() ) {
+            drainReplyQueue();
             sendCurrentGossipMessages();
             long waittime = computeWaitTimeInMilliseconds();
             // We are not supposed to wait if there are
@@ -234,7 +237,27 @@ class Gossiper extends Thread
      */
     void sendGossipReply( IbisIdentifier source )
     {
-        sendGossip( source, false );
+        synchronized( nodesToReplyTo ) {
+            nodesToReplyTo.add( source );
+        }
+        synchronized( this ) {
+            this.notifyAll();
+        }
+    }
+
+    private void drainReplyQueue()
+    {
+        while( true ) {
+            IbisIdentifier target;
+
+            synchronized( nodesToReplyTo ) {
+                if( nodesToReplyTo.isEmpty() ) {
+                    return;
+                }
+                target = nodesToReplyTo.remove();
+            }
+            sendGossip( target, false );
+        }
     }
 
     void registerWorkerQueueInfo( WorkerQueueInfo[] update, int idleProcessors, int numberOfProcessors )

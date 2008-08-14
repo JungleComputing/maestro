@@ -41,9 +41,6 @@ class PacketUpcallReceivePort implements MessageUpcall {
     public void upcall( ReadMessage msg ) throws IOException, ClassNotFoundException
     {
         Message data = (Message) msg.readObject();
-        if( data instanceof GossipMessage ) {
-            msg.finish();  // FIXME: quick fix, since we somewhere do a send. 
-        }
         data.arrivalMoment = System.nanoTime();
         listener.messageReceived( data );
     }
