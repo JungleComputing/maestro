@@ -10,18 +10,19 @@ class Settings {
     // Timeout values.
     
     /** Message transmission timeout in ms on optional communication. */
-    static final int OPTIONAL_COMMUNICATION_TIMEOUT = 2000;
+    static final int OPTIONAL_COMMUNICATION_TIMEOUT = 500;
 
     /** Message transmission timeout in ms on essential communications. */
-    static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 50*OPTIONAL_COMMUNICATION_TIMEOUT;
+    static final int ESSENTIAL_COMMUNICATION_TIMEOUT = 20*OPTIONAL_COMMUNICATION_TIMEOUT;
 
-    /**
-     * How many times do we try to send a registration message to an ibis? 
-     */
-    static final int MAXIMAL_REGISTRATION_TRIES = 1;
+    /** Do we cache connections? */
+    static final boolean CACHE_CONNECTIONS = true;
 
     /** The number of connections we maximally keep open. */
-    static final int CONNECTION_CACHE_SIZE = 80;
+    static final int CONNECTION_CACHE_SIZE = 200;
+
+    /** How many cache accesses unused before the entry is evicted. */
+    static final int CONNECTION_CACHE_MAXIMAL_UNUSED_COUNT = 200;
 
     // Debugging flags.
     
@@ -99,10 +100,10 @@ class Settings {
     static final long RESCHEDULE_DEADLINE_MARGIN = 6;
 
     /** The maximal time in ms before the gossiper gets more quotum.  */
-    static final long MAXIMUM_GOSSIPER_WAIT = 100;
+    static final long MAXIMUM_GOSSIPER_WAIT = 50;
 
     /** Time in ms when gossip goes stale for nodes in the same cluster. */
-    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 500;
+    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 50;
 
     /** Time in ms when gossip goes stale for nodes not in the same cluster. */
     static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 5*GOSSIP_EXPIRATION_IN_CLUSTER;
@@ -111,6 +112,4 @@ class Settings {
      * date with our state changes (instead of through the gossip system).
      */
     static final int MAXIMAL_RECENT_MASTERS = 4;
-
-    static final boolean CACHE_CONNECTIONS = true;
 }

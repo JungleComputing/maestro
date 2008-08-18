@@ -12,20 +12,25 @@ import ibis.ipl.IbisIdentifier;
 import ibis.ipl.SendPort;
 
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
- * An LRU cache for ibis connections, based on <code>LinkedHashMap</code>.
+ * A LRU cache for ibis connections, based on <code>LinkedHashMap</code>.
  */
 public class SendPortCache
 {
     private static final float hashTableLoadFactor = 0.75f;
+    private int useCount = 0;
+    private int hits = 0;
+    private int misses = 0;
 
-    private static final class ConnectionInfo {
+    private final class ConnectionInfo {
         private SendPort port;
-        
+        private int mostRecentUse = 0;
+
         synchronized SendPort getPort( IbisIdentifier ibis )
         {
             if( port == null ) {
@@ -44,7 +49,12 @@ public class SendPortCache
                         // Nothing we can do.
                     }
                 }
+                misses++;
             }
+            else {
+        	hits++;
+            }
+            mostRecentUse = useCount++;
             return port;
         }
 
@@ -67,19 +77,27 @@ public class SendPortCache
     /**
      * Creates a new LRU cache.
      * @param cacheSize the maximum number of entries that will be kept in this cache.
+     * @param theMaximalUnusedCount The maximal number of cache accesses this port is
+     *     not used before it is evicted.
      */
-    public SendPortCache( final int cacheSize )
+    SendPortCache( final int cacheSize, final int theMaximalUnusedCount )
     {
         int hashTableCapacity = (int) Math.ceil(cacheSize / hashTableLoadFactor) + 1;
         map = new LinkedHashMap<IbisIdentifier,ConnectionInfo>( hashTableCapacity, hashTableLoadFactor, true ) {
             private final int sz = cacheSize;
+            private final int maximalUnusedCount = theMaximalUnusedCount;
+            private int evictions = 0;
 
             // (an anonymous inner class)
             private static final long serialVersionUID = 1;
-            @Override protected
-            boolean removeEldestEntry( Map.Entry<IbisIdentifier,ConnectionInfo> eldest ) {
-                if( size() > sz ) {
-                    eldest.getValue().close();
+            @Override
+            protected boolean removeEldestEntry( Map.Entry<IbisIdentifier, ConnectionInfo> eldest ) {
+                ConnectionInfo connection = eldest.getValue();
+                if( (connection.mostRecentUse+maximalUnusedCount)<useCount && size() > sz ) {
+                    // This cache entry makes the cache too large, or has not
+                    // been used for too long. Out it goes.
+		    connection.close();
+		    evictions++;
                     return true;
                 }
                 return false;
@@ -119,4 +137,9 @@ public class SendPortCache
         }
     }
 
+    void printStatistics( PrintStream s )
+    {
+	// FIXME: print evictions
+	s.printf( "sendport cache: %d hits, %d misses, %d evictions\n", hits, misses, 0 );
+    }
 }

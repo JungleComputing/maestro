@@ -26,8 +26,8 @@ final class NodeInfo
 
     final boolean local;
 
-    private int missedAllowanceDeadlines = 0;
-    private int missedRescheduleDeadlines = 0;
+    private Counter missedAllowanceDeadlines = new Counter();
+    private Counter missedRescheduleDeadlines = new Counter();
 
     /** The ibis this nodes lives on. */
     final IbisIdentifier ibis;
@@ -199,7 +199,7 @@ final class NodeInfo
         long roundtripTime = result.arrivalMoment-task.startTime;
         long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
         if( task.getAllowanceDeadline()<result.arrivalMoment ) {
-            missedAllowanceDeadlines++; // TODO: locked
+            missedAllowanceDeadlines.add();
             if( Settings.traceMissedDeadlines ){
                 Globals.log.reportProgress(
                     "Missed allowance deadline for " + task.task.type + " task: "
@@ -218,7 +218,7 @@ final class NodeInfo
                     + " realDuration=" + Service.formatNanoseconds( roundtripTime )
                 );
             }
-            missedRescheduleDeadlines++;  // TODO: locked
+            missedRescheduleDeadlines.add();
         }
         changed = task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime );
         if( Settings.traceNodeProgress ){
@@ -263,15 +263,13 @@ final class NodeInfo
     {
         s.println( "Node " + ibis + (local?" (local)":"") );
 
-        if( missedAllowanceDeadlines>0 ) {
-            int total = 0;
-            for( NodeTaskInfo wti: nodeTaskInfoList ){
-                if( wti != null ){
-                    total += wti.getSubmissions();
-                }
+        int total = 0;
+        for( NodeTaskInfo wti: nodeTaskInfoList ){
+            if( wti != null ){
+        	total += wti.getSubmissions();
             }
-            s.println( "  Missed deadlines: allowance: " + missedAllowanceDeadlines  + " reschedule: " + missedRescheduleDeadlines + " of " + total );
         }
+        s.println( "  Missed deadlines: allowance: " + missedAllowanceDeadlines.get()  + " reschedule: " + missedRescheduleDeadlines.get() + " of " + total );
         for( NodeTaskInfo info: nodeTaskInfoList ) {
             if( info != null ) {
                 info.printStatistics( s );

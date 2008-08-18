@@ -2,9 +2,7 @@ package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.PortType;
-import ibis.ipl.SendPort;
 
-import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -74,7 +72,6 @@ class PacketSendPort
 
         }
 
-        CacheInfo cacheSlot;
         private int sentCount = 0;
         private long sentBytes = 0;
         private final IbisIdentifier ibisIdentifier;
@@ -106,36 +103,6 @@ class PacketSendPort
         {
             sentBytes += val;
         }
-
-        /** Close this port.
-         * @throws IOException 
-         * 
-         */
-        synchronized void close() throws IOException
-        {
-            if( cacheSlot != null ) {
-                cacheSlot.close();
-            }
-        }
-    }
-
-    /** One entry in the connection cache administration. */
-    static class CacheInfo {
-        int useCount;                  // If >0, port is currently used. Never evict such an entry.
-        boolean recentlyUsed;
-        DestinationInfo owner;
-        SendPort port;
-
-        void close() throws IOException
-        {
-            if( port != null ) {
-                port.close();
-                port = null;
-            }
-            owner.cacheSlot = null;
-            owner = null;
-            recentlyUsed = false;
-        }
     }
 
     @SuppressWarnings("synthetic-access")
@@ -155,12 +122,11 @@ class PacketSendPort
     {
         DestinationInfo destinationInfo = destinations.get( theIbis );
         if( destinationInfo != null ) {
-            // Already registered. Don't worry about the duplication.
+            // Already registered.
             return;
         }
         destinations.put( theIbis, new DestinationInfo( theIbis, false ) );
     }
-
 
     /**
      * Sends the given data to the given port.

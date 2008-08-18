@@ -17,7 +17,7 @@ public class ConnectionCache
     private int hits = 0;
     private int evictions = 0;
     private final Node node;
-    private final SendPortCache cache = new SendPortCache( Settings.CONNECTION_CACHE_SIZE );
+    private final SendPortCache cache = new SendPortCache( Settings.CONNECTION_CACHE_SIZE, Settings.CONNECTION_CACHE_MAXIMAL_UNUSED_COUNT );
 
     ConnectionCache( Node node )
     {
