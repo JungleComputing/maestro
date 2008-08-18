@@ -37,7 +37,6 @@ class GossipNodeList
             return sameCluster ? Settings.GOSSIP_EXPIRATION_IN_CLUSTER : Settings.GOSSIP_EXPIRATION_BETWEEN_CLUSTERS;
         }
 
-
         GossipNode( IbisIdentifier ibis )
         {
             this.ibis = ibis;

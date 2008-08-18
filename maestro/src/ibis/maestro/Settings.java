@@ -60,7 +60,7 @@ class Settings {
     static final boolean traceWaits = false;
 
     /** Print the reason a particular worker was selected. */
-    static final boolean traceWorkerSelection = false;
+    static final boolean traceWorkerSelection = true;
 
     /** Trace the adventures of the map/reduce handler. */
     static final boolean traceMapReduce = false;
