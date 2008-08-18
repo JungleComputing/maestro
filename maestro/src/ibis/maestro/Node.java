@@ -610,6 +610,12 @@ public final class Node extends Thread implements PacketReceiveListener
             stopTime = System.nanoTime();
         }
     }
+    
+    /**
+     * This object only exists to lock the critical section in drainMasterQueue,
+     * and prevent that two threads select the same next task to submit to a worker. 
+     */
+    private final Flag drainLock = new Flag( false );
 
     /** On a locked queue, try to send out as many task as we can. */
     private void drainMasterQueue()
@@ -625,7 +631,7 @@ public final class Node extends Thread implements PacketReceiveListener
             IbisIdentifier node;
             TaskInstance task;
 
-            synchronized( this ) { // FIXME: since the same lock is used for the central wait/notify, we're interfering with the smooth running here. Use a different lock!
+            synchronized( drainLock ) {
                 NodePerformanceInfo[] tables = gossiper.getGossipCopy();
                 HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
                 Submission submission = masterQueue.getSubmission( localNodeInfoMap, tables );
