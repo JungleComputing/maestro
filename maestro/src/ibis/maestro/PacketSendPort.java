@@ -25,7 +25,6 @@ class PacketSendPort
     private long sendTime = 0;
     private long adminTime = 0;
     private int sentCount = 0;
-    private int evictions = 0;
     private Counter localSentCount = new Counter();
 
     /** The list of known destinations.
@@ -190,7 +189,7 @@ class PacketSendPort
     @SuppressWarnings("synthetic-access")
     synchronized void printStatistics( PrintStream s, String portname )
     {
-        s.println( portname + ": sent " + Service.formatByteCount( sentBytes ) + " in " + sentCount + " remote messages; " + localSentCount.get() + " local sends; "+ evictions + " evictions" );
+        s.println( portname + ": sent " + Service.formatByteCount( sentBytes ) + " in " + sentCount + " remote messages; " + localSentCount.get() + " local sends" );
         if( sentCount>0 ) {
             s.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
             s.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
