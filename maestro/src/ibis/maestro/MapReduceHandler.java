@@ -3,6 +3,7 @@ package ibis.maestro;
 import ibis.maestro.LabelTracker.Label;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Handles the execution of a map/reduce task.
@@ -13,7 +14,7 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  *
  */
-public class MapReduceHandler extends Thread implements CompletionListener
+public class MapReduceHandler extends Thread implements JobCompletionListener
 {
     final Node localNode;
     final MapReduceTask reducer;
@@ -57,23 +58,24 @@ public class MapReduceHandler extends Thread implements CompletionListener
     }
 
     /** Submits a new job instance with the given input for the first task of the job.
+     * Maestro is free to pick one of the given list of alternative jobs.
      * Internally we keep track of the number of submitted jobs so that
      * we can wait for all of them to complete.
      * @param input Input for the (first task of the) job.
      * @param userId The identifier the user attaches to this job.
      * @param submitIfBusy If <code>true</code> the job is submitted even if all workers are currently busy.
-     * @param job The job to submit to.
-     * @return <code>true</code> iff the job was submitted.
+     * @param jobChoices The list of possible jobs to submit to.
+     * @return <code>true</code> iff the job instance was submitted.
      */
     @SuppressWarnings("synthetic-access")
-    public synchronized boolean submit( Object input, Object userId, boolean submitIfBusy, Job... job )
+    public synchronized boolean submit( Object input, Object userId, boolean submitIfBusy, Job... jobChoices )
     {
 	Label label = labeler.nextLabel();
 	Object id = new Id( userId, label );
 	if( Settings.traceMapReduce ){
-	    Globals.log.reportProgress( "MapReduce: Submitting " + id + " to " + job );
+	    Globals.log.reportProgress( "MapReduce: Submitting " + id + " to " + Arrays.deepToString(jobChoices ) );
 	}
-        boolean submitted = localNode.submit( input, submitIfBusy, this, job );
+        boolean submitted = localNode.submit( input, submitIfBusy, this, jobChoices );
         if( !submitted ){
             labeler.returnLabel( label );
         }
@@ -105,6 +107,7 @@ public class MapReduceHandler extends Thread implements CompletionListener
     /**
      * Runs this thread. We assume that the map phase has been completed,
      * so all we have to do is wait for the return of all results.
+     * The user should not use this method.
      */
     @Override
     public void run()

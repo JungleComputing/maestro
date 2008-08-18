@@ -9,7 +9,7 @@ import java.util.ArrayList;
  * @author Kees van Reeuwijk
  *
  */
-public class JobWaiter implements CompletionListener
+class JobWaiter implements JobCompletionListener
 {
     private int taskNo = 0;
     private int outstandingTasks = 0;

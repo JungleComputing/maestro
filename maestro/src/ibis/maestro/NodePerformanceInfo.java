@@ -146,7 +146,7 @@ public class NodePerformanceInfo implements Serializable
         int allTasks = currentTasks+1;
         long total = transmissionTime + queueInfo.dequeueTime*allTasks + queueInfo.computeTime + completionInterval + unpredictableOverhead;
         if( Settings.traceRemainingJobTime ) {
-            Globals.log.reportProgress( "Estimated completion time for " + source + " is " + Service.formatNanoseconds( total ) );
+            Globals.log.reportProgress( "Estimated completion time for " + source + " is " + Utils.formatNanoseconds( total ) );
         }
         return total;
     }
@@ -174,7 +174,7 @@ public class NodePerformanceInfo implements Serializable
            nextCompletionInterval = 0L;
        }
 
-       return Service.safeAdd( info.dequeueTime, info.computeTime, nextCompletionInterval );
+       return Utils.safeAdd( info.dequeueTime, info.computeTime, nextCompletionInterval );
     }
 
     void print( PrintStream s )
@@ -190,7 +190,7 @@ public class NodePerformanceInfo implements Serializable
         }
         s.print( " | " );
         for( long t: completionInfo ) {
-            s.printf( "%8s ", Service.formatNanoseconds( t ) );
+            s.printf( "%8s ", Utils.formatNanoseconds( t ) );
         }
         s.println( source );
     }

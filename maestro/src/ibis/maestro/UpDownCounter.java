@@ -5,7 +5,7 @@ package ibis.maestro;
  *
  * @author Kees van Reeuwijk.
  */
-public class UpDownCounter
+class UpDownCounter
 {
     private int value = 0;
 

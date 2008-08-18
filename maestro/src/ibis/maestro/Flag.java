@@ -5,7 +5,7 @@ package ibis.maestro;
  *
  * @author Kees van Reeuwijk.
  */
-public class Flag
+class Flag
 {
     private boolean flag;
     

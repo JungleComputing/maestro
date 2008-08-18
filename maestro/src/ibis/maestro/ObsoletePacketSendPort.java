@@ -95,7 +95,7 @@ class ObsoletePacketSendPort {
         private synchronized void printStatistics( PrintStream s )
         {
             char dest = local?'L':'R'; 
-            s.format( " %c %5d messages %5s   node %s\n", dest, sentCount, Service.formatByteCount( sentBytes ), ibisIdentifier.toString() );
+            s.format( " %c %5d messages %5s   node %s\n", dest, sentCount, Utils.formatByteCount( sentBytes ), ibisIdentifier.toString() );
         }
 
         synchronized void incrementSentCount()
@@ -323,7 +323,7 @@ class ObsoletePacketSendPort {
             }
             info.addSentBytes( len );
             if( Settings.traceSends ) {
-                System.out.println( "Sent " + len + " bytes in " + Service.formatNanoseconds( t ) + ": " + message );
+                System.out.println( "Sent " + len + " bytes in " + Utils.formatNanoseconds( t ) + ": " + message );
             }
         }
         return ok;
@@ -336,10 +336,10 @@ class ObsoletePacketSendPort {
     @SuppressWarnings("synthetic-access")
     synchronized void printStatistics( PrintStream s, String portname )
     {
-        s.println( portname + ": sent " + Service.formatByteCount( sentBytes ) + " in " + sentCount + " remote messages; " + localSentCount.get() + " local sends; "+ evictions + " evictions" );
+        s.println( portname + ": sent " + Utils.formatByteCount( sentBytes ) + " in " + sentCount + " remote messages; " + localSentCount.get() + " local sends; "+ evictions + " evictions" );
         if( sentCount>0 ) {
-            s.println( portname + ": total send time  " + Service.formatNanoseconds( sendTime ) + "; " + Service.formatNanoseconds( sendTime/sentCount ) + " per message" );
-            s.println( portname + ": total setup time " + Service.formatNanoseconds( adminTime ) + "; " + Service.formatNanoseconds( adminTime/sentCount ) + " per message" );
+            s.println( portname + ": total send time  " + Utils.formatNanoseconds( sendTime ) + "; " + Utils.formatNanoseconds( sendTime/sentCount ) + " per message" );
+            s.println( portname + ": total setup time " + Utils.formatNanoseconds( adminTime ) + "; " + Utils.formatNanoseconds( adminTime/sentCount ) + " per message" );
         }
         DestinationInfo l[] = new DestinationInfo[destinations.size()];
         int sz = 0;

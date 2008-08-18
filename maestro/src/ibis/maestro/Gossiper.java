@@ -69,7 +69,7 @@ class Gossiper extends Thread
             }
             long stopTime = System.nanoTime();
             if( Settings.traceSends ) {
-                Globals.log.reportProgress( "Sent gossip message of " + len + " bytes in " + Service.formatNanoseconds(stopTime-setupTime) + "; setup time " + Service.formatNanoseconds(setupTime-startTime) + ": " + msg );
+                Globals.log.reportProgress( "Sent gossip message of " + len + " bytes in " + Utils.formatNanoseconds(stopTime-setupTime) + "; setup time " + Utils.formatNanoseconds(setupTime-startTime) + ": " + msg );
             }
             synchronized( this ) {
                 adminTime += (setupTime-startTime);
@@ -211,9 +211,9 @@ class Gossiper extends Thread
         return changed;
     }
 
-    void recomputeCompletionTimes( long masterQueueIntervals[], JobList jobs )
+    void recomputeCompletionTimes( long masterQueueIntervals[], JobList jobs, HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap )
     {
-        gossip.recomputeCompletionTimes( masterQueueIntervals, jobs );
+        gossip.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
     }
 
     void addQuotum()
@@ -227,7 +227,7 @@ class Gossiper extends Thread
     void printStatistics( PrintStream s )
     {
         s.println( "Sent " + messageCount.get() + " gossip messages, with " + failedGossipMessageCount.get() + " failures, received " + gossipItemCount.get()  + " gossip items, " + newGossipItemCount.get() + " new" );
-        s.println( "Sent " + Service.formatByteCount( sentBytes ) + " in " + Service.formatNanoseconds( sendTime ) + ", administration time " + Service.formatNanoseconds( adminTime ) );
+        s.println( "Sent " + Utils.formatByteCount( sentBytes ) + " in " + Utils.formatNanoseconds( sendTime ) + ", administration time " + Utils.formatNanoseconds( adminTime ) );
         gossip.print( s );
     }
 

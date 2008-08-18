@@ -7,11 +7,12 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  *
  */
-public class OneTestProg {
+class OneTestProg
+{
     private static final int ITERATIONS = 8000;  // The number of times we should do the addition.
     private static final int ARRAY_SIZE = 100000;
 
-    private static class Listener implements CompletionListener
+    private static class Listener implements JobCompletionListener
     {
 	int tasksCompleted = 0;
 	private final int taskCount;
@@ -105,7 +106,7 @@ public class OneTestProg {
 	}
 	node.waitToTerminate();
 	long stopTime = System.nanoTime();
-	System.out.println( "Duration of this run: " + Service.formatNanoseconds( stopTime-startTime ) );
+	System.out.println( "Duration of this run: " + Utils.formatNanoseconds( stopTime-startTime ) );
     }
 
     /** The command-line interface of this program.
@@ -128,7 +129,7 @@ public class OneTestProg {
 	else {
 	    taskCount = Integer.parseInt( arg );
 	}
-	System.out.println( "Running on platform " + Service.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro + "; taskCount=" + taskCount );
+	System.out.println( "Running on platform " + Utils.getPlatformVersion() + " args.length=" + args.length + " goForMaestro=" + goForMaestro + "; taskCount=" + taskCount );
 	try {
 	    new OneTestProg().run( taskCount, goForMaestro );
 	}

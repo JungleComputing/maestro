@@ -1,27 +1,30 @@
 package ibis.maestro;
 
 /**
- * The interface of a map/reduce task in the Maestro master/worker system.
+ * The interface of a map/reduce task in the Maestro workflow system.
  * @author Kees van Reeuwijk
  *
  */
-public interface MapReduceTask extends Task {
+public interface MapReduceTask extends Task
+{
     /**
-     * Given an input, submits a number of tasks to the handler.
+     * Given an input, submits a number of tasks to the given handler.
      *
      * @param input The input value of this map.
      * @param handler The handler.
      */
     void map( Object input, MapReduceHandler handler );
 
-    /** Reports back the result. 
-     * @param id The identifier of this result.
+    /** Reports back a result. 
+     * @param id The identifier of the result.
      * @param result The result. 
      */
     void reduce( Object id, Object result );
 
     /**
-     * Returns the result of the reduction. 
+     * Returns the final result of the reduction. 
+     * This method is invoked after all jobs submitted
+     * by the map/reduce task have been reduced.
      * @return The result.
      */
     Object getResult();

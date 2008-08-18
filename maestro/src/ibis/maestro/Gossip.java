@@ -51,15 +51,23 @@ class Gossip
     /**
      * Returns the best average completion time for this task.
      * We compute this by taking the minimum over all our workers.
+     * @param ix The index of the type we're computing the completion time for.
+     * @param nextIx The index of the type after the current one, or <code>-1</code> if there isn't one.
+     * @param localNodeInfoMap A table with locally collected performance info for all worker nodes.
      * @return The best average completion time of our workers.
      */
-    synchronized long getBestCompletionTimeAfterMasterQueue( int ix, int nextIx )
+    synchronized long getBestCompletionTimeAfterMasterQueue( int ix, int nextIx, HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap )
     {
         long res = Long.MAX_VALUE;
 
         for( NodePerformanceInfo node: gossipList ) {
-            // FIXME: take into account the transmission time to each worker.
-            long val = node.getCompletionOnWorker( ix, nextIx );
+            LocalNodeInfo info = localNodeInfoMap.get( node.source );
+            long xmitTime = 0L;
+            
+            if( info != null ) {
+        	xmitTime = info.getTransmissionTime( ix );
+            }
+            long val = xmitTime + node.getCompletionOnWorker( ix, nextIx );
 
             if( val<res ) {
                 res = val;
@@ -76,13 +84,14 @@ class Gossip
      * a given master from the moment it enters its master queue to
      * the moment its entire job is completed.
      * @param masterQueueIntervals The time in nanoseconds for each task it is estimated to dwell on the master queue.
+     * @param localNodeInfoMap 
      */
-    synchronized void recomputeCompletionTimes( long masterQueueIntervals[], JobList jobs )
+    synchronized void recomputeCompletionTimes( long masterQueueIntervals[], JobList jobs, HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap )
     {
-        int [][] indexLists = jobs.getIndexLists();
+        int indexLists[][] = jobs.getIndexLists();
         int ix = searchInfo( Globals.localIbis.identifier() );
         if( ix<0 ) {
-            // We're not in the table yet. Don't worry.
+            // We're not in the table yet. Don't worry, it will get there.
             return;
         }
         // Note that we recompute the times back to front, since we will need the later
@@ -92,8 +101,9 @@ class Gossip
 
         for( int indexList[] : indexLists ) {
             int nextIndex = -1;
+
             for( int typeIndex: indexList ) {
-                long t = Service.safeAdd( masterQueueIntervals[typeIndex], getBestCompletionTimeAfterMasterQueue( typeIndex, nextIndex ) );
+                long t = Utils.safeAdd( masterQueueIntervals[typeIndex], getBestCompletionTimeAfterMasterQueue( typeIndex, nextIndex, localNodeInfoMap ) );
                 localInfo.completionInfo[typeIndex] = t;
                 nextIndex = typeIndex;
             }

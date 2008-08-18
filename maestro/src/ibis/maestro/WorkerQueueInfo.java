@@ -32,11 +32,11 @@ class WorkerQueueInfo implements Serializable
     @Override
     public String toString()
     {
-        return "WorkerQueueInfo: queueLength=" + queueLength + " dequeueTime=" + Service.formatNanoseconds( dequeueTime ) + " computeTime=" + Service.formatNanoseconds( computeTime );
+        return "WorkerQueueInfo: queueLength=" + queueLength + " dequeueTime=" + Utils.formatNanoseconds( dequeueTime ) + " computeTime=" + Utils.formatNanoseconds( computeTime );
     }
 
     String format()
     {
-        return String.format( "%3d %9s %9s", queueLength, Service.formatNanoseconds( dequeueTime ), Service.formatNanoseconds( computeTime ) );
+        return String.format( "%3d %9s %9s", queueLength, Utils.formatNanoseconds( dequeueTime ), Utils.formatNanoseconds( computeTime ) );
     }
 }

@@ -1,12 +1,13 @@
 package ibis.maestro;
 
 /**
- * The interface of Maestro task completion listeners.
+ * The interface of a Maestro job completion listener.
  * 
  * @author Kees van Reeuwijk
  *
  */
-public interface CompletionListener {
+public interface JobCompletionListener
+{
     /**
      * Registers that a job has completed, and handles the
      * final result of the job.

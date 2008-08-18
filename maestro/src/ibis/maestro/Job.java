@@ -128,7 +128,7 @@ public final class Job
      * @param userId The identifier for the user of this job.
      * @param listener The listener that should be informed when this job is completed.
      */
-    public void submit( Node node, Object value, Object userId, CompletionListener listener )
+    public void submit( Node node, Object value, Object userId, JobCompletionListener listener )
     {
         JobInstanceIdentifier tii = buildJobInstanceIdentifier( userId );
         node.addRunningJob( tii, this, listener );

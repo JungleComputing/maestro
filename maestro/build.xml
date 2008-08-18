@@ -72,6 +72,7 @@
                  access="public"
                  classpathref="default.classpath"
                  packagenames="*"
+                 public="1"
                  sourcepath="${src}"
                  windowtitle="Ibis ${ant.project.name} Documentation"
                  doctitle="Ibis ${ant.project.name} Documentation"

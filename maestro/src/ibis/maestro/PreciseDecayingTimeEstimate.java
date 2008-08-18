@@ -28,7 +28,7 @@ class PreciseDecayingTimeEstimate
     @Override
     public String toString()
     {
-        return "average=" + Service.formatNanoseconds( getAverage() ) + " (based on " + sampleCount + " samples)";
+        return "average=" + Utils.formatNanoseconds( getAverage() ) + " (based on " + sampleCount + " samples)";
     }
 
     /**

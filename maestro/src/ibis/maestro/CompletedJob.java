@@ -5,7 +5,7 @@ package ibis.maestro;
  *
  * @author Kees van Reeuwijk.
  */
-public class CompletedJob
+class CompletedJob
 {
     final JobInstanceIdentifier job;
     final Object result;

@@ -1,11 +1,12 @@
 package ibis.maestro;
 
 /**
- * The interface of an atomic (indivisible) task in the Maestro master/worker system.
+ * The interface of an atomic (indivisible) task in the Maestro dataflow system.
  * @author Kees van Reeuwijk
  *
  */
-public interface AtomicTask extends Task {
+public interface AtomicTask extends Task
+{
     /**
      * Runs the task.
 

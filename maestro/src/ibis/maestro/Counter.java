@@ -5,7 +5,7 @@ package ibis.maestro;
  *
  * @author Kees van Reeuwijk.
  */
-public class Counter
+class Counter
 {
     private int value = 0;
 

@@ -5,7 +5,7 @@ package ibis.maestro;
  *
  * @author Kees van Reeuwijk.
  */
-public class LocalNodeInfo
+class LocalNodeInfo
 {
     final boolean suspect;
     final int currentTasks[];
@@ -46,5 +46,10 @@ public class LocalNodeInfo
     long getPredictedDuration( TaskType type )
     {
         return predictedDuration[type.index];
+    }
+
+    long getTransmissionTime(int ix)
+    {
+	return transmissionTime[ix];
     }
 }

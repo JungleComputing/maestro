@@ -13,7 +13,8 @@ import java.util.ArrayList;
  * @author Kees van Reeuwijk
  *
  */
-final class WorkerQueue {
+final class WorkerQueue
+{
     private final ArrayList<RunTaskMessage> queue = new ArrayList<RunTaskMessage>();
     private final WorkerQueueTaskInfo queueTypes[];
     private long queueEmptyMoment = System.nanoTime();
@@ -189,7 +190,7 @@ final class WorkerQueue {
     synchronized void printStatistics( PrintStream s, long workInterval )
     {
         double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
-        s.println( "Worker: total idle time = " + Service.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
+        s.println( "Worker: total idle time = " + Utils.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
         for( WorkerQueueTaskInfo t: queueTypes ) {
             if( t != null ) {
                 t.printStatistics( s, workInterval );

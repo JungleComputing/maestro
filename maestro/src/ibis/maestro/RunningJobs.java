@@ -7,7 +7,7 @@ import java.util.ArrayList;
  *
  * @author Kees van Reeuwijk.
  */
-public class RunningJobs
+class RunningJobs
 {
     private final ArrayList<JobInstanceInfo> runningJobs = new ArrayList<JobInstanceInfo>();
     

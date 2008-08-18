@@ -46,7 +46,7 @@ final class NodeInfo
         // For non-local nodes, start with a very pessimistic ping time.
         // This means that if we really need another node, we use it, otherwise
         // we wait for the measurement of the real ping time.
-        long pessimisticPingTime = local?0L:Service.HOUR_IN_NANOSECONDS;
+        long pessimisticPingTime = local?0L:Utils.HOUR_IN_NANOSECONDS;
         for( int ix=0; ix<Globals.numberOfTaskTypes; ix++  ) {
             WorkerQueueTaskInfo taskInfo = workerQueue.getTaskInfo( ix );
             nodeTaskInfoList[ix] = new NodeTaskInfo( taskInfo, this, local, pessimisticPingTime );
@@ -203,9 +203,9 @@ final class NodeInfo
             if( Settings.traceMissedDeadlines ){
                 Globals.log.reportProgress(
                     "Missed allowance deadline for " + task.task.type + " task: "
-                    + " predictedDuration=" + Service.formatNanoseconds( task.predictedDuration )
-                    + " allowanceDuration=" + Service.formatNanoseconds( task.getAllowanceDeadline()-task.startTime )
-                    + " realDuration=" + Service.formatNanoseconds( roundtripTime )
+                    + " predictedDuration=" + Utils.formatNanoseconds( task.predictedDuration )
+                    + " allowanceDuration=" + Utils.formatNanoseconds( task.getAllowanceDeadline()-task.startTime )
+                    + " realDuration=" + Utils.formatNanoseconds( roundtripTime )
                 );
             }
         }
@@ -213,9 +213,9 @@ final class NodeInfo
             if( Settings.traceMissedDeadlines ){
                 Globals.log.reportProgress(
                     "Missed reschedule deadline for " + task.task.type + " task: "
-                    + " predictedDuration=" + Service.formatNanoseconds( task.predictedDuration )
-                    + " rescheduleDuration=" + Service.formatNanoseconds( task.rescheduleDeadline-task.startTime )
-                    + " realDuration=" + Service.formatNanoseconds( roundtripTime )
+                    + " predictedDuration=" + Utils.formatNanoseconds( task.predictedDuration )
+                    + " rescheduleDuration=" + Utils.formatNanoseconds( task.rescheduleDeadline-task.startTime )
+                    + " realDuration=" + Utils.formatNanoseconds( roundtripTime )
                 );
             }
             missedRescheduleDeadlines.add();
@@ -224,8 +224,8 @@ final class NodeInfo
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress(
                 "Master: retired task " + task
-                + " roundtripTime=" + Service.formatNanoseconds( roundtripTime )
-                + " transmissionTime=" + Service.formatNanoseconds( newTransmissionTime )
+                + " roundtripTime=" + Utils.formatNanoseconds( roundtripTime )
+                + " transmissionTime=" + Utils.formatNanoseconds( newTransmissionTime )
             );
         }
         return changed;

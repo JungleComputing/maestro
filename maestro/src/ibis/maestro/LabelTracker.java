@@ -6,21 +6,23 @@ import java.util.TreeSet;
 
 /**
  * Hands out labels, and keeps track of the ones that have been returned.
- * Allow labels to be returned out of order and more than once. At all
+ * Allows labels to be returned out of order and more than once. At all
  * times we can tell whether there are still outstanding labels, or
  * that all labels we have handed out have been returned.
- * 
- * The implementation assumes that the set of returned values is mainly,
- * but not entirely, in order. The bulk of the set is therefore represented
- * by a range starting from 0. Any out-of-order labels are stored
- * separately in a hashmap, that we try to transfer to the range
- * at all new arrivals of labels.
  * 
  * @author Kees van Reeuwijk
  *
  */
 public class LabelTracker
 {
+    /* 
+     * In principle we could just use a set, but as an optimization
+     * we represent the range of labels starting from 0 as just
+     * the upper value of this range, and we try to grow this range
+     * whenever possible.
+     * 
+     * The remaining labels are stored in a set.
+     */
     private long labelValue = 0L;
     private static final boolean TRACE = false;
 
@@ -53,7 +55,7 @@ public class LabelTracker
     }
 
     /**
-     * Get the next label from the tracker.
+     * Issues the next label from the tracker.
      * @return The label.
      */
     public synchronized Label nextLabel()
@@ -66,11 +68,11 @@ public class LabelTracker
     }
 
     /**
-     * Returns the given label to our administration.
-     * We're not shocked if the same label is returned more than once,
-     * or out of order.
+     * Returns the given label to the tracker.
+     * The labels do not have to be returned in the same order they were
+     * issued, and the same label may be returned more than once.
      * @param lbl The label we return.
-     * @return <code>true</code> if this was a duplicate.
+     * @return <code>true</code> iff the label had been returned before.
      */
     @SuppressWarnings("synthetic-access")
     public synchronized boolean returnLabel( final Label lbl )
@@ -143,6 +145,7 @@ public class LabelTracker
     }
     
     /**
+     * Returns the total number of labels that have been issued.
      * @return the total number of labels that have been issued.
      */
     public synchronized long getIssuedLabels()
@@ -151,6 +154,7 @@ public class LabelTracker
     }
     
     /**
+     * Returns the total number of labels that have been returned.
      * @return The total number of labels that have been returned.
      */
     public synchronized long getReturnedLabels()
@@ -158,7 +162,10 @@ public class LabelTracker
         return endOfRange + set.size();
     }
     
-    /** @return An array containing all outstanding labels. */
+    /**
+     * Returns an array containing all the still outstanding labels.
+     *  @return An array containing all outstanding labels.
+     */
     public synchronized Label[] listOutstandingLabels()
     {
         int sz = ((int)(labelValue-endOfRange))-set.size();

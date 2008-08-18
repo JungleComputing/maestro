@@ -33,14 +33,14 @@ final class WorkerQueueTaskInfo
 
     private boolean failed = false;
 
-    private final TimeEstimate queueTimePerTask = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
+    private final TimeEstimate queueTimePerTask = new TimeEstimate( Utils.MILLISECOND_IN_NANOSECONDS );
 
     /** The estimated time interval between tasks being dequeued. */
-    private final TimeEstimate dequeueInterval = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
+    private final TimeEstimate dequeueInterval = new TimeEstimate( 1*Utils.MILLISECOND_IN_NANOSECONDS );
 
     private long totalWorkTime = 0;        
     private long totalQueueTime = 0;     // Cumulative queue time of all tasks.
-    private final TimeEstimate averageComputeTime = new TimeEstimate( Service.MILLISECOND_IN_NANOSECONDS );
+    private final TimeEstimate averageComputeTime = new TimeEstimate( Utils.MILLISECOND_IN_NANOSECONDS );
 
     WorkerQueueTaskInfo( TaskType type  )
     {
@@ -55,10 +55,10 @@ final class WorkerQueueTaskInfo
         if( outGoingTaskCount>0 ) {
             out.println( "Worker: " + type + ":" );
             out.printf( "    # tasks          = %5d\n", outGoingTaskCount );
-            out.println( "    total work time = " + Service.formatNanoseconds( totalWorkTime ) + String.format( " (%.1f%%)", workPercentage )  );
-            out.println( "    queue time/task  = " + Service.formatNanoseconds( totalQueueTime/outGoingTaskCount ) );
-            out.println( "    work time/task   = " + Service.formatNanoseconds( totalWorkTime/outGoingTaskCount ) );
-            out.println( "    aver. dwell time = " + Service.formatNanoseconds( (totalWorkTime+totalQueueTime)/outGoingTaskCount ) );
+            out.println( "    total work time = " + Utils.formatNanoseconds( totalWorkTime ) + String.format( " (%.1f%%)", workPercentage )  );
+            out.println( "    queue time/task  = " + Utils.formatNanoseconds( totalQueueTime/outGoingTaskCount ) );
+            out.println( "    work time/task   = " + Utils.formatNanoseconds( totalWorkTime/outGoingTaskCount ) );
+            out.println( "    aver. dwell time = " + Utils.formatNanoseconds( (totalWorkTime+totalQueueTime)/outGoingTaskCount ) );
         }
         else {
             out.println( "Worker: " + type + " is unused" );

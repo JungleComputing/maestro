@@ -8,11 +8,11 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 /**
- * Maintain a cache of open connections.
+ * Maintains a cache of open connections.
  *
  * @author Kees van Reeuwijk.
  */
-public class ConnectionCache
+class ConnectionCache
 {
     private final Node node;
     private final SendPortCache cache = new SendPortCache( Settings.CONNECTION_CACHE_SIZE, Settings.CONNECTION_CACHE_MAXIMAL_UNUSED_COUNT );

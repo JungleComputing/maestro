@@ -66,7 +66,7 @@ class ActiveTask {
      */
     @Override
     public String toString() {
-	return "(ActiveTask id=" + id + ", task=" + task + ", start time " + Service.formatNanoseconds( startTime ) + ')';
+	return "(ActiveTask id=" + id + ", task=" + task + ", start time " + Utils.formatNanoseconds( startTime ) + ')';
     }
   
  }

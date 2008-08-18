@@ -5,7 +5,7 @@ package ibis.maestro;
 class JobInstanceInfo {
     final JobInstanceIdentifier identifier;
     final Job job;
-    final CompletionListener listener;
+    final JobCompletionListener listener;
     final long startTime = System.nanoTime();
 
     /**
@@ -15,7 +15,7 @@ class JobInstanceInfo {
      * @param job The job this belongs to.
      * @param listener The completion listener associated with the job.
      */
-    JobInstanceInfo( final JobInstanceIdentifier identifier, Job job, final CompletionListener listener )
+    JobInstanceInfo( final JobInstanceIdentifier identifier, Job job, final JobCompletionListener listener )
     {
         this.identifier = identifier;
         this.job = job;

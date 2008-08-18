@@ -44,7 +44,7 @@ final class MasterQueue
         private long frontChangedTime = 0;
 
         /** The estimated time interval between tasks being dequeued. */
-        final TimeEstimate dequeueInterval = new TimeEstimate( 1*Service.MILLISECOND_IN_NANOSECONDS );
+        final TimeEstimate dequeueInterval = new TimeEstimate( 1*Utils.MILLISECOND_IN_NANOSECONDS );
 
         TypeInfo( final TaskType type  )
         {
@@ -267,7 +267,7 @@ final class MasterQueue
             for( NodePerformanceInfo info: tables ) {
                 LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
                 long val = info.estimateJobCompletion( localNodeInfo, task.type, true );
-                s.print( Service.formatNanoseconds( val ) );
+                s.print( Utils.formatNanoseconds( val ) );
                 if( val == bestInterval ){
                     s.print( '$' );
                 }

@@ -139,7 +139,8 @@ public final class Node extends Thread implements PacketReceiveListener
     }
 
     /**
-     * Constructs a new Maestro node using the given name server and completion listener.
+     * Constructs a new Maestro node using the given list of jobs. Optionally
+     * try to get elected as maestro.
      * @param jobs The jobs that should be supported in this node.
      * @param runForMaestro If true, try to get elected as maestro.
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
@@ -210,6 +211,8 @@ public final class Node extends Thread implements PacketReceiveListener
 
     /**
      * Start this thread.
+     * Do not invoke this method, it is already invoked in the
+     * constructor of this node.
      */
     @Override
     public void start()
@@ -305,7 +308,7 @@ public final class Node extends Thread implements PacketReceiveListener
         }
     }
 
-    void addRunningJob( JobInstanceIdentifier id, Job job, CompletionListener listener )
+    void addRunningJob( JobInstanceIdentifier id, Job job, JobCompletionListener listener )
     {
         runningJobs.add( new JobInstanceInfo( id, job, listener ) );
     }
@@ -373,8 +376,8 @@ public final class Node extends Thread implements PacketReceiveListener
         long activeTime = workerQueue.getActiveTime( startTime );
         long workInterval = stopTime-activeTime;
         workerQueue.printStatistics( s, workInterval );
-        s.println( "Worker: run time        = " + Service.formatNanoseconds( workInterval ) );
-        s.println( "Worker: activated after = " + Service.formatNanoseconds( activeTime-startTime ) );
+        s.println( "Worker: run time        = " + Utils.formatNanoseconds( workInterval ) );
+        s.println( "Worker: activated after = " + Utils.formatNanoseconds( activeTime-startTime ) );
         masterQueue.printStatistics( s );
         s.printf(  "Master: # handled tasks  = %5d\n", handledTaskCount.get() );
     }
@@ -419,7 +422,8 @@ public final class Node extends Thread implements PacketReceiveListener
         // happen in a single-node run.
         gossiper.registerWorkerQueueInfo( workerQueueInfo, getIdleProcessorCount(), isMaestro?1:numberOfProcessors );
         long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
-        gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
+        HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
+        gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
     }
 
     /**
@@ -505,7 +509,8 @@ public final class Node extends Thread implements PacketReceiveListener
         boolean isnew = gossiper.registerGossip( m.update );
         if( isnew ) {
             long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
-            gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
+            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
+            gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
             // Changed flag is ignored.
             handleNodeUpdateInfo( m.update );
         }
@@ -540,8 +545,10 @@ public final class Node extends Thread implements PacketReceiveListener
         Globals.log.reportError( "Node " + msg.source + " failed to execute task with id " + msg.id + "; node will no longer get tasks of this type" );
         boolean isnew = gossiper.registerGossip( msg.update );
         if( isnew ) {
+            // TODO: abstract this code sequence and other occurrences in a method.
             long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
-            gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs );
+            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
+            gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
             // Changed flag is ignored.
             handleNodeUpdateInfo( msg.update );
         }
@@ -603,7 +610,7 @@ public final class Node extends Thread implements PacketReceiveListener
             if( Settings.traceNodes ){
                 Globals.log.reportProgress( "Waiting for termination of thread " + t );
             }
-            Service.waitToTerminate( t );
+            Utils.waitToTerminate( t );
         }
         gossiper.setStopped();
         synchronized( this ) {
@@ -692,7 +699,7 @@ public final class Node extends Thread implements PacketReceiveListener
      * @param choices The list of job choices.
      * @return <code>true</code> if the job could be submitted.
      */
-    boolean submit( Object input, boolean submitIfBusy, CompletionListener listener, Job...choices )
+    boolean submit( Object input, boolean submitIfBusy, JobCompletionListener listener, Job...choices )
     {
         int choice;
 
@@ -805,7 +812,7 @@ public final class Node extends Thread implements PacketReceiveListener
 
                     runningTasks.up();
                     if( Settings.traceNodeProgress ) {
-                        Globals.log.reportProgress( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Service.formatNanoseconds( queueInterval ) + "; there are now " + runningTasks + " running tasks" );
+                        Globals.log.reportProgress( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Utils.formatNanoseconds( queueInterval ) + "; there are now " + runningTasks + " running tasks" );
                     }
                     Object input = message.taskInstance.input;
                     executeTask( message, task, input, runMoment );
@@ -865,7 +872,7 @@ public final class Node extends Thread implements PacketReceiveListener
         runningTasks.down();
         if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
             long queueInterval = runMoment-message.getQueueMoment();
-            Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Service.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
+            Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Utils.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
         }
         long workerDwellTime = taskCompletionMoment-message.getQueueMoment();
         if( traceStats ) {

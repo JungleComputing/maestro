@@ -92,6 +92,7 @@ public final class JobList
 
     /**
      * Creates a job with the given name and the given sequence of tasks.
+     * The jobs in the task will be executed in the given order.
      * 
      * @param name The name of the job.
      * @param tasks The list of tasks of the job.
@@ -108,6 +109,7 @@ public final class JobList
     }
 
     /**
+     * Returns a list of all the supported task types.
      * @return A list of all supported task types.
      */
     TaskType[] getSupportedTaskTypes()

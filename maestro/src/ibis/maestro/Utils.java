@@ -1,5 +1,3 @@
-// File: Service.java
-
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
@@ -8,7 +6,6 @@ import ibis.ipl.Location;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.ArrayList;
 
 /**
  *
@@ -16,7 +13,7 @@ import java.util.ArrayList;
  * 
  * @author Kees van Reeuwijk.
  */
-public class Service
+public class Utils
 {
     static final long MICROSECOND_IN_NANOSECONDS = 1000L;
     static final long MILLISECOND_IN_NANOSECONDS = 1000*MICROSECOND_IN_NANOSECONDS;
@@ -26,8 +23,10 @@ public class Service
     static final long DAY_IN_NANOSECONDS = 24*HOUR_IN_NANOSECONDS;
     static final long WEEK_IN_NANOSECONDS = 7*DAY_IN_NANOSECONDS;
 
-    /** Prints the platform version that is used. */
-    static String getPlatformVersion()
+    /** Returns a string with the platform version that is used.
+     * @return The platform version.
+     */
+    public static String getPlatformVersion()
     {
         java.util.Properties p = System.getProperties();
         
@@ -85,7 +84,7 @@ public class Service
     /** Wait for the given thread to terminate.
      * @param thread The tread to wait for.
      */
-    public static void waitToTerminate( Thread thread )
+    static void waitToTerminate( Thread thread )
     {
         while( thread.isAlive() ) {
             try {
@@ -97,17 +96,15 @@ public class Service
         }
     }
 
-    static boolean member( ArrayList<TaskType> taskTypes, TaskType taskType )
+    /**
+     * Divide <code>val</code> by <code>divisor</code>, rounding
+     * up to the next integer.
+     * @param val The nominator of the division.
+     * @param divisor The denominator of the division.
+     * @return The result of the division.
+     */
+    public static long divideRoundUp( long val, long divisor )
     {
-        for( TaskType t: taskTypes ) {
-            if( t.equals( taskType ) ) {
-        	return true;
-            }
-        }
-        return false;
-    }
-
-    private static long divideRoundUp( long val, long divisor ) {
         return (val+(divisor-1))/divisor;
     }
 
@@ -119,7 +116,7 @@ public class Service
      * @param nanoTime The time in nanoseconds.
      * @return The time in milliseconds.
      */
-    static long nanosecondsToMilliseconds( long nanoTime )
+    public static long nanosecondsToMilliseconds( long nanoTime )
     {
 	if( nanoTime<MILLISECOND_IN_NANOSECONDS ) {
 	    return 1;
@@ -132,7 +129,7 @@ public class Service
      * @param n The byte count to represent.
      * @return The byte count as a human-readable string.
      */
-    static String formatByteCount( long n )
+    public static String formatByteCount( long n )
     {
         if( n<1000 ) {
             // This deliberately covers negative numbers
@@ -187,7 +184,15 @@ public class Service
         return 0;
     }
 
-    static long safeAdd( long a, long b )
+    /**
+     * Adds two longs, but return <code>Long.MAX_VALUE</code> if one of the two
+     * has that value.
+     * @param a One value to add.
+     * @param b The other value to add.
+     * @return The sum of the two values, or <code>Long.MAX_VALUE</code>
+     *   if one of the inputs has that value.
+     */
+    public static long safeAdd( long a, long b )
     {
         if( a == Long.MAX_VALUE || b == Long.MAX_VALUE ) {
             return Long.MAX_VALUE;
@@ -196,7 +201,16 @@ public class Service
     }
 
 
-    static long safeAdd( long a, long b, long c )
+    /**
+     * Adds three longs, but return </code>Long.MAX_VALUE<code> if one of the three
+     * has that value.
+     * @param a One value to add.
+     * @param b An other value to add.
+     * @param c A third value to add.
+     * @return The sum of the three values, or <code>Long.MAX_VALUE</code>
+     *   if one of the inputs has that value.
+     */
+    public static long safeAdd( long a, long b, long c )
     {
         if( a == Long.MAX_VALUE || b == Long.MAX_VALUE || c == Long.MAX_VALUE ) {
             return Long.MAX_VALUE;

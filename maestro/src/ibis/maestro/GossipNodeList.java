@@ -65,7 +65,7 @@ class GossipNodeList
                 return 1;
             }
             // Tie breaker: the one with the shortest distance wins.
-            return Service.rankIbisIdentifiers( Globals.localIbis.identifier(), arg0.ibis, arg1.ibis );
+            return Utils.rankIbisIdentifiers( Globals.localIbis.identifier(), arg0.ibis, arg1.ibis );
         }
 
     }
