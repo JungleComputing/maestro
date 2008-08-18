@@ -10,39 +10,20 @@ public class TaskFailedException extends MaestroException
     private static final long serialVersionUID = 1L;
 
     /**
-     * Given FIXME, constructs a new MaestroException.
+     * Constructs a new MaestroException.
      */
-    public TaskFailedException()
+    TaskFailedException()
     {
         super();
     }
 
     /**
-     * Given FIXME, constructs a new MaestroException.
-     * @param arg0
+     * Given an error message, constructs a new MaestroException.
+     * @param msg The error message.
      */
-    public TaskFailedException( String arg0 )
+    TaskFailedException( String msg )
     {
-        super( arg0 );
-    }
-
-    /**
-     * Given FIXME, constructs a new MaestroException.
-     * @param arg0
-     */
-    public TaskFailedException( Throwable arg0 )
-    {
-        super( arg0 );
-    }
-
-    /**
-     * Given FIXME, constructs a new MaestroException.
-     * @param arg0
-     * @param arg1
-     */
-    public TaskFailedException( String arg0, Throwable arg1 )
-    {
-        super( arg0, arg1 );
+        super( msg );
     }
 
 }

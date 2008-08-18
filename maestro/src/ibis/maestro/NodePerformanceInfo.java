@@ -27,17 +27,14 @@ public class NodePerformanceInfo implements Serializable
 
     long timeStamp;
 
-    int idleProcessors;   // TODO: is this actually used?
-    
     final int numberOfProcessors;
 
     NodePerformanceInfo( long[] completionInfo, WorkerQueueInfo[] workerQueueInfo,
-        IbisIdentifier source, int idleProcessors, int numberOfProcessors )
+        IbisIdentifier source, int numberOfProcessors )
     {
         this.completionInfo = completionInfo;
         this.workerQueueInfo = workerQueueInfo;
         this.source = source;
-        this.idleProcessors = idleProcessors;
         this.numberOfProcessors = numberOfProcessors;
         this.timeStamp = System.nanoTime();
     }
@@ -50,7 +47,6 @@ public class NodePerformanceInfo implements Serializable
             completionInfoCopy,
             workerQueueInfoCopy,
             source,
-            idleProcessors,
             numberOfProcessors
         );
     }

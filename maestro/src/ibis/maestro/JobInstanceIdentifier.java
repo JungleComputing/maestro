@@ -5,7 +5,7 @@ import ibis.ipl.IbisIdentifier;
 import java.io.Serializable;
 
 /**
- * The identifier of a job.
+ * The identifier of a particular job instance.
  *
  * @author Kees van Reeuwijk.
  */
@@ -14,8 +14,13 @@ class JobInstanceIdentifier implements Serializable
     private static final long serialVersionUID = -7567750999837567234L;
     private static long serialNo = 0;
 
+    /** The identifier issued by the maestro to which it was submitted. */
     final long id;
+    
+    /** The identifier the user has added to the job instance when submitting it. */
     final Object userId;
+    
+    /** The ibis to which the final result should be transmitted. */
     final IbisIdentifier ibis;
 
     /**
@@ -80,12 +85,12 @@ class JobInstanceIdentifier implements Serializable
         return (id == other.id);
     }
 
-    /** FIXME.
+    /** Returns a textual representation of this job.
      * @return
      */
     String label()
     {
-        return "T" + id;
+        return "J" + id;
     }
 
 }

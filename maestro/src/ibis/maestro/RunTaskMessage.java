@@ -75,7 +75,6 @@ final class RunTaskMessage extends Message
 
     String label()
     {
-        // FIXME Edit this auto-generated method stub
         return taskInstance.shortLabel();
     }
 }

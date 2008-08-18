@@ -151,7 +151,7 @@ class Gossip
         if( ix<0 ) {
             long completionInfo[] = new long[Globals.numberOfTaskTypes];
             Arrays.fill( completionInfo, Long.MAX_VALUE );
-            NodePerformanceInfo localInfo = new NodePerformanceInfo( completionInfo, update, ourIbis, idleProcessors, numberOfProcessors );
+            NodePerformanceInfo localInfo = new NodePerformanceInfo( completionInfo, update, ourIbis, numberOfProcessors );
             gossipList.add( localInfo );
             return;
         }
@@ -162,7 +162,6 @@ class Gossip
         
         localInfo.workerQueueInfo = update;
         localInfo.timeStamp = System.nanoTime();
-        localInfo.idleProcessors = idleProcessors;
     }
 
     synchronized NodePerformanceInfo getLocalUpgate()

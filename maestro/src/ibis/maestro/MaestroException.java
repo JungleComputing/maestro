@@ -1,20 +1,16 @@
-// File: $Id: $
-
 package ibis.maestro;
 
 /**
- * FIXME.
+ * The base class of Maestro exceptions.
  *
  * @author Kees van Reeuwijk.
  */
 public class MaestroException extends Exception
 {
-
-    /** FIXME. */
     private static final long serialVersionUID = 1L;
 
     /**
-     * Given FIXME, constructs a new MaestroException.
+     * Constructs a new MaestroException.
      */
     public MaestroException()
     {
@@ -22,31 +18,31 @@ public class MaestroException extends Exception
     }
 
     /**
-     * Given FIXME, constructs a new MaestroException.
-     * @param arg0
+     * Given an error message, constructs a new MaestroException.
+     * @param msg The error message associated with the exception.
      */
-    public MaestroException( String arg0 )
+    public MaestroException( String msg )
     {
-        super( arg0 );
+        super( msg );
     }
 
     /**
-     * Given FIXME, constructs a new MaestroException.
-     * @param arg0
+     * Given a throwable, constructs a new MaestroException.
+     * @param t The throwable that caused the throwing of this exception.
      */
-    public MaestroException( Throwable arg0 )
+    public MaestroException( Throwable t )
     {
-        super( arg0 );
+        super( t );
     }
 
     /**
-     * Given FIXME, constructs a new MaestroException.
-     * @param arg0
-     * @param arg1
+     * Given an error message and a throwable, constructs a new MaestroException.
+     * @param msg The error message associated with the exception.
+     * @param t The throwable associated with the exception.
      */
-    public MaestroException( String arg0, Throwable arg1 )
+    public MaestroException( String msg, Throwable t )
     {
-        super( arg0, arg1 );
+        super( msg, t );
     }
 
 }

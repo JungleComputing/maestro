@@ -676,7 +676,6 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "Master: received task " + task );
         }
         masterQueue.add( task );
-        // drainMasterQueue(); FIXME: temporarily disabled.
         synchronized( this ) {
             this.notify();   // Wake a thread to handle this.
         }

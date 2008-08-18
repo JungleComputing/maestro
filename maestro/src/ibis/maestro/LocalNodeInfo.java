@@ -38,9 +38,10 @@ public class LocalNodeInfo
         return transmissionTime[type.index];
     }
 
-    /** FIXME.
-     * @param type
-     * @return
+    /** Given a task type, returns the predicted duration of the task
+     * on the local node.
+     * @param type The type of task we want the prediction for.
+     * @return The predicted duration of the task in nanoseconds.
      */
     long getPredictedDuration( TaskType type )
     {

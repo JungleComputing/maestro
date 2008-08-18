@@ -18,7 +18,8 @@ import java.util.Map;
  * @author Kees van Reeuwijk
  *
  */
-class PacketSendPort {
+class PacketSendPort
+{
     static final PortType portType = new PortType( PortType.COMMUNICATION_RELIABLE, PortType.SERIALIZATION_OBJECT, PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS, PortType.RECEIVE_EXPLICIT );
     private final Node node;  // The node this runs on.
     private final ConnectionCache connectionCache;
