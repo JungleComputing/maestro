@@ -11,68 +11,23 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.SendPort;
 
-import java.io.IOException;
 import java.io.PrintStream;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
 /**
  * A LRU cache for ibis connections, based on <code>LinkedHashMap</code>.
  */
-public class SendPortCache
+class SendPortCache extends LinkedHashMap<IbisIdentifier,SendPortCacheConnectionInfo>
 {
+    private static final long serialVersionUID = 1L;
     private static final float hashTableLoadFactor = 0.75f;
     private int useCount = 0;
     private int hits = 0;
     private int misses = 0;
-
-    private final class ConnectionInfo {
-        private SendPort port;
-        private int mostRecentUse = 0;
-
-        synchronized SendPort getPort( IbisIdentifier ibis )
-        {
-            if( port == null ) {
-                try {
-                    port = Globals.localIbis.createSendPort( PacketSendPort.portType );
-                    port.connect( ibis, Globals.receivePortName, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT, true );
-                }
-                catch( IOException x ) {
-                    try {
-                        if( port != null ) {
-                            port.close();
-                            port = null;
-                        }
-                    }
-                    catch( Throwable e ) {
-                        // Nothing we can do.
-                    }
-                }
-                misses++;
-            }
-            else {
-        	hits++;
-            }
-            mostRecentUse = useCount++;
-            return port;
-        }
-
-        synchronized void close()
-        {
-            if( port != null ) {
-                try{
-                    port.close();
-                }
-                catch( IOException e ){
-                    // Nothing we can do.
-                }
-                port = null;
-            }
-        }
-    }
-
-    private final HashMap<IbisIdentifier, ConnectionInfo> map;
+    private final int cacheSize;
+    private final int maximalUnusedCount;
+    private int evictions = 0;
 
     /**
      * Creates a new LRU cache.
@@ -82,27 +37,23 @@ public class SendPortCache
      */
     SendPortCache( final int cacheSize, final int theMaximalUnusedCount )
     {
-        int hashTableCapacity = (int) Math.ceil(cacheSize / hashTableLoadFactor) + 1;
-        map = new LinkedHashMap<IbisIdentifier,ConnectionInfo>( hashTableCapacity, hashTableLoadFactor, true ) {
-            private final int sz = cacheSize;
-            private final int maximalUnusedCount = theMaximalUnusedCount;
-            private int evictions = 0;
+        super( (int) Math.ceil(cacheSize / hashTableLoadFactor) + 1, hashTableLoadFactor, true );
+        this.maximalUnusedCount = theMaximalUnusedCount;
+        this.cacheSize = cacheSize;
+    }
 
-            // (an anonymous inner class)
-            private static final long serialVersionUID = 1;
-            @Override
-            protected boolean removeEldestEntry( Map.Entry<IbisIdentifier, ConnectionInfo> eldest ) {
-                ConnectionInfo connection = eldest.getValue();
-                if( (connection.mostRecentUse+maximalUnusedCount)<useCount && size() > sz ) {
-                    // This cache entry makes the cache too large, or has not
-                    // been used for too long. Out it goes.
-		    connection.close();
-		    evictions++;
-                    return true;
-                }
-                return false;
-            }
-        };
+    @Override
+    protected boolean removeEldestEntry( Map.Entry<IbisIdentifier, SendPortCacheConnectionInfo> eldest )
+    {
+        SendPortCacheConnectionInfo connection = eldest.getValue();
+        if( (connection.mostRecentUse+maximalUnusedCount)<useCount && size() > cacheSize ) {
+            // This cache entry makes the cache too large, or has not
+            // been used for too long. Out it goes.
+            connection.close();
+            evictions++;
+            return true;
+        }
+        return false;
     }
 
     /** Given an ibis identifier, return a SendPort for that ibis.
@@ -111,26 +62,28 @@ public class SendPortCache
      * @return The SendPort, or <code>null</code> if the ibis could not be reached.
      */
     @SuppressWarnings("synthetic-access")
-    SendPort getSendPort( IbisIdentifier ibis )
+    synchronized SendPort getSendPort( IbisIdentifier ibis )
     {
-        ConnectionInfo info;
+        SendPortCacheConnectionInfo info;
 
-        synchronized( map ) {
-            info = map.get( ibis );
+        info = get( ibis );
 
-            if( info == null ) {
-                info = new ConnectionInfo();
-                map.put( ibis, info );
-            }
+        if( info == null ) {
+            info = new SendPortCacheConnectionInfo();
+            put( ibis, info );
+            misses++;
         }
-        return info.getPort( ibis );
+        else {
+            hits++;
+        }
+        return info.getPort( ibis, useCount++ );
     }
 
     void closeSendPort( IbisIdentifier ibis )
     {
-        ConnectionInfo info;
-        synchronized( map ) {
-            info = map.remove( ibis );
+        SendPortCacheConnectionInfo info;
+        synchronized( this ) {
+            info = remove( ibis );
         }
         if( info != null ) {
             info.close();
@@ -140,6 +93,6 @@ public class SendPortCache
     void printStatistics( PrintStream s )
     {
 	// FIXME: print evictions
-	s.printf( "sendport cache: %d hits, %d misses, %d evictions\n", hits, misses, 0 );
+	s.printf( "sendport cache: %d hits, %d misses, %d evictions\n", hits, misses, evictions );
     }
 }

@@ -14,8 +14,6 @@ import java.io.PrintStream;
  */
 public class ConnectionCache
 {
-    private int hits = 0;
-    private int evictions = 0;
     private final Node node;
     private final SendPortCache cache = new SendPortCache( Settings.CONNECTION_CACHE_SIZE, Settings.CONNECTION_CACHE_MAXIMAL_UNUSED_COUNT );
 
@@ -23,8 +21,6 @@ public class ConnectionCache
     {
         this.node = node;
     }
-
-    // For the moment a connection cache that doesn't cache at all.
 
     long cachedSendMessage( IbisIdentifier ibis, Object message )
     {
@@ -103,7 +99,7 @@ public class ConnectionCache
 
     void printStatistics( PrintStream s )
     {
-        s.println( "Connection cache: " + hits + " hits, " + evictions + " evictions" );
+        cache.printStatistics( s );
     }
 
 }
