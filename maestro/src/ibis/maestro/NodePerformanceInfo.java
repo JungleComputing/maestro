@@ -11,7 +11,7 @@ import java.util.Arrays;
  *
  * @author Kees van Reeuwijk.
  */
-public class NodePerformanceInfo implements Serializable
+class NodePerformanceInfo implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
@@ -181,7 +181,7 @@ public class NodePerformanceInfo implements Serializable
     {
         for( WorkerQueueInfo i: workerQueueInfo ) {
             if( i == null ) {
-                s.print ( "    --    " );
+                s.print ( "      --      " );
             }
             else {
                 s.print( i.format() );

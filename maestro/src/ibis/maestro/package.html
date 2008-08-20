@@ -1,0 +1,33 @@
+<body>
+A dataflow programming environment for Ibis.
+<p>
+A Maestro program consists of a set of computational steps,
+called <em>tasks</em> that are grouped into <em>jobs</em>:
+sequences of tasks that are executed sequentially.
+The program is executed by a set of <em>nodes</em> running
+on separate (possibly multiprocessor or multicore) computers. Each node
+tries to submit its tasks to the node that is the most efficient
+in executing it, based on the completion time  of all
+remaining tasks in the job.
+</p>
+<p>
+In its simplest form a task is <em>atomic</em> (indivisible),
+and is implemented by any class that implements the
+<code>AtomicTask</code> interface. By default Maestro assumes
+that every instance of a particular task requires the same execution
+time, so that the performance of the different nodes in
+the system can be compared. The user can help
+Maestro by implementing the <code>TaskExecutionTimeEstimator</code>
+to provide an initial estimate of the execution time. 
+Maestro also supports tasks with unpredictable execution
+times. These tasks are labeled with the <code>UnpredictableAtomicTask</code>
+interface. For such tasks only the initial estimate is used.
+</p>
+<p>
+Next to atomic tasks Maestro also supports map/reduce tasks,
+where the <code>map</code> method submits a number of jobs
+to the system, the <code>reduce</code> method processes the
+results of these jobs, and the <code>getResult</code> method
+returns the final result after all job results have been processed.
+</p>
+</body>

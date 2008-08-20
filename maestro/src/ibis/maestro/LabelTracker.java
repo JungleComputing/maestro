@@ -5,9 +5,10 @@ import java.util.Set;
 import java.util.TreeSet;
 
 /**
- * Hands out labels, and keeps track of the ones that have been returned.
+ * Hands out unique labels, and keeps track of which ones have and have not
+ * been returned.
  * Allows labels to be returned out of order and more than once. At all
- * times we can tell whether there are still outstanding labels, or
+ * times we can tell which labels, if any, are still outstanding, or
  * that all labels we have handed out have been returned.
  * 
  * @author Kees van Reeuwijk
@@ -18,7 +19,7 @@ public class LabelTracker
     /* 
      * In principle we could just use a set, but as an optimization
      * we represent the range of labels starting from 0 as just
-     * the upper value of this range, and we try to grow this range
+     * the upper value of this range, and we grow this range
      * whenever possible.
      * 
      * The remaining labels are stored in a set.
@@ -29,10 +30,12 @@ public class LabelTracker
     /** The first label not in the bulk range. */
     private long endOfRange = 0L;
 
+    /** The set of labels beyond the initial range. */
     private final Set<Long> set = new TreeSet<Long>();
 
     /**
-     * A label as handed out by the tracker. It should be treated as an opaque token.
+     * A label as handed out by the <code>LabelTracker</code>. It should
+     * be treated as an opaque token.
      */
     public static class Label implements Serializable {
 	private static final long serialVersionUID = 1L;
