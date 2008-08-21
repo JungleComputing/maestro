@@ -235,7 +235,7 @@ final class NodeInfo
      * 
      * @param task The task that was started.
      * @param id The id given to the task.
-     * @param predictedDuration The predicted duration in ns of the task.
+     * @param predictedDuration The predicted duration in nanoseconds of the task.
      */
     void registerTaskStart( TaskInstance task, long id, long predictedDuration )
     {
@@ -247,8 +247,10 @@ final class NodeInfo
             workerTaskInfo.incrementOutstandingTasks();
         }
         long now = System.nanoTime();
-        long allowanceDeadline = now + predictedDuration*Settings.ALLOWANCE_DEADLINE_MARGIN;
-        long rescheduleDeadline = now + predictedDuration*Settings.RESCHEDULE_DEADLINE_MARGIN;
+        long deadlineInterval = predictedDuration*Settings.ALLOWANCE_DEADLINE_MARGIN;
+        // Don't try to enforce a deadline interval below a certain reasonable minimum.
+	long allowanceDeadline = now + Math.max( deadlineInterval, Settings.MINIMAL_DEADLINE );
+        long rescheduleDeadline = now + deadlineInterval*Settings.RESCHEDULE_DEADLINE_MULTIPLIER;
         ActiveTask j = new ActiveTask( task, id, now, workerTaskInfo, predictedDuration, allowanceDeadline, rescheduleDeadline );
         synchronized( this ) {
             activeTasks.add( j );
@@ -311,20 +313,17 @@ final class NodeInfo
     {
 	boolean changed = false;
 
-	if( false ) {
-	    // TODO: enable this again.
-            for( ActiveTask task: activeTasks ) {
-                if( task.getAllowanceDeadline()<now ) {
-                    // Worker missed an allowance deadline.
-                    long t = now-task.startTime+task.predictedDuration;
-                    NodeTaskInfo workerTaskInfo = task.workerTaskInfo;
-                    if( workerTaskInfo != null ) {
-                        changed |= workerTaskInfo.updateRoundtripTimeEstimate( t );
-                    }
-                    task.setAllowanceDeadline( t );
-                }
-            }
-        }
+	for( ActiveTask task: activeTasks ) {
+	    if( task.getAllowanceDeadline()<now ) {
+		// Worker missed an allowance deadline.
+		long t = now-task.startTime+task.predictedDuration;
+		NodeTaskInfo workerTaskInfo = task.workerTaskInfo;
+		if( workerTaskInfo != null ) {
+		    changed |= workerTaskInfo.updateRoundtripTimeEstimate( t );
+		}
+		task.setAllowanceDeadline( t );
+	    }
+	}
 	return changed;
     }
 

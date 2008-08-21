@@ -37,7 +37,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private final RecentMasterList recentMasterList = new RecentMasterList();
 
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
-    private static final int workThreadCount = numberOfProcessors+2;
+    private static final int workThreadCount = numberOfProcessors+Settings.EXTRA_WORK_THREADS;
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
     private final Gossiper gossiper;
 
@@ -57,6 +57,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private final MasterQueue masterQueue;
     private final WorkerQueue workerQueue;
     private long nextTaskId = 0;
+    private UpDownCounter idleProcessors = new UpDownCounter( -Settings.EXTRA_WORK_THREADS );
     private Counter handledTaskCount = new Counter();
     private Counter updateMessageCount = new Counter();
     private Counter submitMessageCount = new Counter();
@@ -351,11 +352,6 @@ public final class Node extends Thread implements PacketReceiveListener
         nodes.checkDeadlines( System.nanoTime() );
     }
 
-    private int getIdleProcessorCount()
-    {
-        return Math.max( numberOfProcessors-runningTasks.get(), 0 );
-    }
-
     /** Print some statistics about the entire worker run. */
     synchronized void printStatistics( PrintStream s )
     {
@@ -415,13 +411,9 @@ public final class Node extends Thread implements PacketReceiveListener
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
         NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() ); // TODO: more subtle than this.
         boolean changed = nodeInfo.registerWorkerQueueInfo( workerQueueInfo );
-        // FIXME: instead of the terrible hack below, use something more subtle.
-        // For now we pretend to only have one core if we're the maestro, so
-        // that we keep some free CPU to play maestro in.
-        // We can't say we have zero processors because then nothing would
-        // happen in a single-node run.
-        gossiper.registerWorkerQueueInfo( workerQueueInfo, getIdleProcessorCount(), isMaestro?1:numberOfProcessors );
-        long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
+        int idle = idleProcessors.get();
+	gossiper.registerWorkerQueueInfo( workerQueueInfo, idle, numberOfProcessors );
+        long masterQueueIntervals[] = masterQueue.getQueueIntervals( idle );
         HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
         gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
     }
@@ -508,11 +500,10 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         boolean isnew = gossiper.registerGossip( m.update );
         if( isnew ) {
-            long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
+            long masterQueueIntervals[] = masterQueue.getQueueIntervals( idleProcessors.get() );
             HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
             gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
-            // Changed flag is ignored.
-            handleNodeUpdateInfo( m.update );
+            handleNodeUpdateInfo( m.update );   // Changed flag is ignored.
         }
     }
 
@@ -546,11 +537,10 @@ public final class Node extends Thread implements PacketReceiveListener
         boolean isnew = gossiper.registerGossip( msg.update );
         if( isnew ) {
             // TODO: abstract this code sequence and other occurrences in a method.
-            long masterQueueIntervals[] = masterQueue.getQueueIntervals( getIdleProcessorCount() );
+            long masterQueueIntervals[] = masterQueue.getQueueIntervals( idleProcessors.get() );
             HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
             gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
-            // Changed flag is ignored.
-            handleNodeUpdateInfo( msg.update );
+            handleNodeUpdateInfo( msg.update );       // Changed flag is ignored.
         }
         masterQueue.add( orphan );
     }
@@ -781,6 +771,7 @@ public final class Node extends Thread implements PacketReceiveListener
                     message = workerQueue.remove();
                 }
                 if( message == null ) {
+                    idleProcessors.up();
                     long sleepTime = 20;
                     gossiper.addQuotum();
                     if( Settings.traceWaits ) {
@@ -797,6 +788,7 @@ public final class Node extends Thread implements PacketReceiveListener
                     catch( InterruptedException e ){
                         // Not interesting.
                     }
+                    idleProcessors.down();
                 }
                 else {
                     // We have a task to execute.

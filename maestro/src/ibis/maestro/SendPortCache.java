@@ -92,7 +92,6 @@ class SendPortCache extends LinkedHashMap<IbisIdentifier,SendPortCacheConnection
 
     void printStatistics( PrintStream s )
     {
-	// FIXME: print evictions
 	s.printf( "sendport cache: %d hits, %d misses, %d evictions\n", hits, misses, evictions );
     }
 }

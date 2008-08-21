@@ -127,6 +127,11 @@ final class NodeList
         return nodeInfo;
     }
 
+    /** Given an ibis, return its NodeInfo. If necessary create one.
+     * The operation is atomic wrt this node list.
+     * @param source The ibis.
+     * @return Its NodeInfo.
+     */
     synchronized NodeInfo get( IbisIdentifier id )
     {
         return getNodeInfo( id );

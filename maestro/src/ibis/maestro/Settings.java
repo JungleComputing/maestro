@@ -71,6 +71,7 @@ class Settings {
     /** Trace all sent update messages. */
     static final boolean traceUpdateMessages = false;
 
+    /** Trace changes to the allowances. */
     static final boolean traceAllowance = false;
 
     /** Trace the adventures of the non-essential sender. */
@@ -79,8 +80,10 @@ class Settings {
     /** Trace the adventures of the gossip engine? */
     static final boolean traceGossip = false;
 
+    /** Dump the master queue after each change? */
     static final boolean dumpMasterQueue = false;
 
+    /** Dump the worker queue after each change? */
     static final boolean dumpWorkerQueue = false;
 
     /** Announce all submissions. */
@@ -88,22 +91,28 @@ class Settings {
 
     // --- Configuration (tuning) constants. ----
     // Unfortunately we still need some magic numbers.
-    
+
+    /**
+     * Deadlines below this value in nanoseconds are meaningless because
+     * they aren't enforcable anyway.
+     */
+    static final long MINIMAL_DEADLINE = 100*Utils.MICROSECOND_IN_NANOSECONDS;
+
     /** Multiplier of the estimated completion time to
      * get an allowance deadline for a task.
      */
     static final long ALLOWANCE_DEADLINE_MARGIN = 3;
 
-    /** Multiplier of the estimated completion time to
+    /** Multiplier of the allowance deadline to
      * get a reschedule deadline for a task.
      */
-    static final long RESCHEDULE_DEADLINE_MARGIN = 6;
+    static final long RESCHEDULE_DEADLINE_MULTIPLIER = 2;
 
     /** The maximal time in ms before the gossiper gets more quotum.  */
-    static final long MAXIMUM_GOSSIPER_WAIT = 50;
+    static final long MAXIMUM_GOSSIPER_WAIT = 40;
 
     /** Time in ms when gossip goes stale for nodes in the same cluster. */
-    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 50;
+    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 100;
 
     /** Time in ms when gossip goes stale for nodes not in the same cluster. */
     static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 5*GOSSIP_EXPIRATION_IN_CLUSTER;
@@ -112,4 +121,10 @@ class Settings {
      * date with our state changes (instead of through the gossip system).
      */
     static final int MAXIMAL_RECENT_MASTERS = 4;
+
+    /**
+     * Apart from a work thread for each processor, this many extra
+     * work threads are run.
+     */
+    static final int EXTRA_WORK_THREADS = 2;
 }
