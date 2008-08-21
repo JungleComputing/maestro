@@ -1,7 +1,7 @@
 package ibis.videoplayer;
 
 import ibis.maestro.AtomicTask;
-import ibis.maestro.CompletionListener;
+import ibis.maestro.JobCompletionListener;
 import ibis.maestro.Job;
 import ibis.maestro.JobList;
 import ibis.maestro.Node;
@@ -15,7 +15,7 @@ import java.io.IOException;
  * @author Kees van Reeuwijk
  *
  */
-public class RenderMovieProgram implements CompletionListener
+public class RenderMovieProgram implements JobCompletionListener
 {
     static final int WIDTH = 348;
     static final int HEIGHT = 216/2;

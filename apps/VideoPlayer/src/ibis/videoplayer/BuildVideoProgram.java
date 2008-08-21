@@ -1,6 +1,6 @@
 package ibis.videoplayer;
 
-import ibis.maestro.CompletionListener;
+import ibis.maestro.JobCompletionListener;
 import ibis.maestro.Job;
 import ibis.maestro.JobList;
 import ibis.maestro.Node;
@@ -14,7 +14,7 @@ import ibis.maestro.Node;
 public class BuildVideoProgram {
     private static final int OUTSTANDING_FRAGMENTS = 3*32;
 
-    private static class Listener implements CompletionListener
+    private static class Listener implements JobCompletionListener
     {
         int jobsCompleted = 0;
         private final int jobCount;

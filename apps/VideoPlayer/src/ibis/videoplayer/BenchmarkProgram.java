@@ -1,12 +1,12 @@
 package ibis.videoplayer;
 
 import ibis.maestro.AtomicTask;
-import ibis.maestro.CompletionListener;
+import ibis.maestro.JobCompletionListener;
 import ibis.maestro.Job;
 import ibis.maestro.JobList;
 import ibis.maestro.LabelTracker;
 import ibis.maestro.Node;
-import ibis.maestro.Service;
+import ibis.maestro.Utils;
 import ibis.maestro.TaskExecutionTimeEstimator;
 
 import java.io.File;
@@ -25,7 +25,7 @@ class BenchmarkProgram {
 
     static final File outputDir = new File( "output" );
 
-    private static class Listener implements CompletionListener
+    private static class Listener implements JobCompletionListener
     {
         private final LabelTracker labelTracker = new LabelTracker();
         private boolean sentFinal = false;
@@ -559,7 +559,7 @@ class BenchmarkProgram {
         }
         node.waitToTerminate();
         long stopTime = System.nanoTime();
-        System.out.println( "Duration of this run: " + Service.formatNanoseconds( stopTime-startTime ) );
+        System.out.println( "Duration of this run: " + Utils.formatNanoseconds( stopTime-startTime ) );
     }
 
     /** The command-line interface of this program.
