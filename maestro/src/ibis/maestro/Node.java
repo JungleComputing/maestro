@@ -12,9 +12,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Properties;
-import java.util.Set;
 
 /**
  * A node in the Maestro dataflow network.
@@ -33,7 +31,6 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private RegistryEventHandler registryEventHandler;
 
-    private final Set<IbisIdentifier> deadNodesBeforeElection = new HashSet<IbisIdentifier>();
     private final RecentMasterList recentMasterList = new RecentMasterList();
 
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
@@ -121,10 +118,6 @@ public final class Node extends Thread implements PacketReceiveListener
             if( name.equals( MAESTRO_ELECTION_NAME ) && theIbis != null ){
                 Globals.log.reportProgress( "Ibis " + theIbis + " was elected maestro" );
                 maestro = theIbis;
-                if( deadNodesBeforeElection.contains( theIbis ) ) {
-                    setStopped();
-                }
-                deadNodesBeforeElection.clear();
             }
         }
 
@@ -274,11 +267,6 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void registerIbisLeft( IbisIdentifier theIbis )
     {
-        if( maestro == null ) {
-            // This might be the maestro, but we don't know because we don't have
-            // the result of the election yet.
-            deadNodesBeforeElection.add( theIbis );
-        }
         gossiper.removeNode( theIbis );
         recentMasterList.remove( theIbis );
         ArrayList<TaskInstance> orphans = nodes.removeNode( theIbis );
