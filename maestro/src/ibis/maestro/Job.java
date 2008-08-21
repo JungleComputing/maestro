@@ -92,10 +92,11 @@ public final class Job
             if( tasks[i] instanceof UnpredictableAtomicTask ) {
         	unpredictable = true;
             }
-            int newIndex = index++;
+            int newIndex = index+i;
             taskTypes[i] = new TaskType( this.id, i, (tasks.length-1)-i, unpredictable, newIndex );
             updateIndices[updateIndex++] = newIndex;
         }
+        index += tasks.length;
     }
 
     /**

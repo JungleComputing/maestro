@@ -94,7 +94,7 @@ class Settings {
 
     /**
      * Deadlines below this value in nanoseconds are meaningless because
-     * they aren't enforcable anyway.
+     * they are too short to measure with reasonable accuracy anyway.
      */
     static final long MINIMAL_DEADLINE = 100*Utils.MICROSECOND_IN_NANOSECONDS;
 

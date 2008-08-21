@@ -54,7 +54,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private final MasterQueue masterQueue;
     private final WorkerQueue workerQueue;
     private long nextTaskId = 0;
-    private UpDownCounter idleProcessors = new UpDownCounter( -Settings.EXTRA_WORK_THREADS );
+    private UpDownCounter idleProcessors = new UpDownCounter( -Settings.EXTRA_WORK_THREADS ); // Yes, we start with a negative number of idle processors.
     private Counter handledTaskCount = new Counter();
     private Counter updateMessageCount = new Counter();
     private Counter submitMessageCount = new Counter();
@@ -474,6 +474,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( !isDead ) {
             recentMasterList.register( source );
         }
+        updateLocalGossip();
         updateRecentMasters();
     }
 

@@ -28,6 +28,9 @@ final class NodeTaskInfo {
 
     private boolean failed = false;
 
+    private Counter missedAllowanceDeadlines = new Counter();
+    private Counter missedRescheduleDeadlines = new Counter();
+
     /**
      * Constructs a new information class for a particular task type
      * for a particular worker.
@@ -160,6 +163,11 @@ final class NodeTaskInfo {
     {
         if( didWork() ) {
             s.println( "  " + taskInfo.type + ": executed " + executedTasks + " tasks; maximal allowance " + maximalEverAllowance + ", xmit time " + transmissionTimeEstimate + (failed?" FAILED":"") );
+            int missedAllowance = missedAllowanceDeadlines.get();
+            int missedReschedule = missedRescheduleDeadlines.get();
+            if( missedAllowance>0 || missedReschedule>0 ) {
+                s.println( "  " + taskInfo.type + ": missed deadlines: allowance: " + missedAllowance + " reschedule: " + missedReschedule );        	
+            }
         }
     }
 
@@ -204,5 +212,13 @@ final class NodeTaskInfo {
         }
         maximalAllowance = 0;
         failed = true;
+    }
+
+    void registerMissedAllowanceDeadline() {
+        missedAllowanceDeadlines.add();
+    }
+
+    void registerMissedRescheduleDeadline() {
+	missedRescheduleDeadlines.add();
     }
 }

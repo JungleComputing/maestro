@@ -26,9 +26,6 @@ final class NodeInfo
 
     final boolean local;
 
-    private Counter missedAllowanceDeadlines = new Counter();
-    private Counter missedRescheduleDeadlines = new Counter();
-
     /** The ibis this nodes lives on. */
     final IbisIdentifier ibis;
 
@@ -198,11 +195,12 @@ final class NodeInfo
         }
         long roundtripTime = result.arrivalMoment-task.startTime;
         long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
-        if( task.getAllowanceDeadline()<result.arrivalMoment ) {
-            missedAllowanceDeadlines.add();
+        TaskType type = task.task.type;
+	if( task.getAllowanceDeadline()<result.arrivalMoment ) {
+            nodeTaskInfoList[type.index].registerMissedAllowanceDeadline();
             if( Settings.traceMissedDeadlines ){
                 Globals.log.reportProgress(
-                    "Missed allowance deadline for " + task.task.type + " task: "
+                    "Missed allowance deadline for " + type + " task: "
                     + " predictedDuration=" + Utils.formatNanoseconds( task.predictedDuration )
                     + " allowanceDuration=" + Utils.formatNanoseconds( task.getAllowanceDeadline()-task.startTime )
                     + " realDuration=" + Utils.formatNanoseconds( roundtripTime )
@@ -212,13 +210,13 @@ final class NodeInfo
         if( task.rescheduleDeadline<result.arrivalMoment ) {
             if( Settings.traceMissedDeadlines ){
                 Globals.log.reportProgress(
-                    "Missed reschedule deadline for " + task.task.type + " task: "
+                    "Missed reschedule deadline for " + type + " task: "
                     + " predictedDuration=" + Utils.formatNanoseconds( task.predictedDuration )
                     + " rescheduleDuration=" + Utils.formatNanoseconds( task.rescheduleDeadline-task.startTime )
                     + " realDuration=" + Utils.formatNanoseconds( roundtripTime )
                 );
             }
-            missedRescheduleDeadlines.add();
+            nodeTaskInfoList[type.index].registerMissedRescheduleDeadline();
         }
         changed = task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime );
         if( Settings.traceNodeProgress ){
@@ -271,7 +269,6 @@ final class NodeInfo
         	total += wti.getSubmissions();
             }
         }
-        s.println( "  Missed deadlines: allowance: " + missedAllowanceDeadlines.get()  + " reschedule: " + missedRescheduleDeadlines.get() + " of " + total );
         for( NodeTaskInfo info: nodeTaskInfoList ) {
             if( info != null ) {
                 info.printStatistics( s );
