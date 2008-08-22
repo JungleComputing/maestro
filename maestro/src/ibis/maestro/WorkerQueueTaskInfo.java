@@ -138,9 +138,12 @@ final class WorkerQueueTaskInfo
 
     synchronized WorkerQueueInfo getWorkerQueueInfo()
     {
-        long computeTime = averageComputeTime.getAverage();
+        long computeTime;
         if( failed ) {
             computeTime = Long.MAX_VALUE;
+        }
+        else {
+            computeTime = averageComputeTime.getAverage();            
         }
         return new WorkerQueueInfo( elements, dequeueInterval.getAverage(), computeTime );
     }

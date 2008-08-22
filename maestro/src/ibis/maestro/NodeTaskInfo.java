@@ -176,9 +176,9 @@ final class NodeTaskInfo {
         return roundtripTimeEstimate.addSample( t );
     }
 
-    synchronized boolean setWorkerQueueInfo( WorkerQueueInfo info )
+    synchronized boolean setWorkerQueueInfo( int queueLength )
     {
-        return controlAllowance( info.queueLength );
+        return controlAllowance( queueLength );
     }
 
     synchronized int getCurrentTasks()

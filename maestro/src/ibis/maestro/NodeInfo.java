@@ -80,7 +80,7 @@ final class NodeInfo
         boolean changed = false;
 
         if( nodeTaskInfo != null ) {
-            changed |= nodeTaskInfo.setWorkerQueueInfo( info );
+            changed |= nodeTaskInfo.setWorkerQueueInfo( info.queueLength );
         }
         return changed;
     }
