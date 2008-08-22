@@ -272,9 +272,9 @@ class Gossiper extends Thread
         }
     }
 
-    void registerWorkerQueueInfo( WorkerQueueInfo[] update, int idleProcessors, int numberOfProcessors )
+    void registerWorkerQueueInfo( WorkerQueueInfo[] update, int numberOfProcessors )
     {
-        gossip.registerWorkerQueueInfo( update, idleProcessors, numberOfProcessors );
+        gossip.registerWorkerQueueInfo( update, numberOfProcessors );
     }
 
     NodePerformanceInfo getLocalUpdate( )

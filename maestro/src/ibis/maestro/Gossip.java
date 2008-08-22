@@ -152,9 +152,8 @@ class Gossip
 
     /** Overwrite the worker queue info of our local information with the new info.
      * @param update
-     * @param idleProcessors 
      */
-    synchronized void registerWorkerQueueInfo( WorkerQueueInfo[] update, int idleProcessors, int numberOfProcessors )
+    synchronized void registerWorkerQueueInfo( WorkerQueueInfo[] update, int numberOfProcessors )
     {
         IbisIdentifier ourIbis = Globals.localIbis.identifier();
         int ix = searchInfo( ourIbis );

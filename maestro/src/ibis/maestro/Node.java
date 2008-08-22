@@ -402,7 +402,7 @@ public final class Node extends Thread implements PacketReceiveListener
         NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() ); // TODO: more subtle than this.
         boolean changed = nodeInfo.registerWorkerQueueInfo( workerQueueInfo );
         int idle = idleProcessors.get();
-	gossiper.registerWorkerQueueInfo( workerQueueInfo, idle, numberOfProcessors );
+	gossiper.registerWorkerQueueInfo( workerQueueInfo, numberOfProcessors );
         long masterQueueIntervals[] = masterQueue.getQueueIntervals( idle );
         HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
         gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );

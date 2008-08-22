@@ -27,7 +27,8 @@ class OneTestProg
 	 * @param result The result of the task.
 	 */
 	@Override
-	public void jobCompleted( Node node, Object id, Object result ) {
+	public void jobCompleted( Node node, Object id, Object result )
+	{
 	    //System.out.println( "result is " + result );
 	    tasksCompleted++;
 	    //System.out.println( "I now have " + tasksCompleted + "/" + taskCount + " tasks" );
