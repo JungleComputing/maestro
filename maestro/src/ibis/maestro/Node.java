@@ -37,6 +37,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private static final int workThreadCount = numberOfProcessors+Settings.EXTRA_WORK_THREADS;
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
     private final Gossiper gossiper;
+    private final Terminator terminator;
 
     private CompletedJobJist completedJobList = new CompletedJobJist();
 
@@ -186,6 +187,7 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "This node does not support any types, and isn't the maestro. Stopping" );
             stopped.set();
         }
+        terminator = buildTerminator();
         gossiper = new Gossiper( isMaestro );
         gossiper.start();
         for( int i=0; i<workThreads.length; i++ ) {
@@ -203,6 +205,19 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodes ) {
             Globals.log.log( "Started a Maestro node" );
         }
+    }
+    
+    private Terminator buildTerminator()
+    {
+	String terminatorQuotumString = System.getProperty( "ibis.maestro.terminatorQuotum" );
+	String terminatorInitialSleepString = System.getProperty( "ibis.maestro.terminatorInitialSleepTime" );
+	String terminatorSleepString = System.getProperty( "ibis.maestro.terminatorSleepTime" );
+	try {
+	}
+	catch( Throwable e ) {
+	    
+	}
+	return null;
     }
 
     /**
@@ -536,6 +551,21 @@ public final class Node extends Thread implements PacketReceiveListener
         masterQueue.add( orphan );
     }
 
+    /**
+     * A worker has sent use a completion message for a task. Process it.
+     * @param msg The status message.
+     */
+    private void handleStopNodeMessage( StopNodeMessage msg )
+    {
+	Globals.log.reportProgress( "Node was forced to stop" );
+	if( msg.gracefully ) {
+	    setStopped();
+	}
+	else {
+	    System.exit( 2 );
+	}
+    }
+
     private void handleJobResultMessage( JobResultMessage m )
     {
         completedJobList.add( new CompletedJob( m.job, m.result ) );
@@ -576,6 +606,9 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         else if( msg instanceof TaskFailMessage ) {
             handleTaskFailMessage( (TaskFailMessage) msg );
+        }
+        else if( msg instanceof StopNodeMessage ) {
+            handleStopNodeMessage( (StopNodeMessage) msg );
         }
         else {
             Globals.log.reportInternalError( "the node should handle message of type " + msg.getClass() );

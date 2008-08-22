@@ -89,6 +89,9 @@ class Settings {
     /** Announce all submissions. */
     static final boolean traceSubmissions = false;
 
+    /** Trace the adventures of the terminator thread. */
+    static final boolean traceTerminator = false;
+
     // --- Configuration (tuning) constants. ----
     // Unfortunately we still need some magic numbers.
 

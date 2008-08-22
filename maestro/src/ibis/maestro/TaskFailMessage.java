@@ -3,7 +3,7 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 
 /**
- * A telling the master that a worker failed to execute the given task.
+ * A message telling the master that a worker failed to execute the given task.
  * It also contains information to let the master update its administration,
  * so that it won't send the task to the same worker again.
  * 

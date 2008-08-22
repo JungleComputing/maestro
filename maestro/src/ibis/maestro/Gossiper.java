@@ -153,9 +153,7 @@ class Gossiper extends Thread
                         Globals.log.reportProgress( "Gossiper: waiting indefinitely" );
                     }
                     else {
-                        if( waittime == 0 ) {
-                            Globals.log.reportProgress( "Gossiper: waiting " + waittime + " ms" );
-                        }                        
+                	Globals.log.reportProgress( "Gossiper: waiting " + waittime + " ms" );
                     }
                 }
                 synchronized( this ) {
