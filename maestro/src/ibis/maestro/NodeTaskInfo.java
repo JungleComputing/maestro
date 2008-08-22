@@ -199,7 +199,7 @@ final class NodeTaskInfo {
     synchronized void registerTaskFailed()
     {
         if( false ) {
-            // This crashes with a null pointer exception???
+            // FIXME: This crashes with a null pointer exception???
             if( taskInfo != null ) {
                 Globals.log.reportError( "Node " + nodeInfo.ibis + " failed for task " + taskInfo.type );
             }
