@@ -79,7 +79,9 @@ public final class Node extends Thread implements PacketReceiveListener
         {
             boolean local = theIbis.equals( Globals.localIbis.identifier() );
             sendPort.registerDestination( theIbis );
-            gossiper.registerNode( theIbis );
+            if( !local ){
+                gossiper.registerNode( theIbis );
+            }
             nodes.registerNode( theIbis, local );
         }
 
