@@ -208,8 +208,11 @@ class Gossiper extends Thread
         if( changed ) {
             gossipQuotum.up();
         }
-        if( source != null && (!changed || incomplete) ) {
+        if( !changed || incomplete ) {
             nodes.needsUrgentUpdate( source );
+        }
+        else {
+            nodes.hadRecentUpdate( source );
         }
         return changed;
     }
