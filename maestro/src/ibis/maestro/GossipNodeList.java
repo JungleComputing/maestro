@@ -102,7 +102,7 @@ class GossipNodeList
 
     synchronized void remove( IbisIdentifier ibis )
     {
-        extractGossipNode( ibis );
+        //extractGossipNode( ibis );
     }
 
     /** Given an ibis identifier, remove and return any GossipNode for this

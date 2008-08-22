@@ -58,6 +58,9 @@ class Gossiper extends Thread
         msg.sendMoment = startTime;
         if( Settings.traceGossip ){
             Globals.log.reportProgress( "Sending gossip message to " + target + "; needsReply=" + needsReply );
+            if( target.equals( Globals.localIbis.identifier() ) ){
+                 Globals.log.reportInternalError( "Sending gossip to ourselves" );
+            }
         }
         try {
             port = Globals.localIbis.createSendPort( PacketSendPort.portType );

@@ -112,7 +112,7 @@ class Settings {
     static final long MAXIMUM_GOSSIPER_WAIT = 40;
 
     /** Time in ms when gossip goes stale for nodes in the same cluster. */
-    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 100;
+    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 200;
 
     /** Time in ms when gossip goes stale for nodes not in the same cluster. */
     static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 5*GOSSIP_EXPIRATION_IN_CLUSTER;
