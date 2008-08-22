@@ -56,6 +56,9 @@ class Gossiper extends Thread
         IbisIdentifier theIbis = msg.destination;
         long startTime = System.nanoTime();
         msg.sendMoment = startTime;
+        if( Settings.traceGossip ){
+            Globals.log.reportProgress( "Sending gossip message to " + target + "; needsReply=" + needsReply );
+        }
         try {
             port = Globals.localIbis.createSendPort( PacketSendPort.portType );
             port.connect( theIbis, Globals.receivePortName, Settings.OPTIONAL_COMMUNICATION_TIMEOUT, false );
@@ -237,6 +240,9 @@ class Gossiper extends Thread
      */
     void sendGossipReply( IbisIdentifier source )
     {
+        if( Settings.traceGossip ){
+            Globals.log.reportProgress( "Send a gossip reply to " + source );
+        }
         synchronized( nodesToReplyTo ) {
             nodesToReplyTo.add( source );
         }
