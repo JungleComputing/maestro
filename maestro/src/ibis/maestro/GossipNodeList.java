@@ -130,7 +130,7 @@ class GossipNodeList
     {
         GossipNode node = extractGossipNode( source );
         if( node == null ) {
-            node = new GossipNode( source );
+            return;   // Not in our administration; let's keep it like that.
         }
         node.nextUpdateMoment = System.currentTimeMillis() + node.updateInterval;
         nodes.add( node );
@@ -144,7 +144,7 @@ class GossipNodeList
     {
         GossipNode node = extractGossipNode( source );
         if( node == null ){
-            node = new GossipNode( source );
+            return;   // Not in our administration; let's keep it like that.
         }
         node.nextUpdateMoment = Math.min( node.nextUpdateMoment, System.currentTimeMillis() );
         nodes.add( node );
