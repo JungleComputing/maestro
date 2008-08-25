@@ -130,4 +130,13 @@ class Settings {
      * work threads are run.
      */
     static final int EXTRA_WORK_THREADS = 2;
+
+    /** The default start quotum of the terminator. */
+    static final double DEFAULT_TERMINATOR_START_QUOTUM = 0.5;
+
+    /** The default additional termination quotum the terminator gets for each new node. */
+    static final double DEFAULT_TERMINATOR_NODE_QUOTUM = 0.1;
+
+    /** The default sleep time in ms between node terminations. */
+    static final long DEFAULT_TERMINATOR_SLEEP = 100;
 }

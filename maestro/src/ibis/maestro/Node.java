@@ -221,10 +221,31 @@ public final class Node extends Thread implements PacketReceiveListener
 	String terminatorInitialSleepString = System.getProperty( "ibis.maestro.terminatorInitialSleepTime" );
 	String terminatorSleepString = System.getProperty( "ibis.maestro.terminatorSleepTime" );
 	try {
-	    double startQuotum = Double.parseDouble(terminatorStartQuotumString );
-	    double nodeQuotum = Double.parseDouble(terminatorNodeQuotumString );
-	    long initialSleep = Long.parseLong( terminatorInitialSleepString );
-	    long sleep = Long.parseLong( terminatorSleepString );
+	    if( terminatorInitialSleepString == null ) {
+	        return null;
+	    }
+            long initialSleep = Long.parseLong( terminatorInitialSleepString );
+	    double startQuotum;
+            double nodeQuotum;
+            long sleep;
+            if( terminatorStartQuotumString == null ) {
+                startQuotum = Settings.DEFAULT_TERMINATOR_START_QUOTUM;
+            }
+            else {
+                startQuotum = Double.parseDouble(terminatorStartQuotumString );
+            }
+            if( terminatorNodeQuotumString == null ) {
+                nodeQuotum = Settings.DEFAULT_TERMINATOR_NODE_QUOTUM;
+            }
+            else {
+                nodeQuotum = Double.parseDouble(terminatorNodeQuotumString );
+            }
+            if( terminatorSleepString == null ) {
+                sleep = Settings.DEFAULT_TERMINATOR_SLEEP;
+            }
+            else {
+                sleep = Long.parseLong( terminatorSleepString );
+            }
 	    Terminator t = new Terminator( startQuotum, nodeQuotum, initialSleep, sleep );
 	    return t;
 	}
