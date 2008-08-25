@@ -80,7 +80,7 @@ final class NodeInfo
         boolean changed = false;
 
         if( nodeTaskInfo != null ) {
-            changed |= nodeTaskInfo.setWorkerQueueInfo( info.queueLength );
+            changed |= nodeTaskInfo.controlAllowance( info.queueLength );
         }
         return changed;
     }
@@ -172,7 +172,7 @@ final class NodeInfo
             Globals.log.reportError( "Task with unknown id " + id + " seems to have failed" );
             return null;
         }
-        task.workerTaskInfo.registerTaskFailed();
+        task.nodeTaskInfo.registerTaskFailed();
         return task.task;
     }
 
@@ -195,9 +195,10 @@ final class NodeInfo
         }
         long roundtripTime = result.arrivalMoment-task.startTime;
         long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
+        NodeTaskInfo nodeTaskInfo = task.nodeTaskInfo;
         TaskType type = task.task.type;
 	if( task.getAllowanceDeadline()<result.arrivalMoment ) {
-            nodeTaskInfoList[type.index].registerMissedAllowanceDeadline();
+            nodeTaskInfo.registerMissedAllowanceDeadline();
             if( Settings.traceMissedDeadlines ){
                 Globals.log.reportProgress(
                     "Missed allowance deadline for " + type + " task: "
@@ -216,9 +217,9 @@ final class NodeInfo
                     + " realDuration=" + Utils.formatNanoseconds( roundtripTime )
                 );
             }
-            nodeTaskInfoList[type.index].registerMissedRescheduleDeadline();
+            nodeTaskInfo.registerMissedRescheduleDeadline();
         }
-        changed = task.workerTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime );
+	changed = nodeTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime );
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress(
                 "Master: retired task " + task
@@ -263,12 +264,6 @@ final class NodeInfo
     {
         s.println( "Node " + ibis + (local?" (local)":"") );
 
-        int total = 0;
-        for( NodeTaskInfo wti: nodeTaskInfoList ){
-            if( wti != null ){
-        	total += wti.getSubmissions();
-            }
-        }
         for( NodeTaskInfo info: nodeTaskInfoList ) {
             if( info != null ) {
                 info.printStatistics( s );
@@ -314,7 +309,7 @@ final class NodeInfo
 	    if( task.getAllowanceDeadline()<now ) {
 		// Worker missed an allowance deadline.
 		long t = now-task.startTime+task.predictedDuration;
-		NodeTaskInfo workerTaskInfo = task.workerTaskInfo;
+		NodeTaskInfo workerTaskInfo = task.nodeTaskInfo;
 		if( workerTaskInfo != null ) {
 		    changed |= workerTaskInfo.updateRoundtripTimeEstimate( t );
 		}
@@ -343,7 +338,7 @@ final class NodeInfo
                 currentTasks[i] = nodeTaskInfo.getCurrentTasks();
                 transmissionTime[i] = nodeTaskInfo.getTransmissionTime();
                 predictedDuration[i] = nodeTaskInfo.estimateRoundtripTime();
-                allowance[i] = nodeTaskInfo.getMaximalAllowance();
+                allowance[i] = nodeTaskInfo.getAllowance();
             }
         }
         return new LocalNodeInfo( suspect, currentTasks, allowance, transmissionTime, predictedDuration );

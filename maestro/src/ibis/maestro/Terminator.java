@@ -17,21 +17,21 @@ import java.util.ArrayList;
 class Terminator extends Thread
 {
     /** How many nodes should we stop? */
-    private int stopQuotum;
-    private final boolean gracefully;
+    private double stopQuotum;
+    private double nodeQuotum;
     private final ArrayList<IbisIdentifier> victims = new ArrayList<IbisIdentifier>();
     private int failedMessageCount = 0;
     private int messageCount = 0;
-    private final int initialSleepTime; // Time in ms before the first stop message.
-    private final int sleepTime; // Time in ms between stop messages.
+    private final long initialSleepTime; // Time in ms before the first stop message.
+    private final long sleepTime; // Time in ms between stop messages.
 
-    Terminator( int quotum, int initialSleepTime, int sleepTime, boolean gracefully )
+    Terminator( double startQuotum, double nodeQuotum, long initialSleepTime, long sleepTime )
     {
         super( "Maestro Terminator" );
-        this.stopQuotum = quotum;
+        this.stopQuotum = startQuotum;
+        this.nodeQuotum = nodeQuotum;
         this.initialSleepTime = initialSleepTime;
         this.sleepTime = sleepTime;
-        this.gracefully = gracefully;
         setDaemon( true );
     }
 
@@ -39,8 +39,8 @@ class Terminator extends Thread
     {
         long len;
         SendPort port = null;
-        StopNodeMessage msg = new StopNodeMessage( gracefully );
-        Globals.log.reportProgress( "Sending stop message to " + target + "; gracefully=" + gracefully );
+        StopNodeMessage msg = new StopNodeMessage();
+        Globals.log.reportProgress( "Sending stop message to " + target );
         try {
             port = Globals.localIbis.createSendPort( PacketSendPort.portType );
             port.connect( target, Globals.receivePortName, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT, true );
@@ -93,7 +93,7 @@ class Terminator extends Thread
     public void run()
     {
 	long ourSleepTime = initialSleepTime;
-	while( stopQuotum>0 ) {
+	while( true ) {
 	    long deadline = System.currentTimeMillis() + ourSleepTime;
 	    long now;
 	    do {
@@ -110,7 +110,9 @@ class Terminator extends Thread
 		}
 		now = System.currentTimeMillis();
 	    } while( now<deadline );
-	    stopRandomNode();
+	    if( stopQuotum>=1 ) {
+		stopRandomNode();
+	    }
 	    ourSleepTime = sleepTime;
 	}
     }
@@ -120,6 +122,7 @@ class Terminator extends Thread
 	if( !ibis.equals( Globals.localIbis.identifier() ) ) {
 	    victims.add( ibis );
 	}
+	stopQuotum += nodeQuotum;
     }
 
     synchronized void removeNode( IbisIdentifier ibis )

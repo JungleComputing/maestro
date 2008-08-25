@@ -310,7 +310,6 @@ class MasterWorkerProgram
     public static void main( String args[] )
     {
         boolean goForMaestro = false;
-        boolean verbose = false;
         int taskCount = 0;
         int waitNodes = 0;
 
@@ -319,9 +318,6 @@ class MasterWorkerProgram
             if (args[i].equals("-h") || args[i].equals("--help")) { 
                 usage( System.out );
                 System.exit( 0 );
-            }
-            else if (args[i].equals("-v") || args[i].equals("--verbose")) { 
-                verbose = true;
             }
             else if (args[i].equals("-w") || args[i].equals("--waitnodes")) {
                 waitNodes = Integer.parseInt(  args[++i] );

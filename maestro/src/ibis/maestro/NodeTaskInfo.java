@@ -5,7 +5,8 @@ import java.io.PrintStream;
 /**
  * Information the node has about a particular task type on a particular node.
  */
-final class NodeTaskInfo {
+final class NodeTaskInfo
+{
     final WorkerQueueTaskInfo taskInfo;
 
     private final NodeInfo nodeInfo;
@@ -83,7 +84,46 @@ final class NodeTaskInfo {
         return changed;
     }
 
-    /** Register a new outstanding task. */
+    synchronized void registerTaskFailed()
+    {
+        if( false ) {
+            // FIXME: This crashes with a null pointer exception???
+            if( taskInfo != null ) {
+                Globals.log.reportError( "Node " + nodeInfo.ibis + " failed for task " + taskInfo.type );
+            }
+            else {
+                Globals.log.reportError( "Node " + nodeInfo.ibis + " failed for unknown task" );
+            }
+        }
+        else {
+            Globals.log.reportError( "A node failed a task" );
+        }
+        maximalAllowance = 0;
+        failed = true;
+    }
+
+    void registerMissedAllowanceDeadline()
+    {
+        missedAllowanceDeadlines.add();
+    }
+
+    void registerMissedRescheduleDeadline()
+    {
+        missedRescheduleDeadlines.add();
+    }
+
+    /**
+     * Update the roundtrip time estimate with the given value. (Used by the
+     * handling of missed deadlines.
+     * @param t The new estimate of the roundtrip time.
+     * @return True iff this is a significant change of the estimate.
+     */
+    synchronized boolean updateRoundtripTimeEstimate( long t )
+    {
+        return roundtripTimeEstimate.addSample( t );
+    }
+
+    /** Register that there is a new outstanding task. */
     synchronized void incrementOutstandingTasks()
     {
         outstandingTasks++;
@@ -101,7 +141,7 @@ final class NodeTaskInfo {
      * ensure the queue lengths stays within very reasonable limits.
      * @param queueLength The worker queue length.
      */
-    private boolean controlAllowance( int queueLength )
+    synchronized boolean controlAllowance( int queueLength )
     {
 	boolean changed = false;
 
@@ -125,15 +165,15 @@ final class NodeTaskInfo {
             }
             if( maximalAllowance<0 ) {
                 // Yes, we are prepared to cut off a worker entirely.
-                // However, if a worker reports it has room its queue
+                // However, if a worker reports it has room in its queue
                 // we will increase its allowance again.
                 maximalAllowance = 0;
             }
-            if( maximalAllowance>10 ){
-                // We arbitrarily limit the maximal allowance to
-                // 10 since larger than that doesn't seem useful.
+            if( maximalAllowance>15 ){
+                // We arbitrarily limit the maximal allowance since larger
+        	// than that doesn't seem useful.
                 // FIXME: try to base the limit on something reasoned.
-                maximalAllowance = 10;
+                maximalAllowance = 15;
             }
             if( maximalEverAllowance<maximalAllowance ) {
                 maximalEverAllowance = maximalAllowance;
@@ -144,11 +184,6 @@ final class NodeTaskInfo {
             changed = (maximalAllowance != oldMaximalAllowance);
         }
         return changed;
-    }
-
-    int getSubmissions()
-    {
-        return executedTasks;
     }
 
     synchronized long estimateRoundtripTime()
@@ -171,16 +206,6 @@ final class NodeTaskInfo {
         }
     }
 
-    synchronized boolean updateRoundtripTimeEstimate( long t )
-    {
-        return roundtripTimeEstimate.addSample( t );
-    }
-
-    synchronized boolean setWorkerQueueInfo( int queueLength )
-    {
-        return controlAllowance( queueLength );
-    }
-
     synchronized int getCurrentTasks()
     {
         return outstandingTasks;
@@ -191,34 +216,8 @@ final class NodeTaskInfo {
         return transmissionTimeEstimate.getAverage();
     }
 
-    synchronized int getMaximalAllowance()
+    synchronized int getAllowance()
     {
         return maximalAllowance;
-    }
-
-    synchronized void registerTaskFailed()
-    {
-        if( false ) {
-            // FIXME: This crashes with a null pointer exception???
-            if( taskInfo != null ) {
-                Globals.log.reportError( "Node " + nodeInfo.ibis + " failed for task " + taskInfo.type );
-            }
-            else {
-                Globals.log.reportError( "Node " + nodeInfo.ibis + " failed for unknown task" );
-            }
-        }
-        else {
-            Globals.log.reportError( "A node failed a task" );
-        }
-        maximalAllowance = 0;
-        failed = true;
-    }
-
-    void registerMissedAllowanceDeadline() {
-        missedAllowanceDeadlines.add();
-    }
-
-    void registerMissedRescheduleDeadline() {
-	missedRescheduleDeadlines.add();
     }
 }

@@ -16,7 +16,7 @@ class Gossip
 {
     private ArrayList<NodePerformanceInfo> gossipList = new ArrayList<NodePerformanceInfo>();
 
-    synchronized GossipMessage constructMessage( IbisIdentifier target, boolean needsReply )
+    GossipMessage constructMessage( IbisIdentifier target, boolean needsReply )
     {
         NodePerformanceInfo content[] = getCopy();
         return new GossipMessage( target, content, needsReply );

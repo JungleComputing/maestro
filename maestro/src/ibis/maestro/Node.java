@@ -82,6 +82,9 @@ public final class Node extends Thread implements PacketReceiveListener
             sendPort.registerDestination( theIbis );
             if( !local ){
                 gossiper.registerNode( theIbis );
+                if( terminator != null ) {
+                    terminator.registerNode( theIbis );
+                }
             }
             nodes.registerNode( theIbis, local );
         }
@@ -209,13 +212,24 @@ public final class Node extends Thread implements PacketReceiveListener
     
     private Terminator buildTerminator()
     {
-	String terminatorQuotumString = System.getProperty( "ibis.maestro.terminatorQuotum" );
+	if( !isMaestro ) {
+	    // We only run a terminator on the maestro.
+	    return null;
+	}
+	String terminatorStartQuotumString = System.getProperty( "ibis.maestro.terminatorStartQuotum" );
+	String terminatorNodeQuotumString = System.getProperty( "ibis.maestro.terminatorNodeQuotum" );
 	String terminatorInitialSleepString = System.getProperty( "ibis.maestro.terminatorInitialSleepTime" );
 	String terminatorSleepString = System.getProperty( "ibis.maestro.terminatorSleepTime" );
 	try {
+	    double startQuotum = Double.parseDouble(terminatorStartQuotumString );
+	    double nodeQuotum = Double.parseDouble(terminatorNodeQuotumString );
+	    long initialSleep = Long.parseLong( terminatorInitialSleepString );
+	    long sleep = Long.parseLong( terminatorSleepString );
+	    Terminator t = new Terminator( startQuotum, nodeQuotum, initialSleep, sleep );
+	    return t;
 	}
 	catch( Throwable e ) {
-	    
+	    Globals.log.reportInternalError( "Bad terminator specification: " + e.getLocalizedMessage() );
 	}
 	return null;
     }
@@ -285,6 +299,9 @@ public final class Node extends Thread implements PacketReceiveListener
     private void registerIbisLeft( IbisIdentifier theIbis )
     {
         gossiper.removeNode( theIbis );
+        if( terminator != null ) {
+            terminator.removeNode( theIbis );
+        }
         recentMasterList.remove( theIbis );
         ArrayList<TaskInstance> orphans = nodes.removeNode( theIbis );
         masterQueue.add( orphans );
@@ -373,6 +390,9 @@ public final class Node extends Thread implements PacketReceiveListener
         s.printf( "job result   messages:   %5d sent\n", jobResultMessageCount.get() );
         s.printf( "job fail     messages:   %5d sent\n", taskFailMessageCount.get() );
         gossiper.printStatistics( s );
+        if( terminator != null ) {
+            terminator.printStatistics( s );
+        }
         sendPort.printStatistics( s, "send port" );
         long activeTime = workerQueue.getActiveTime( startTime );
         long workInterval = stopTime-activeTime;
@@ -450,15 +470,15 @@ public final class Node extends Thread implements PacketReceiveListener
         boolean changed = gossiper.registerGossip( m.gossip, m.source );
         if( m.needsReply ) {
             if( !m.source.equals( Globals.localIbis.identifier()) ) {
-                gossiper.sendGossipReply( m.source );
+                gossiper.queueGossipReply( m.source );
             }
         }
+        for( NodePerformanceInfo i: m.gossip ) {
+    	// We ignore the changed flag from this call,
+    	// we're handling a change anyway.
+            changed |= handleNodeUpdateInfo( i );
+        }
         if( changed ) {
-            for( NodePerformanceInfo i: m.gossip ) {
-        	// We ignore the changed flag from this call,
-        	// we're handling a change anyway.
-                handleNodeUpdateInfo( i );
-            }
             synchronized( this ) {
                 this.notify();
             }
@@ -504,12 +524,13 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
         }
-        boolean isnew = gossiper.registerGossip( m.update );
+        // TODO: make sure we actually don't send updates to ourselves.
+        boolean isnew = gossiper.registerGossip( m.update, false );
+        isnew |= handleNodeUpdateInfo( m.update );
         if( isnew ) {
             long masterQueueIntervals[] = masterQueue.getQueueIntervals( idleProcessors.get() );
             HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
             gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
-            handleNodeUpdateInfo( m.update );   // Changed flag is ignored.
         }
     }
 
@@ -540,13 +561,14 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         TaskInstance orphan = nodes.registerTaskFailed( msg.source, msg.id );
         Globals.log.reportError( "Node " + msg.source + " failed to execute task with id " + msg.id + "; node will no longer get tasks of this type" );
-        boolean isnew = gossiper.registerGossip( msg.update );
+        boolean local = msg.update.source.equals( Globals.localIbis.identifier() );
+        boolean isnew = gossiper.registerGossip( msg.update, local );
+        isnew |= handleNodeUpdateInfo( msg.update );
         if( isnew ) {
             // TODO: abstract this code sequence and other occurrences in a method.
             long masterQueueIntervals[] = masterQueue.getQueueIntervals( idleProcessors.get() );
             HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
             gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
-            handleNodeUpdateInfo( msg.update );       // Changed flag is ignored.
         }
         masterQueue.add( orphan );
     }
@@ -557,13 +579,8 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void handleStopNodeMessage( StopNodeMessage msg )
     {
-	Globals.log.reportProgress( "Node was forced to stop" );
-	if( msg.gracefully ) {
-	    setStopped();
-	}
-	else {
-	    System.exit( 2 );
-	}
+	Globals.log.reportProgress( "Node was forced to stop by " + msg.source );
+	System.exit( 2 );
     }
 
     private void handleJobResultMessage( JobResultMessage m )

@@ -93,9 +93,9 @@ final class MasterQueue
         }
 
         /**
+         * Estimate the time a new task will spend in the queue.
          * @param idleProcessors The number of processors that are currently idle.
-         * @return The estimated time in ns it will take to drain all
-         *          current tasks from the queue.
+         * @return The estimated time in nanoseconds a new task will spend in the queue.
          */
         synchronized long estimateQueueTime( int idleProcessors )
         {

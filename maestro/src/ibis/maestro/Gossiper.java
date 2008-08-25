@@ -188,11 +188,11 @@ class Gossiper extends Thread
         }
     }
 
-    boolean registerGossip( NodePerformanceInfo update )
+    boolean registerGossip( NodePerformanceInfo update, boolean isLocal )
     {
         gossipItemCount.add();
         boolean isnew = gossip.register( update );
-        if( isnew ) {
+        if( isnew && !isLocal ) {
             newGossipItemCount.add();
             nodes.hadRecentUpdate( update.source );
         }
@@ -204,7 +204,10 @@ class Gossiper extends Thread
         boolean changed = false;
         boolean incomplete = updates.length<gossip.size();
         for( NodePerformanceInfo update: updates ) {
-            changed |= registerGossip( update );
+            if( !update.source.equals( Globals.localIbis.identifier() ) ) {
+        	// Only accept gossip about remote nodes.
+        	changed |= registerGossip( update, false );
+            }
         }
         if( changed ) {
             gossipQuotum.up();
@@ -242,7 +245,7 @@ class Gossiper extends Thread
      * Directly sends a gossip message to the given node.
      * @param source The node to send the gossip to.
      */
-    void sendGossipReply( IbisIdentifier source )
+    void queueGossipReply( IbisIdentifier source )
     {
         if( Settings.traceGossip ){
             Globals.log.reportProgress( "Send a gossip reply to " + source );

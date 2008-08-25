@@ -9,7 +9,7 @@ package ibis.maestro;
 class ActiveTask {
     final TaskInstance task;
     final long id;
-    final NodeTaskInfo workerTaskInfo;
+    final NodeTaskInfo nodeTaskInfo;
 
     /** The time this task was sent to the worker. */
     final long startTime;
@@ -26,7 +26,7 @@ class ActiveTask {
     {
         this.task = task;
         this.id = id;
-        this.workerTaskInfo = workerTaskInfo;
+        this.nodeTaskInfo = workerTaskInfo;
         this.startTime = startTime;
         this.predictedDuration = predictedDuration;
         this.allowanceDeadline = allowanceDeadline;

@@ -93,16 +93,19 @@ class GossipNodeList
 
     synchronized void add( IbisIdentifier ibis )
     {
-        if( ibis.equals( Globals.localIbis.identifier() ) ) {
+        if( !ibis.equals( Globals.localIbis.identifier() ) ) {
             // We're not going to gossip to ourselves.
-            return;
+            nodes.add( new GossipNode( ibis ) );
         }
-        nodes.add( new GossipNode( ibis ) );
     }
 
+    /**
+     * Remove the given ibis from our administration.
+     * @param ibis The ibis to remove.
+     */
     synchronized void remove( IbisIdentifier ibis )
     {
-        //extractGossipNode( ibis );
+        extractGossipNode( ibis );
     }
 
     /** Given an ibis identifier, remove and return any GossipNode for this

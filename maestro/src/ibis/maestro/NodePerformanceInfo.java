@@ -15,6 +15,9 @@ class NodePerformanceInfo implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
+    /** The node this information is for. */
+    final IbisIdentifier source;
+
     /** For each type of task we know, the estimated time it will
      * take to complete the remaining tasks of this job.
      */
@@ -22,8 +25,6 @@ class NodePerformanceInfo implements Serializable
 
     /** For each type of task we know, the queue length on this worker. */
     WorkerQueueInfo[] workerQueueInfo;
-
-    final IbisIdentifier source;
 
     long timeStamp;
 
@@ -61,25 +62,6 @@ class NodePerformanceInfo implements Serializable
         return b.toString();
     }
 
-    private String buildWorkerQueue()
-    {
-        StringBuilder b = new StringBuilder( "[" );
-        boolean first = true;
-        for( WorkerQueueInfo i: workerQueueInfo ) {
-            if( i != null ) {
-                if( first ) {
-                    first = false;
-                }
-                else {
-                    b.append( ',' );
-                }
-                b.append( i.toString() );
-            }
-        }
-        b.append( ']' );
-        return b.toString();
-    }
-
     /**
      * Returns a string representation of update message. (Overrides method in superclass.)
      * @return The string representation.
@@ -88,7 +70,7 @@ class NodePerformanceInfo implements Serializable
     public String toString()
     {
         String completion = buildCompletionString();
-        String workerQueue = buildWorkerQueue();
+        String workerQueue = Arrays.deepToString( workerQueueInfo );
         return "Update " + completion + " " + workerQueue;
     }
     
