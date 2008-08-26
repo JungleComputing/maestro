@@ -31,13 +31,13 @@ class NodePerformanceInfo implements Serializable
     final int numberOfProcessors;
 
     NodePerformanceInfo( long[] completionInfo, WorkerQueueInfo[] workerQueueInfo,
-        IbisIdentifier source, int numberOfProcessors )
+        IbisIdentifier source, int numberOfProcessors, long timeStamp )
     {
         this.completionInfo = completionInfo;
         this.workerQueueInfo = workerQueueInfo;
         this.source = source;
         this.numberOfProcessors = numberOfProcessors;
-        this.timeStamp = System.nanoTime();
+        this.timeStamp = timeStamp;
     }
 
     NodePerformanceInfo getDeepCopy()
@@ -48,7 +48,8 @@ class NodePerformanceInfo implements Serializable
             completionInfoCopy,
             workerQueueInfoCopy,
             source,
-            numberOfProcessors
+            numberOfProcessors,
+            timeStamp
         );
     }
 
@@ -56,7 +57,7 @@ class NodePerformanceInfo implements Serializable
     {
         StringBuilder b = new StringBuilder( "[" );
         for( long i: completionInfo ) {
-            b.append( i );
+            b.append( Utils.formatNanoseconds( i ) );
         }
         b.append( ']' );
         return b.toString();

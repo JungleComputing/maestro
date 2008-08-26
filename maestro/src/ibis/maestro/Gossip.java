@@ -163,7 +163,7 @@ class Gossip
         if( ix<0 ) {
             long completionInfo[] = new long[Globals.allTaskTypes.length];
             Arrays.fill( completionInfo, Long.MAX_VALUE );
-            NodePerformanceInfo localInfo = new NodePerformanceInfo( completionInfo, update, ourIbis, numberOfProcessors );
+            NodePerformanceInfo localInfo = new NodePerformanceInfo( completionInfo, update, ourIbis, numberOfProcessors, System.nanoTime() );
             gossipList.add( localInfo );
             return;
         }
