@@ -71,7 +71,7 @@ class NodePerformanceInfo implements Serializable
     {
         String completion = buildCompletionString();
         String workerQueue = Arrays.deepToString( workerQueueInfo );
-        return "Update " + completion + " " + workerQueue;
+        return "Update @" + timeStamp + " " + workerQueue + " " + completion;
     }
     
     long estimateJobCompletion( LocalNodeInfo localNodeInfo, TaskType type, boolean ignoreBusyProcessors )
