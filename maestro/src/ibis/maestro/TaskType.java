@@ -41,7 +41,7 @@ final class TaskType implements Serializable
     @Override
     public String toString()
     {
-        return "(" + job + ",task=" + taskNo + ")";
+        return "(" + job.toString() + ",T" + taskNo + ")";
     }
 
     /**
