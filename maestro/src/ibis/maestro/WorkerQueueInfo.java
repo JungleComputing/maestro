@@ -39,4 +39,19 @@ class WorkerQueueInfo implements Serializable
     {
         return String.format( "%3d %9s %9s", queueLength, Utils.formatNanoseconds( dequeueTime ), Utils.formatNanoseconds( computeTime ) );
     }
+
+    static String topLabel()
+    {
+        return String.format( "%3s %9s %9s", "ql", "dequeue", "compute" );
+    }
+    
+    static String emptyFormat()
+    {
+        return String.format( "%23s", "---" );
+    }
+
+    static Object topLabelType( TaskType type )
+    {
+        return String.format( "%23s", type.toString() );
+    }
 }

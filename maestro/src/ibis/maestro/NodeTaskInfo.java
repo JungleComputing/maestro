@@ -150,9 +150,10 @@ final class NodeTaskInfo
             return false;
         }
         if( maximalAllowance == outstandingTasks ) {
-            int oldMaximalAllowance = maximalAllowance;
             // We can only regulate the allowance if we are
             // at our current maximal allowance.
+            int oldMaximalAllowance = maximalAllowance;
+
             if( queueLength<1 ) {
                 maximalAllowance++;
             }

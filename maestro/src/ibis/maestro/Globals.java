@@ -25,5 +25,5 @@ class Globals {
 
     static Ibis localIbis;
 
-    static int numberOfTaskTypes;
+    static TaskType[] allTaskTypes = null;
 }

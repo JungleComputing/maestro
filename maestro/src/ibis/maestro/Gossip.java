@@ -158,7 +158,7 @@ class Gossip
         IbisIdentifier ourIbis = Globals.localIbis.identifier();
         int ix = searchInfo( ourIbis );
         if( ix<0 ) {
-            long completionInfo[] = new long[Globals.numberOfTaskTypes];
+            long completionInfo[] = new long[Globals.allTaskTypes.length];
             Arrays.fill( completionInfo, Long.MAX_VALUE );
             NodePerformanceInfo localInfo = new NodePerformanceInfo( completionInfo, update, ourIbis, numberOfProcessors );
             gossipList.add( localInfo );
@@ -186,6 +186,7 @@ class Gossip
     
     synchronized void print( PrintStream s )
     {
+        NodePerformanceInfo.printTopLabel( s );
         for( NodePerformanceInfo entry: gossipList ) {
             entry.print( s );
         }

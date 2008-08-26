@@ -28,7 +28,7 @@ final class WorkerQueue
      */
     WorkerQueue( TaskType[] taskTypes, JobList jobs )
     {
-	queueTypes = new WorkerQueueTaskInfo[Globals.numberOfTaskTypes];
+	queueTypes = new WorkerQueueTaskInfo[taskTypes.length];
         for( TaskType t: taskTypes ) {
             WorkerQueueTaskInfo queueTypeInfo = new WorkerQueueTaskInfo( t );
 	    queueTypes[t.index] = queueTypeInfo;

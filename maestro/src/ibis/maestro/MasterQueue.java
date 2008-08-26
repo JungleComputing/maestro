@@ -116,7 +116,7 @@ final class MasterQueue
      */
     MasterQueue( TaskType allTypes[] )
     {
-        queueTypes = new TypeInfo[Globals.numberOfTaskTypes];
+        queueTypes = new TypeInfo[allTypes.length];
         for( TaskType type: allTypes ) {
             queueTypes[type.index] = new TypeInfo( type );
         }

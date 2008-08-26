@@ -163,7 +163,7 @@ class NodePerformanceInfo implements Serializable
     {
         for( WorkerQueueInfo i: workerQueueInfo ) {
             if( i == null ) {
-                s.print ( "      --      " );
+                s.print ( WorkerQueueInfo.emptyFormat() );
             }
             else {
                 s.print( i.format() );
@@ -175,5 +175,24 @@ class NodePerformanceInfo implements Serializable
             s.printf( "%8s ", Utils.formatNanoseconds( t ) );
         }
         s.println( source );
+    }
+    
+    static void printTopLabel( PrintStream s )
+    {
+        for( TaskType t:Globals.allTaskTypes ){
+            s.print( WorkerQueueInfo.topLabelType( t ) );
+            s.print( ' ' );
+        }
+        s.print( " | " );
+        for( TaskType t:Globals.allTaskTypes ){
+            s.printf( "%8s ", t );
+        }
+        s.println();
+        for( TaskType t:Globals.allTaskTypes ){
+            s.print( WorkerQueueInfo.topLabel() );
+            s.print( ' ' );
+        }
+        s.print( " | " );
+        s.println();
     }
 }
