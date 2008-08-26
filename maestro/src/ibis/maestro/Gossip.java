@@ -143,11 +143,14 @@ class Gossip
 
     synchronized void removeInfoForNode( IbisIdentifier ibis )
     {
-        int ix = searchInfo( ibis );
+        if( false ){
+            // TODO: enable again or remove method.
+            int ix = searchInfo( ibis );
 
-        if( ix>=0 ) {
-            gossipList.remove( ix );
-        }        
+            if( ix>=0 ) {
+                gossipList.remove( ix );
+            }
+        }
     }
 
     /** Overwrite the worker queue info of our local information with the new info.
