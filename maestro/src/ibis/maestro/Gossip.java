@@ -173,7 +173,7 @@ class Gossip
         localInfo.timeStamp = System.nanoTime();
     }
 
-    synchronized NodePerformanceInfo getLocalUpgate()
+    synchronized NodePerformanceInfo getLocalUpdate()
     {
         IbisIdentifier ourIbis = Globals.localIbis.identifier();
         int ix = searchInfo( ourIbis );
@@ -248,5 +248,17 @@ class Gossip
 	    }
 	}
 	return bestTime;
+    }
+
+    long getLocalTimestamp()
+    {
+	// TODO: maintain a pointer to the local gossip.
+        IbisIdentifier ourIbis = Globals.localIbis.identifier();
+        int ix = searchInfo( ourIbis );
+        if( ix<0 ) {
+            Globals.log.reportInternalError( "No local info in gossip???" );
+            return 0L;
+        }
+        return gossipList.get( ix ).timeStamp;
     }
 }

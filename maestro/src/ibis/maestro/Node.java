@@ -546,7 +546,8 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "Received node update message " + m );
         }
         // TODO: make sure we actually don't send updates to ourselves.
-        boolean isnew = gossiper.registerGossip( m.update, false );
+        boolean local = m.update.source.equals( Globals.localIbis.identifier() );
+        boolean isnew = gossiper.registerGossip( m.update, local );
         isnew |= handleNodeUpdateInfo( m.update );
         if( isnew ) {
             long masterQueueIntervals[] = masterQueue.getQueueIntervals( idleProcessors.get() );

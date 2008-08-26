@@ -204,7 +204,14 @@ class Gossiper extends Thread
         boolean changed = false;
         boolean incomplete = updates.length<gossip.size();
         for( NodePerformanceInfo update: updates ) {
-            if( !update.source.equals( Globals.localIbis.identifier() ) ) {
+            if( update.source.equals( Globals.localIbis.identifier() ) ) {
+        	long staleness = gossip.getLocalTimestamp()-update.timeStamp;
+        	if( staleness>Settings.GOSSIP_EXPIRATION_IN_CLUSTER ) {
+        	    nodes.needsUrgentUpdate(source);
+        	    gossipQuotum.up();
+        	}
+            }
+            else {
         	// Only accept gossip about remote nodes.
         	changed |= registerGossip( update, false );
             }
@@ -280,7 +287,7 @@ class Gossiper extends Thread
 
     NodePerformanceInfo getLocalUpdate( )
     {
-        return gossip.getLocalUpgate();
+        return gossip.getLocalUpdate();
     }
 
     /**
