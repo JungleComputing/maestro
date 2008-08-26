@@ -125,7 +125,7 @@ class Gossip
             if( update.timeStamp>i.timeStamp ) {
                 // This is more recent info, overwrite the old entry.
                 if( Settings.traceGossip ) {
-                    Globals.log.reportProgress( "Updated gossip info about " + update.source );
+                    Globals.log.reportProgress( "Updated gossip info about " + update.source + ": " + update.toString() );
                 }
                 gossipList.set( ix, update );
                 return true;
