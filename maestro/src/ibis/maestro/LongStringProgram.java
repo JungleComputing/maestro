@@ -186,7 +186,7 @@ class LongStringProgram
             if( goodToSubmit ) {
                 System.out.println( "I am maestro; submitting " + taskCount + " tasks" );
                 for( int i=0; i<taskCount; i++ ){
-                    Integer length = 12*i;
+                    int length = MINIMAL_STRING_SIZE + rng.nextInt( MAXIMAL_STRING_SIZE-MINIMAL_STRING_SIZE );
                     job.submit( node, length, i, listener );
                 }
             }
