@@ -249,6 +249,7 @@ public final class Node extends Thread implements PacketReceiveListener
             }
 	    Terminator t = new Terminator( startQuotum, nodeQuotum, initialSleep, sleep );
             t.run();
+            Globals.log.reportProgress( "Started terminator" );
 	    return t;
 	}
 	catch( Throwable e ) {
