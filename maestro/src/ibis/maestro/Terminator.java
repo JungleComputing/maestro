@@ -17,7 +17,7 @@ import java.util.ArrayList;
 class Terminator extends Thread
 {
     /** How many nodes should we stop? */
-    private double stopQuotum;
+    private double terminationQuotum;
     private double nodeQuotum;
     private final ArrayList<IbisIdentifier> victims = new ArrayList<IbisIdentifier>();
     private int failedMessageCount = 0;
@@ -28,7 +28,7 @@ class Terminator extends Thread
     Terminator( double startQuotum, double nodeQuotum, long initialSleepTime, long sleepTime )
     {
         super( "Maestro Terminator" );
-        this.stopQuotum = startQuotum;
+        this.terminationQuotum = startQuotum;
         this.nodeQuotum = nodeQuotum;
         this.initialSleepTime = initialSleepTime;
         this.sleepTime = sleepTime;
@@ -68,7 +68,7 @@ class Terminator extends Thread
                 // Nothing we can do.
             }
         }
-        stopQuotum--;
+        terminationQuotum--;
         messageCount++;
     }
     
@@ -110,7 +110,7 @@ class Terminator extends Thread
 		}
 		now = System.currentTimeMillis();
 	    } while( now<deadline );
-	    if( stopQuotum>=1 ) {
+	    if( terminationQuotum>=1 ) {
 		stopRandomNode();
 	    }
 	    ourSleepTime = sleepTime;
@@ -122,7 +122,7 @@ class Terminator extends Thread
 	if( !ibis.equals( Globals.localIbis.identifier() ) ) {
 	    victims.add( ibis );
 	}
-	stopQuotum += nodeQuotum;
+	terminationQuotum += nodeQuotum;
     }
 
     synchronized void removeNode( IbisIdentifier ibis )
