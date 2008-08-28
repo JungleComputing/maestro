@@ -83,9 +83,6 @@ class LongStringProgram
             Result res = (Result) result;
             res.check();
             jobsCompleted++;
-            if( (jobCount-jobsCompleted)<20 || (jobCount % 20) == 0 ){
-                System.out.println( "I now have " + jobsCompleted + "/" + jobCount + " jobs" );
-            }
             if( jobsCompleted>=jobCount ){
                 System.out.println( "I got all task results back; stopping test program" );
                 node.setStopped();
