@@ -1,0 +1,30 @@
+== Terminator ==
+
+The terminator is a separate thread that sends nodes Stop messages, which
+cause them to stop immediately, without trying to wrap up nicely. It is
+use to test the fault tolerance of Maestro.
+
+The terminator is given a quotum, a floating point value, of nodes that
+it can terminate, consisting of an initial quotum and an addition quotum
+for each node that joins the system. After an initial sleep time, it sends
+its Stop messages with a fixed time interval between the message. If
+no initial sleep time is specified, the terminator is not run at all.
+
+ibis.maestro.terminatorStartQuotum
+   Initial quotum of nodes to terminate, typically a value below 1,
+   so that on a single-node run that single node is not terminated.
+   Default value is 0.5.
+
+ibis.maestro.terminatorNodeQuotum
+   Additional quotum for each node that is added to the computation.
+   Normally a value below 1 so that not every node is killed.
+   Default value is 0.1, so that eventually 10% of the nodes is stopped.
+
+ibis.maestro.terminatorInitialSleepTime
+   Initial sleep time of the terminator in milliseconds. If this value
+   is not given, the terminator is not run.
+
+ibis.maestro.terminatorSleepTime
+   Sleep time between termination messages in milliseconds. Default
+   is 100 (milliseconds).
+
