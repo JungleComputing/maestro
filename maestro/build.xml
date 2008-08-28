@@ -11,6 +11,80 @@
 
     <property environment="env" />
 
+    <property name="jxrefJar" value="jxref-0.6.2/jxref.jar"/>
+        <taskdef name="jxref" classname="org.jxref.report.ant.JxRefTask">
+            <classpath>
+                <pathelement location="${jxrefJar}"/>
+                    <fileset dir="jxref-0.6.2/lib">
+                        <include name="**/*.jar"/>
+                    </fileset>
+              </classpath>
+	  </taskdef>
+	  
+	  <typedef name="methodXref" classname="org.jxref.report.ant.MethodXref">
+              <classpath>
+                    <pathelement location="${jxrefJar}"/>
+                    <fileset dir="jxref-0.6.2/lib">
+                        <include name="**/*.jar"/>
+                    </fileset>
+              </classpath>
+	  </typedef>
+	  
+	  <typedef name="unusedMethod" classname="org.jxref.report.ant.UnusedMethod">
+            <classpath>
+                    <pathelement location="${jxrefJar}"/>
+                      <fileset dir="jxref-0.6.2/lib">
+											<include name="**/*.jar"/>
+                        </fileset>
+		      </classpath>
+	  </typedef>
+
+	  <typedef name="unusedClass" classname="org.jxref.report.ant.UnusedClass">
+			    <classpath>
+                                    <pathelement location="${jxrefJar}"/>
+                                  <fileset dir="jxref-0.6.2/lib">
+											<include name="**/*.jar"/>
+            </fileset>
+		      </classpath>
+	  </typedef>
+	  
+	  <typedef name="sequenceFlow" classname="org.jxref.report.ant.SequenceFlow">
+					    <classpath>
+											<pathelement location="${jxrefJar}"/>
+											  <fileset dir="jxref-0.6.2/lib">
+                    <include name="**/*.jar"/>
+            </fileset>
+            </classpath>
+	  </typedef>
+
+	  <typedef name="complexity" classname="org.jxref.report.ant.Complexity">
+            <classpath>
+            <pathelement location="${jxrefJar}"/>
+                  <fileset dir="jxref-0.6.2/lib">
+                    <include name="**/*.jar"/>
+                </fileset>
+              </classpath>
+	  </typedef>
+	  
+	  <typedef name="include" classname="org.jxref.report.ant.Include">
+	    <classpath>
+                    <pathelement location="${jxrefJar}"/>
+                      <fileset dir="jxref-0.6.2/lib">
+                                    <include name="**/*.jar"/>
+                    </fileset>
+      </classpath>
+	  </typedef>
+	  
+	  <typedef name="exclude" classname="org.jxref.report.ant.Exclude">
+	    <classpath>
+                    <pathelement location="${jxrefJar}"/>
+                      <fileset dir="jxref-0.6.2/lib">
+                                    <include name="**/*.jar"/>
+                    </fileset>
+      </classpath>
+	  </typedef>
+
+
     <target name="build"
             description="Build build all sources"
             depends="clean,compile,javadoc" />
@@ -79,6 +153,23 @@
                  bottom="The Ibis project">
             <link href="http://java.sun.com/j2se/1.5.0/docs/api/" />
         </javadoc>
+    </target>
+
+    <!-- Make xref reports -->
+    <target name="xref" depends="compile" description="Make a cross-reference">
+        <jxref label="Maestro analysis">
+            <fileset dir="${lib}">
+                <include name="${dist-name}.jar" />
+            </fileset>
+            <methodXref>
+                <exclude className="java.*" />
+                <exclude className="javax.*" />
+            </methodXref>
+            <unusedMethod />
+            <unusedClass />
+            <sequenceFlow />
+            <complexity />
+        </jxref>
     </target>
 
     <!-- Clean up everything -->

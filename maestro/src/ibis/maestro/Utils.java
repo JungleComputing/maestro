@@ -23,6 +23,10 @@ public class Utils
     static final long DAY_IN_NANOSECONDS = 24*HOUR_IN_NANOSECONDS;
     static final long WEEK_IN_NANOSECONDS = 7*DAY_IN_NANOSECONDS;
 
+    int test()
+    {
+        return 3;
+    }
     /** Returns a string with the platform version that is used.
      * @return The platform version.
      */
