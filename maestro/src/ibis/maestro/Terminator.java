@@ -106,7 +106,7 @@ class Terminator extends Thread
 		long waitTime = deadline - System.currentTimeMillis();
 		try {
 		    if( Settings.traceTerminator ) {
-			Globals.log.reportProgress( "Terminator: waiting " + waitTime + " ms" );
+			Globals.log.reportProgress( "Terminator: waiting " + waitTime + " ms; terminationQuotum=" + terminationQuotum );
 		    }
 		    synchronized( this ) {
 			this.wait( waitTime );
