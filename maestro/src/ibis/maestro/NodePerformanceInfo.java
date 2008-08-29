@@ -180,16 +180,16 @@ class NodePerformanceInfo implements Serializable
     
     static void printTopLabel( PrintStream s )
     {
-        for( TaskType t:Globals.allTaskTypes ){
+        for( TaskType t: Globals.allTaskTypes ){
             s.print( WorkerQueueInfo.topLabelType( t ) );
             s.print( ' ' );
         }
         s.print( " | " );
-        for( TaskType t:Globals.allTaskTypes ){
+        for( TaskType t: Globals.allTaskTypes ){
             s.printf( "%8s ", t );
         }
         s.println();
-        for( TaskType t:Globals.allTaskTypes ){
+        for( TaskType t: Globals.allTaskTypes ){
             s.print( WorkerQueueInfo.topLabel() );
             s.print( ' ' );
         }

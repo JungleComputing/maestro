@@ -143,7 +143,8 @@ class PacketSendPort
             info = destinations.get( theIbis );
 
             if( info == null ) {
-        	info = new DestinationInfo( theIbis, false );  // We know the local node has registered itself.
+        	// We know the local node has registered itself, so this must be a remote node.
+        	info = new DestinationInfo( theIbis, false );
         	destinations.put( theIbis, info );
             }
         }
@@ -180,6 +181,12 @@ class PacketSendPort
             }
         }
         return ok;
+    }
+
+    boolean sendNonessentialMessage(IbisIdentifier target,
+            GossipMessage msg) {
+        // FIXME: Auto-generated method stub
+        return false;
     }
 
     /** Given the name of this port, prints some statistics about this port.

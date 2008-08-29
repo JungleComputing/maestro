@@ -90,14 +90,14 @@ class Settings {
     static final boolean traceSubmissions = false;
 
     /** Trace the adventures of the terminator thread. */
-    static final boolean traceTerminator = false;
+    static final boolean traceTerminator = true;
 
     // --- Configuration (tuning) constants. ----
     // Unfortunately we still need some magic numbers.
 
     /**
      * Deadlines below this value in nanoseconds are meaningless because
-     * they are too short to measure with reasonable accuracy anyway.
+     * they are too short to be measured with reasonable accuracy.
      */
     static final long MINIMAL_DEADLINE = 100*Utils.MICROSECOND_IN_NANOSECONDS;
 

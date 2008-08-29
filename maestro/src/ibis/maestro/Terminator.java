@@ -40,7 +40,9 @@ class Terminator extends Thread
         long len;
         SendPort port = null;
         StopNodeMessage msg = new StopNodeMessage();
-        Globals.log.reportProgress( "Sending stop message to " + target );
+        if( Settings.traceTerminator ) {
+            Globals.log.reportProgress( "Sending stop message to " + target );
+        }
         try {
             port = Globals.localIbis.createSendPort( PacketSendPort.portType );
             port.connect( target, Globals.receivePortName, Settings.ESSENTIAL_COMMUNICATION_TIMEOUT, true );
@@ -71,7 +73,7 @@ class Terminator extends Thread
         terminationQuotum--;
         messageCount++;
     }
-    
+
     private boolean stopRandomNode()
     {
 	IbisIdentifier victim;
@@ -93,9 +95,13 @@ class Terminator extends Thread
     public void run()
     {
 	long ourSleepTime = initialSleepTime;
+	if( Settings.traceTerminator ) {
+	    Globals.log.reportProgress( "Starting terminator thread. initialSleepTime=" + initialSleepTime + " ms, sleepTime=" + sleepTime + " ms" );
+	}
 	while( true ) {
 	    long deadline = System.currentTimeMillis() + ourSleepTime;
 	    long now;
+
 	    do {
 		long waitTime = deadline - System.currentTimeMillis();
 		try {
@@ -105,7 +111,7 @@ class Terminator extends Thread
 		    synchronized( this ) {
 			this.wait( waitTime );
 		    }
-		} catch (InterruptedException e) {
+		} catch( InterruptedException e ) {
 		    // ignore.
 		}
 		now = System.currentTimeMillis();
@@ -129,7 +135,6 @@ class Terminator extends Thread
     {
         victims.remove( ibis );
     }
-
 
     void printStatistics( PrintStream s )
     {

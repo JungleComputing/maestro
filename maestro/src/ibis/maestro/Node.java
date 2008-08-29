@@ -192,8 +192,6 @@ public final class Node extends Thread implements PacketReceiveListener
             stopped.set();
         }
         terminator = buildTerminator();
-        gossiper = new Gossiper( isMaestro );
-        gossiper.start();
         for( int i=0; i<workThreads.length; i++ ) {
             WorkThread t = new WorkThread( this );
             workThreads[i] = t;
@@ -201,6 +199,8 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         receivePort = new PacketUpcallReceivePort( localIbis, Globals.receivePortName, this );
         sendPort = new PacketSendPort( this, localIbis.identifier() );
+        gossiper = new Gossiper( sendPort, isMaestro );
+        gossiper.start();
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
         startTime = System.nanoTime();
         updateLocalGossip();
@@ -548,7 +548,6 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
         }
-        // TODO: make sure we actually don't send updates to ourselves.
         boolean local = m.update.source.equals( Globals.localIbis.identifier() );
         boolean isnew = gossiper.registerGossip( m.update, local );
         isnew |= handleNodeUpdateInfo( m.update );
