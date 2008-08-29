@@ -191,6 +191,9 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportProgress( "This node does not support any types, and isn't the maestro. Stopping" );
             stopped.set();
         }
+        sendPort = new PacketSendPort( this, localIbis.identifier() );
+        gossiper = new Gossiper( sendPort, isMaestro );
+        gossiper.start();
         terminator = buildTerminator();
         for( int i=0; i<workThreads.length; i++ ) {
             WorkThread t = new WorkThread( this );
@@ -198,9 +201,6 @@ public final class Node extends Thread implements PacketReceiveListener
             t.start();
         }
         receivePort = new PacketUpcallReceivePort( localIbis, Globals.receivePortName, this );
-        sendPort = new PacketSendPort( this, localIbis.identifier() );
-        gossiper = new Gossiper( sendPort, isMaestro );
-        gossiper.start();
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
         startTime = System.nanoTime();
         updateLocalGossip();
