@@ -89,9 +89,7 @@ class SendPortCache extends LinkedHashMap<IbisIdentifier,SendPortCacheConnection
         if( info == null ) {
             return null;
         }
-        else {
-            nonEssentialHits++;
-        }
+        nonEssentialHits++;
         return info.getPort( ibis, useCount++ );
     }
 
