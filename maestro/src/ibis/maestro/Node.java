@@ -196,7 +196,6 @@ public final class Node extends Thread implements PacketReceiveListener
         gossiper.start();
         terminator = buildTerminator();
         receivePort = new PacketUpcallReceivePort( localIbis, Globals.receivePortName, this );
-        gossiper.start();
         for( int i=0; i<workThreads.length; i++ ) {
             WorkThread t = new WorkThread( this );
             workThreads[i] = t;

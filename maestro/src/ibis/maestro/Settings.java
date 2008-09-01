@@ -74,9 +74,6 @@ class Settings {
     /** Trace changes to the allowances. */
     static final boolean traceAllowance = false;
 
-    /** Trace the adventures of the non-essential sender. */
-    static final boolean traceNonEssentialSender = false;
-
     /** Trace the adventures of the gossip engine? */
     static final boolean traceGossip = false;
 
@@ -87,10 +84,10 @@ class Settings {
     static final boolean dumpWorkerQueue = false;
 
     /** Announce all submissions. */
-    static final boolean traceSubmissions = false;
+    static final boolean traceSubmissions = true;
 
     /** Trace the adventures of the terminator thread. */
-    static final boolean traceTerminator = true;
+    static final boolean traceTerminator = false;
 
     // --- Configuration (tuning) constants. ----
     // Unfortunately we still need some magic numbers.
@@ -115,7 +112,7 @@ class Settings {
     static final long MAXIMUM_GOSSIPER_WAIT = 40;
 
     /** Time in ms when gossip goes stale for nodes in the same cluster. */
-    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 200;
+    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 100;
 
     /** Time in ms when gossip goes stale for nodes not in the same cluster. */
     static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 5*GOSSIP_EXPIRATION_IN_CLUSTER;
