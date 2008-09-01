@@ -23,8 +23,10 @@ class PacketSendPort
     private final ConnectionCache connectionCache;
     private long sentBytes = 0;
     private long sendTime = 0;
-    private long adminTime = 0;
     private int sentCount = 0;
+    private long nonEssentialSentBytes = 0;
+    private long nonEssentialSendTime = 0;
+    private int nonEssentialSentCount = 0;
     private Counter localSentCount = new Counter();
 
     /** The list of known destinations.
@@ -72,6 +74,7 @@ class PacketSendPort
         }
 
         private int sentCount = 0;
+        private int nonEssentialSentCount = 0;
         private long sentBytes = 0;
         private final IbisIdentifier ibisIdentifier;
         boolean local;
@@ -102,6 +105,11 @@ class PacketSendPort
         {
             sentBytes += val;
         }
+
+	synchronized void incrementNonEssentialSentCount()
+	{
+	    nonEssentialSentCount++;
+	}
     }
 
     @SuppressWarnings("synthetic-access")
@@ -183,10 +191,62 @@ class PacketSendPort
         return ok;
     }
 
-    boolean sendNonessentialMessage(IbisIdentifier target,
-            GossipMessage msg) {
-        // FIXME: Auto-generated method stub
-        return false;
+    /**
+     * Given a target and a message, send a message to this target.
+     * If we have a connection to it in the cache, use that, otherwise
+     * don't pollute the connection cache with it, but send it with
+     * a one-off connection.
+     * @param target The ibis to send to.
+     * @param message The message to send.
+     * @return True iff we managed to send the message.
+     */
+    boolean sendNonessentialMessage( IbisIdentifier target, Message message )
+    {
+        long len;
+        boolean ok = true;
+        DestinationInfo info;
+        synchronized( this ) {
+            info = destinations.get( target );
+
+            if( info == null ) {
+        	// We know the local node has registered itself, so this must be a remote node.
+        	info = new DestinationInfo( target, false );
+        	destinations.put( target, info );
+            }
+        }
+        info.incrementNonEssentialSentCount();
+        if( info.local ) {
+            // This is the local destination. Use the back door to get
+            // the info to the destination.
+            message.arrivalMoment = System.nanoTime();
+            node.messageReceived( message );
+            len = 0;  // We're not going to compute a size just for the statistics.
+            localSentCount.add();
+            if( Settings.traceSends ) {
+                Globals.log.reportProgress( "Sent local message " + message );
+            }
+        }
+        else {
+            long t;
+            
+            long startTime = System.nanoTime();
+            len = connectionCache.sendNonEssentialMessage( target, message );
+            if( len<0 ) {
+                ok = false;
+                len = 0;
+            }
+            synchronized( this ) {
+                nonEssentialSentBytes += len;
+                nonEssentialSentCount++;
+                t = System.nanoTime()-startTime;
+                nonEssentialSendTime += t;
+            }
+            info.addSentBytes( len );
+            if( Settings.traceSends ) {
+                Globals.log.reportProgress( "Sent " + len + " bytes in " + Utils.formatNanoseconds( t ) + ": " + message );
+            }
+        }
+        return ok;
     }
 
     /** Given the name of this port, prints some statistics about this port.
@@ -199,7 +259,9 @@ class PacketSendPort
         s.println( portname + ": sent " + Utils.formatByteCount( sentBytes ) + " in " + sentCount + " remote messages; " + localSentCount.get() + " local sends" );
         if( sentCount>0 ) {
             s.println( portname + ": total send time  " + Utils.formatNanoseconds( sendTime ) + "; " + Utils.formatNanoseconds( sendTime/sentCount ) + " per message" );
-            s.println( portname + ": total setup time " + Utils.formatNanoseconds( adminTime ) + "; " + Utils.formatNanoseconds( adminTime/sentCount ) + " per message" );
+        }
+        if( nonEssentialSentCount>0 ) {
+            s.println( portname + ": sent " + Utils.formatByteCount( nonEssentialSentBytes ) + " in " + nonEssentialSentCount + " remote messages" );
         }
         DestinationInfo l[] = new DestinationInfo[destinations.size()];
         int sz = 0;

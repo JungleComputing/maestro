@@ -102,4 +102,23 @@ class ConnectionCache
         cache.printStatistics( s );
     }
 
+    long sendNonEssentialMessage( IbisIdentifier ibis, Message message )
+    {
+        long len = -1;
+        try {
+            SendPort port = cache.getExistingSendPort( ibis );
+            if( port == null ) {
+                port = Globals.localIbis.createSendPort( PacketSendPort.portType );
+            }
+            WriteMessage msg = port.newMessage();
+            msg.writeObject( message );
+            len = msg.finish();
+        }
+        catch( IOException x ){
+            node.setSuspect( ibis );
+            cache.closeSendPort( ibis );
+        }
+        return len;
+    }
+
 }

@@ -24,6 +24,7 @@ class SendPortCache extends LinkedHashMap<IbisIdentifier,SendPortCacheConnection
     private static final float hashTableLoadFactor = 0.75f;
     private int useCount = 0;
     private int hits = 0;
+    private int nonEssentialHits = 0;
     private int misses = 0;
     private final int cacheSize;
     private final int maximalUnusedCount;
@@ -79,6 +80,21 @@ class SendPortCache extends LinkedHashMap<IbisIdentifier,SendPortCacheConnection
         return info.getPort( ibis, useCount++ );
     }
 
+    synchronized SendPort getExistingSendPort( IbisIdentifier ibis )
+    {
+        SendPortCacheConnectionInfo info;
+
+        info = get( ibis );
+
+        if( info == null ) {
+            return null;
+        }
+        else {
+            nonEssentialHits++;
+        }
+        return info.getPort( ibis, useCount++ );
+    }
+
     void closeSendPort( IbisIdentifier ibis )
     {
         SendPortCacheConnectionInfo info;
@@ -92,6 +108,6 @@ class SendPortCache extends LinkedHashMap<IbisIdentifier,SendPortCacheConnection
 
     void printStatistics( PrintStream s )
     {
-	s.printf( "sendport cache: %d hits, %d misses, %d evictions\n", hits, misses, evictions );
+	s.printf( "sendport cache: %d hits, of which %d non-essential, %d misses, %d evictions\n", nonEssentialHits+hits, nonEssentialHits, misses, evictions );
     }
 }

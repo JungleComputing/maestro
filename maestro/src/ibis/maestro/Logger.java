@@ -11,7 +11,7 @@ import java.util.Date;
  */
 class Logger {
     private final PrintStream logfile;
-    private final SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss z" );
+    private final SimpleDateFormat dateFormat = new SimpleDateFormat( "yyyy-MM-dd'T'HH:mm:ss.SSSZ" );
 
     /** Create a new logger. */
     Logger()
