@@ -12,7 +12,7 @@ public class TaskFailedException extends MaestroException
     /**
      * Constructs a new MaestroException.
      */
-    TaskFailedException()
+    public TaskFailedException()
     {
         super();
     }
@@ -21,7 +21,7 @@ public class TaskFailedException extends MaestroException
      * Given an error message, constructs a new MaestroException.
      * @param msg The error message.
      */
-    TaskFailedException( String msg )
+    public TaskFailedException( String msg )
     {
         super( msg );
     }
