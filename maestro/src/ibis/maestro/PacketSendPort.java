@@ -202,51 +202,54 @@ class PacketSendPort
      */
     boolean sendNonessentialMessage( IbisIdentifier target, Message message )
     {
-        long len;
-        boolean ok = true;
-        DestinationInfo info;
-        synchronized( this ) {
-            info = destinations.get( target );
-
-            if( info == null ) {
-        	// We know the local node has registered itself, so this must be a remote node.
-        	info = new DestinationInfo( target, false );
-        	destinations.put( target, info );
-            }
-        }
-        info.incrementNonEssentialSentCount();
-        if( info.local ) {
-            // This is the local destination. Use the back door to get
-            // the info to the destination.
-            message.arrivalMoment = System.nanoTime();
-            node.messageReceived( message );
-            len = 0;  // We're not going to compute a size just for the statistics.
-            localSentCount.add();
-            if( Settings.traceSends ) {
-                Globals.log.reportProgress( "Sent local message " + message );
-            }
-        }
-        else {
-            long t;
-            
-            long startTime = System.nanoTime();
-            len = connectionCache.sendNonEssentialMessage( target, message );
-            if( len<0 ) {
-                ok = false;
-                len = 0;
-            }
+        if( false ){
+            long len;
+            boolean ok = true;
+            DestinationInfo info;
             synchronized( this ) {
-                nonEssentialSentBytes += len;
-                nonEssentialSentCount++;
-                t = System.nanoTime()-startTime;
-                nonEssentialSendTime += t;
+                info = destinations.get( target );
+
+                if( info == null ) {
+                    // We know the local node has registered itself, so this must be a remote node.
+                    info = new DestinationInfo( target, false );
+                    destinations.put( target, info );
+                }
             }
-            info.addSentBytes( len );
-            if( Settings.traceSends ) {
-                Globals.log.reportProgress( "Sent " + len + " bytes in " + Utils.formatNanoseconds( t ) + ": " + message );
+            info.incrementNonEssentialSentCount();
+            if( info.local ) {
+                // This is the local destination. Use the back door to get
+                // the info to the destination.
+                message.arrivalMoment = System.nanoTime();
+                node.messageReceived( message );
+                len = 0;  // We're not going to compute a size just for the statistics.
+                localSentCount.add();
+                if( Settings.traceSends ) {
+                    Globals.log.reportProgress( "Sent local message " + message );
+                }
             }
+            else {
+                long t;
+                
+                long startTime = System.nanoTime();
+                len = connectionCache.sendNonEssentialMessage( target, message );
+                if( len<0 ) {
+                    ok = false;
+                    len = 0;
+                }
+                synchronized( this ) {
+                    nonEssentialSentBytes += len;
+                    nonEssentialSentCount++;
+                    t = System.nanoTime()-startTime;
+                    nonEssentialSendTime += t;
+                }
+                info.addSentBytes( len );
+                if( Settings.traceSends ) {
+                    Globals.log.reportProgress( "Sent " + len + " bytes in " + Utils.formatNanoseconds( t ) + ": " + message );
+                }
+            }
+            return ok;
         }
-        return ok;
+        return false;
     }
 
     /** Given the name of this port, prints some statistics about this port.

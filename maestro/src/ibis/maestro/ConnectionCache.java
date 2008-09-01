@@ -106,8 +106,14 @@ class ConnectionCache
     {
         long len = -1;
         try {
-            SendPort port = cache.getExistingSendPort( ibis );
-            if( port == null ) {
+            SendPort port;
+            if( false ){
+                port = cache.getExistingSendPort( ibis );
+                if( port == null ) {
+                    port = Globals.localIbis.createSendPort( PacketSendPort.portType );
+                }
+            }
+            else {
                 port = Globals.localIbis.createSendPort( PacketSendPort.portType );
             }
             WriteMessage msg = port.newMessage();
