@@ -192,64 +192,54 @@ class PacketSendPort
     }
 
     /**
-     * Given a target and a message, send a message to this target.
-     * If we have a connection to it in the cache, use that, otherwise
-     * don't pollute the connection cache with it, but send it with
-     * a one-off connection.
+     * Given a target and a message, send a message to this target if
+     * we have an open connection to it. If not, don't bother.
+     * 
      * @param target The ibis to send to.
      * @param message The message to send.
      * @return True iff we managed to send the message.
      */
     boolean sendNonessentialMessage( IbisIdentifier target, Message message )
     {
-        if( false ){
-            long len;
-            boolean ok = true;
-            DestinationInfo info;
-            synchronized( this ) {
-                info = destinations.get( target );
+        DestinationInfo info;
+        synchronized( this ) {
+            info = destinations.get( target );
 
-                if( info == null ) {
-                    // We know the local node has registered itself, so this must be a remote node.
-                    info = new DestinationInfo( target, false );
-                    destinations.put( target, info );
-                }
+            if( info == null ) {
+                return false;
             }
-            info.incrementNonEssentialSentCount();
-            if( info.local ) {
-                // This is the local destination. Use the back door to get
-                // the info to the destination.
-                message.arrivalMoment = System.nanoTime();
-                node.messageReceived( message );
-                len = 0;  // We're not going to compute a size just for the statistics.
-                localSentCount.add();
-                if( Settings.traceSends ) {
-                    Globals.log.reportProgress( "Sent local message " + message );
-                }
-            }
-            else {
-                long t;
-                
-                long startTime = System.nanoTime();
-                len = connectionCache.sendNonEssentialMessage( target, message );
-                if( len<0 ) {
-                    ok = false;
-                    len = 0;
-                }
-                synchronized( this ) {
-                    nonEssentialSentBytes += len;
-                    nonEssentialSentCount++;
-                    t = System.nanoTime()-startTime;
-                    nonEssentialSendTime += t;
-                }
-                info.addSentBytes( len );
-                if( Settings.traceSends ) {
-                    Globals.log.reportProgress( "Sent " + len + " bytes in " + Utils.formatNanoseconds( t ) + ": " + message );
-                }
-            }
-            return ok;
         }
-        return false;
+        if( info.local ) {
+            // This is the local destination. Use the back door to get
+            // the info to the destination.
+            message.arrivalMoment = System.nanoTime();
+            node.messageReceived( message );
+            localSentCount.add();
+            if( Settings.traceSends ) {
+                Globals.log.reportProgress( "Sent local message " + message );
+            }
+            return true;
+        }
+        info.incrementNonEssentialSentCount();
+        long t;
+
+        long startTime = System.nanoTime();
+        long len = connectionCache.sendNonEssentialMessage( target, message );
+        if( len<0 ) {
+            len = 0;
+            return false;
+        }
+        synchronized( this ) {
+            nonEssentialSentBytes += len;
+            nonEssentialSentCount++;
+            t = System.nanoTime()-startTime;
+            nonEssentialSendTime += t;
+        }
+        info.addSentBytes( len );
+        if( Settings.traceSends ) {
+            Globals.log.reportProgress( "Sent " + len + " bytes in " + Utils.formatNanoseconds( t ) + ": " + message );
+        }
+        return true;
     }
 
     /** Given the name of this port, prints some statistics about this port.
