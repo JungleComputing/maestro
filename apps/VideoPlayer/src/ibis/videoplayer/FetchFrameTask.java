@@ -36,7 +36,7 @@ public class FetchFrameTask implements AtomicTask
         File frameFile = new File( String.format( "frame-%04d.ppm" ) );
         Image frame;
         try {
-            frame = UncompressedImage.load( frameFile, frameno );
+            frame = Image.load( frameFile, frameno );
         } catch (IOException e) {
             System.err.println( "Can not load frame '" + frameFile + "'" );
             e.printStackTrace();

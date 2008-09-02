@@ -39,7 +39,7 @@ class ConvertFramesProgram {
         public Object run( Object in, Node node ) {
             File f = (File) in;
             try {
-            return UncompressedImage.load( f, 0 );
+        	return Image.load( f, 0 );
             }
             catch( IOException e ) {
                 System.err.println( "Cannot read image file: " + e.getLocalizedMessage() );

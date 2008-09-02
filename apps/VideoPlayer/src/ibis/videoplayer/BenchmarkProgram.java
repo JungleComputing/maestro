@@ -90,9 +90,11 @@ class BenchmarkProgram {
          *
          * @param in The input of this job.
          * @param node The node we're running on.
-         * @return The fetched image.
+         * @return <code>null</code> since we entirely process the image within this task.
          */
-        public Object run( Object in, Node node ) {
+        @Override
+        public Object run( Object in, Node node )
+        {
             int frame = (Integer) in;
 
             UncompressedImage img = RGB24Image.buildGradientImage( frame, DVD_WIDTH, DVD_HEIGHT, (byte) frame, (byte) (frame/10), (byte) (frame/100) );
@@ -138,7 +140,8 @@ class BenchmarkProgram {
 
     }
 
-    private static final class GenerateFrameTask implements AtomicTask, TaskExecutionTimeEstimator {
+    private static final class GenerateFrameTask implements AtomicTask, TaskExecutionTimeEstimator
+    {
         private static final long serialVersionUID = -7976035811697720295L;
 
         /**
@@ -152,9 +155,9 @@ class BenchmarkProgram {
         }
 
         /**
-         * @param in The input of this job.
+         * @param in The input of this job: the frame number.
          * @param node The node we're running on.
-         * @return The fetched image.
+         * @return The generated image.
          */
         public Object run( Object in, Node node ) {
             int frame = (Integer) in;

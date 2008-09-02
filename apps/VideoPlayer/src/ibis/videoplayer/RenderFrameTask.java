@@ -174,7 +174,7 @@ public class RenderFrameTask implements AtomicTask
 		System.err.println( new String( p.getStderr() ) );
 		return null;
 	    }
-	    img = UncompressedImage.load( outFile, frameno );
+	    img = Image.load( outFile, frameno );
 	    povFile.delete();
 	    outFile.delete();
 	}

@@ -18,7 +18,7 @@ public class TestProgram
      */
     public static void main( String[] args ) {
         try {
-            UncompressedImage img = UncompressedImage.load( new File( "images/japan-tuin-8bit.ppm" ), 0 );
+            UncompressedImage img = Image.load( new File( "images/japan-tuin-8bit.ppm" ), 0 );
             System.out.println( "Loaded " + img );
             //img = img.scaleUp( 3 );
             img = img.sharpen();
