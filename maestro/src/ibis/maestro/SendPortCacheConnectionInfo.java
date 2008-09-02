@@ -1,6 +1,3 @@
-/**
- * 
- */
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;

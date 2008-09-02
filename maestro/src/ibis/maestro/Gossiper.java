@@ -187,44 +187,26 @@ class Gossiper extends Thread
 	}
     }
 
-    boolean registerGossip( NodePerformanceInfo update, boolean isLocal )
+    boolean registerGossip( NodePerformanceInfo update, IbisIdentifier source )
     {
 	gossipItemCount.add();
 	boolean isnew = gossip.register( update );
-	if( isnew && !isLocal ) {
-	    newGossipItemCount.add();
-	    nodes.hadRecentUpdate( update.source );
-	}
-	return isnew;
-    }
-
-    boolean registerGossip( NodePerformanceInfo updates[], IbisIdentifier source )
-    {
-	boolean changed = false;
-	boolean incomplete = updates.length<gossip.size();
-	for( NodePerformanceInfo update: updates ) {
+	if( isnew ) {
 	    if( update.source.equals( Globals.localIbis.identifier() ) ) {
+		// Somebody sent us info about ourselves, if it's too old,
+		// send that node an update,
 		long staleness = gossip.getLocalTimestamp()-update.timeStamp;
-		if( staleness>Settings.GOSSIP_EXPIRATION_IN_CLUSTER ) {
-		    nodes.needsUrgentUpdate(source);
+		if( staleness>Settings.GOSSIP_EXPIRATION_IN_CLUSTER && source != null ) {
+		    nodes.needsUrgentUpdate( source );
 		    gossipQuotum.up();
 		}
 	    }
 	    else {
-		// Only accept gossip about remote nodes.
-		changed |= registerGossip( update, false );
+		newGossipItemCount.add();
+		nodes.hadRecentUpdate( update.source );
 	    }
 	}
-	if( changed ) {
-	    gossipQuotum.up();
-	}
-	if( !changed || incomplete ) {
-	    nodes.needsUrgentUpdate( source );
-	}
-	else {
-	    nodes.hadRecentUpdate( source );
-	}
-	return changed;
+	return isnew;
     }
 
     void recomputeCompletionTimes( long masterQueueIntervals[], JobList jobs, HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap )

@@ -470,14 +470,18 @@ public final class Node extends Thread implements PacketReceiveListener
     /**
      * A worker has sent us a message with its current status, handle it.
      * @param m The update message.
+     * @param nw <code>true</code> iff this update was new.
      */
-    private boolean handleNodeUpdateInfo( NodePerformanceInfo m )
+    private boolean handleNodeUpdateInfo( NodePerformanceInfo m, boolean nw )
     {
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
         }
         NodeInfo nodeInfo = nodes.get( m.source );   // The get will create an entry if necessary.
-        boolean changed = nodeInfo.registerWorkerQueueInfo( m.workerQueueInfo );
+        boolean changed = false;
+        if( nw ) {
+            changed = nodeInfo.registerWorkerQueueInfo( m.workerQueueInfo );
+        }
         changed |= nodeInfo.registerAsCommunicating();
         return changed;
     }
@@ -488,25 +492,24 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void handleGossipMessage( GossipMessage m )
     {
-        if( Settings.traceNodeProgress || Settings.traceRegistration || Settings.traceGossip ){
-            Globals.log.reportProgress( "Received gossip message from " + m.source + " with " + m.gossip.length + " items"  );
-        }
-        boolean changed = gossiper.registerGossip( m.gossip, m.source );
-        if( m.needsReply ) {
-            if( !m.source.equals( Globals.localIbis.identifier()) ) {
-                gossiper.queueGossipReply( m.source );
-            }
-        }
-        for( NodePerformanceInfo i: m.gossip ) {
-    	// We ignore the changed flag from this call,
-    	// we're handling a change anyway.
-            changed |= handleNodeUpdateInfo( i );
-        }
-        if( changed ) {
-            synchronized( this ) {
-                this.notify();
-            }
-        }
+	if( Settings.traceNodeProgress || Settings.traceRegistration || Settings.traceGossip ){
+	    Globals.log.reportProgress( "Received gossip message from " + m.source + " with " + m.gossip.length + " items"  );
+	}
+	boolean changed = false;
+	for( NodePerformanceInfo i: m.gossip ) {
+	    boolean changed1 = gossiper.registerGossip( i, m.source );
+	    changed |= handleNodeUpdateInfo( i, changed1 );
+	}
+	if( m.needsReply ) {
+	    if( !m.source.equals( Globals.localIbis.identifier() ) ) {
+		gossiper.queueGossipReply( m.source );
+	    }
+	}
+	if( changed ) {
+	    synchronized( this ) {
+		this.notify();
+	    }
+	}
     }
 
     private void updateRecentMasters()
@@ -548,9 +551,8 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
         }
-        boolean local = m.update.source.equals( Globals.localIbis.identifier() );
-        boolean isnew = gossiper.registerGossip( m.update, local );
-        isnew |= handleNodeUpdateInfo( m.update );
+        boolean isnew = gossiper.registerGossip( m.update, m.update.source );
+        isnew |= handleNodeUpdateInfo( m.update, true );
         if( isnew ) {
             long masterQueueIntervals[] = masterQueue.getQueueIntervals( idleProcessors.get() );
             HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
@@ -585,9 +587,8 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         TaskInstance orphan = nodes.registerTaskFailed( msg.source, msg.id );
         Globals.log.reportError( "Node " + msg.source + " failed to execute task with id " + msg.id + "; node will no longer get tasks of this type" );
-        boolean local = msg.update.source.equals( Globals.localIbis.identifier() );
-        boolean isnew = gossiper.registerGossip( msg.update, local );
-        isnew |= handleNodeUpdateInfo( msg.update );
+        boolean isnew = gossiper.registerGossip( msg.update, msg.update.source );
+        isnew |= handleNodeUpdateInfo( msg.update, true );
         if( isnew ) {
             // TODO: abstract this code sequence and other occurrences in a method.
             long masterQueueIntervals[] = masterQueue.getQueueIntervals( idleProcessors.get() );

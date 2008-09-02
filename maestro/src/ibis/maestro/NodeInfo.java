@@ -74,29 +74,21 @@ final class NodeInfo
         return -1;
     }
 
-    boolean registerWorkerQueueInfo( int ix, WorkerQueueInfo info )
-    {
-        NodeTaskInfo nodeTaskInfo = nodeTaskInfoList[ix];
-        boolean changed = false;
-
-        if( nodeTaskInfo != null ) {
-            changed |= nodeTaskInfo.controlAllowance( info.queueLength );
-        }
-        return changed;
-    }
-
     boolean registerWorkerQueueInfo( WorkerQueueInfo[] workerQueueInfo )
     {
 	boolean changed = false;
-        if( isDead() ) {
+
+	if( isDead() ) {
             // It is strange to get info from a dead worker, but we're not going to try and
             // revive the worker.
             return false;
         }
         for( int i=0; i<workerQueueInfo.length; i++ ) {
             WorkerQueueInfo workerInfo = workerQueueInfo[i];
-            if( workerInfo != null ) {
-                changed |= registerWorkerQueueInfo( i, workerInfo );
+            NodeTaskInfo nodeTaskInfo = nodeTaskInfoList[i];
+
+            if( workerInfo != null && nodeTaskInfo != null ) {
+        	changed |= nodeTaskInfo.controlAllowance( workerInfo.queueLength );
             }
         }
         return changed;
