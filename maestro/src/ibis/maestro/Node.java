@@ -629,19 +629,17 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received message " + msg );
         }
-        if( msg instanceof TaskCompletedMessage ) {
-            handleTaskCompletedMessage( (TaskCompletedMessage) msg );
-        }
-        else if( msg instanceof JobResultMessage ) {
-            JobResultMessage m = (JobResultMessage) msg;
-
-            handleJobResultMessage( m );
-        }
-        else if( msg instanceof UpdateNodeMessage ) {
+        if( msg instanceof UpdateNodeMessage ) {
             handleNodeUpdateMessage( (UpdateNodeMessage) msg );
         }
         else if( msg instanceof GossipMessage ) {
             handleGossipMessage( (GossipMessage) msg );
+        }
+        else if( msg instanceof TaskCompletedMessage ) {
+            handleTaskCompletedMessage( (TaskCompletedMessage) msg );
+        }
+        else if( msg instanceof JobResultMessage ) {
+            handleJobResultMessage( (JobResultMessage) msg );
         }
         else if( msg instanceof RunTaskMessage ){
             handleRunTaskMessage( (RunTaskMessage) msg );

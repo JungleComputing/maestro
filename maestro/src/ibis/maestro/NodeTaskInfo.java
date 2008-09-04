@@ -27,6 +27,8 @@ final class NodeTaskInfo
     /** How many outstanding instances of this task should this worker maximally have? */
     private int allowance;
 
+    private int allowanceSequenceNumber = -1;
+
     private boolean failed = false;
 
     private Counter missedAllowanceDeadlines = new Counter();
@@ -140,8 +142,9 @@ final class NodeTaskInfo
     /** Given a queue length on the worker, manipulate the allowance to
      * ensure the queue lengths stays within very reasonable limits.
      * @param queueLength The worker queue length.
+     * @param sequenceNumber The sequence number of this queue length.
      */
-    synchronized boolean controlAllowance( int queueLength )
+    synchronized boolean controlAllowance( int queueLength, int sequenceNumber )
     {
 	boolean changed = false;
 
@@ -149,11 +152,14 @@ final class NodeTaskInfo
             allowance = 0;
             return false;
         }
-        if( allowance == outstandingTasks ) {
+        if( allowanceSequenceNumber<sequenceNumber && allowance == outstandingTasks ) {
             // We can only regulate the allowance if we are
             // at our current maximal allowance.
+            // Also, we should only regulate on a more recent sequence number
+            // than we already have.
             int oldAllowance = allowance;
-
+            
+            allowanceSequenceNumber = sequenceNumber;
             if( queueLength<1 ) {
                 allowance++;
             }

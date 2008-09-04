@@ -88,7 +88,7 @@ final class NodeInfo
             NodeTaskInfo nodeTaskInfo = nodeTaskInfoList[i];
 
             if( workerInfo != null && nodeTaskInfo != null ) {
-        	changed |= nodeTaskInfo.controlAllowance( workerInfo.queueLength );
+        	changed |= nodeTaskInfo.controlAllowance( workerInfo.queueLength, workerInfo.queueLengthSequenceNumber );
             }
         }
         return changed;

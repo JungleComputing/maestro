@@ -18,12 +18,14 @@ final class WorkerQueueTaskInfo
     private final List<NodeTaskInfo> workers = new LinkedList<NodeTaskInfo>(); 
 
     /** The total number of tasks of this type that entered the queue. */
-    private long incompingTaskCount = 0;
+    private long incomingTaskCount = 0;
 
     private int outGoingTaskCount = 0;
 
     /** Current number of elements of this type in the queue. */
     private int elements = 0;
+    
+    private int sequenceNumber = 0;
 
     /** Maximal ever number of elements in the queue. */
     private int maxElements = 0;
@@ -49,7 +51,7 @@ final class WorkerQueueTaskInfo
 
     synchronized void printStatistics( PrintStream s, long workTime )
     {
-        s.println( "worker queue for " + type + ": " + incompingTaskCount + " tasks; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxElements );
+        s.println( "worker queue for " + type + ": " + incomingTaskCount + " tasks; dequeue interval: " + dequeueInterval + "; maximal queue size: " + maxElements );
         double workPercentage = 100.0*((double) totalWorkTime/workTime);
         PrintStream out = s;
         if( outGoingTaskCount>0 ) {
@@ -76,7 +78,8 @@ final class WorkerQueueTaskInfo
             // record the time it became this.
             frontChangedTime = System.nanoTime();
         }
-        incompingTaskCount++;
+        incomingTaskCount++;
+        sequenceNumber++;
         return elements;
     }
 
@@ -90,6 +93,7 @@ final class WorkerQueueTaskInfo
             dequeueInterval.addSample( i );
         }
         elements--;
+        sequenceNumber++;
         if( elements == 0 ) {
             // Don't take the next dequeuing into account,
             // since the queue is now empty.
@@ -145,7 +149,7 @@ final class WorkerQueueTaskInfo
         else {
             computeTime = averageComputeTime.getAverage();            
         }
-        return new WorkerQueueInfo( elements, dequeueInterval.getAverage(), computeTime );
+        return new WorkerQueueInfo( elements, sequenceNumber, dequeueInterval.getAverage(), computeTime );
     }
 
     /**

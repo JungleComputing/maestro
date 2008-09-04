@@ -49,7 +49,8 @@ class PacketSendPort
              */
             @SuppressWarnings("synthetic-access")
             @Override
-            public int compare(DestinationInfo a, DestinationInfo b) {
+            public int compare( DestinationInfo a, DestinationInfo b )
+            {
                 if( a.sentCount<b.sentCount ){
                     return 1;
                 }

@@ -12,15 +12,18 @@ class WorkerQueueInfo implements Serializable
     private static final long serialVersionUID = 1L;
 
     final int queueLength;
+    final int queueLengthSequenceNumber;
     final long dequeueTime;
     final long computeTime;
+
 
     /**
      * @param queueLength The worker queue length.
      */
-    WorkerQueueInfo( int queueLength, long dequeueTime, long computeTime )
+    WorkerQueueInfo( int queueLength, int queueLengthSequenceNumber, long dequeueTime, long computeTime )
     {
 	this.queueLength = queueLength;
+	this.queueLengthSequenceNumber = queueLengthSequenceNumber;
 	this.dequeueTime = dequeueTime;
 	this.computeTime = computeTime;
     }
