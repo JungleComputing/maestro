@@ -42,8 +42,8 @@ public class WorkerQueueTest extends TestCase
     {
 	JobIdentifier id = null;
 	TaskType type = new TaskType( id, 0, 1, false, 0 );
-        TaskType l[] = new TaskType[] { type };
-	WorkerQueue queue = new WorkerQueue( l, null );   // FIXME: the null will cause a crash
+        Globals.allTaskTypes = new TaskType[] { type };
+	WorkerQueue queue = new WorkerQueue( null );   // FIXME: the null will cause a crash
 
 	addToQueue( type, queue, 0 );
 	removeFromQueue( queue, 0 );

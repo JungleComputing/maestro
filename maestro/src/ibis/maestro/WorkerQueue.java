@@ -23,11 +23,11 @@ final class WorkerQueue
 
     /**
      * Given a list of supported types, constructs a new WorkerQueue.
-     * @param taskTypes The list of types we support.
-     * @param jobs 
+     * @param jobs The list of job types we support.
      */
-    WorkerQueue( TaskType[] taskTypes, JobList jobs )
+    WorkerQueue( JobList jobs )
     {
+	TaskType[] taskTypes = Globals.allTaskTypes;
 	queueTypes = new WorkerQueueTaskInfo[taskTypes.length];
         for( TaskType t: taskTypes ) {
             WorkerQueueTaskInfo queueTypeInfo = new WorkerQueueTaskInfo( t );

@@ -74,7 +74,6 @@ class PacketSendPort
         }
 
         private int sentCount = 0;
-        private int nonEssentialSentCount = 0;
         private long sentBytes = 0;
         private final IbisIdentifier ibisIdentifier;
         boolean local;
@@ -105,11 +104,6 @@ class PacketSendPort
         {
             sentBytes += val;
         }
-
-	synchronized void incrementNonEssentialSentCount()
-	{
-	    nonEssentialSentCount++;
-	}
     }
 
     @SuppressWarnings("synthetic-access")
@@ -220,7 +214,6 @@ class PacketSendPort
             }
             return true;
         }
-        info.incrementNonEssentialSentCount();
         long t;
 
         long startTime = System.nanoTime();

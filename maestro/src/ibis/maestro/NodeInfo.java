@@ -32,7 +32,7 @@ final class NodeInfo
     /**
      * Constructs a new NodeInfo.
      * @param ibis The ibis identifier of the node.
-     * @param workerQueue The worker queue, who contains a WorkerQueueTaskInfo class for each type.
+     * @param workerQueue The worker queue, which contains a WorkerQueueTaskInfo class for each type.
      * @param local Is this the local node?
      */
     protected NodeInfo( IbisIdentifier ibis, WorkerQueue workerQueue, boolean local )

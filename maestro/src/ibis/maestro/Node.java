@@ -157,7 +157,7 @@ public final class Node extends Thread implements PacketReceiveListener
         Globals.allTaskTypes = allTypes;
         Globals.supportedTaskTypes = supportedTypes;
         masterQueue = new MasterQueue( allTypes );
-        workerQueue = new WorkerQueue( supportedTypes, jobs );
+        workerQueue = new WorkerQueue( jobs );
         nodes = new NodeList( workerQueue );
         ibisProperties.setProperty( "ibis.pool.name", "MaestroPool" );
         registryEventHandler = new NodeRegistryEventHandler();

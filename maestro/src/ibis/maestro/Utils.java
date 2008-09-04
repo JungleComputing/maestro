@@ -204,7 +204,6 @@ public class Utils
         return a+b;
     }
 
-
     /**
      * Adds three longs, but return </code>Long.MAX_VALUE<code> if one of the three
      * has that value.
@@ -220,5 +219,24 @@ public class Utils
             return Long.MAX_VALUE;
         }
         return a+b+c;
+    }
+
+    /**
+     * Adds five longs, but return </code>Long.MAX_VALUE<code> if one of the five
+     * has that value.
+     * @param a One value to add.
+     * @param b An other value to add.
+     * @param c A third value to add.
+     * @param d A fourth value to add.
+     * @param e A fifth value to add.
+     * @return The sum of the three values, or <code>Long.MAX_VALUE</code>
+     *   if one of the inputs has that value.
+     */
+    public static long safeAdd( long a, long b, long c, long d, long e )
+    {
+        if( a == Long.MAX_VALUE || b == Long.MAX_VALUE || c == Long.MAX_VALUE || d == Long.MAX_VALUE || e == Long.MAX_VALUE ) {
+            return Long.MAX_VALUE;
+        }
+        return a+b+c+d+e;
     }
 }

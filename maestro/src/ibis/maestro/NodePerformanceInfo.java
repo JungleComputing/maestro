@@ -127,7 +127,7 @@ class NodePerformanceInfo implements Serializable
         }
         long transmissionTime = localNodeInfo.getTransmissionTime( type );
         int allTasks = currentTasks+1;
-        long total = transmissionTime + queueInfo.dequeueTime*allTasks + queueInfo.computeTime + completionInterval + unpredictableOverhead;
+        long total = Utils.safeAdd( transmissionTime, queueInfo.dequeueTime*allTasks, queueInfo.computeTime, completionInterval, unpredictableOverhead );
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "Estimated completion time for " + source + " is " + Utils.formatNanoseconds( total ) );
         }
@@ -189,7 +189,7 @@ class NodePerformanceInfo implements Serializable
             s.printf( "%8s ", t );
         }
         s.println();
-        for( TaskType t: Globals.allTaskTypes ){
+        for( @SuppressWarnings("unused") TaskType t: Globals.allTaskTypes ){
             s.print( WorkerQueueInfo.topLabel() );
             s.print( ' ' );
         }
