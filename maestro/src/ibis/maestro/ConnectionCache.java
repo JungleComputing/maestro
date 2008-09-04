@@ -27,6 +27,12 @@ class ConnectionCache
         long len = -1;
         try {
             SendPort port = cache.getSendPort( ibis );
+            if( port == null ){
+                // We could not create a connection to this ibis.
+                node.setSuspect( ibis );
+                cache.closeSendPort( ibis );
+                return -1;
+            }
             WriteMessage msg = port.newMessage();
             msg.writeObject( message );
             len = msg.finish();

@@ -84,7 +84,7 @@ class Settings {
     static final boolean dumpWorkerQueue = false;
 
     /** Announce all submissions. */
-    static final boolean traceSubmissions = false;
+    static final boolean traceSubmissions = true;
 
     /** Trace the adventures of the terminator thread. */
     static final boolean traceTerminator = false;
@@ -109,10 +109,10 @@ class Settings {
     static final long RESCHEDULE_DEADLINE_MULTIPLIER = 2;
 
     /** The maximal time in ms before the gossiper gets more quotum.  */
-    static final long MAXIMUM_GOSSIPER_WAIT = 40;
+    static final long MAXIMUM_GOSSIPER_WAIT = 70;
 
     /** Time in ms when gossip goes stale for nodes in the same cluster. */
-    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 100;
+    static final long GOSSIP_EXPIRATION_IN_CLUSTER = 500;
 
     /** Time in ms when gossip goes stale for nodes not in the same cluster. */
     static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 5*GOSSIP_EXPIRATION_IN_CLUSTER;
