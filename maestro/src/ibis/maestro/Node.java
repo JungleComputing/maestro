@@ -404,7 +404,7 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportError( "Node didn't stop yet" );
             stopTime = System.nanoTime();
         }
-        s.printf(  "# threads       = %5d\n", workThreads.length );
+        s.printf(  "# work threads  = %5d\n", workThreads.length );
         nodes.printStatistics( s );
         jobs.printStatistics( s );
         s.printf( "update       messages:   %5d sent\n", updateMessageCount.get() );
@@ -423,7 +423,7 @@ public final class Node extends Thread implements PacketReceiveListener
         s.println( "run time        = " + Utils.formatNanoseconds( workInterval ) );
         s.println( "activated after = " + Utils.formatNanoseconds( activeTime-startTime ) );
         masterQueue.printStatistics( s );
-    }
+        Utils.printThreadStats( s );    }
 
     /**
      * Send a result message to the given port, using the given job identifier
@@ -968,7 +968,6 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         Globals.log.reportError( msg );
     }
-
 
     /**
      * Writes the given error message about an internal inconsistency in the program to the logger.

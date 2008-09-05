@@ -6,6 +6,10 @@ import ibis.ipl.Location;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadInfo;
+import java.lang.management.ThreadMXBean;
 
 /**
  *
@@ -238,5 +242,21 @@ public class Utils
             return Long.MAX_VALUE;
         }
         return a+b+c+d+e;
+    }
+
+    static void printThreadStats( PrintStream s )
+    {
+        ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+        
+        s.println( "Peak thread count: " + threadBean.getPeakThreadCount() );
+        long lockedThreads[] = threadBean.findDeadlockedThreads();
+        if( lockedThreads.length>0 ) {
+            for( long tid: lockedThreads ) {
+                ThreadInfo ti = threadBean.getThreadInfo( tid, Integer.MAX_VALUE );
+                if( ti != null ) {
+                    s.println( ti.toString() );
+                }
+            }
+        }
     }
 }
