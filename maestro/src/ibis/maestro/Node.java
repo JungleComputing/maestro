@@ -56,7 +56,6 @@ public final class Node extends Thread implements PacketReceiveListener
     private final WorkerQueue workerQueue;
     private long nextTaskId = 0;
     private UpDownCounter idleProcessors = new UpDownCounter( -Settings.EXTRA_WORK_THREADS ); // Yes, we start with a negative number of idle processors.
-    private Counter handledTaskCount = new Counter();
     private Counter updateMessageCount = new Counter();
     private Counter submitMessageCount = new Counter();
     private Counter taskResultMessageCount = new Counter();
@@ -421,10 +420,9 @@ public final class Node extends Thread implements PacketReceiveListener
         long activeTime = workerQueue.getActiveTime( startTime );
         long workInterval = stopTime-activeTime;
         workerQueue.printStatistics( s, workInterval );
-        s.println( "Worker: run time        = " + Utils.formatNanoseconds( workInterval ) );
-        s.println( "Worker: activated after = " + Utils.formatNanoseconds( activeTime-startTime ) );
+        s.println( "run time        = " + Utils.formatNanoseconds( workInterval ) );
+        s.println( "activated after = " + Utils.formatNanoseconds( activeTime-startTime ) );
         masterQueue.printStatistics( s );
-        s.printf(  "Master: # handled tasks  = %5d\n", handledTaskCount.get() );
     }
 
     /**
@@ -532,7 +530,6 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void handleRunTaskMessage( RunTaskMessage msg )
     {
-        workerQueue.add( msg );
         IbisIdentifier source = msg.source;
         boolean isDead = nodes.registerAsCommunicating( source );
         if( !isDead ) {
@@ -540,6 +537,7 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         updateLocalGossip();
         updateRecentMasters();
+        workerQueue.add( msg );
     }
 
     /**
@@ -569,7 +567,6 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received a worker task completed message " + result );
         }
-        handledTaskCount.add();
         boolean changed = nodes.registerTaskCompleted( result );
         if( changed ) {
             updateRecentMasters();
