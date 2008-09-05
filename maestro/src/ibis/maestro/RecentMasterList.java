@@ -23,13 +23,13 @@ class RecentMasterList {
     synchronized void register( IbisIdentifier ibis )
     {
         masters.remove( ibis );   // Remove an earlier occurence, if any.
-        masters.add( 0, ibis );      // Put it at the end of the list.
+        masters.add( 0, ibis );      // Put it at the front of the list.
         while( masters.size()>Settings.MAXIMAL_RECENT_MASTERS ){
             masters.remove( masters.size()-1 );
         }
     }
     
-    /** Removes the given master from the adminstration, presumably
+    /** Removes the given master from the administration, presumably
      * because it is gone.
      * @param ibis The ibis to remove.
      */
