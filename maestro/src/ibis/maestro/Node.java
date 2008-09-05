@@ -837,7 +837,6 @@ public final class Node extends Thread implements PacketReceiveListener
                 if( message == null ) {
                     idleProcessors.up();
                     long sleepTime = 20;
-                    gossiper.addQuotum();
                     if( Settings.traceWaits ) {
                         Globals.log.reportProgress( "Waiting for " + sleepTime + "ms for new tasks in queue" );
                     }

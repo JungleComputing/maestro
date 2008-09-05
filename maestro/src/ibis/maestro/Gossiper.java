@@ -128,7 +128,7 @@ class Gossiper extends Thread
 	if( gossipQuotum.isAbove( 0 ) ) {
 	    return nodes.computeWaitTimeInMilliseconds();
 	}
-	return Settings.MAXIMUM_GOSSIPER_WAIT;
+	return 0;
     }
 
     /** Runs this thread. */
@@ -157,7 +157,6 @@ class Gossiper extends Thread
 		}
 		synchronized( this ) {
 		    this.wait( waittime );
-		    gossipQuotum.up();
 		}
 	    } catch (InterruptedException e) {
 		// ignore.
@@ -172,7 +171,7 @@ class Gossiper extends Thread
 	    return;
 	}
 	nodes.add( ibis );
-	gossipQuotum.up();
+	gossipQuotum.up( 2 );
 	synchronized( this ) {
 	    this.notifyAll();
 	}
@@ -192,6 +191,7 @@ class Gossiper extends Thread
 	gossipItemCount.add();
 	boolean isnew = gossip.register( update );
 	if( isnew ) {
+            gossipQuotum.up( 2 );
 	    if( update.source.equals( Globals.localIbis.identifier() ) ) {
 		// Somebody sent us info about ourselves, if it's too old,
 		// send that node an update,
@@ -204,6 +204,9 @@ class Gossiper extends Thread
 	    else {
 		newGossipItemCount.add();
 		nodes.hadRecentUpdate( update.source );
+	    }
+	    synchronized( this ) {
+	        this.notifyAll();
 	    }
 	}
 	return isnew;

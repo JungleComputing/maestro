@@ -20,6 +20,12 @@ class UpDownCounter
         notifyAll();
     }
     
+    synchronized void up( int i )
+    {
+        value += i;
+        notifyAll();
+    }
+
     synchronized void down()
     {
         value--;

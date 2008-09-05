@@ -111,19 +111,21 @@ class ConnectionCache
     long sendNonEssentialMessage( IbisIdentifier ibis, Message message )
     {
         long len = -1;
-        try {
-            SendPort port = cache.getExistingSendPort( ibis );
-            if( port == null ) {
-                // No port in cache, don't try to send the message.
-                return -1;
+        if( Settings.CACHE_CONNECTIONS ) {
+            try {
+                SendPort port = cache.getExistingSendPort( ibis );
+                if( port == null ) {
+                    // No port in cache, don't try to send the message.
+                    return -1;
+                }
+                WriteMessage msg = port.newMessage();
+                msg.writeObject( message );
+                len = msg.finish();
             }
-            WriteMessage msg = port.newMessage();
-            msg.writeObject( message );
-            len = msg.finish();
-        }
-        catch( IOException x ){
-            node.setSuspect( ibis );
-            cache.closeSendPort( ibis );
+            catch( IOException x ){
+                node.setSuspect( ibis );
+                cache.closeSendPort( ibis );
+            }
         }
         return len;
     }
