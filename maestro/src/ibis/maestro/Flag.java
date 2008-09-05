@@ -33,4 +33,11 @@ class Flag
     {
         return flag;
     }
+
+    synchronized boolean getAndReset()
+    {
+        boolean res = flag;
+        flag = false;
+        return res;
+    }
 }

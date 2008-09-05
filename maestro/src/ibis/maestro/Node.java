@@ -55,6 +55,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private final MasterQueue masterQueue;
     private final WorkerQueue workerQueue;
     private long nextTaskId = 0;
+    private final Flag doUpdateRecentMasters = new Flag( false );
     private UpDownCounter idleProcessors = new UpDownCounter( -Settings.EXTRA_WORK_THREADS ); // Yes, we start with a negative number of idle processors.
     private Counter updateMessageCount = new Counter();
     private Counter submitMessageCount = new Counter();
@@ -392,6 +393,9 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void updateAdministration()
     {
+        if( doUpdateRecentMasters.getAndReset() ) {
+            updateRecentMasters();
+        }
         drainCompletedJobList();
         drainMasterQueue();
         nodes.checkDeadlines( System.nanoTime() );
@@ -453,6 +457,19 @@ public final class Node extends Thread implements PacketReceiveListener
         return sendPort.send( ibis, msg );
     }
 
+    private void updateRecentMasters()
+    {
+        NodePerformanceInfo update = gossiper.getLocalUpdate();
+        UpdateNodeMessage msg = new UpdateNodeMessage( update );
+        for( IbisIdentifier ibis: recentMasterList.getArray() ){	    
+            if( Settings.traceUpdateMessages ) {
+                Globals.log.reportProgress( "Sending " + msg );
+            }
+            sendPort.send( ibis, msg );
+            updateMessageCount.add();
+        }
+    }
+
     private void updateLocalGossip()
     {
         WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
@@ -510,19 +527,6 @@ public final class Node extends Thread implements PacketReceiveListener
 	}
     }
 
-    private void updateRecentMasters()
-    {
-        NodePerformanceInfo update = gossiper.getLocalUpdate();
-        UpdateNodeMessage msg = new UpdateNodeMessage( update );
-        for( IbisIdentifier ibis: recentMasterList.getArray() ){	    
-	    if( Settings.traceUpdateMessages ) {
-	        Globals.log.reportProgress( "Sending " + msg );
-	    }
-	    sendPort.send( ibis, msg );
-	    updateMessageCount.add();
-        }
-    }
-
     /**
      * Handle a message containing a new task to run.
      * 
@@ -536,7 +540,7 @@ public final class Node extends Thread implements PacketReceiveListener
             recentMasterList.register( source );
         }
         updateLocalGossip();
-        updateRecentMasters();
+        doUpdateRecentMasters.set();
         workerQueue.add( msg );
     }
 
@@ -569,7 +573,7 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         boolean changed = nodes.registerTaskCompleted( result );
         if( changed ) {
-            updateRecentMasters();
+            doUpdateRecentMasters.set();
         }
     }
 

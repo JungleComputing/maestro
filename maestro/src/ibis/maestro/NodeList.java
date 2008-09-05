@@ -76,8 +76,10 @@ final class NodeList
     }
 
     /**
-     * Register a task result in the info of the worker that handled it.
-     * @param result The task result.
+     * Register that a tasked has failed.
+     * @param ibis The ibis that failed to execute the task.
+     * @param taskId The id of the failed task.
+     * @return The task instance that was executed.
      */
     synchronized TaskInstance registerTaskFailed( IbisIdentifier ibis, long taskId )
     {

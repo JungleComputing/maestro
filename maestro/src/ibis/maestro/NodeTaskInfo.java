@@ -88,18 +88,6 @@ final class NodeTaskInfo
 
     synchronized void registerTaskFailed()
     {
-        if( false ) {
-            // FIXME: This crashes with a null pointer exception???
-            if( taskInfo != null ) {
-                Globals.log.reportError( "Node " + nodeInfo.ibis + " failed for task " + taskInfo.type );
-            }
-            else {
-                Globals.log.reportError( "Node " + nodeInfo.ibis + " failed for unknown task" );
-            }
-        }
-        else {
-            Globals.log.reportError( "A node failed a task" );
-        }
         allowance = 0;
         failed = true;
     }

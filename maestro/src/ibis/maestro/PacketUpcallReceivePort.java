@@ -42,7 +42,7 @@ class PacketUpcallReceivePort implements MessageUpcall {
     {
         Message data = (Message) msg.readObject();
         data.arrivalMoment = System.nanoTime();
-        msg.finish();
+        //msg.finish();
         listener.messageReceived( data );
     }
 
