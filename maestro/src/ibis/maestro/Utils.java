@@ -250,7 +250,8 @@ public class Utils
         
         s.println( "Peak thread count: " + threadBean.getPeakThreadCount() );
         long lockedThreads[] = threadBean.findDeadlockedThreads();
-        if( lockedThreads.length>0 ) {
+        if( lockedThreads != null && lockedThreads.length>0 ) {
+            s.println( "===== DEADLOCKED threads =====" );
             for( long tid: lockedThreads ) {
                 ThreadInfo ti = threadBean.getThreadInfo( tid, Integer.MAX_VALUE );
                 if( ti != null ) {
