@@ -12,6 +12,7 @@ class TaskInstance implements Serializable {
     final JobInstanceIdentifier jobInstance;
     final TaskType type;
     final Object input;
+    private boolean orphan = false;
 
     /**
      * @param tii The job this task belongs to.
@@ -42,4 +43,54 @@ class TaskInstance implements Serializable {
     {
         return jobInstance.label() + "#" + type;
     }
+
+    void setOrphan()
+    {
+	orphan = true;
+    }
+    
+    boolean isOrphan()
+    {
+	return orphan;
+    }
+
+    /**
+     * @return
+     */
+    @Override
+    public int hashCode() {
+	final int prime = 31;
+	int result = 1;
+	result = prime * result
+		+ ((jobInstance == null) ? 0 : jobInstance.hashCode());
+	result = prime * result + ((type == null) ? 0 : type.hashCode());
+	return result;
+    }
+
+    /**
+     * @param obj
+     * @return
+     */
+    @Override
+    public boolean equals(Object obj) {
+	if (this == obj)
+	    return true;
+	if (obj == null)
+	    return false;
+	if (getClass() != obj.getClass())
+	    return false;
+	final TaskInstance other = (TaskInstance) obj;
+	if (jobInstance == null) {
+	    if (other.jobInstance != null)
+		return false;
+	} else if (!jobInstance.equals(other.jobInstance))
+	    return false;
+	if (type == null) {
+	    if (other.type != null)
+		return false;
+	} else if (!type.equals(other.type))
+	    return false;
+	return true;
+    }
+
 }

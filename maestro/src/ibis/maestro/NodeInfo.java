@@ -171,19 +171,18 @@ final class NodeInfo
     /**
      * Register a task result for an outstanding task.
      * @param result The task result message that tells about this task.
-     * @return <code>true</code> if something changed in our state.
+     * @return The task instance that was completed if it may have duplicates, or <code>null</code>
      */
-    boolean registerTaskCompleted( TaskCompletedMessage result )
+    TaskInstance registerTaskCompleted( TaskCompletedMessage result )
     {
         final long id = result.taskId;    // The identifier of the task, as handed out by us.
-        boolean changed = false;
 
         ActiveTask task = extractActiveTask( id );
 
         if( task == null ){
-            // FIXME: keep track of orphaned tasks, and use any results that still arrive.
-            Globals.log.reportInternalError( "Ignoring reported result from task with unknown id " + id );
-            return changed;
+            // Not in the list of active tasks, presumably because it was
+            // redundantly executed.
+            return null;
         }
         long roundtripTime = result.arrivalMoment-task.startTime;
         long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
@@ -211,7 +210,7 @@ final class NodeInfo
             }
             nodeTaskInfo.registerMissedRescheduleDeadline();
         }
-	changed = nodeTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime );
+	nodeTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime );
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress(
                 "Master: retired task " + task
@@ -219,7 +218,10 @@ final class NodeInfo
                 + " transmissionTime=" + Utils.formatNanoseconds( newTransmissionTime )
             );
         }
-        return changed;
+        if( task.task.isOrphan() ) {
+            return task.task;
+        }
+        return null;
     }
 
     /** Register the start of a new task.

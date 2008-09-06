@@ -328,6 +328,9 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         recentMasterList.remove( theIbis );
         ArrayList<TaskInstance> orphans = nodes.removeNode( theIbis );
+        for( TaskInstance ti: orphans ) {
+            ti.setOrphan();
+        }
         masterQueue.add( orphans );
         if( maestro != null && theIbis.equals( maestro ) ) {
             Globals.log.reportProgress( "The maestro has left; stopping.." );
@@ -571,10 +574,11 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received a worker task completed message " + result );
         }
-        boolean changed = nodes.registerTaskCompleted( result );
-        if( changed ) {
-            doUpdateRecentMasters.set();
+        TaskInstance task = nodes.registerTaskCompleted( result );
+        if( task != null ) {
+            masterQueue.removeDuplicates( task );
         }
+        doUpdateRecentMasters.set();
     }
 
     /**
@@ -586,7 +590,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received a worker task failed message " + msg );
         }
-        TaskInstance orphan = nodes.registerTaskFailed( msg.source, msg.id );
+        TaskInstance failedTask = nodes.registerTaskFailed( msg.source, msg.id );
         Globals.log.reportError( "Node " + msg.source + " failed to execute task with id " + msg.id + "; node will no longer get tasks of this type" );
         boolean isnew = gossiper.registerGossip( msg.update, msg.update.source );
         isnew |= handleNodeUpdateInfo( msg.update, true );
@@ -596,7 +600,7 @@ public final class Node extends Thread implements PacketReceiveListener
             HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
             gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
         }
-        masterQueue.add( orphan );
+        masterQueue.add( failedTask );
     }
 
     /**

@@ -61,18 +61,18 @@ final class NodeList
     /**
      * Register a task result in the info of the worker that handled it.
      * @param result The task result.
-     * @return <code>true</code> if something changed in our state.
+     * @return The task instance that was completed if it may have duplicates, or <code>null</code>
      */
-    synchronized boolean registerTaskCompleted( TaskCompletedMessage result )
+    synchronized TaskInstance registerTaskCompleted( TaskCompletedMessage result )
     {
         NodeInfo node = ibisToNodeMap.get( result.source );
         if( node == null ) {
             Globals.log.reportError( "Task completed message from unknown node " + result.source );
-            return false;
+            return null;
         }
-        boolean changed = node.registerTaskCompleted( result );
-        changed |= node.registerAsCommunicating();
-        return changed;
+        TaskInstance task = node.registerTaskCompleted( result );
+        node.registerAsCommunicating();
+        return task;
     }
 
     /**

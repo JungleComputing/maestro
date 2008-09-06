@@ -341,4 +341,15 @@ final class MasterQueue
     {
         queue.clear();
     }
+
+    /** Remove any copies of the given task instance from the master queue;
+     * somebody already completed it.
+     * @param task The task to remove.
+     */
+    synchronized void removeDuplicates( TaskInstance task )
+    {
+	while( queue.remove( task ) ) {
+	    // Nothing.
+	}
+    }
 }
