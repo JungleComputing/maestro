@@ -70,20 +70,17 @@ final class NodeTaskInfo
      * Registers the completion of a task.
      * @param transmissionTime The transmission time of this task.
      * @param roundtripTime The total roundtrip time of this task.
-     * @return <code>true</code> if something changed in our state.
      */
-    synchronized boolean registerTaskCompleted( long transmissionTime, long roundtripTime )
+    synchronized void registerTaskCompleted( long transmissionTime, long roundtripTime )
     {
-	boolean changed;
         executedTasks++;
         outstandingTasks--;
-        changed = roundtripTimeEstimate.addSample( roundtripTime );
-        changed |= transmissionTimeEstimate.addSample( transmissionTime );
+        roundtripTimeEstimate.addSample( roundtripTime );
+        transmissionTimeEstimate.addSample( transmissionTime );
         if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
             String label = "task=" + taskInfo + " worker=" + nodeInfo;
             Globals.log.reportProgress( label + ": roundTripTimeEstimate=" + roundtripTimeEstimate + " transimssionTimeEstimate=" + transmissionTimeEstimate );
         }
-        return changed;
     }
 
     synchronized void registerTaskFailed()
@@ -106,11 +103,10 @@ final class NodeTaskInfo
      * Update the roundtrip time estimate with the given value. (Used by the
      * handling of missed deadlines.
      * @param t The new estimate of the roundtrip time.
-     * @return True iff this is a significant change of the estimate.
      */
-    synchronized boolean updateRoundtripTimeEstimate( long t )
+    synchronized void updateRoundtripTimeEstimate( long t )
     {
-        return roundtripTimeEstimate.addSample( t );
+        roundtripTimeEstimate.addSample( t );
     }
 
     /** Register that there is a new outstanding task. */

@@ -864,10 +864,8 @@ public final class Node extends Thread implements PacketReceiveListener
                     TaskType type = message.taskInstance.type;
                     long queueInterval = runMoment-message.getQueueMoment();
                     int queueLength = message.getQueueLength();
-                    boolean changed = workerQueue.setQueueTimePerTask( type, queueInterval, queueLength );
-                    if( changed ) {
-                	updateLocalGossip();
-                    }
+                    workerQueue.setQueueTimePerTask( type, queueInterval, queueLength );
+                    updateLocalGossip();
                     Task task = jobs.getTask( type );
 
                     runningTasks.up();
@@ -894,9 +892,13 @@ public final class Node extends Thread implements PacketReceiveListener
         TaskType type = message.taskInstance.type;
         Globals.log.reportError( "Node fails for type " + type );
         t.printStackTrace( Globals.log.getPrintStream() );
-        workerQueue.failTask( type );
+        boolean allFailed = workerQueue.failTask( type );
         updateLocalGossip();
         sendTaskFailMessage( message.source, message.taskId );
+        if( allFailed && !isMaestro ) {
+            setStopped();
+        }
+            
     }
 
     /**

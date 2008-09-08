@@ -9,7 +9,6 @@ class TimeEstimate
 {
     private long average;
     private boolean initial = true;
-    private long reference;
 
     /**
      * Constructs a new time estimate with the given initial value.
@@ -41,25 +40,14 @@ class TimeEstimate
     /**
      * Adds a new sample average to the estimate.
      * @param val The new sample average to add.
-     * @return <code>true</code> if there was a significant change in the value.
      */
-    boolean addSample( long val )
+    void addSample( long val )
     {
         if( initial ) {
             average = val;
-            reference = val;
             initial = false;
-            return true;
         }
         average = (2*average+val)/3;
-        long diff = Math.abs( average-reference );
-        if( diff>Math.abs( average )/10 ) {
-            // More than 10% change compared to current reference.
-            // This is a significant change.
-            reference = average;
-            return true;
-        }
-        return false;
     }
 
     /** If we don't have a better estimate, use this one.

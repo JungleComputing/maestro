@@ -142,10 +142,20 @@ final class WorkerQueue
         }
     }
 
-    void failTask( TaskType type )
+    boolean failTask( TaskType type )
     {
         WorkerQueueTaskInfo info = queueTypes[type.index];
         info.failTask();
+
+        // TODO: synchronize this properly; due to race conditions the last two
+        // task types may be failed at the same time without either one
+        // returning false.
+        for( WorkerQueueTaskInfo i: queueTypes ) {
+            if( i != null && !i.hasFailed() ) {
+                return false; // There still is a non-failed  task type.
+            }
+        }
+        return true;   // All task types have failed.
     }
 
     boolean countTask( TaskType type, long computeInterval )
@@ -154,10 +164,10 @@ final class WorkerQueue
         return info.countTask( computeInterval, type.unpredictable );
     }
 
-    boolean setQueueTimePerTask( TaskType type, long queueTime, int queueLength )
+    void setQueueTimePerTask( TaskType type, long queueTime, int queueLength )
     {
         WorkerQueueTaskInfo info = queueTypes[type.index];
-        return info.setQueueTimePerTask( queueTime/(queueLength+1) );
+        info.setQueueTimePerTask( queueTime/(queueLength+1) );
     }
 
     synchronized RunTaskMessage remove()

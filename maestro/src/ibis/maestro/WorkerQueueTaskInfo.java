@@ -118,7 +118,8 @@ final class WorkerQueueTaskInfo
         outGoingTaskCount++;
         totalWorkTime += workTime;
         if( !unpredictable ) {
-            changed = averageComputeTime.addSample( workTime );
+             averageComputeTime.addSample( workTime );
+             changed = true;
         }
         return changed;
     }
@@ -129,6 +130,11 @@ final class WorkerQueueTaskInfo
     synchronized void failTask()
     {
         failed = true;
+    }
+
+    synchronized boolean hasFailed()
+    {
+        return failed;
     }
 
     /** 
@@ -156,10 +162,10 @@ final class WorkerQueueTaskInfo
      * Update the estimate for the queue time per task.
      * @param v The new value for the queue time per task.
      */
-    synchronized boolean setQueueTimePerTask( long v )
+    synchronized void setQueueTimePerTask( long v )
     {
         totalQueueTime += v;
-        return queueTimePerTask.addSample( v );
+        queueTimePerTask.addSample( v );
     }
 
     void registerNode( NodeInfo nodeInfo )
