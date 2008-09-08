@@ -173,7 +173,7 @@ class TestProg
         @Override
 	public Object getResult()
 	{
-	    // TODO: do something more interesting.
+	    // FIXME: do something more interesting.
 	    return res[0];
 	}
 

@@ -167,7 +167,8 @@ final class NodeTaskInfo
             if( allowance>15 ){
                 // We arbitrarily limit the maximal allowance since larger
         	// than that doesn't seem useful.
-                // FIXME: try to base the limit on something reasoned.
+                // Hitting this limit is a strong indication that something
+        	// is wrong, though.
                 allowance = 15;
             }
             if( maximalEverAllowance<allowance ) {

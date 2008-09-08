@@ -439,7 +439,7 @@ public final class Node extends Thread implements PacketReceiveListener
      * @param result The result to send.
      * @return <code>true</code> if the message could be sent.
      */
-    private boolean sendResultMessage( JobInstanceIdentifier id, Object result )
+    private boolean sendJobResultMessage( JobInstanceIdentifier id, Object result )
     {
         Message msg = new JobResultMessage( id, result );	
         jobResultMessageCount.add();
@@ -915,7 +915,16 @@ public final class Node extends Thread implements PacketReceiveListener
         if( nextTaskType == null ){
             // This was the final step. Report back the result.
             JobInstanceIdentifier identifier = message.taskInstance.jobInstance;
-            sendResultMessage( identifier, result );
+            boolean ok = sendJobResultMessage( identifier, result );
+            if( !ok ) {
+        	// Could not send the result message. We're in trouble.
+        	// Just try again.
+        	ok = sendJobResultMessage(identifier, result );
+        	if( !ok ) {
+        	    // Nothing we can do, we give up.
+        	    Globals.log.reportError( "Could not send job result message to " + identifier );
+        	}
+            }
         }
         else {
             // There is a next step to take.
@@ -942,8 +951,16 @@ public final class Node extends Thread implements PacketReceiveListener
         Message msg = new TaskCompletedMessage( message.taskId, workerDwellTime );
         boolean ok = sendPort.send( message.source, msg );
 
-        // FIXME: try to do something if we couldn't send to the originator of the job. At least retry.
-
+        if( !ok ) {
+            // Could not send the result message. We're desperate.
+            // First simply try again.
+            ok = sendPort.send( message.source, msg );
+            if( !ok ) {
+        	// Unfortunately, that didn't work.
+        	// TODO: think up another way to recover from failed result report.
+        	Globals.log.reportError( "Failed to send task completed message to " + message.source );
+            }
+        }
         updateRecentMasters();
     }
 
