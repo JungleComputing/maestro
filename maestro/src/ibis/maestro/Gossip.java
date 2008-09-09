@@ -67,7 +67,7 @@ class Gossip
             if( info != null ) {
         	xmitTime = info.getTransmissionTime( ix );
             }
-            long val = xmitTime + node.getCompletionOnWorker( ix, nextIx );
+            long val = Utils.safeAdd( xmitTime, node.getCompletionOnWorker( ix, nextIx ) );
 
             if( val<res ) {
                 res = val;
