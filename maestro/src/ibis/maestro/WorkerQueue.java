@@ -101,7 +101,7 @@ final class WorkerQueue
      * Add the given task to our queue.
      * @param msg The task to add to the queue
      */
-    synchronized int add( RunTaskMessage msg )
+    synchronized void add( RunTaskMessage msg )
     {
         if( activeTime == 0L ) {
             activeTime = msg.arrivalMoment;
@@ -125,7 +125,6 @@ final class WorkerQueue
         if( Settings.dumpWorkerQueue ) {
             dumpQueue();
         }
-        return length;
     }
 
     boolean failTask( TaskType type )
@@ -169,7 +168,6 @@ final class WorkerQueue
             if( queueEmptyMoment == 0 ) {
                 queueEmptyMoment = System.nanoTime();
             }
-            return null;
         }
         WorkerQueueTaskInfo info = queueTypes[res.taskInstance.type.index];
         int length = info.registerRemove();

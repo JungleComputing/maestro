@@ -550,8 +550,8 @@ public final class Node extends Thread implements PacketReceiveListener
             recentMasterList.register( source );
         }
         doUpdateRecentMasters.set();
-        int sz = workerQueue.add( msg );
-        gossiper.setLocalQueueLength( msg.taskInstance.type, sz );
+        workerQueue.add( msg );
+        gossiper.incrementLocalQueueLength( msg.taskInstance.type );
     }
 
     /**
@@ -870,7 +870,7 @@ public final class Node extends Thread implements PacketReceiveListener
                     Task task = jobs.getTask( type );
 
                     workerQueue.setQueueTimePerTask( type, queueInterval, queueLength );
-                    gossiper.setQueueTimePerTask( type, queueInterval, queueLength );
+                    gossiper.setQueueTimePerTask( type, queueInterval );
 
                     runningTasks.up();
                     if( Settings.traceNodeProgress ) {

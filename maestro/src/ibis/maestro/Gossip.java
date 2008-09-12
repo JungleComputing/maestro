@@ -4,7 +4,6 @@ import ibis.ipl.IbisIdentifier;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -276,14 +275,14 @@ class Gossip
 	localPerformanceInfo.setComputeTime( type, t );
     }
 
-    void setQueueTimePerTask( TaskType type, long queueInterval, int queueLength )
+    void setQueueTimePerTask( TaskType type, long queueInterval )
     {
-	localPerformanceInfo.setQueueTimePerTask( type, queueInterval, queueLength );
+	localPerformanceInfo.setQueueTimePerTask( type, queueInterval );
     }
 
-    void setLocalQueueLength( TaskType type, int sz )
+    void incrementLocalQueueLength( TaskType type )
     {
-	localPerformanceInfo.setLocalQueueLength( type, sz );
+	localPerformanceInfo.incrementLocalQueueLength( type );
     }
 
 }

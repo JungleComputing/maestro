@@ -343,14 +343,14 @@ class Gossiper extends Thread
 	gossip.setLocalComputeTime( type, t );
     }
 
-    void setQueueTimePerTask( TaskType type, long queueInterval, int queueLength )
+    void setQueueTimePerTask( TaskType type, long queueInterval )
     {
-	gossip.setQueueTimePerTask( type, queueInterval, queueLength );
+	gossip.setQueueTimePerTask( type, queueInterval );
     }
 
-    void setLocalQueueLength( TaskType type, int sz )
+    void incrementLocalQueueLength( TaskType type )
     {
-	gossip.setLocalQueueLength( type, sz );
+	gossip.incrementLocalQueueLength( type );
     }
 
 }
