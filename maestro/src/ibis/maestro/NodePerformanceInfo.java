@@ -201,6 +201,7 @@ class NodePerformanceInfo implements Serializable
 	WorkerQueueInfo info = workerQueueInfo[type.index];
 	if( info != null ) {
 	    info.failTask();
+	    timeStamp = System.nanoTime();
 	}
     }
 
@@ -209,7 +210,8 @@ class NodePerformanceInfo implements Serializable
 	WorkerQueueInfo info = workerQueueInfo[type.index];
 	if( info != null ) {
 	    info.setComputeTime( t );
-	}	
+	    timeStamp = System.nanoTime();
+	}
     }
 
     void setQueueTimePerTask( TaskType type, long queueInterval )
@@ -217,7 +219,8 @@ class NodePerformanceInfo implements Serializable
 	WorkerQueueInfo info = workerQueueInfo[type.index];
 	if( info != null ) {
 	    info.setQueueTimePerTask( queueInterval );
-	}	
+	    timeStamp = System.nanoTime();
+	}
     }
 
     void incrementLocalQueueLength( TaskType type )
@@ -225,6 +228,7 @@ class NodePerformanceInfo implements Serializable
 	WorkerQueueInfo info = workerQueueInfo[type.index];
 	if( info != null ) {
 	    info.incrementQueueLength();
-	}	
+	    timeStamp = System.nanoTime();
+	}
     }
 }
