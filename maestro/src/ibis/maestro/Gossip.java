@@ -30,7 +30,7 @@ class Gossip
 	WorkerQueueInfo queueInfo[] = new WorkerQueueInfo[sz];
         long taskTimes[] = jobs.getInitialTaskTimes();
 	for( int i=0; i<sz; i++ ) {
-	    queueInfo[i] = new WorkerQueueInfo( 0, -1, 0L, taskTimes[i] );
+	    queueInfo[i] = new WorkerQueueInfo( 0, 0, 0L, taskTimes[i] );
 	}
 	localPerformanceInfo = new NodePerformanceInfo( completionInfo, queueInfo, Globals.localIbis.identifier(), numberOfProcessors, System.nanoTime() );
 	gossipList.add( localPerformanceInfo );

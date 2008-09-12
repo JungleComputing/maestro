@@ -520,7 +520,7 @@ public final class Node extends Thread implements PacketReceiveListener
 	}
 	boolean changed = false;
 	for( NodePerformanceInfo i: m.gossip ) {
-	    boolean changed1 = gossiper.registerGossip( i, m.source );
+	    changed |= gossiper.registerGossip( i, m.source );
 	    changed |= handleNodeUpdateInfo( i );
 	}
 	if( m.needsReply ) {
