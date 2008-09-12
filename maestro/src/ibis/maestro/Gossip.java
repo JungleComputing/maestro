@@ -23,18 +23,29 @@ class Gossip
         return new GossipMessage( target, content, needsReply );
     }
     
-    Gossip()
+    Gossip( JobList jobs )
     {
 	int numberOfProcessors = Runtime.getRuntime().availableProcessors();
 	int sz = Globals.allTaskTypes.length;
 	long completionInfo[] = new long[sz];
 	WorkerQueueInfo queueInfo[] = new WorkerQueueInfo[sz];
-	Arrays.fill( completionInfo, Long.MAX_VALUE );
+        long taskTimes[] = jobs.getInitialTaskTimes();
 	for( int i=0; i<sz; i++ ) {
-	    queueInfo[i] = new WorkerQueueInfo( 0, -1, 0L, Long.MAX_VALUE );
+	    queueInfo[i] = new WorkerQueueInfo( 0, -1, 0L, taskTimes[i] );
 	}
 	localPerformanceInfo = new NodePerformanceInfo( completionInfo, queueInfo, Globals.localIbis.identifier(), numberOfProcessors, System.nanoTime() );
 	gossipList.add( localPerformanceInfo );
+        int indexLists[][] = jobs.getIndexLists();
+
+        for( int indexList[] : indexLists ) {
+            int t = 0;
+
+            for( int typeIndex: indexList ) {
+                localPerformanceInfo.completionInfo[typeIndex] = t;
+                t += taskTimes[typeIndex];
+            }
+        }
+        localPerformanceInfo.timeStamp = System.nanoTime();
     }
 
     synchronized boolean isEmpty()

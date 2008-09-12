@@ -175,4 +175,21 @@ public final class JobList
         }
         return res;
     }
+
+    long[] getInitialTaskTimes()
+    {
+        long res[] = new long[allTaskTypes.size()];
+        int i = 0;
+        for( TaskType t: allTaskTypes ) {
+            Task task = getTask( t );
+            if( task instanceof TaskExecutionTimeEstimator ) {
+                TaskExecutionTimeEstimator estimator = (TaskExecutionTimeEstimator) task;
+                res[i++] = estimator.estimateTaskExecutionTime();
+            }
+            else {
+                res[i++] = 0l;
+            }
+        }
+        return res;
+    }
 }

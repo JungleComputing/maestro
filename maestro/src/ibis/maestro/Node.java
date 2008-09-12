@@ -193,7 +193,7 @@ public final class Node extends Thread implements PacketReceiveListener
             stopped.set();
         }
         sendPort = new PacketSendPort( this, localIbis.identifier() );
-        gossiper = new Gossiper( sendPort, isMaestro );
+        gossiper = new Gossiper( sendPort, isMaestro, jobs );
         gossiper.start();
         terminator = buildTerminator();
         receivePort = new PacketUpcallReceivePort( localIbis, Globals.receivePortName, this );

@@ -20,7 +20,7 @@ class Gossiper extends Thread
 {
     private boolean stopped = false;
     private final GossipNodeList nodes = new GossipNodeList();
-    private final Gossip gossip = new Gossip();
+    private final Gossip gossip;
     private final UpDownCounter gossipQuotum; 
     private final Counter messageCount = new Counter();
     private final Counter gossipItemCount = new Counter();
@@ -32,12 +32,13 @@ class Gossiper extends Thread
     private long sendTime = 0;
     private long sentBytes = 0;
 
-    Gossiper( PacketSendPort sendPort, boolean isMaestro )
+    Gossiper( PacketSendPort sendPort, boolean isMaestro, JobList jobs )
     {
 	super( "Maestro gossiper thread" );
 	this.sendPort = sendPort;
 	this.gossipQuotum = new UpDownCounter( isMaestro?40:4 );
 	setDaemon( true );
+	gossip = new Gossip( jobs );
     }
 
     NodePerformanceInfo[] getGossipCopy()
