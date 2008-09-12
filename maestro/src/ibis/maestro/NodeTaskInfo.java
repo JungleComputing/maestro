@@ -40,13 +40,14 @@ final class NodeTaskInfo
      * @param taskInfo The type of task we have administration for.
      * @param worker The worker we have administration for.
      * @param local True iff this is the local worker.
+     * @param unpredictable True iff the execution time of this task is unpredictable.
      * @param pingTime The ping time of this worker.
      */
-    NodeTaskInfo( WorkerQueueTaskInfo taskInfo, NodeInfo worker, boolean local, long pingTime )
+    NodeTaskInfo( WorkerQueueTaskInfo taskInfo, NodeInfo worker, boolean local, boolean unpredictable, long pingTime )
     {
         this.taskInfo = taskInfo;
         this.nodeInfo = worker;
-        this.allowance = local?1:0;
+        this.allowance = unpredictable?0:1;
         this.maximalEverAllowance = allowance;
 
         // Totally unfounded guesses, but we should learn soon enough what the real values are...
