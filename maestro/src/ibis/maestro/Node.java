@@ -480,7 +480,7 @@ public final class Node extends Thread implements PacketReceiveListener
         UpdateNodeMessage msg = new UpdateNodeMessage( update );
         for( IbisIdentifier ibis: recentMasterList.getArray() ){	    
             if( Settings.traceUpdateMessages ) {
-                Globals.log.reportProgress( "Sending " + msg );
+                Globals.log.reportProgress( "Sending " + msg + " to " + ibis );
             }
             sendPort.send( ibis, msg );
             updateMessageCount.add();
@@ -855,7 +855,7 @@ public final class Node extends Thread implements PacketReceiveListener
                 }
                 if( message == null ) {
                     idleProcessors.up();
-                    long sleepTime = 20;
+                    long sleepTime = 100;
                     if( Settings.traceWaits ) {
                         Globals.log.reportProgress( "Waiting for " + sleepTime + "ms for new tasks in queue" );
                     }
@@ -878,9 +878,10 @@ public final class Node extends Thread implements PacketReceiveListener
                     TaskType type = message.taskInstance.type;
                     long queueInterval = runMoment-message.getQueueMoment();
                     int queueLength = message.getQueueLength();
+                    Task task = jobs.getTask( type );
+
                     workerQueue.setQueueTimePerTask( type, queueInterval, queueLength );
                     updateLocalGossip();
-                    Task task = jobs.getTask( type );
 
                     runningTasks.up();
                     if( Settings.traceNodeProgress ) {
@@ -898,7 +899,7 @@ public final class Node extends Thread implements PacketReceiveListener
             Globals.log.reportError( "Uncaught exception in worker thread: " + x.getLocalizedMessage() );
             x.printStackTrace( Globals.log.getPrintStream() );
         }
-        kickAllWorkers();
+        kickAllWorkers(); // We're about to end this thread. Wake all other threads.
     }
 
     private void failNode( RunTaskMessage message, Throwable t )
@@ -977,7 +978,7 @@ public final class Node extends Thread implements PacketReceiveListener
         	Globals.log.reportError( "Failed to send task completed message to " + message.source );
             }
         }
-        updateRecentMasters();
+        doUpdateRecentMasters.set();
     }
 
     /**
