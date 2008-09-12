@@ -11,11 +11,10 @@ class WorkerQueueInfo implements Serializable
 {
     private static final long serialVersionUID = 1L;
 
-    final int queueLength;
-    final int queueLengthSequenceNumber;
-    final long dequeueTime;
-    final long computeTime;
-
+    int queueLength;
+    int queueLengthSequenceNumber;
+    long dequeueTime;
+    long computeTime;
 
     /**
      * @param queueLength The worker queue length.
@@ -56,5 +55,28 @@ class WorkerQueueInfo implements Serializable
     static Object topLabelType( TaskType type )
     {
         return String.format( "%23s", type.toString() );
+    }
+
+    void failTask()
+    {
+	computeTime = Long.MAX_VALUE;
+    }
+
+    void setComputeTime( long t )
+    {
+	computeTime = t;
+    }
+
+    synchronized void setQueueTimePerTask( long queueInterval, int len )
+    {
+	this.queueLength = len;
+	this.dequeueTime = queueInterval;
+	this.queueLengthSequenceNumber++;
+    }
+
+    synchronized void setQueueLength(int sz)
+    {
+	this.queueLength = sz;
+	this.queueLengthSequenceNumber++;
     }
 }

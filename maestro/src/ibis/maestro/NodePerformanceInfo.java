@@ -126,8 +126,7 @@ class NodePerformanceInfo implements Serializable
             return Long.MAX_VALUE;
         }
         long transmissionTime = localNodeInfo.getTransmissionTime( type );
-        int allTasks = currentTasks+1;
-        long total = Utils.safeAdd( transmissionTime, queueInfo.dequeueTime*allTasks, queueInfo.computeTime, completionInterval, unpredictableOverhead );
+        long total = Utils.safeAdd( transmissionTime, queueInfo.dequeueTime, queueInfo.computeTime, completionInterval, unpredictableOverhead );
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "Estimated completion time for " + source + " is " + Utils.formatNanoseconds( total ) );
         }
@@ -195,5 +194,37 @@ class NodePerformanceInfo implements Serializable
         }
         s.print( " | " );
         s.println();
+    }
+
+    void failTask( TaskType type )
+    {
+	WorkerQueueInfo info = workerQueueInfo[type.index];
+	if( info != null ) {
+	    info.failTask();
+	}
+    }
+
+    void setComputeTime( TaskType type, long t )
+    {
+	WorkerQueueInfo info = workerQueueInfo[type.index];
+	if( info != null ) {
+	    info.setComputeTime( t );
+	}	
+    }
+
+    void setQueueTimePerTask( TaskType type, long queueInterval, int queueLength )
+    {
+	WorkerQueueInfo info = workerQueueInfo[type.index];
+	if( info != null ) {
+	    info.setQueueTimePerTask( queueInterval, queueLength );
+	}	
+    }
+
+    void setLocalQueueLength( TaskType type, int sz )
+    {
+	WorkerQueueInfo info = workerQueueInfo[type.index];
+	if( info != null ) {
+	    info.setQueueLength( sz );
+	}	
     }
 }

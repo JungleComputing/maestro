@@ -203,7 +203,6 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
         startTime = System.nanoTime();
-        updateLocalGossip();
         start();
         registry.enableEvents();
         if( Settings.traceNodes ) {
@@ -487,18 +486,6 @@ public final class Node extends Thread implements PacketReceiveListener
         }
     }
 
-    private void updateLocalGossip()
-    {
-        WorkerQueueInfo[] workerQueueInfo = workerQueue.getWorkerQueueInfo();
-        NodeInfo nodeInfo = nodes.get( Globals.localIbis.identifier() ); // TODO: more subtle than this.
-        boolean changed = nodeInfo.registerWorkerQueueInfo( workerQueueInfo );
-        int idle = idleProcessors.get();
-	gossiper.registerWorkerQueueInfo( workerQueueInfo, numberOfProcessors );
-        long masterQueueIntervals[] = masterQueue.getQueueIntervals( idle );
-        HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
-        gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
-    }
-
     /**
      * A worker has sent us a message with its current status, handle it.
      * @param m The update message.
@@ -556,9 +543,9 @@ public final class Node extends Thread implements PacketReceiveListener
         if( !isDead ) {
             recentMasterList.register( source );
         }
-        updateLocalGossip();
         doUpdateRecentMasters.set();
-        workerQueue.add( msg );
+        int sz = workerQueue.add( msg );
+        gossiper.setLocalQueueLength( msg.taskInstance.type, sz );
     }
 
     /**
@@ -573,7 +560,7 @@ public final class Node extends Thread implements PacketReceiveListener
         boolean isnew = gossiper.registerGossip( m.update, m.update.source );
         isnew |= handleNodeUpdateInfo( m.update, true );
         if( isnew ) {
-            long masterQueueIntervals[] = masterQueue.getQueueIntervals( idleProcessors.get() );
+            long masterQueueIntervals[] = masterQueue.getQueueIntervals();
             HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
             gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
         }
@@ -610,7 +597,7 @@ public final class Node extends Thread implements PacketReceiveListener
         isnew |= handleNodeUpdateInfo( msg.update, true );
         if( isnew ) {
             // TODO: abstract this code sequence and other occurrences in a method.
-            long masterQueueIntervals[] = masterQueue.getQueueIntervals( idleProcessors.get() );
+            long masterQueueIntervals[] = masterQueue.getQueueIntervals();
             HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
             gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
         }
@@ -700,11 +687,12 @@ public final class Node extends Thread implements PacketReceiveListener
     /** On a locked queue, try to send out as many task as we can. */
     private void drainMasterQueue()
     {
-        if( masterQueue.isEmpty() ) {
+	boolean changed = false;
+
+	if( masterQueue.isEmpty() ) {
             // Nothing to do, don't bother with the gossip.
             return;
         }
-        boolean changed = false;
         while( true ) {
             NodeInfo worker;
             long taskId;
@@ -742,7 +730,9 @@ public final class Node extends Thread implements PacketReceiveListener
             changed = true;
         }
         if( changed ) {
-            updateLocalGossip();
+            long masterQueueIntervals[] = masterQueue.getQueueIntervals();
+            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
+            gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );            
         }
     }
 
@@ -881,7 +871,7 @@ public final class Node extends Thread implements PacketReceiveListener
                     Task task = jobs.getTask( type );
 
                     workerQueue.setQueueTimePerTask( type, queueInterval, queueLength );
-                    updateLocalGossip();
+                    gossiper.setQueueTimePerTask( type, queueInterval, queueLength );
 
                     runningTasks.up();
                     if( Settings.traceNodeProgress ) {
@@ -908,7 +898,7 @@ public final class Node extends Thread implements PacketReceiveListener
         Globals.log.reportError( "Node fails for type " + type );
         t.printStackTrace( Globals.log.getPrintStream() );
         boolean allFailed = workerQueue.failTask( type );
-        updateLocalGossip();
+        gossiper.failTask( type );
         sendTaskFailMessage( message.source, message.taskId );
         if( allFailed && !isMaestro ) {
             setStopped();
@@ -951,10 +941,7 @@ public final class Node extends Thread implements PacketReceiveListener
 
         // Update statistics.
         final long computeInterval = taskCompletionMoment-runMoment;
-        boolean stateChanged = workerQueue.countTask( type, computeInterval );
-        if( stateChanged ) {
-            updateLocalGossip();
-        }
+        workerQueue.countTask( type, computeInterval, gossiper );
         runningTasks.down();
         if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
             long queueInterval = runMoment-message.getQueueMoment();

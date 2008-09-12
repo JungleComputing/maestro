@@ -94,17 +94,15 @@ final class MasterQueue
 
         /**
          * Estimate the time a new task will spend in the queue.
-         * @param idleProcessors The number of processors that are currently idle.
          * @return The estimated time in nanoseconds a new task will spend in the queue.
          */
-        synchronized long estimateQueueTime( int idleProcessors )
+        synchronized long estimateQueueTime()
         {
             long timePerEntry = dequeueInterval.getAverage();
             // Since at least one processor isn't working on a task (or we
             // wouldn't be here), we are only impressed if there is more
             // than one idle processor.
-            int extra = idleProcessors>1?0:1;
-            long res = timePerEntry*(extra+elements);
+            long res = timePerEntry*(1+elements);
             return res;
         }
 
@@ -323,12 +321,12 @@ final class MasterQueue
         return !queue.isEmpty();
     }
 
-    long[] getQueueIntervals( int idleProcessors )
+    long[] getQueueIntervals()
     {
         long res[] = new long[queueTypes.length];
         
         for( int ix=0; ix<queueTypes.length; ix++ ) {
-            res[ix] = queueTypes[ix].estimateQueueTime( idleProcessors );
+            res[ix] = queueTypes[ix].estimateQueueTime();
         }
         return res;
     }

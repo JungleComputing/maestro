@@ -264,9 +264,14 @@ class Gossiper extends Thread
 	}
     }
 
-    void registerWorkerQueueInfo( WorkerQueueInfo[] update, int numberOfProcessors )
+    void registerWorkerQueueInfo( WorkerQueueInfo[] update )
     {
-	gossip.registerWorkerQueueInfo( update, numberOfProcessors );
+	gossip.registerWorkerQueueInfo( update );
+    }
+
+    void registerWorkerQueueLength( TaskType t, int queueLength, int queueLengthSequenceNumber )
+    {
+	registerWorkerQueueLength( t, queueLength, queueLengthSequenceNumber );
     }
 
     NodePerformanceInfo getLocalUpdate( )
@@ -325,6 +330,26 @@ class Gossiper extends Thread
 	    }
 	}
 	return bestIx;
+    }
+
+    void failTask( TaskType type )
+    {
+	gossip.localNodeFailTask( type );
+    }
+
+    void setComputeTime( TaskType type, long t )
+    {
+	gossip.setLocalComputeTime( type, t );
+    }
+
+    void setQueueTimePerTask( TaskType type, long queueInterval, int queueLength )
+    {
+	gossip.setQueueTimePerTask( type, queueInterval, queueLength );
+    }
+
+    void setLocalQueueLength( TaskType type, int sz )
+    {
+	gossip.setLocalQueueLength( type, sz );
     }
 
 }

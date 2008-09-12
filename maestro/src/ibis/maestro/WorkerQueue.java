@@ -85,21 +85,6 @@ final class WorkerQueue
         }
         return start;
     }
-
-    @SuppressWarnings("synthetic-access")
-    protected WorkerQueueInfo[] getWorkerQueueInfo()
-    {
-        WorkerQueueInfo res[] = new WorkerQueueInfo[queueTypes.length];
-
-        for( int i=0; i<res.length; i++ ) {
-            WorkerQueueTaskInfo q = queueTypes[i];
-
-            if( q != null ){
-        	res[i] = q.getWorkerQueueInfo();
-            }
-        }
-        return res;
-    }
     
     private void dumpQueue()
     {
@@ -116,7 +101,7 @@ final class WorkerQueue
      * Add the given task to our queue.
      * @param msg The task to add to the queue
      */
-    synchronized void add( RunTaskMessage msg )
+    synchronized int add( RunTaskMessage msg )
     {
         if( activeTime == 0L ) {
             activeTime = msg.arrivalMoment;
@@ -140,6 +125,7 @@ final class WorkerQueue
         if( Settings.dumpWorkerQueue ) {
             dumpQueue();
         }
+        return length;
     }
 
     boolean failTask( TaskType type )
@@ -158,10 +144,10 @@ final class WorkerQueue
         return true;   // All task types have failed.
     }
 
-    boolean countTask( TaskType type, long computeInterval )
+    void countTask( TaskType type, long computeInterval, Gossiper gossiper )
     {
         WorkerQueueTaskInfo info = queueTypes[type.index];
-        return info.countTask( computeInterval, type.unpredictable );
+        info.countTask( computeInterval, type.unpredictable, gossiper );
     }
 
     void setQueueTimePerTask( TaskType type, long queueTime, int queueLength )

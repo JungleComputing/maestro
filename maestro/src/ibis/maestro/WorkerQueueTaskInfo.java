@@ -35,8 +35,6 @@ final class WorkerQueueTaskInfo
 
     private boolean failed = false;
 
-    private final TimeEstimate queueTimePerTask = new TimeEstimate( Utils.MILLISECOND_IN_NANOSECONDS );
-
     /** The estimated time interval between tasks being dequeued. */
     private final TimeEstimate dequeueInterval = new TimeEstimate( 1*Utils.MILLISECOND_IN_NANOSECONDS );
 
@@ -89,7 +87,6 @@ final class WorkerQueueTaskInfo
         if( frontChangedTime != 0 ) {
             // We know when this entry became the front of the queue.
             long i = now - frontChangedTime;
-            // Ignore changed flag, since a remove is a pretty big change anyway.
             dequeueInterval.addSample( i );
         }
         elements--;
@@ -111,17 +108,14 @@ final class WorkerQueueTaskInfo
      * @param queueTime The time this task spent in the queue.
      * @param workTime The time it took to execute this task.
      */
-    synchronized boolean countTask( long workTime, boolean unpredictable )
+    synchronized void countTask( long workTime, boolean unpredictable, Gossiper gossiper )
     {
-        boolean changed = false;
-
         outGoingTaskCount++;
         totalWorkTime += workTime;
         if( !unpredictable ) {
-             averageComputeTime.addSample( workTime );
-             changed = true;
+            averageComputeTime.addSample( workTime );
+            gossiper.setComputeTime( type, averageComputeTime.getAverage() );
         }
-        return changed;
     }
 
     /**
@@ -146,18 +140,6 @@ final class WorkerQueueTaskInfo
         averageComputeTime.setInitialEstimate( estimate );
     }
 
-    synchronized WorkerQueueInfo getWorkerQueueInfo()
-    {
-        long computeTime;
-        if( failed ) {
-            computeTime = Long.MAX_VALUE;
-        }
-        else {
-            computeTime = averageComputeTime.getAverage();            
-        }
-        return new WorkerQueueInfo( elements, sequenceNumber, dequeueInterval.getAverage(), computeTime );
-    }
-
     /**
      * Update the estimate for the queue time per task.
      * @param v The new value for the queue time per task.
@@ -165,7 +147,6 @@ final class WorkerQueueTaskInfo
     synchronized void setQueueTimePerTask( long v )
     {
         totalQueueTime += v;
-        queueTimePerTask.addSample( v );
     }
 
     void registerNode( NodeInfo nodeInfo )

@@ -15,11 +15,26 @@ import java.util.HashMap;
 class Gossip
 {
     private ArrayList<NodePerformanceInfo> gossipList = new ArrayList<NodePerformanceInfo>();
+    private NodePerformanceInfo localPerformanceInfo;
 
     GossipMessage constructMessage( IbisIdentifier target, boolean needsReply )
     {
         NodePerformanceInfo content[] = getCopy();
         return new GossipMessage( target, content, needsReply );
+    }
+    
+    Gossip()
+    {
+	int numberOfProcessors = Runtime.getRuntime().availableProcessors();
+	int sz = Globals.allTaskTypes.length;
+	long completionInfo[] = new long[sz];
+	WorkerQueueInfo queueInfo[] = new WorkerQueueInfo[sz];
+	Arrays.fill( completionInfo, Long.MAX_VALUE );
+	for( int i=0; i<sz; i++ ) {
+	    queueInfo[i] = new WorkerQueueInfo( 0, -1, 0L, Long.MAX_VALUE );
+	}
+	localPerformanceInfo = new NodePerformanceInfo( completionInfo, queueInfo, Globals.localIbis.identifier(), numberOfProcessors, System.nanoTime() );
+	gossipList.add( localPerformanceInfo );
     }
 
     synchronized boolean isEmpty()
@@ -89,26 +104,17 @@ class Gossip
     synchronized void recomputeCompletionTimes( long masterQueueIntervals[], JobList jobs, HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap )
     {
         int indexLists[][] = jobs.getIndexLists();
-        int ix = searchInfo( Globals.localIbis.identifier() );
-        if( ix<0 ) {
-            // We're not in the table yet. Don't worry, it will get there.
-            return;
-        }
-        // Note that we recompute the times back to front, since we will need the later
-        // times to compute the earlier times.
-        
-        NodePerformanceInfo localInfo = gossipList.get( ix );
 
         for( int indexList[] : indexLists ) {
             int nextIndex = -1;
 
             for( int typeIndex: indexList ) {
                 long t = Utils.safeAdd( masterQueueIntervals[typeIndex], getBestCompletionTimeAfterMasterQueue( typeIndex, nextIndex, localNodeInfoMap ) );
-                localInfo.completionInfo[typeIndex] = t;
+                localPerformanceInfo.completionInfo[typeIndex] = t;
                 nextIndex = typeIndex;
             }
         }
-        localInfo.timeStamp = System.nanoTime();
+        localPerformanceInfo.timeStamp = System.nanoTime();
     }
 
     /** Registers the given information in our collection of gossip.
@@ -156,35 +162,25 @@ class Gossip
     /** Overwrite the worker queue info of our local information with the new info.
      * @param update
      */
-    synchronized void registerWorkerQueueInfo( WorkerQueueInfo[] update, int numberOfProcessors )
+    synchronized void registerWorkerQueueInfo( WorkerQueueInfo[] update )
     {
-        IbisIdentifier ourIbis = Globals.localIbis.identifier();
-        int ix = searchInfo( ourIbis );
-        if( ix<0 ) {
-            long completionInfo[] = new long[Globals.allTaskTypes.length];
-            Arrays.fill( completionInfo, Long.MAX_VALUE );
-            NodePerformanceInfo localInfo = new NodePerformanceInfo( completionInfo, update, ourIbis, numberOfProcessors, System.nanoTime() );
-            gossipList.add( localInfo );
-            return;
-        }
-        // Note that we recompute the times back to front, since we will need the later
-        // times to compute the earlier times.
-        
-        NodePerformanceInfo localInfo = gossipList.get( ix );
-        
-        localInfo.workerQueueInfo = update;
-        localInfo.timeStamp = System.nanoTime();
+        localPerformanceInfo.workerQueueInfo = update;
+        localPerformanceInfo.timeStamp = System.nanoTime();
+    }
+
+    /** Update the worker queue info for the given type. */
+    synchronized void registerWorkerQueueLength( TaskType t, int queueLength, int queueLengthSequenceNumber )
+    {
+	// FIXME: better use the knowledge that this has changed.
+	WorkerQueueInfo info = localPerformanceInfo.workerQueueInfo[t.index];
+	info.queueLength = queueLength;
+	info.queueLengthSequenceNumber = queueLengthSequenceNumber;
+        localPerformanceInfo.timeStamp = System.nanoTime();
     }
 
     synchronized NodePerformanceInfo getLocalUpdate()
     {
-        IbisIdentifier ourIbis = Globals.localIbis.identifier();
-        int ix = searchInfo( ourIbis );
-        if( ix<0 ) {
-            Globals.log.reportInternalError( "No local info in gossip???" );
-            return null;
-        }
-        return gossipList.get( ix ).getDeepCopy();
+        return localPerformanceInfo.getDeepCopy();
     }
     
     synchronized void print( PrintStream s )
@@ -256,13 +252,27 @@ class Gossip
 
     long getLocalTimestamp()
     {
-	// TODO: maintain a pointer to the local gossip.
-        IbisIdentifier ourIbis = Globals.localIbis.identifier();
-        int ix = searchInfo( ourIbis );
-        if( ix<0 ) {
-            Globals.log.reportInternalError( "No local info in gossip???" );
-            return 0L;
-        }
-        return gossipList.get( ix ).timeStamp;
+	return localPerformanceInfo.timeStamp;
     }
+
+    void localNodeFailTask( TaskType type )
+    {
+	localPerformanceInfo.failTask( type );
+    }
+
+    void setLocalComputeTime( TaskType type, long t )
+    {
+	localPerformanceInfo.setComputeTime( type, t );
+    }
+
+    void setQueueTimePerTask( TaskType type, long queueInterval, int queueLength )
+    {
+	localPerformanceInfo.setQueueTimePerTask( type, queueInterval, queueLength );
+    }
+
+    void setLocalQueueLength( TaskType type, int sz )
+    {
+	localPerformanceInfo.setLocalQueueLength( type, sz );
+    }
+
 }

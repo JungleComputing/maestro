@@ -306,7 +306,6 @@ final class NodeInfo
 		NodeTaskInfo workerTaskInfo = task.nodeTaskInfo;
 		if( workerTaskInfo != null ) {
 		    workerTaskInfo.updateRoundtripTimeEstimate( t );
-		    changed = true;
 		}
 		task.setAllowanceDeadline( t );
 	    }
