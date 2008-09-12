@@ -144,10 +144,10 @@ final class WorkerQueue
         return true;   // All task types have failed.
     }
 
-    void countTask( TaskType type, long computeInterval, Gossiper gossiper )
+    long countTask( TaskType type, long computeInterval )
     {
         WorkerQueueTaskInfo info = queueTypes[type.index];
-        info.countTask( computeInterval, type.unpredictable, gossiper );
+        return info.countTask( computeInterval, type.unpredictable );
     }
 
     void setQueueTimePerTask( TaskType type, long queueTime, int queueLength )

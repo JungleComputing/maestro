@@ -56,6 +56,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private final WorkerQueue workerQueue;
     private long nextTaskId = 0;
     private final Flag doUpdateRecentMasters = new Flag( false );
+    private final Flag recomputeCompletionTimes = new Flag( false );
     private UpDownCounter idleProcessors = new UpDownCounter( -Settings.EXTRA_WORK_THREADS ); // Yes, we start with a negative number of idle processors.
     private Counter updateMessageCount = new Counter();
     private Counter submitMessageCount = new Counter();
@@ -409,6 +410,11 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private void updateAdministration()
     {
+        if( recomputeCompletionTimes.getAndReset() ){
+            long masterQueueIntervals[] = masterQueue.getQueueIntervals();
+            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
+            gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
+        }
         if( doUpdateRecentMasters.getAndReset() ) {
             updateRecentMasters();
         }
@@ -560,9 +566,7 @@ public final class Node extends Thread implements PacketReceiveListener
         boolean isnew = gossiper.registerGossip( m.update, m.update.source );
         isnew |= handleNodeUpdateInfo( m.update, true );
         if( isnew ) {
-            long masterQueueIntervals[] = masterQueue.getQueueIntervals();
-            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
-            gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
+            recomputeCompletionTimes.set();
         }
     }
 
@@ -596,10 +600,7 @@ public final class Node extends Thread implements PacketReceiveListener
         boolean isnew = gossiper.registerGossip( msg.update, msg.update.source );
         isnew |= handleNodeUpdateInfo( msg.update, true );
         if( isnew ) {
-            // TODO: abstract this code sequence and other occurrences in a method.
-            long masterQueueIntervals[] = masterQueue.getQueueIntervals();
-            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
-            gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
+            recomputeCompletionTimes.set();
         }
         masterQueue.add( failedTask );
     }
@@ -730,9 +731,7 @@ public final class Node extends Thread implements PacketReceiveListener
             changed = true;
         }
         if( changed ) {
-            long masterQueueIntervals[] = masterQueue.getQueueIntervals();
-            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
-            gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );            
+            recomputeCompletionTimes.set();
         }
     }
 
@@ -941,7 +940,8 @@ public final class Node extends Thread implements PacketReceiveListener
 
         // Update statistics.
         final long computeInterval = taskCompletionMoment-runMoment;
-        workerQueue.countTask( type, computeInterval, gossiper );
+        long averageComputeTime = workerQueue.countTask( type, computeInterval );
+        gossiper.setComputeTime( type, averageComputeTime );
         runningTasks.down();
         if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
             long queueInterval = runMoment-message.getQueueMoment();

@@ -108,14 +108,14 @@ final class WorkerQueueTaskInfo
      * @param queueTime The time this task spent in the queue.
      * @param workTime The time it took to execute this task.
      */
-    synchronized void countTask( long workTime, boolean unpredictable, Gossiper gossiper )
+    synchronized long countTask( long workTime, boolean unpredictable )
     {
         outGoingTaskCount++;
         totalWorkTime += workTime;
         if( !unpredictable ) {
             averageComputeTime.addSample( workTime );
-            gossiper.setComputeTime( type, averageComputeTime.getAverage() );
         }
+        return averageComputeTime.getAverage();
     }
 
     /**
