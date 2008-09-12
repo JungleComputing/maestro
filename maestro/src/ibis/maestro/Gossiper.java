@@ -218,7 +218,7 @@ class Gossiper extends Thread
 	gossip.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
     }
 
-    void addQuotum()
+    private void addQuotum()
     {
 	gossipQuotum.up();
 	synchronized( this ) {
@@ -311,14 +311,14 @@ class Gossiper extends Thread
      * @param localNodeInfoMap Local knowledge about the different nodes.
      * @return
      */
-    private long computeCompletionTime(TaskType type, boolean submitIfBusy,
+    private long computeCompletionTime( TaskType type, boolean submitIfBusy,
 	    HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap )
     {
 	return gossip.computeCompletionTime( type, submitIfBusy, localNodeInfoMap );
     }
 
-    int selectFastestTask(TaskType[] types, boolean submitIfBusy,
-	    HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap)
+    int selectFastestTask( TaskType[] types, boolean submitIfBusy,
+	    HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap )
     {
 	int bestIx = -1;
 	long bestTime = Long.MAX_VALUE;
@@ -336,21 +336,25 @@ class Gossiper extends Thread
     void failTask( TaskType type )
     {
 	gossip.localNodeFailTask( type );
+	addQuotum();
     }
 
     void setComputeTime( TaskType type, long t )
     {
 	gossip.setLocalComputeTime( type, t );
+	addQuotum();
     }
 
     void setQueueTimePerTask( TaskType type, long queueInterval )
     {
 	gossip.setQueueTimePerTask( type, queueInterval );
+	addQuotum();
     }
 
     void incrementLocalQueueLength( TaskType type )
     {
 	gossip.incrementLocalQueueLength( type );
+	addQuotum();
     }
 
 }

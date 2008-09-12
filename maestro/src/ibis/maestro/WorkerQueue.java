@@ -17,8 +17,6 @@ final class WorkerQueue
 {
     private final ArrayList<RunTaskMessage> queue = new ArrayList<RunTaskMessage>();
     private final WorkerQueueTaskInfo queueTypes[];
-    private long queueEmptyMoment = System.nanoTime();
-    private long idleDuration = 0;
     private long activeTime = 0L;
 
     /**
@@ -106,13 +104,6 @@ final class WorkerQueue
         if( activeTime == 0L ) {
             activeTime = msg.arrivalMoment;
         }
-        if( queueEmptyMoment>0L ){
-            // The queue was empty before we entered this
-            // task in it. Record this for the statistics.
-            long queueEmptyInterval = msg.arrivalMoment - queueEmptyMoment;
-            idleDuration += queueEmptyInterval;
-            queueEmptyMoment = 0L;
-        }
         TaskType type = msg.taskInstance.type;
         WorkerQueueTaskInfo info = queueTypes[type.index];
         int length = info.registerAdd();
@@ -158,17 +149,9 @@ final class WorkerQueue
     synchronized RunTaskMessage remove()
     {
         if( queue.isEmpty() ) {
-            if( queueEmptyMoment == 0 ) {
-                queueEmptyMoment = System.nanoTime();
-            }
             return null;
         }
         RunTaskMessage res = queue.remove( 0 );
-        if( queue.isEmpty() ) {
-            if( queueEmptyMoment == 0 ) {
-                queueEmptyMoment = System.nanoTime();
-            }
-        }
         WorkerQueueTaskInfo info = queueTypes[res.taskInstance.type.index];
         int length = info.registerRemove();
         if( Settings.traceQueuing ) {
@@ -186,11 +169,8 @@ final class WorkerQueue
         return activeTime;
     }
 
-
     synchronized void printStatistics( PrintStream s, long workInterval )
     {
-        double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
-        s.println( "Worker: total idle time = " + Utils.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
         for( WorkerQueueTaskInfo t: queueTypes ) {
             if( t != null ) {
                 t.printStatistics( s, workInterval );
@@ -221,6 +201,5 @@ final class WorkerQueue
     synchronized void clear()
     {
         queue.clear();
-        queueEmptyMoment = System.nanoTime();
     }
 }

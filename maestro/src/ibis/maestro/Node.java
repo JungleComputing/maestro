@@ -27,6 +27,7 @@ public final class Node extends Thread implements PacketReceiveListener
     final PacketUpcallReceivePort receivePort;
     final long startTime;
     private long stopTime = 0;
+    private long idleDuration = 0L;
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
 
     private RegistryEventHandler registryEventHandler;
@@ -448,6 +449,8 @@ public final class Node extends Thread implements PacketReceiveListener
         workerQueue.printStatistics( s, workInterval );
         s.println( "run time        = " + Utils.formatNanoseconds( workInterval ) );
         s.println( "activated after = " + Utils.formatNanoseconds( activeTime-startTime ) );
+        double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
+        s.println( "Worker: total idle time = " + Utils.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
         masterQueue.printStatistics( s );
         Utils.printThreadStats( s );    }
 
@@ -833,24 +836,38 @@ public final class Node extends Thread implements PacketReceiveListener
         try {
             while( keepRunning() ) {
                 RunTaskMessage message = null;
+                boolean readyForWork = false;
 
                 updateAdministration();
                 if( runningTasks.isBelow( numberOfProcessors ) ) {
                     // Only try to start a new task when there are idle
                     // processors.
                     message = workerQueue.remove();
+                    readyForWork = true;
                 }
                 if( message == null ) {
                     idleProcessors.up();
                     long sleepTime = 100;
-                    if( Settings.traceWaits ) {
-                        Globals.log.reportProgress( "Waiting for " + sleepTime + "ms for new tasks in queue" );
-                    }
                     // Wait a little, there is nothing to do.
                     try{
                         synchronized( this ) {
-                            if( keepRunning() ) {
-                                this.wait( sleepTime );
+                            if( readyForWork ) {
+                                if( Settings.traceWaits ) {
+                                    Globals.log.reportProgress( "Waiting for " + sleepTime + "ms for new tasks in queue" );
+                                }
+                        	// Measure the time we spend in this wait,
+                        	// and add to idle time.
+                        	long startWaitTime = System.nanoTime();
+                        	if( keepRunning() ) {
+                        	    this.wait( sleepTime );
+                        	}
+                        	long idleTime = System.nanoTime()-startWaitTime;
+                        	idleDuration += idleTime;                        	
+                            }
+                            else {
+                        	if( keepRunning() ) {
+                        	    this.wait( sleepTime );
+                        	}
                             }
                         }
                     }
@@ -900,7 +917,6 @@ public final class Node extends Thread implements PacketReceiveListener
         if( allFailed && !isMaestro ) {
             setStopped();
         }
-            
     }
 
     /**
