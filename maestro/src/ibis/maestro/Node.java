@@ -273,14 +273,28 @@ public final class Node extends Thread implements PacketReceiveListener
     /** Set this node to the stopped state.
      * This does not mean that the node stops immediately,
      * but it does mean the master and worker try to wind down the work.
+     * @param clearQueues If <code>true</code> clear all work queues.
      */
-    public void setStopped()
+    public void setStopped( boolean clearQueues )
     {
         if( Settings.traceNodes ) {
             Globals.log.reportProgress( "Set node to stopped state" );
         }
         stopped.set();
+        if( clearQueues ) {
+            masterQueue.clear();
+            workerQueue.clear();
+        }
         kickAllWorkers();
+    }
+
+    /** Set this node to the stopped state.
+     * This does not mean that the node stops immediately,
+     * but it does mean the master and worker try to wind down the work.
+     */
+    public void setStopped()
+    {
+        setStopped( false );
     }
 
     /**

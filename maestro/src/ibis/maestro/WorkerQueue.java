@@ -179,6 +179,12 @@ final class WorkerQueue
             return null;
         }
         RunTaskMessage res = queue.remove( 0 );
+        if( queue.isEmpty() ) {
+            if( queueEmptyMoment == 0 ) {
+                queueEmptyMoment = System.nanoTime();
+            }
+            return null;
+        }
         WorkerQueueTaskInfo info = queueTypes[res.taskInstance.type.index];
         int length = info.registerRemove();
         if( Settings.traceQueuing ) {
@@ -226,5 +232,11 @@ final class WorkerQueue
     WorkerQueueTaskInfo getTaskInfo( int ix )
     {
         return queueTypes[ix];
+    }
+
+    synchronized void clear()
+    {
+        queue.clear();
+        queueEmptyMoment = System.nanoTime();
     }
 }
