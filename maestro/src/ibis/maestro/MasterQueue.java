@@ -266,7 +266,7 @@ final class MasterQueue
                 LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
                 long val = info.estimateJobCompletion( localNodeInfo, task.type, true );
                 s.print( Utils.formatNanoseconds( val ) );
-                if( val == bestInterval ){
+                if( val == bestInterval && val != Long.MAX_VALUE  ){
                     s.print( '$' );
                 }
                 s.print( ' ' );

@@ -110,6 +110,9 @@ class NodePerformanceInfo implements Serializable
         else {
             int allowance = localNodeInfo.getAllowance( type );
             if( ignoreBusyProcessors && currentTasks>=allowance ) {
+                if( Settings.traceRemainingJobTime ) {
+                    Globals.log.reportError( "Node " + source + " uses its allowance, no completion estimate: currentTasks=" + currentTasks + " allowance=" + allowance );
+                }
         	return Long.MAX_VALUE;
             }
         }
