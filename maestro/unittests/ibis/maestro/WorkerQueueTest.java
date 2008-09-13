@@ -18,7 +18,7 @@ public class WorkerQueueTest extends TestCase
 	    JobInstanceIdentifier jobInstance = new JobInstanceIdentifier( id, null, null );
 	    TaskInstance ti = new TaskInstance( jobInstance, type, 0 );
 	    RunTaskMessage msg = new RunTaskMessage( null, ti, 0 );
-	    queue.add( msg );
+	    queue.add( msg, null );
 	}
     }
 
@@ -28,7 +28,7 @@ public class WorkerQueueTest extends TestCase
             if( queue.isEmpty() ) {
                 fail( "Queue is empty, while I expected " + id );
             }
-	    RunTaskMessage msg = queue.remove();
+	    RunTaskMessage msg = queue.remove( null );
 	    
 	    if( msg.taskInstance.jobInstance.id != id ) {
 		fail( "Unexpected task from worker queue: " + msg.taskInstance.jobInstance.id + " instead of " + id );

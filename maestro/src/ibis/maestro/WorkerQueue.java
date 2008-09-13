@@ -99,7 +99,7 @@ final class WorkerQueue
      * Add the given task to our queue.
      * @param msg The task to add to the queue
      */
-    synchronized void add( RunTaskMessage msg )
+    synchronized void add( RunTaskMessage msg, Gossiper gossiper )
     {
         if( activeTime == 0L ) {
             activeTime = msg.arrivalMoment;
@@ -115,6 +115,9 @@ final class WorkerQueue
         msg.setQueueMoment( msg.arrivalMoment, length );
         if( Settings.dumpWorkerQueue ) {
             dumpQueue();
+        }
+        if( gossiper != null ) {
+            gossiper.setQueueLength( type, length );
         }
     }
 
@@ -140,7 +143,7 @@ final class WorkerQueue
         return info.countTask( computeInterval, type.unpredictable );
     }
 
-    synchronized RunTaskMessage remove()
+    synchronized RunTaskMessage remove( Gossiper gossiper )
     {
         if( queue.isEmpty() ) {
             return null;
@@ -150,6 +153,10 @@ final class WorkerQueue
         int length = info.registerRemove();
         if( Settings.traceQueuing ) {
             Globals.log.reportProgress( "Removing " + res.taskInstance.formatJobAndType() + " from worker queue; length is now " + queue.size() + "; " + length + " of type " + res.taskInstance.type );
+        }
+        long queueInterval = System.nanoTime()-res.getQueueMoment();
+        if( gossiper != null ) {
+            gossiper.setQueueTimePerTask( res.taskInstance.type, queueInterval/res.getQueueLength(), length );
         }
         return res;
     }

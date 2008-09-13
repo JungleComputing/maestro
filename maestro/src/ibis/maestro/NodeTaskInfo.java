@@ -172,7 +172,7 @@ final class NodeTaskInfo
                 maximalEverAllowance = allowance;
             }
             if( Settings.traceAllowance ){
-                Globals.log.reportProgress( "controlAllowance(): task=" + taskInfo + " node=" + nodeInfo + " queueLength=" + queueLength + " allowance=" + oldAllowance + "->" + allowance );
+                Globals.log.reportProgress( "controlAllowance(): task=" + taskInfo.type + " node=" + nodeInfo + " queueLength=" + queueLength + " allowance=" + oldAllowance + "->" + allowance );
             }
             changed = (allowance != oldAllowance);
         }

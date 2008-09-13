@@ -274,14 +274,14 @@ class Gossip
 	localPerformanceInfo.setComputeTime( type, t );
     }
 
-    void setQueueTimePerTask( TaskType type, long queueInterval, int queueLength )
+    void setQueueTimePerTask( TaskType type, long queueTimePerTask, int queueLength )
     {
-	localPerformanceInfo.setQueueTimePerTask( type, queueInterval, queueLength );
+	localPerformanceInfo.setQueueTimePerTask( type, queueTimePerTask, queueLength );
     }
 
-    void incrementLocalQueueLength( TaskType type )
+    void setQueueLength( TaskType type, int queueLength )
     {
-	localPerformanceInfo.incrementLocalQueueLength( type );
+	localPerformanceInfo.setQueueLength( type, queueLength );
     }
 
 }

@@ -175,6 +175,7 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodes ) {
             Globals.log.reportProgress( "Created ibis " + localIbis );
         }
+        recentMasterList.register( localIbis.identifier() );
         nodes.registerNode( localIbis.identifier(), true );
         Registry registry = localIbis.registry();
         if( runForMaestro ){
@@ -485,6 +486,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private void updateRecentMasters()
     {
         NodePerformanceInfo update = gossiper.getLocalUpdate();
+        handleNodeUpdateInfo( update );   // Treat the local node as a honorary recent master.
         UpdateNodeMessage msg = new UpdateNodeMessage( update );
         for( IbisIdentifier ibis: recentMasterList.getArray() ){	    
             if( Settings.traceUpdateMessages ) {
@@ -548,12 +550,11 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         IbisIdentifier source = msg.source;
         boolean isDead = nodes.registerAsCommunicating( source );
-        if( !isDead ) {
+        if( !isDead && !source.equals( Globals.localIbis.identifier() ) ) {
             recentMasterList.register( source );
         }
         doUpdateRecentMasters.set();
-        workerQueue.add( msg );
-        gossiper.incrementLocalQueueLength( msg.taskInstance.type );
+        workerQueue.add( msg, gossiper );
     }
 
     /**
@@ -845,7 +846,7 @@ public final class Node extends Thread implements PacketReceiveListener
                 if( runningTasks.isBelow( numberOfProcessors ) ) {
                     // Only try to start a new task when there are idle
                     // processors.
-                    message = workerQueue.remove();
+                    message = workerQueue.remove( gossiper );
                     readyForWork = true;
                 }
                 if( message == null ) {
@@ -879,14 +880,11 @@ public final class Node extends Thread implements PacketReceiveListener
                     // We have a task to execute.
                     long runMoment = System.nanoTime();
                     TaskType type = message.taskInstance.type;
-                    long queueInterval = runMoment-message.getQueueMoment();
-                    int queueLength = message.getQueueLength();
                     Task task = jobs.getTask( type );
-
-                    gossiper.setQueueTimePerTask( type, queueInterval, queueLength );
 
                     runningTasks.up();
                     if( Settings.traceNodeProgress ) {
+                        long queueInterval = runMoment-message.getQueueMoment();
                         Globals.log.reportProgress( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Utils.formatNanoseconds( queueInterval ) + "; there are now " + runningTasks + " running tasks" );
                     }
                     Object input = message.taskInstance.input;
@@ -923,9 +921,9 @@ public final class Node extends Thread implements PacketReceiveListener
     }
 
     /**
-     * @param message
-     * @param result
-     * @param runMoment
+     * @param message The task that was run.
+     * @param result The result of the task.
+     * @param runMoment The moment the task was started.
      */
     void handleTaskResult( RunTaskMessage message, Object result, long runMoment )
     {

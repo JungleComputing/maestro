@@ -36,7 +36,7 @@ class Settings {
     static final boolean traceWorkerList = false;
     
     /** Trace the creation and destruction of Nodes. */
-    static final boolean traceNodes = false;
+    static final boolean traceNodes = true;
 
     /** Trace the events in the master queue? */
     static final boolean traceMasterQueue = false;
@@ -72,7 +72,7 @@ class Settings {
     static final boolean traceUpdateMessages = false;
 
     /** Trace changes to the allowances. */
-    static final boolean traceAllowance = false;
+    static final boolean traceAllowance = true;
 
     /** Trace the adventures of the gossip engine? */
     static final boolean traceGossip = false;

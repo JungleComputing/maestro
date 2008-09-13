@@ -19,7 +19,7 @@ class RecentMasterList {
      * thus, element 0 is the most recently seen master.
      */
     private final List<IbisIdentifier> masters = new ArrayList<IbisIdentifier>();
-    
+
     synchronized void register( IbisIdentifier ibis )
     {
         masters.remove( ibis );   // Remove an earlier occurence, if any.

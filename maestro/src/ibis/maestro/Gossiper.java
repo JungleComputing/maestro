@@ -345,15 +345,15 @@ class Gossiper extends Thread
 	addQuotum();
     }
 
-    void setQueueTimePerTask( TaskType type, long queueInterval, int queueLength )
+    void setQueueTimePerTask( TaskType type, long queueTimePerTask, int queueLength )
     {
-	gossip.setQueueTimePerTask( type, queueInterval, queueLength );
+	gossip.setQueueTimePerTask( type, queueTimePerTask, queueLength );
 	addQuotum();
     }
 
-    void incrementLocalQueueLength( TaskType type )
+    void setQueueLength( TaskType type, int queueLength )
     {
-	gossip.incrementLocalQueueLength( type );
+	gossip.setQueueLength( type, queueLength );
 	addQuotum();
     }
 
