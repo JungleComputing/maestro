@@ -74,7 +74,7 @@ class Gossip
     }
 
     /**
-     * Returns the best average completion time for this task.
+     * Returns the best average completion time for this task after it has been sent by the master.
      * We compute this by taking the minimum over all our workers.
      * @param ix The index of the type we're computing the completion time for.
      * @param nextIx The index of the type after the current one, or <code>-1</code> if there isn't one.
@@ -87,15 +87,14 @@ class Gossip
 
         for( NodePerformanceInfo node: gossipList ) {
             LocalNodeInfo info = localNodeInfoMap.get( node.source );
-            long xmitTime = 0L;
             
             if( info != null ) {
-        	xmitTime = info.getTransmissionTime( ix );
-            }
-            long val = Utils.safeAdd( xmitTime, node.getCompletionOnWorker( ix, nextIx ) );
+                long xmitTime = info.getTransmissionTime( ix );
+                long val = Utils.safeAdd( xmitTime, node.getCompletionOnWorker( ix, nextIx ) );
 
-            if( val<res ) {
-                res = val;
+                if( val<res ) {
+                    res = val;
+                }
             }
         }
         return res;

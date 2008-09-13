@@ -13,17 +13,17 @@ class WorkerQueueInfo implements Serializable
 
     int queueLength;
     int queueLengthSequenceNumber;
-    long dequeueTime;
+    long dequeueTimePerTask;
     long computeTime;
 
     /**
      * @param queueLength The worker queue length.
      */
-    WorkerQueueInfo( int queueLength, int queueLengthSequenceNumber, long dequeueTime, long computeTime )
+    WorkerQueueInfo( int queueLength, int queueLengthSequenceNumber, long dequeueTimePerTask, long computeTime )
     {
 	this.queueLength = queueLength;
 	this.queueLengthSequenceNumber = queueLengthSequenceNumber;
-	this.dequeueTime = dequeueTime;
+	this.dequeueTimePerTask = dequeueTimePerTask;
 	this.computeTime = computeTime;
     }
 
@@ -34,12 +34,12 @@ class WorkerQueueInfo implements Serializable
     @Override
     public String toString()
     {
-        return "(ql=" + queueLength + ",dq=" + Utils.formatNanoseconds( dequeueTime ) + ",compute=" + Utils.formatNanoseconds( computeTime ) + ")";
+        return "(ql=" + queueLength + ",dq/t=" + Utils.formatNanoseconds( dequeueTimePerTask ) + ",compute=" + Utils.formatNanoseconds( computeTime ) + ")";
     }
 
     String format()
     {
-        return String.format( "%3d %9s %9s", queueLength, Utils.formatNanoseconds( dequeueTime ), Utils.formatNanoseconds( computeTime ) );
+        return String.format( "%3d %9s %9s", queueLength, Utils.formatNanoseconds( dequeueTimePerTask ), Utils.formatNanoseconds( computeTime ) );
     }
 
     static String topLabel()
@@ -69,8 +69,8 @@ class WorkerQueueInfo implements Serializable
 
     synchronized void setQueueTimePerTask( long queueInterval )
     {
-	this.queueLength--;
-	this.dequeueTime = queueInterval;
+	this.dequeueTimePerTask = queueInterval/this.queueLength;
+        this.queueLength--;
 	this.queueLengthSequenceNumber++;
     }
 
