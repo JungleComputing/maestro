@@ -525,26 +525,14 @@ class BenchmarkProgram {
             );
         }
         else {
-            if( saveFrames ){
-                convertJob = jobs.createJob(
-                    "benchmark",
-                    new GenerateFrameTask(),
-                    new ScaleUpFrameTask( 2, slowScale, allowScale ),
-                    new SharpenFrameTask( slowSharpen, allowSharpen ),
-                    new CompressFrameTask(),
-                    new SaveFrameTask( dir )
-                );
-            }
-            else {
-                convertJob = jobs.createJob(
-                    "benchmark",
-                    new GenerateFrameTask(),
-                    new ScaleUpFrameTask( 2, slowScale, allowScale ),
-                    new SharpenFrameTask( slowSharpen, allowSharpen ),
-                    new CompressFrameTask(),
-                    new SaveFrameTask( dir )
-                );
-            }
+            convertJob = jobs.createJob(
+        	"benchmark",
+        	new GenerateFrameTask(),
+        	new ScaleUpFrameTask( 2, slowScale, allowScale ),
+        	new SharpenFrameTask( slowSharpen, allowSharpen ),
+        	new CompressFrameTask(),
+        	new SaveFrameTask( dir )
+            );
         }
         Node node = new Node( jobs, goForMaestro );
 
