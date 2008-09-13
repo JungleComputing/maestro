@@ -67,10 +67,10 @@ class WorkerQueueInfo implements Serializable
 	computeTime = t;
     }
 
-    synchronized void setQueueTimePerTask( long queueInterval )
+    synchronized void setQueueTimePerTask( long queueInterval, int newQueueLength )
     {
-	this.dequeueTimePerTask = queueInterval/this.queueLength;
-        this.queueLength--;
+	this.dequeueTimePerTask = queueInterval/(newQueueLength+1);  // We must take the recently dequeued task into account.
+        this.queueLength = newQueueLength;
 	this.queueLengthSequenceNumber++;
     }
 

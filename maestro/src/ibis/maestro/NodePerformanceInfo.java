@@ -93,6 +93,18 @@ class NodePerformanceInfo implements Serializable
             }
             return Long.MAX_VALUE;
         }
+        if( localNodeInfo.suspect ){
+            if( Settings.traceRemainingJobTime ) {
+                Globals.log.reportError( "Node " + source + " is suspect, no completion estimate" );
+            }
+            return Long.MAX_VALUE;
+        }
+        if( completionInterval == Long.MAX_VALUE  ) {
+            if( Settings.traceRemainingJobTime ) {
+                Globals.log.reportError( "Node " + source + " has infinite completion time" );
+            }
+            return Long.MAX_VALUE;
+        }
         int currentTasks = localNodeInfo.getCurrentTasks( type );
         if( type.unpredictable ) {
             if( ignoreBusyProcessors && currentTasks>=numberOfProcessors ) {
@@ -116,20 +128,9 @@ class NodePerformanceInfo implements Serializable
         	return Long.MAX_VALUE;
             }
         }
-        if( localNodeInfo.suspect ){
-            if( Settings.traceRemainingJobTime ) {
-                Globals.log.reportError( "Node " + source + " is suspect, no completion estimate" );
-            }
-            return Long.MAX_VALUE;
-        }
-        if( completionInterval == Long.MAX_VALUE  ) {
-            if( Settings.traceRemainingJobTime ) {
-                Globals.log.reportError( "Node " + source + " has infinite completion time" );
-            }
-            return Long.MAX_VALUE;
-        }
         long transmissionTime = localNodeInfo.getTransmissionTime( type );
-        long total = Utils.safeAdd( transmissionTime, (1+queueInfo.queueLength)*queueInfo.dequeueTimePerTask, queueInfo.computeTime, completionInterval, unpredictableOverhead );
+        int extra = (currentTasks>=numberOfProcessors)?1:0;
+        long total = Utils.safeAdd( transmissionTime, (extra+queueInfo.queueLength)*queueInfo.dequeueTimePerTask, queueInfo.computeTime, completionInterval, unpredictableOverhead );
         if( Settings.traceRemainingJobTime ) {
             Globals.log.reportProgress( "Estimated completion time for " + source + " is " + Utils.formatNanoseconds( total ) );
         }
@@ -138,9 +139,8 @@ class NodePerformanceInfo implements Serializable
 
     /**
      * Given the index of a type, return the interval in nanoseconds it
-     * will take from the moment a task of this type leaves the master queue
-     * until the entire job it belongs to is completed on the node we have
-     * this update info for.
+     * will take from the moment a task of this type arrives at the worker queue
+     * of this node, until the entire job it belongs to is completed.
      * @param ix The index of the type we're interested in.
      */
     long getCompletionOnWorker( int ix, int nextIx )
@@ -216,11 +216,11 @@ class NodePerformanceInfo implements Serializable
 	}
     }
 
-    void setQueueTimePerTask( TaskType type, long queueInterval )
+    void setQueueTimePerTask( TaskType type, long queueInterval, int queueLength )
     {
 	WorkerQueueInfo info = workerQueueInfo[type.index];
 	if( info != null ) {
-	    info.setQueueTimePerTask( queueInterval );
+	    info.setQueueTimePerTask( queueInterval, queueLength );
 	    timeStamp = System.nanoTime();
 	}
     }

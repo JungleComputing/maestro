@@ -27,7 +27,6 @@ public final class Node extends Thread implements PacketReceiveListener
     final PacketUpcallReceivePort receivePort;
     final long startTime;
     private long stopTime = 0;
-    private long idleDuration = 0L;
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
 
     private RegistryEventHandler registryEventHandler;
@@ -64,6 +63,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private Counter taskResultMessageCount = new Counter();
     private Counter jobResultMessageCount = new Counter();
     private Counter taskFailMessageCount = new Counter();
+    private long overheadDuration = 0L;
     private Flag enableRegistration = new Flag( false );
 
     private Flag stopped = new Flag( false );
@@ -449,8 +449,8 @@ public final class Node extends Thread implements PacketReceiveListener
         workerQueue.printStatistics( s, workInterval );
         s.println( "run time        = " + Utils.formatNanoseconds( workInterval ) );
         s.println( "activated after = " + Utils.formatNanoseconds( activeTime-startTime ) );
-        double idlePercentage = 100.0*((double) idleDuration/(double) workInterval);
-        s.println( "Worker: total idle time = " + Utils.formatNanoseconds( idleDuration ) + String.format( " (%.1f%%)", idlePercentage ) );
+        double overheadPercentage = 100.0*((double) overheadDuration/(double) workInterval);
+        s.println( "Total overhead time = " + Utils.formatNanoseconds( overheadDuration ) + String.format( " (%.1f%%)", overheadPercentage ) );
         masterQueue.printStatistics( s );
         Utils.printThreadStats( s );    }
 
@@ -532,6 +532,7 @@ public final class Node extends Thread implements PacketReceiveListener
 	    }
 	}
 	if( changed ) {
+	    recomputeCompletionTimes.set();
 	    synchronized( this ) {
 		this.notify();
 	    }
@@ -833,6 +834,8 @@ public final class Node extends Thread implements PacketReceiveListener
     /** Run a work thread. Only return when we want to shut down the node. */
     void runWorkThread()
     {
+	long overheadStart = System.nanoTime();
+	long threadOverhead = 0L;
         try {
             while( keepRunning() ) {
                 RunTaskMessage message = null;
@@ -847,29 +850,25 @@ public final class Node extends Thread implements PacketReceiveListener
                 }
                 if( message == null ) {
                     idleProcessors.up();
-                    long sleepTime = 100;
+                    long sleepTime = 20;
                     // Wait a little, there is nothing to do.
-                    try{
-                        synchronized( this ) {
-                            if( readyForWork ) {
-                                if( Settings.traceWaits ) {
-                                    Globals.log.reportProgress( "Waiting for " + sleepTime + "ms for new tasks in queue" );
-                                }
-                        	// Measure the time we spend in this wait,
-                        	// and add to idle time.
-                        	long startWaitTime = System.nanoTime();
-                        	if( keepRunning() ) {
-                        	    this.wait( sleepTime );
-                        	}
-                        	long idleTime = System.nanoTime()-startWaitTime;
-                        	idleDuration += idleTime;                        	
-                            }
-                            else {
-                        	if( keepRunning() ) {
-                        	    this.wait( sleepTime );
-                        	}
-                            }
-                        }
+                    try {
+                	if( readyForWork ) {
+                	    gossiper.addQuotum();
+                	    if( Settings.traceWaits ) {
+                		Globals.log.reportProgress( "Waiting for " + sleepTime + "ms for new tasks in queue" );
+                	    }
+                	}
+                	synchronized( this ) {
+                            long overhead = System.nanoTime()-overheadStart;
+                	    // Measure the time we spend in this wait,
+                	    // and add to idle time.
+                	    if( keepRunning() ) {
+                		this.wait( sleepTime );
+                	    }
+                            overheadStart = System.nanoTime();
+                	    threadOverhead += overhead;
+                	}
                     }
                     catch( InterruptedException e ){
                         // Not interesting.
@@ -884,15 +883,16 @@ public final class Node extends Thread implements PacketReceiveListener
                     int queueLength = message.getQueueLength();
                     Task task = jobs.getTask( type );
 
-                    workerQueue.setQueueTimePerTask( type, queueInterval, queueLength );
-                    gossiper.setQueueTimePerTask( type, queueInterval );
+                    gossiper.setQueueTimePerTask( type, queueInterval, queueLength );
 
                     runningTasks.up();
                     if( Settings.traceNodeProgress ) {
                         Globals.log.reportProgress( "Worker: handed out task " + message + " of type " + type + "; it was queued for " + Utils.formatNanoseconds( queueInterval ) + "; there are now " + runningTasks + " running tasks" );
                     }
                     Object input = message.taskInstance.input;
+                    threadOverhead += System.nanoTime()-overheadStart;
                     executeTask( message, task, input, runMoment );
+                    overheadStart = System.nanoTime();
                     if( Settings.traceNodeProgress ) {
                         Globals.log.reportProgress( "Work thread: completed " + message );
                     }
@@ -902,6 +902,9 @@ public final class Node extends Thread implements PacketReceiveListener
         catch( Throwable x ) {
             Globals.log.reportError( "Uncaught exception in worker thread: " + x.getLocalizedMessage() );
             x.printStackTrace( Globals.log.getPrintStream() );
+        }
+        synchronized( this ) {
+            overheadDuration += threadOverhead;
         }
         kickAllWorkers(); // We're about to end this thread. Wake all other threads.
     }

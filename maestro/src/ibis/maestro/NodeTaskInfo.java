@@ -47,7 +47,7 @@ final class NodeTaskInfo
     {
         this.taskInfo = taskInfo;
         this.nodeInfo = worker;
-        this.allowance = unpredictable?0:1;
+        this.allowance = (unpredictable||!local)?0:1;
         this.maximalEverAllowance = allowance;
 
         // Totally unfounded guesses, but we should learn soon enough what the real values are...

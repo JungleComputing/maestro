@@ -218,7 +218,7 @@ class Gossiper extends Thread
 	gossip.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
     }
 
-    private void addQuotum()
+    void addQuotum()
     {
 	gossipQuotum.up();
 	synchronized( this ) {
@@ -345,9 +345,9 @@ class Gossiper extends Thread
 	addQuotum();
     }
 
-    void setQueueTimePerTask( TaskType type, long queueInterval )
+    void setQueueTimePerTask( TaskType type, long queueInterval, int queueLength )
     {
-	gossip.setQueueTimePerTask( type, queueInterval );
+	gossip.setQueueTimePerTask( type, queueInterval, queueLength );
 	addQuotum();
     }
 

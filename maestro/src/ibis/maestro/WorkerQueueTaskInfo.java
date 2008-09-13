@@ -39,7 +39,6 @@ final class WorkerQueueTaskInfo
     private final TimeEstimate dequeueInterval = new TimeEstimate( 1*Utils.MILLISECOND_IN_NANOSECONDS );
 
     private long totalWorkTime = 0;        
-    private long totalQueueTime = 0;     // Cumulative queue time of all tasks.
     private final TimeEstimate averageComputeTime = new TimeEstimate( Utils.MILLISECOND_IN_NANOSECONDS );
 
     WorkerQueueTaskInfo( TaskType type  )
@@ -55,10 +54,9 @@ final class WorkerQueueTaskInfo
         if( outGoingTaskCount>0 ) {
             out.println( "Worker: " + type + ":" );
             out.printf( "    # tasks          = %5d\n", outGoingTaskCount );
-            out.println( "    total work time = " + Utils.formatNanoseconds( totalWorkTime ) + String.format( " (%.1f%%)", workPercentage )  );
-            out.println( "    queue time/task  = " + Utils.formatNanoseconds( totalQueueTime/outGoingTaskCount ) );
-            out.println( "    work time/task   = " + Utils.formatNanoseconds( totalWorkTime/outGoingTaskCount ) );
-            out.println( "    aver. dwell time = " + Utils.formatNanoseconds( (totalWorkTime+totalQueueTime)/outGoingTaskCount ) );
+            out.println( "    total work time      = " + Utils.formatNanoseconds( totalWorkTime ) + String.format( " (%.1f%%)", workPercentage )  );
+            out.println( "    work time/task       = " + Utils.formatNanoseconds( totalWorkTime/outGoingTaskCount ) );
+            out.println( "    av. dequeue interval = " + Utils.formatNanoseconds( dequeueInterval.getAverage() ) );
         }
         else {
             out.println( "Worker: " + type + " is unused" );
@@ -138,15 +136,6 @@ final class WorkerQueueTaskInfo
     void setInitialComputeTimeEstimate( long estimate )
     {
         averageComputeTime.setInitialEstimate( estimate );
-    }
-
-    /**
-     * Update the estimate for the queue time per task.
-     * @param v The new value for the queue time per task.
-     */
-    synchronized void setQueueTimePerTask( long v )
-    {
-        totalQueueTime += v;
     }
 
     void registerNode( NodeInfo nodeInfo )
