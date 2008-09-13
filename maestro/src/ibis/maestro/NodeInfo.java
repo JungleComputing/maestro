@@ -42,7 +42,8 @@ final class NodeInfo
         nodeTaskInfoList = new NodeTaskInfo[Globals.allTaskTypes.length];
         // For non-local nodes, start with a very pessimistic ping time.
         // This means that only if we really need another node, we use it.
-        long pessimisticPingTime = local?0L:Utils.HOUR_IN_NANOSECONDS;
+        //long pessimisticPingTime = local?0L:Utils.HOUR_IN_NANOSECONDS;
+        long pessimisticPingTime = local?0L:Utils.MILLISECOND_IN_NANOSECONDS;
         for( int ix=0; ix<Globals.allTaskTypes.length; ix++  ) {
             WorkerQueueTaskInfo taskInfo = workerQueue.getTaskInfo( ix );
             boolean unpredictable = Globals.allTaskTypes[ix].unpredictable;
