@@ -47,7 +47,13 @@ class SendPortCache extends LinkedHashMap<IbisIdentifier,SendPortCacheConnection
     protected boolean removeEldestEntry( Map.Entry<IbisIdentifier, SendPortCacheConnectionInfo> eldest )
     {
         SendPortCacheConnectionInfo connection = eldest.getValue();
-        if( (connection.mostRecentUse+maximalUnusedCount)<useCount && size() > cacheSize ) {
+        boolean removeIt;
+
+        int mostRecentUse = connection.getMostRecentUse();
+        synchronized( this ) {
+            removeIt = (mostRecentUse+maximalUnusedCount)<useCount && size() > cacheSize;
+        }
+        if( removeIt ) {
             // This cache entry makes the cache too large, or has not
             // been used for too long. Out it goes.
             connection.close();
@@ -104,7 +110,7 @@ class SendPortCache extends LinkedHashMap<IbisIdentifier,SendPortCacheConnection
         }
     }
 
-    void printStatistics( PrintStream s )
+    synchronized void printStatistics( PrintStream s )
     {
 	s.printf( "sendport cache: %d hits, of which %d non-essential, %d misses, %d evictions\n", nonEssentialHits+hits, nonEssentialHits, misses, evictions );
     }

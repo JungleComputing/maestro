@@ -226,7 +226,7 @@ class Gossiper extends Thread
 	}
     }
 
-    void printStatistics( PrintStream s )
+    synchronized void printStatistics( PrintStream s )
     {
 	s.println( "Sent " + messageCount.get() + " gossip messages, with " + failedGossipMessageCount.get() + " failures, received " + gossipItemCount.get()  + " gossip items, " + newGossipItemCount.get() + " new" );
 	s.println( "Sent " + Utils.formatByteCount( sentBytes ) + " in " + Utils.formatNanoseconds( sendTime ) + ", administration time " + Utils.formatNanoseconds( adminTime ) );
@@ -268,11 +268,6 @@ class Gossiper extends Thread
     void registerWorkerQueueInfo( WorkerQueueInfo[] update )
     {
 	gossip.registerWorkerQueueInfo( update );
-    }
-
-    void registerWorkerQueueLength( TaskType t, int queueLength, int queueLengthSequenceNumber )
-    {
-	registerWorkerQueueLength( t, queueLength, queueLengthSequenceNumber );
     }
 
     NodePerformanceInfo getLocalUpdate( )

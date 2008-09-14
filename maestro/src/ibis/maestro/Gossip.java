@@ -177,16 +177,6 @@ class Gossip
         localPerformanceInfo.timeStamp = System.nanoTime();
     }
 
-    /** Update the worker queue info for the given type. */
-    synchronized void registerWorkerQueueLength( TaskType t, int queueLength, int queueLengthSequenceNumber )
-    {
-	// FIXME: better use the knowledge that this has changed.
-	WorkerQueueInfo info = localPerformanceInfo.workerQueueInfo[t.index];
-	info.queueLength = queueLength;
-	info.queueLengthSequenceNumber = queueLengthSequenceNumber;
-        localPerformanceInfo.timeStamp = System.nanoTime();
-    }
-
     synchronized NodePerformanceInfo getLocalUpdate()
     {
         return localPerformanceInfo.getDeepCopy();

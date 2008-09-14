@@ -89,6 +89,7 @@ final class NodeInfo
             NodeTaskInfo nodeTaskInfo = nodeTaskInfoList[i];
 
             if( workerInfo != null && nodeTaskInfo != null ) {
+                // FindBug complains about the sequence number being unlocked, but this is a copy...
         	changed |= nodeTaskInfo.controlAllowance( workerInfo.queueLength, workerInfo.queueLengthSequenceNumber );
             }
         }

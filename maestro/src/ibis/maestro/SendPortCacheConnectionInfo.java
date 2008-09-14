@@ -8,7 +8,7 @@ import java.io.IOException;
 final class SendPortCacheConnectionInfo
 {
     private SendPort port;
-    int mostRecentUse = 0;
+    private int mostRecentUse = 0;
 
     synchronized SendPort getPort( IbisIdentifier ibis, int useCount )
     {
@@ -44,5 +44,10 @@ final class SendPortCacheConnectionInfo
             }
             port = null;
         }
+    }
+
+    int getMostRecentUse()
+    {
+        return mostRecentUse;
     }
 }
