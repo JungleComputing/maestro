@@ -1,7 +1,6 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
-import ibis.ipl.Location;
 
 import java.util.Comparator;
 import java.util.PriorityQueue;
@@ -21,19 +20,9 @@ class GossipNodeList
         long nextUpdateMoment;    // The moment in time in ms for the next update.
         final long updateInterval;      // Time interval in ms for each new update. 
 
-        private static boolean areInSameCluster( IbisIdentifier a, IbisIdentifier b )
-        {
-            Location la = a.location();
-            Location lb = b.location();
-            int nodeLevel = Math.min( la.numberOfLevels(), lb.numberOfLevels() );
-            int matchingLevels = la.numberOfMatchingLevels( lb );
-            boolean res = matchingLevels>=(nodeLevel-1);
-            return res;
-        }
-
         private static long computeUpdateInterval( IbisIdentifier ibis )
         {
-            boolean sameCluster = areInSameCluster( Globals.localIbis.identifier(), ibis );
+            boolean sameCluster = Utils.areInSameCluster( Globals.localIbis.identifier(), ibis );
             return sameCluster ? Settings.GOSSIP_EXPIRATION_IN_CLUSTER : Settings.GOSSIP_EXPIRATION_BETWEEN_CLUSTERS;
         }
 

@@ -31,6 +31,15 @@ public class Utils
     {
         return 3;
     }
+    static boolean areInSameCluster( IbisIdentifier a, IbisIdentifier b )
+    {
+        Location la = a.location();
+        Location lb = b.location();
+        int nodeLevel = Math.min( la.numberOfLevels(), lb.numberOfLevels() );
+        int matchingLevels = la.numberOfMatchingLevels( lb );
+        boolean res = matchingLevels>=(nodeLevel-1);
+        return res;
+    }
     /** Returns a string with the platform version that is used.
      * @return The platform version.
      */

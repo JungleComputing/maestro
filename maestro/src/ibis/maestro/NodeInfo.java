@@ -43,7 +43,15 @@ final class NodeInfo
         // For non-local nodes, start with a very pessimistic ping time.
         // This means that only if we really need another node, we use it.
         //long pessimisticPingTime = local?0L:Utils.HOUR_IN_NANOSECONDS;
-        long pessimisticPingTime = local?0L:Utils.MILLISECOND_IN_NANOSECONDS;
+        long pessimisticPingTime = 0L;
+        if( !local ) {
+            pessimisticPingTime = Utils.MILLISECOND_IN_NANOSECONDS+Globals.rng.nextInt( (int) Utils.MILLISECOND_IN_NANOSECONDS );
+            if( !Utils.areInSameCluster( Globals.localIbis.identifier(), ibis) ) {
+        	// Be more pessimistic if the nodes are not in the same cluster.
+        	// TODO: simply look at the number of differing levels.
+        	pessimisticPingTime *= 3;
+            }
+        }
         for( int ix=0; ix<Globals.allTaskTypes.length; ix++  ) {
             WorkerQueueTaskInfo taskInfo = workerQueue.getTaskInfo( ix );
             boolean unpredictable = Globals.allTaskTypes[ix].unpredictable;
