@@ -106,6 +106,14 @@
     <property name="javadoc" location="javadoc" />
     <property name="sources" location="sources" />
 
+
+    <path id="default.classpath">
+        <fileset dir="${lib}">
+            <include name="*.jar" />
+        </fileset>
+        <pathelement path="${tmp}" />
+    </path>
+
     <!-- Compile -->
     <target name="compile">
         <mkdir dir="${tmp}" />
@@ -115,13 +123,6 @@
         <copy todir="${lib}">
             <fileset dir="${external}" includes="*.jar" />
         </copy>
-
-        <path id="default.classpath">
-            <fileset dir="${lib}">
-                <include name="*.jar" />
-            </fileset>
-            <pathelement path="${tmp}" />
-        </path>
 
         <!-- Compile the java code from ${src} into ${tmp} -->
         <javac srcdir="${src}" 
@@ -141,7 +142,7 @@
     </target>
 
     <!-- Generate javadoc -->
-    <target name="javadoc" description="generate all javadocs">
+    <target name="javadoc" depends="compile" description="generate all javadocs">
         <javadoc destdir="${javadoc}"
                  access="public"
                  classpathref="default.classpath"

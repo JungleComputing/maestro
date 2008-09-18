@@ -1,0 +1,17 @@
+Maestro is a programming framework that executes dataflow computations on
+malleable sets of Ibis nodes. The system is `self-organizing'. That is,
+apart from a specialized 'maestro' node that inserts work in the system,
+all nodes are equal, and they distribute the work among themselves based
+on the performance of the nodes for different tasks and the performance of
+the communication channels between them. There is no central scheduler.
+
+Computations are called 'jobs', and each job consists of a series of
+'tasks' that are arranged in a pipeline. Each task can be 'atomic':
+indivisible, or a 'map-reduce' task that generates a series of
+job instances whose output is `reduced' into a single result for the
+entire map-reduce task.
+
+For further information see the javadoc. This can be created using
+
+ant javadoc
+
