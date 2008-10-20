@@ -60,6 +60,7 @@ public final class Node extends Thread implements PacketReceiveListener
     private UpDownCounter idleProcessors = new UpDownCounter( -Settings.EXTRA_WORK_THREADS ); // Yes, we start with a negative number of idle processors.
     private Counter updateMessageCount = new Counter();
     private Counter submitMessageCount = new Counter();
+    private Counter taskReceivedMessageCount = new Counter();
     private Counter taskResultMessageCount = new Counter();
     private Counter jobResultMessageCount = new Counter();
     private Counter taskFailMessageCount = new Counter();
@@ -435,11 +436,12 @@ public final class Node extends Thread implements PacketReceiveListener
         s.printf(  "# work threads  = %5d\n", workThreads.length );
         nodes.printStatistics( s );
         jobs.printStatistics( s );
-        s.printf( "update       messages:   %5d sent\n", updateMessageCount.get() );
-        s.printf( "submit       messages:   %5d sent\n", submitMessageCount.get() );
-        s.printf( "task result  messages:   %5d sent\n", taskResultMessageCount.get() );
-        s.printf( "job result   messages:   %5d sent\n", jobResultMessageCount.get() );
-        s.printf( "job fail     messages:   %5d sent\n", taskFailMessageCount.get() );
+        s.printf( "update        messages:   %5d sent\n", updateMessageCount.get() );
+        s.printf( "submit        messages:   %5d sent\n", submitMessageCount.get() );
+        s.printf( "task received messages:   %5d sent\n", taskReceivedMessageCount.get() );
+        s.printf( "task result   messages:   %5d sent\n", taskResultMessageCount.get() );
+        s.printf( "job result    messages:   %5d sent\n", jobResultMessageCount.get() );
+        s.printf( "job fail      messages:   %5d sent\n", taskFailMessageCount.get() );
         gossiper.printStatistics( s );
         if( terminator != null ) {
             terminator.printStatistics( s );
@@ -453,7 +455,8 @@ public final class Node extends Thread implements PacketReceiveListener
         double overheadPercentage = 100.0*((double) overheadDuration/(double) workInterval);
         s.println( "Total overhead time = " + Utils.formatNanoseconds( overheadDuration ) + String.format( " (%.1f%%)", overheadPercentage ) );
         masterQueue.printStatistics( s );
-        Utils.printThreadStats( s );    }
+        Utils.printThreadStats( s );
+    }
 
     /**
      * Send a result message to the given port, using the given job identifier
@@ -467,6 +470,21 @@ public final class Node extends Thread implements PacketReceiveListener
         Message msg = new JobResultMessage( id, result );	
         jobResultMessageCount.add();
         return sendPort.send( id.ibis, msg );
+    }
+
+
+    /**
+     * Send a result message to the given port, using the given job identifier
+     * and the given result value.
+     * @param id The task identifier.
+     * @param result The result to send.
+     * @return <code>true</code> if the message could be sent.
+     */
+    private boolean sendTaskReceivedMessage( IbisIdentifier master, long id )
+    {
+        Message msg = new TaskReceivedMessage( id );	
+        taskReceivedMessageCount.add();
+        return sendPort.send( master, msg );
     }
 
     /**
@@ -554,6 +572,8 @@ public final class Node extends Thread implements PacketReceiveListener
             recentMasterList.register( source );
         }
         doUpdateRecentMasters.set();
+        sendTaskReceivedMessage( source, msg.taskId );
+        // FIXME: send a task received message & remove stats from task completed.
         workerQueue.add( msg, gossiper );
     }
 
@@ -575,7 +595,7 @@ public final class Node extends Thread implements PacketReceiveListener
 
     /**
      * A worker has sent use a completion message for a task. Process it.
-     * @param result The status message.
+     * @param result The message.
      */
     private void handleTaskCompletedMessage( TaskCompletedMessage result )
     {
@@ -587,6 +607,18 @@ public final class Node extends Thread implements PacketReceiveListener
             masterQueue.removeDuplicates( task );
         }
         doUpdateRecentMasters.set();
+    }
+
+    /**
+     * A worker has sent use a received message for a task. Process it.
+     * @param result The message.
+     */
+    private void handleTaskReceivedMessage( TaskReceivedMessage result )
+    {
+        if( Settings.traceNodeProgress ){
+            Globals.log.reportProgress( "Received a task received message " + result );
+        }
+        nodes.registerTaskReceived( result );
     }
 
     /**
@@ -647,6 +679,9 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         else if( msg instanceof TaskCompletedMessage ) {
             handleTaskCompletedMessage( (TaskCompletedMessage) msg );
+        }
+        else if( msg instanceof TaskReceivedMessage ) {
+            handleTaskReceivedMessage( (TaskReceivedMessage) msg );
         }
         else if( msg instanceof JobResultMessage ) {
             handleJobResultMessage( (JobResultMessage) msg );

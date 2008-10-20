@@ -195,7 +195,6 @@ final class NodeInfo
             return null;
         }
         long roundtripTime = result.arrivalMoment-task.startTime;
-        long newTransmissionTime = roundtripTime-result.workerDwellTime; // The time interval to send the task and report the result.
         NodeTaskInfo nodeTaskInfo = task.nodeTaskInfo;
         TaskType type = task.task.type;
 	if( task.getAllowanceDeadline()<result.arrivalMoment ) {
@@ -220,18 +219,43 @@ final class NodeInfo
             }
             nodeTaskInfo.registerMissedRescheduleDeadline();
         }
-	nodeTaskInfo.registerTaskCompleted( newTransmissionTime, roundtripTime );
+	nodeTaskInfo.registerTaskCompleted( roundtripTime );
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress(
                 "Master: retired task " + task
                 + " roundtripTime=" + Utils.formatNanoseconds( roundtripTime )
-                + " transmissionTime=" + Utils.formatNanoseconds( newTransmissionTime )
             );
         }
         if( task.task.isOrphan() ) {
             return task.task;
         }
         return null;
+    }
+
+    /**
+     * Register a reception notification for a task.
+     * @param result The task received message that tells about this task.
+     */
+    void registerTaskReceived( TaskReceivedMessage result )
+    {
+        final long id = result.taskId;    // The identifier of the task, as handed out by us.
+        int ix = searchActiveTask( id );
+
+        if( ix<0 ){
+            // Not in the list of active tasks, presumably because it was
+            // redundantly executed.
+            return;
+        }
+        ActiveTask task = activeTasks.get( ix );
+        long transmissionTime = result.arrivalMoment-task.startTime;
+        NodeTaskInfo nodeTaskInfo = task.nodeTaskInfo;
+	nodeTaskInfo.registerTaskReceived( transmissionTime );
+        if( Settings.traceNodeProgress ){
+            Globals.log.reportProgress(
+                "Master: retired task " + task
+                + " transmissionTime=" + Utils.formatNanoseconds( transmissionTime )
+            );
+        }
     }
 
     /** Register the start of a new task.

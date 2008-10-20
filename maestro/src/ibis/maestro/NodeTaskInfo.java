@@ -69,18 +69,29 @@ final class NodeTaskInfo
 
     /**
      * Registers the completion of a task.
-     * @param transmissionTime The transmission time of this task.
      * @param roundtripTime The total roundtrip time of this task.
      */
-    synchronized void registerTaskCompleted( long transmissionTime, long roundtripTime )
+    synchronized void registerTaskCompleted( long roundtripTime )
     {
         executedTasks++;
         outstandingTasks--;
         roundtripTimeEstimate.addSample( roundtripTime );
+        if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
+            String label = "task=" + taskInfo + " worker=" + nodeInfo;
+            Globals.log.reportProgress( label + ": roundTripTimeEstimate=" + roundtripTimeEstimate );
+        }
+    }
+
+    /**
+     * Registers the reception of a task by the worker.
+     * @param transmissionTime The transmission time of this task.
+     */
+    synchronized void registerTaskReceived( long transmissionTime )
+    {
         transmissionTimeEstimate.addSample( transmissionTime );
         if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
             String label = "task=" + taskInfo + " worker=" + nodeInfo;
-            Globals.log.reportProgress( label + ": roundTripTimeEstimate=" + roundtripTimeEstimate + " transimssionTimeEstimate=" + transmissionTimeEstimate );
+            Globals.log.reportProgress( label + ": transmissionTimeEstimate=" + roundtripTimeEstimate );
         }
     }
 

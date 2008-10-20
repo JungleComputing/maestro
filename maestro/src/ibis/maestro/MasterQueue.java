@@ -244,7 +244,6 @@ final class MasterQueue
     {
         NodePerformanceInfo best = null;
         long bestInterval = Long.MAX_VALUE;
-        long predictedDuration = 0l;
 
         for( NodePerformanceInfo info: tables ) {
             LocalNodeInfo localNodeInfo = localNodeInfoMap.get( info.source );
@@ -253,7 +252,6 @@ final class MasterQueue
             if( val<bestInterval ) {
                 bestInterval = val;
                 best = info;
-                predictedDuration = localNodeInfo.getPredictedDuration( task.type );
             }
         }
         if( Settings.traceWorkerSelection ){
@@ -282,6 +280,8 @@ final class MasterQueue
         if( Settings.traceMasterQueue ){
             Globals.log.reportProgress( "Selected worker " + best.source + " for task of type " + task.type );
         }
+        LocalNodeInfo localNodeInfo = localNodeInfoMap.get( best.source );
+        long predictedDuration = localNodeInfo.getPredictedDuration( task.type );
         return new Submission( task, best.source, predictedDuration );
     }
 

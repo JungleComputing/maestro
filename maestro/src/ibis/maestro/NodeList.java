@@ -76,6 +76,21 @@ final class NodeList
     }
 
     /**
+     * Register the fact that the worker has received a task.
+     * @param msg The message.
+     */
+    synchronized void registerTaskReceived( TaskReceivedMessage msg )
+    {
+        NodeInfo node = ibisToNodeMap.get( msg.source );
+        if( node == null ) {
+            Globals.log.reportError( "Task received message from unknown node " + msg.source );
+            return;
+        }
+        node.registerTaskReceived( msg );
+        node.registerAsCommunicating();
+    }
+
+    /**
      * Register that a tasked has failed.
      * @param ibis The ibis that failed to execute the task.
      * @param taskId The id of the failed task.
