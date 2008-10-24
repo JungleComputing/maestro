@@ -413,6 +413,9 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         while( true ){
             QueuedMessage msg = outgoingMessageQueue.getNext();
+            if( msg == null ){
+                return;
+            }
             sendPort.send( msg.destination, msg.msg );            
         }
     }
