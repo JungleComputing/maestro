@@ -38,6 +38,8 @@ public final class Node extends Thread implements PacketReceiveListener
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
     private final Gossiper gossiper;
     private final Terminator terminator;
+    
+    private MessageQueue outgoingMessageQueue = new MessageQueue();
 
     private CompletedJobJist completedJobList = new CompletedJobJist();
 
@@ -406,6 +408,14 @@ public final class Node extends Thread implements PacketReceiveListener
             reportCompletion( j.job, j.result );
         }
     }
+    
+    private void drainOutgoingMessageQueue()
+    {
+        while( true ){
+            QueuedMessage msg = outgoingMessageQueue.getNext();
+            sendPort.send( msg.destination, msg.msg );            
+        }
+    }
 
     /**
      * Do all updates of the node adminstration that we can.
@@ -422,6 +432,7 @@ public final class Node extends Thread implements PacketReceiveListener
             updateRecentMasters();
         }
         drainCompletedJobList();
+        drainOutgoingMessageQueue();
         drainMasterQueue();
         nodes.checkDeadlines( System.nanoTime() );
     }
@@ -478,13 +489,14 @@ public final class Node extends Thread implements PacketReceiveListener
      * and the given result value.
      * @param id The task identifier.
      * @param result The result to send.
-     * @return <code>true</code> if the message could be sent.
      */
-    private boolean sendTaskReceivedMessage( IbisIdentifier master, long id )
+    private void postTaskReceivedMessage( IbisIdentifier master, long id )
     {
         Message msg = new TaskReceivedMessage( id );	
         taskReceivedMessageCount.add();
-        return sendPort.send( master, msg );
+        synchronized( outgoingMessageQueue ){
+            outgoingMessageQueue.add( master, msg );
+        }
     }
 
     /**
@@ -572,7 +584,7 @@ public final class Node extends Thread implements PacketReceiveListener
             recentMasterList.register( source );
         }
         doUpdateRecentMasters.set();
-        sendTaskReceivedMessage( source, msg.taskId );
+        postTaskReceivedMessage( source, msg.taskId );
         // FIXME: send a task received message & remove stats from task completed.
         workerQueue.add( msg, gossiper );
     }
