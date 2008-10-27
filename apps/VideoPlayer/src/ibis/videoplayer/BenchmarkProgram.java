@@ -534,7 +534,7 @@ class BenchmarkProgram {
         	new SaveFrameTask( dir )
             );
         }
-        Node node = new Node( jobs, goForMaestro );
+        Node node = Node.createNode( jobs, goForMaestro );
 
         removeDirectory( dir );
 

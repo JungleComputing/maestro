@@ -183,7 +183,7 @@ public class RenderMovieProgram implements JobCompletionListener
         );
 
         int frameno = 0;
-        Node node = new Node( jobList, sourceDirectory != null );
+        Node node = Node.createNode( jobList, sourceDirectory != null );
         System.out.println( "Node created" );
         if( sourceDirectory != null && node.isMaestro() ) {
             String init = RenderFrameTask.readFile( iniFile );

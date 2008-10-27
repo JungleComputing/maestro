@@ -166,7 +166,7 @@ class ConvertFramesProgram {
                 new CompressFrameTask()
         );
 
-        Node node = new Node( tasks, framesDirectory != null );
+        Node node = Node.createNode( tasks, framesDirectory != null );
         System.out.println( "Node created" );
         if( framesDirectory != null ) {
             File files[] = framesDirectory.listFiles();

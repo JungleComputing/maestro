@@ -70,7 +70,7 @@ public class BuildVideoProgram {
 	Job getFrameTask = BuildFragmentTask.createGetFrameJob( jobList );
 	Job playTask = jobList.createJob( "videoplayer", new BuildFragmentTask( getFrameTask ) );
 
-        Node node = new Node( jobList, goForMaestro );
+        Node node = Node.createNode( jobList, goForMaestro );
         System.out.println( "Node created" );
         if( node.isMaestro() ) {
             System.out.println( "I am maestro; building a movie of " + frameCount + " frames" );
