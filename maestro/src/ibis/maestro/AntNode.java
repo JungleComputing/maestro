@@ -8,17 +8,16 @@ import ibis.ipl.IbisIdentifier;
 
 import java.io.IOException;
 import java.io.PrintStream;
-import java.util.HashMap;
 
 /**
- * @author reeuwijk
+ * A node using ant routing.
+ * 
+ * @author Kees van Reeuwijk
  *
  */
-public class QNode extends Node
+public class AntNode extends Node
 {
-    private final Gossiper gossiper;
-    private final Flag doUpdateRecentMasters = new Flag( false );
-    private final Flag recomputeCompletionTimes = new Flag( false );
+    private AntRoutingTable antRoutingTable = new AntRoutingTable();
 
     /**
      * Constructs a new Maestro node using the given list of jobs. Optionally
@@ -28,12 +27,9 @@ public class QNode extends Node
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public QNode(JobList jobs, boolean runForMaestro) throws IbisCreationFailedException, IOException
+    public AntNode(JobList jobs, boolean runForMaestro) throws IbisCreationFailedException, IOException
     {
         super( jobs, runForMaestro );
-        recentMasterList.register( Globals.localIbis.identifier() );
-        gossiper = new Gossiper( sendPort, isMaestro(), jobs );
-        gossiper.start();
     }
 
     /**
@@ -43,30 +39,20 @@ public class QNode extends Node
      * @param maximalWaitTime The maximal time in ms to wait for these nodes.
      * @return The actual number of nodes there was information for at the moment we stopped waiting.
      */
-    @Override
     public int waitForReadyNodes( int n, long maximalWaitTime )
     {
-        return gossiper.waitForReadyNodes( n, maximalWaitTime );
+        // FIXME: implement waitForReadyNodes for ant routing.
+        return 0;
     }
 
-    @Override
     protected void failNode( RunTaskMessage message, Throwable t )
     {
         super.failNode( message, t );
-        gossiper.failTask( message.taskInstance.type );
     }
 
-    @Override
     protected RunTaskMessage getWork()
     {
-        return workerQueue.remove( gossiper );        
-    }
-
-    @Override
-    protected void waitForWorkThreadsToTerminate()
-    {
-        gossiper.setStopped();
-        super.waitForWorkThreadsToTerminate();
+        return workerQueue.remove( null );        
     }
 
     /**
@@ -92,52 +78,27 @@ public class QNode extends Node
             choice = 0;
         }
         else {
-            TaskType types[] = new TaskType[choices.length];
-
-            for( int ix=0; ix<choices.length; ix++ ) {
-                Job job = choices[ix];
-
-                types[ix] = job.getFirstTaskType();
-            }
-            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
-            choice = gossiper.selectFastestTask( types, submitIfBusy, localNodeInfoMap );
-            if( choice<0 ) {
-                // Couldn't submit the job.
-                return false;
-            }
+            // FIXME: do a smarter selection of the job choices for ant routing.
+            choice = 0;
         }
         Job job = choices[choice];
         job.submit( this, input, job, listener );
         return true;
     }
 
-    /**
-     * This object only exists to lock the critical section in drainMasterQueue,
-     * and prevent that two threads select the same next task to submit to a worker. 
-     */
-    private final Flag drainLock = new Flag( false );
-    private final RecentMasterList recentMasterList = new RecentMasterList();
     private Counter updateMessageCount = new Counter();
 
     /** On a locked queue, try to send out as many tasks as we can. */
     protected void drainMasterQueue()
     {
-        boolean changed = false;
-    
-        if( masterQueue.isEmpty() ) {
-            // Nothing to do, don't bother with the gossip.
-            return;
-        }
         while( true ) {
             NodeInfo worker;
             long taskId;
             IbisIdentifier node;
             TaskInstance task;
     
-            synchronized( drainLock ) {
-                NodePerformanceInfo[] tables = gossiper.getGossipCopy();
-                HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
-                Submission submission = masterQueue.getSubmission( localNodeInfoMap, tables );
+            synchronized( antRoutingTable ) {
+                Submission submission = masterQueue.getAntSubmission( antRoutingTable );
                 if( submission == null ) {
                     break;
                 }
@@ -162,10 +123,6 @@ public class QNode extends Node
                 masterQueue.add( msg.taskInstance );
                 worker.retractTask( taskId );
             }
-            changed = true;
-        }
-        if( changed ) {
-            recomputeCompletionTimes.set();
         }
     }
 
@@ -178,42 +135,17 @@ public class QNode extends Node
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
         }
-        boolean isnew = gossiper.registerGossip( m.update, m.update.source );
-        isnew |= handleNodeUpdateInfo( m.update );
-        if( isnew ) {
-            recomputeCompletionTimes.set();
-        }
-    }
-    protected void updateRecentMasters()
-    {
-        NodePerformanceInfo update = gossiper.getLocalUpdate();
-        handleNodeUpdateInfo( update );   // Treat the local node as a honorary recent master.
-        UpdateNodeMessage msg = new UpdateNodeMessage( update );
-        for( IbisIdentifier ibis: recentMasterList.getArray() ){            
-            if( Settings.traceUpdateMessages ) {
-                Globals.log.reportProgress( "Sending " + msg + " to " + ibis );
-            }
-            sendPort.send( ibis, msg );
-            updateMessageCount.add();
-        }
+        handleNodeUpdateInfo( m.update );
     }
 
-    /** Registers the ibis with the given identifier as one that has left the
-     * computation.
-     * @param theIbis The ibis that has left.
-     */
-    protected void registerIbisLeft( IbisIdentifier theIbis )
+    protected void updateRecentMasters()
     {
-        gossiper.removeNode( theIbis );
-        recentMasterList.remove( theIbis );
-        super.registerIbisLeft( theIbis );
     }
 
     /** Print some statistics about the entire worker run. */
     synchronized void printStatistics( PrintStream s )
     {
         super.printStatistics( s );
-        gossiper.printStatistics( s );
         s.printf( "update        messages:   %5d sent\n", updateMessageCount.get() );
     }
 
@@ -249,10 +181,6 @@ public class QNode extends Node
             submit( nextTask );
         }
     
-        // Update statistics.
-        final long computeInterval = taskCompletionMoment-runMoment;
-        long averageComputeTime = workerQueue.countTask( type, computeInterval );
-        gossiper.setComputeTime( type, averageComputeTime );
         runningTasks.down();
         if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
             long queueInterval = runMoment-message.getQueueMoment();
@@ -276,7 +204,6 @@ public class QNode extends Node
         	Globals.log.reportError( "Failed to send task completed message to " + message.source );
             }
         }
-        doUpdateRecentMasters.set();
     }
 
     /**
@@ -287,55 +214,8 @@ public class QNode extends Node
     protected void handleRunTaskMessage( RunTaskMessage msg )
     {
         IbisIdentifier source = msg.source;
-        boolean isDead = nodes.registerAsCommunicating( source );
-        if( !isDead && !source.equals( Globals.localIbis.identifier() ) ) {
-            recentMasterList.register( source );
-        }
-        doUpdateRecentMasters.set();
-        postTaskReceivedMessage( source, msg.taskId );
-        // FIXME: send a task received message & remove stats from task completed.
-        int length = workerQueue.add( msg );
-        if( gossiper != null ) {
-            gossiper.setQueueLength( msg.taskInstance.type, length );
-        }
-    }
-
-    /**
-     * Do all updates of the node adminstration that we can.
-     * 
-     */
-    protected void updateAdministration()
-    {
-        if( doUpdateRecentMasters.getAndReset() ) {
-            updateRecentMasters();
-        }
-        if( recomputeCompletionTimes.getAndReset() ){
-            long masterQueueIntervals[] = masterQueue.getQueueIntervals();
-            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
-            gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
-        }
-        super.updateAdministration();
-    }
-    /**
-     * @param theIbis The ibis that has joined.
-     */
-    protected void registerIbisJoined(IbisIdentifier theIbis)
-    {
-        super.registerIbisJoined( theIbis );
-        boolean local = theIbis.equals( Globals.localIbis.identifier() );
-        if( !local ){
-            gossiper.registerNode( theIbis );
-        }
-    }
-
-    /**
-     * A worker has sent use a completion message for a task. Process it.
-     * @param result The message.
-     */
-    protected void handleTaskCompletedMessage( TaskCompletedMessage result )
-    {
-        super.handleTaskCompletedMessage( result );
-        doUpdateRecentMasters.set();
+        nodes.registerAsCommunicating( source );
+        workerQueue.add( msg );
     }
 
     /**
@@ -344,24 +224,5 @@ public class QNode extends Node
      */
     protected void handleGossipMessage(GossipMessage m)
     {
-        if( Settings.traceNodeProgress || Settings.traceRegistration || Settings.traceGossip ){
-            Globals.log.reportProgress( "Received gossip message from " + m.source + " with " + m.gossip.length + " items"  );
-        }
-        boolean changed = false;
-        for( NodePerformanceInfo i: m.gossip ) {
-            changed |= gossiper.registerGossip( i, m.source );
-            changed |= handleNodeUpdateInfo( i );
-        }
-        if( m.needsReply ) {
-            if( !m.source.equals( Globals.localIbis.identifier() ) ) {
-        	gossiper.queueGossipReply( m.source );
-            }
-        }
-        if( changed ) {
-            recomputeCompletionTimes.set();
-            synchronized( this ) {
-        	this.notify();
-            }
-        }
     }
 }

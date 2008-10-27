@@ -53,7 +53,6 @@ public abstract class Node extends Thread implements PacketReceiveListener
     protected final MasterQueue masterQueue;
     protected final WorkerQueue workerQueue;
     protected long nextTaskId = 0;
-    protected final Flag doUpdateRecentMasters = new Flag( false );
     private UpDownCounter idleProcessors = new UpDownCounter( -Settings.EXTRA_WORK_THREADS ); // Yes, we start with a negative number of idle processors.
     protected Counter submitMessageCount = new Counter();
     private Counter taskReceivedMessageCount = new Counter();
@@ -408,9 +407,6 @@ public abstract class Node extends Thread implements PacketReceiveListener
      */
     protected void updateAdministration()
     {
-        if( doUpdateRecentMasters.getAndReset() ) {
-            updateRecentMasters();
-        }
         drainCompletedJobList();
         drainOutgoingMessageQueue();
         drainMasterQueue();
@@ -526,7 +522,7 @@ public abstract class Node extends Thread implements PacketReceiveListener
      * A worker has sent use a completion message for a task. Process it.
      * @param result The message.
      */
-    private void handleTaskCompletedMessage( TaskCompletedMessage result )
+    protected void handleTaskCompletedMessage( TaskCompletedMessage result )
     {
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received a worker task completed message " + result );
@@ -535,7 +531,6 @@ public abstract class Node extends Thread implements PacketReceiveListener
         if( task != null ) {
             masterQueue.removeDuplicates( task );
         }
-        doUpdateRecentMasters.set();
     }
 
     /**

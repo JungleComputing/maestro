@@ -350,4 +350,14 @@ final class MasterQueue
 	    // Nothing.
 	}
     }
+
+    /**
+     * @param antRoutingTable
+     * @return
+     */
+    Submission getAntSubmission( AntRoutingTable antRoutingTable )
+    {
+        // FIXME: implement this
+        return null;
+    }
 }
