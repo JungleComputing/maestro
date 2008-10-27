@@ -39,17 +39,20 @@ public class AntNode extends Node
      * @param maximalWaitTime The maximal time in ms to wait for these nodes.
      * @return The actual number of nodes there was information for at the moment we stopped waiting.
      */
+    @Override
     public int waitForReadyNodes( int n, long maximalWaitTime )
     {
         // FIXME: implement waitForReadyNodes for ant routing.
         return 0;
     }
 
+    @Override
     protected void failNode( RunTaskMessage message, Throwable t )
     {
         super.failNode( message, t );
     }
 
+    @Override
     protected RunTaskMessage getWork()
     {
         return workerQueue.remove( null );        
@@ -66,6 +69,7 @@ public class AntNode extends Node
      * @param choices The list of job choices.
      * @return <code>true</code> if the job could be submitted.
      */
+    @Override
     boolean submit( Object input, boolean submitIfBusy, JobCompletionListener listener, Job...choices )
     {
         int choice;
@@ -89,6 +93,7 @@ public class AntNode extends Node
     private Counter updateMessageCount = new Counter();
 
     /** On a locked queue, try to send out as many tasks as we can. */
+    @Override
     protected void drainMasterQueue()
     {
         while( true ) {
@@ -130,6 +135,7 @@ public class AntNode extends Node
      * A worker has sent us a message with its current status, handle it.
      * @param m The update message.
      */
+    @Override
     protected void handleNodeUpdateMessage( UpdateNodeMessage m )
     {
         if( Settings.traceNodeProgress ){
@@ -138,11 +144,13 @@ public class AntNode extends Node
         handleNodeUpdateInfo( m.update );
     }
 
+    @Override
     protected void updateRecentMasters()
     {
     }
 
     /** Print some statistics about the entire worker run. */
+    @Override
     synchronized void printStatistics( PrintStream s )
     {
         super.printStatistics( s );
@@ -154,7 +162,9 @@ public class AntNode extends Node
      * @param result The result of the task.
      * @param runMoment The moment the task was started.
      */
-    void handleTaskResult(RunTaskMessage message, Object result, long runMoment) {
+    @Override
+    void handleTaskResult(RunTaskMessage message, Object result, long runMoment)
+    {
         long taskCompletionMoment = System.nanoTime();
     
         TaskType type = message.taskInstance.type;
@@ -211,6 +221,7 @@ public class AntNode extends Node
      * 
      * @param msg The message to handle.
      */
+    @Override
     protected void handleRunTaskMessage( RunTaskMessage msg )
     {
         IbisIdentifier source = msg.source;
@@ -222,7 +233,8 @@ public class AntNode extends Node
      * A node has sent us a gossip message, handle it.
      * @param m The gossip message.
      */
-    protected void handleGossipMessage(GossipMessage m)
+    @Override
+    protected void handleGossipMessage( GossipMessage m )
     {
     }
 }

@@ -80,6 +80,7 @@ public class QNode extends Node
      * @param choices The list of job choices.
      * @return <code>true</code> if the job could be submitted.
      */
+    @Override
     boolean submit( Object input, boolean submitIfBusy, JobCompletionListener listener, Job...choices )
     {
         int choice;
@@ -120,6 +121,7 @@ public class QNode extends Node
     private Counter updateMessageCount = new Counter();
 
     /** On a locked queue, try to send out as many tasks as we can. */
+    @Override
     protected void drainMasterQueue()
     {
         boolean changed = false;
@@ -173,6 +175,7 @@ public class QNode extends Node
      * A worker has sent us a message with its current status, handle it.
      * @param m The update message.
      */
+    @Override
     protected void handleNodeUpdateMessage( UpdateNodeMessage m )
     {
         if( Settings.traceNodeProgress ){
@@ -184,6 +187,8 @@ public class QNode extends Node
             recomputeCompletionTimes.set();
         }
     }
+
+    @Override
     protected void updateRecentMasters()
     {
         NodePerformanceInfo update = gossiper.getLocalUpdate();
@@ -202,6 +207,7 @@ public class QNode extends Node
      * computation.
      * @param theIbis The ibis that has left.
      */
+    @Override
     protected void registerIbisLeft( IbisIdentifier theIbis )
     {
         gossiper.removeNode( theIbis );
@@ -210,6 +216,7 @@ public class QNode extends Node
     }
 
     /** Print some statistics about the entire worker run. */
+    @Override
     synchronized void printStatistics( PrintStream s )
     {
         super.printStatistics( s );
@@ -222,7 +229,9 @@ public class QNode extends Node
      * @param result The result of the task.
      * @param runMoment The moment the task was started.
      */
-    void handleTaskResult(RunTaskMessage message, Object result, long runMoment) {
+    @Override
+    void handleTaskResult(RunTaskMessage message, Object result, long runMoment)
+    {
         long taskCompletionMoment = System.nanoTime();
     
         TaskType type = message.taskInstance.type;
@@ -284,6 +293,7 @@ public class QNode extends Node
      * 
      * @param msg The message to handle.
      */
+    @Override
     protected void handleRunTaskMessage( RunTaskMessage msg )
     {
         IbisIdentifier source = msg.source;
@@ -304,6 +314,7 @@ public class QNode extends Node
      * Do all updates of the node adminstration that we can.
      * 
      */
+    @Override
     protected void updateAdministration()
     {
         if( doUpdateRecentMasters.getAndReset() ) {
@@ -319,6 +330,7 @@ public class QNode extends Node
     /**
      * @param theIbis The ibis that has joined.
      */
+    @Override
     protected void registerIbisJoined(IbisIdentifier theIbis)
     {
         super.registerIbisJoined( theIbis );
@@ -332,6 +344,7 @@ public class QNode extends Node
      * A worker has sent use a completion message for a task. Process it.
      * @param result The message.
      */
+    @Override
     protected void handleTaskCompletedMessage( TaskCompletedMessage result )
     {
         super.handleTaskCompletedMessage( result );
@@ -342,6 +355,7 @@ public class QNode extends Node
      * A node has sent us a gossip message, handle it.
      * @param m The gossip message.
      */
+    @Override
     protected void handleGossipMessage(GossipMessage m)
     {
         if( Settings.traceNodeProgress || Settings.traceRegistration || Settings.traceGossip ){
