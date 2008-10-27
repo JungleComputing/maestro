@@ -11,7 +11,7 @@ import java.io.PrintStream;
 import java.util.HashMap;
 
 /**
- * @author reeuwijk
+ * @author Kees van Reeuwijk
  *
  */
 public class QNode extends Node

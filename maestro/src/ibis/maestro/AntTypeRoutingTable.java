@@ -31,7 +31,12 @@ public class AntTypeRoutingTable {
         return -1;
     }
 
-    void update( IbisIdentifier ibis, long timestamp )
+    /** Register, using the given timestamp, that the given
+     * ibis is the best route.
+     * @param ibis The ibis to use.
+     * @param timestamp The time the ibis was used.
+     */
+    synchronized void update( IbisIdentifier ibis, long timestamp )
     {
         if( timestamp>updateTimeStamp ){
             updateTimeStamp = timestamp;
@@ -42,6 +47,7 @@ public class AntTypeRoutingTable {
                 return;
             }
             if( ix>0 ){
+                // Put this node in front.
                 NodeInfo info = nodes.remove( ix );
                 nodes.add( 0, info );
             }
