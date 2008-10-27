@@ -95,7 +95,7 @@ class OneTestProg
         JobList jobs = new JobList();
 
 	Job job = jobs.createJob( "testprog", new CreateArrayTask() );
-        Node node = new Node( jobs, goForMaestro );
+        Node node = Node.createNode( jobs, goForMaestro );
 	System.out.println( "Node created" );
 	long startTime = System.nanoTime();
 	if( node.isMaestro() ) {

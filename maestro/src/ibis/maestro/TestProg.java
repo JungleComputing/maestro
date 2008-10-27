@@ -240,7 +240,7 @@ class TestProg
 		new AdditionTask(),
 		new AdditionTask()
 	);
-	Node node = new Node( jobs, goForMaestro );
+	Node node = Node.createNode( jobs, goForMaestro );
         Listener listener = new Listener( node, taskCount );
 	System.out.println( "Node created" );
 	long startTime = System.nanoTime();

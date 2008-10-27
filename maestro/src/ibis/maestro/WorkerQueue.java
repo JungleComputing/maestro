@@ -99,7 +99,7 @@ final class WorkerQueue
      * Add the given task to our queue.
      * @param msg The task to add to the queue
      */
-    synchronized void add( RunTaskMessage msg, Gossiper gossiper )
+    synchronized int add( RunTaskMessage msg )
     {
         if( activeTime == 0L ) {
             activeTime = msg.arrivalMoment;
@@ -116,9 +116,7 @@ final class WorkerQueue
         if( Settings.dumpWorkerQueue ) {
             dumpQueue();
         }
-        if( gossiper != null ) {
-            gossiper.setQueueLength( type, length );
-        }
+        return length;
     }
 
     boolean failTask( TaskType type )

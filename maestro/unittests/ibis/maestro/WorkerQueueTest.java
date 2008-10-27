@@ -18,7 +18,7 @@ public class WorkerQueueTest extends TestCase
 	    JobInstanceIdentifier jobInstance = new JobInstanceIdentifier( id, null, null );
 	    TaskInstance ti = new TaskInstance( jobInstance, type, 0 );
 	    RunTaskMessage msg = new RunTaskMessage( null, ti, 0 );
-	    queue.add( msg, null );
+	    queue.add( msg );
 	}
     }
 

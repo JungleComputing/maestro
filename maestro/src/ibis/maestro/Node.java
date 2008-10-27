@@ -11,7 +11,6 @@ import ibis.ipl.RegistryEventHandler;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Properties;
 
 /**
@@ -20,23 +19,20 @@ import java.util.Properties;
  * @author Kees van Reeuwijk
  *
  */
-public final class Node extends Thread implements PacketReceiveListener
+public abstract class Node extends Thread implements PacketReceiveListener
 {
     static final IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE, IbisCapabilities.ELECTIONS_STRICT );
-    final PacketSendPort sendPort;
+    protected final PacketSendPort sendPort;
     final PacketUpcallReceivePort receivePort;
-    final long startTime;
+    protected final long startTime;
     private long stopTime = 0;
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
 
     private RegistryEventHandler registryEventHandler;
 
-    private final RecentMasterList recentMasterList = new RecentMasterList();
-
     private static final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
     private static final int workThreadCount = numberOfProcessors+Settings.EXTRA_WORK_THREADS;
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
-    private final Gossiper gossiper;
     private final Terminator terminator;
     
     private MessageQueue outgoingMessageQueue = new MessageQueue();
@@ -49,21 +45,19 @@ public final class Node extends Thread implements PacketReceiveListener
     private final RunningJobs runningJobs = new RunningJobs();
 
     /** The list of nodes we know about. */
-    private final NodeList nodes;
+    protected final NodeList nodes;
 
     private boolean isMaestro;
 
-    private final boolean traceStats;
-    private final MasterQueue masterQueue;
-    private final WorkerQueue workerQueue;
-    private long nextTaskId = 0;
-    private final Flag doUpdateRecentMasters = new Flag( false );
-    private final Flag recomputeCompletionTimes = new Flag( false );
+    protected final boolean traceStats;
+    protected final MasterQueue masterQueue;
+    protected final WorkerQueue workerQueue;
+    protected long nextTaskId = 0;
+    protected final Flag doUpdateRecentMasters = new Flag( false );
     private UpDownCounter idleProcessors = new UpDownCounter( -Settings.EXTRA_WORK_THREADS ); // Yes, we start with a negative number of idle processors.
-    private Counter updateMessageCount = new Counter();
-    private Counter submitMessageCount = new Counter();
+    protected Counter submitMessageCount = new Counter();
     private Counter taskReceivedMessageCount = new Counter();
-    private Counter taskResultMessageCount = new Counter();
+    protected Counter taskResultMessageCount = new Counter();
     private Counter jobResultMessageCount = new Counter();
     private Counter taskFailMessageCount = new Counter();
     private long overheadDuration = 0L;
@@ -71,10 +65,11 @@ public final class Node extends Thread implements PacketReceiveListener
 
     private Flag stopped = new Flag( false );
 
-    private UpDownCounter runningTasks = new UpDownCounter( 0 );
-    private final JobList jobs;
+    protected UpDownCounter runningTasks = new UpDownCounter( 0 );
+    protected final JobList jobs;
 
-    private final class NodeRegistryEventHandler implements RegistryEventHandler {
+    private final class NodeRegistryEventHandler implements RegistryEventHandler
+    {
         /**
          * A new Ibis joined the computation.
          * @param theIbis The ibis that joined the computation.
@@ -83,15 +78,7 @@ public final class Node extends Thread implements PacketReceiveListener
         @Override
         public void joined( IbisIdentifier theIbis )
         {
-            boolean local = theIbis.equals( Globals.localIbis.identifier() );
-            sendPort.registerDestination( theIbis );
-            if( !local ){
-                gossiper.registerNode( theIbis );
-                if( terminator != null ) {
-                    terminator.registerNode( theIbis );
-                }
-            }
-            nodes.registerNode( theIbis, local );
+            registerIbisJoined( theIbis );
         }
 
         /**
@@ -178,7 +165,6 @@ public final class Node extends Thread implements PacketReceiveListener
         if( Settings.traceNodes ) {
             Globals.log.reportProgress( "Created ibis " + localIbis );
         }
-        recentMasterList.register( localIbis.identifier() );
         nodes.registerNode( localIbis.identifier(), true );
         Registry registry = localIbis.registry();
         if( runForMaestro ){
@@ -198,8 +184,6 @@ public final class Node extends Thread implements PacketReceiveListener
             stopped.set();
         }
         sendPort = new PacketSendPort( this, localIbis.identifier() );
-        gossiper = new Gossiper( sendPort, isMaestro, jobs );
-        gossiper.start();
         terminator = buildTerminator();
         receivePort = new PacketUpcallReceivePort( localIbis, Globals.receivePortName, this );
         for( int i=0; i<workThreads.length; i++ ) {
@@ -339,13 +323,11 @@ public final class Node extends Thread implements PacketReceiveListener
      * computation.
      * @param theIbis The ibis that has left.
      */
-    private void registerIbisLeft( IbisIdentifier theIbis )
+    protected void registerIbisLeft( IbisIdentifier theIbis )
     {
-        gossiper.removeNode( theIbis );
         if( terminator != null ) {
             terminator.removeNode( theIbis );
         }
-        recentMasterList.remove( theIbis );
         ArrayList<TaskInstance> orphans = nodes.removeNode( theIbis );
         for( TaskInstance ti: orphans ) {
             ti.setOrphan();
@@ -424,13 +406,8 @@ public final class Node extends Thread implements PacketReceiveListener
      * Do all updates of the node adminstration that we can.
      * 
      */
-    private void updateAdministration()
+    protected void updateAdministration()
     {
-        if( recomputeCompletionTimes.getAndReset() ){
-            long masterQueueIntervals[] = masterQueue.getQueueIntervals();
-            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
-            gossiper.recomputeCompletionTimes( masterQueueIntervals, jobs, localNodeInfoMap );
-        }
         if( doUpdateRecentMasters.getAndReset() ) {
             updateRecentMasters();
         }
@@ -450,13 +427,11 @@ public final class Node extends Thread implements PacketReceiveListener
         s.printf(  "# work threads  = %5d\n", workThreads.length );
         nodes.printStatistics( s );
         jobs.printStatistics( s );
-        s.printf( "update        messages:   %5d sent\n", updateMessageCount.get() );
         s.printf( "submit        messages:   %5d sent\n", submitMessageCount.get() );
         s.printf( "task received messages:   %5d sent\n", taskReceivedMessageCount.get() );
         s.printf( "task result   messages:   %5d sent\n", taskResultMessageCount.get() );
         s.printf( "job result    messages:   %5d sent\n", jobResultMessageCount.get() );
         s.printf( "job fail      messages:   %5d sent\n", taskFailMessageCount.get() );
-        gossiper.printStatistics( s );
         if( terminator != null ) {
             terminator.printStatistics( s );
         }
@@ -479,7 +454,7 @@ public final class Node extends Thread implements PacketReceiveListener
      * @param result The result to send.
      * @return <code>true</code> if the message could be sent.
      */
-    private boolean sendJobResultMessage( JobInstanceIdentifier id, Object result )
+    protected boolean sendJobResultMessage( JobInstanceIdentifier id, Object result )
     {
         Message msg = new JobResultMessage( id, result );	
         jobResultMessageCount.add();
@@ -493,7 +468,7 @@ public final class Node extends Thread implements PacketReceiveListener
      * @param id The task identifier.
      * @param result The result to send.
      */
-    private void postTaskReceivedMessage( IbisIdentifier master, long id )
+    protected void postTaskReceivedMessage( IbisIdentifier master, long id )
     {
         Message msg = new TaskReceivedMessage( id );	
         taskReceivedMessageCount.add();
@@ -510,32 +485,19 @@ public final class Node extends Thread implements PacketReceiveListener
      */
     private boolean sendTaskFailMessage( IbisIdentifier ibis, long taskId )
     {
-        NodePerformanceInfo update = gossiper.getLocalUpdate();
-        Message msg = new TaskFailMessage( taskId, update );
+        Message msg = new TaskFailMessage( taskId );
         taskFailMessageCount.add();
         return sendPort.send( ibis, msg );
     }
 
-    private void updateRecentMasters()
-    {
-        NodePerformanceInfo update = gossiper.getLocalUpdate();
-        handleNodeUpdateInfo( update );   // Treat the local node as a honorary recent master.
-        UpdateNodeMessage msg = new UpdateNodeMessage( update );
-        for( IbisIdentifier ibis: recentMasterList.getArray() ){	    
-            if( Settings.traceUpdateMessages ) {
-                Globals.log.reportProgress( "Sending " + msg + " to " + ibis );
-            }
-            sendPort.send( ibis, msg );
-            updateMessageCount.add();
-        }
-    }
+    protected abstract void updateRecentMasters();
 
     /**
      * A worker has sent us a message with its current status, handle it.
      * @param m The update message.
      * @param nw <code>true</code> iff this update was new.
      */
-    private boolean handleNodeUpdateInfo( NodePerformanceInfo m )
+    protected boolean handleNodeUpdateInfo( NodePerformanceInfo m )
     {
         if( Settings.traceNodeProgress ){
             Globals.log.reportProgress( "Received node update message " + m );
@@ -548,66 +510,18 @@ public final class Node extends Thread implements PacketReceiveListener
     }
 
     /**
-     * A node has sent us an accept message, handle it.
-     * @param m The update message.
-     */
-    private void handleGossipMessage( GossipMessage m )
-    {
-	if( Settings.traceNodeProgress || Settings.traceRegistration || Settings.traceGossip ){
-	    Globals.log.reportProgress( "Received gossip message from " + m.source + " with " + m.gossip.length + " items"  );
-	}
-	boolean changed = false;
-	for( NodePerformanceInfo i: m.gossip ) {
-	    changed |= gossiper.registerGossip( i, m.source );
-	    changed |= handleNodeUpdateInfo( i );
-	}
-	if( m.needsReply ) {
-	    if( !m.source.equals( Globals.localIbis.identifier() ) ) {
-		gossiper.queueGossipReply( m.source );
-	    }
-	}
-	if( changed ) {
-	    recomputeCompletionTimes.set();
-	    synchronized( this ) {
-		this.notify();
-	    }
-	}
-    }
-
-    /**
      * Handle a message containing a new task to run.
      * 
      * @param msg The message to handle.
      */
-    private void handleRunTaskMessage( RunTaskMessage msg )
-    {
-        IbisIdentifier source = msg.source;
-        boolean isDead = nodes.registerAsCommunicating( source );
-        if( !isDead && !source.equals( Globals.localIbis.identifier() ) ) {
-            recentMasterList.register( source );
-        }
-        doUpdateRecentMasters.set();
-        postTaskReceivedMessage( source, msg.taskId );
-        // FIXME: send a task received message & remove stats from task completed.
-        workerQueue.add( msg, gossiper );
-    }
+    protected abstract void handleRunTaskMessage( RunTaskMessage msg );
 
     /**
      * A worker has sent us a message with its current status, handle it.
      * @param m The update message.
      */
-    private void handleNodeUpdateMessage( UpdateNodeMessage m )
-    {
-        if( Settings.traceNodeProgress ){
-            Globals.log.reportProgress( "Received node update message " + m );
-        }
-        boolean isnew = gossiper.registerGossip( m.update, m.update.source );
-        isnew |= handleNodeUpdateInfo( m.update );
-        if( isnew ) {
-            recomputeCompletionTimes.set();
-        }
-    }
-
+    protected abstract void handleNodeUpdateMessage( UpdateNodeMessage m );
+    
     /**
      * A worker has sent use a completion message for a task. Process it.
      * @param result The message.
@@ -647,11 +561,6 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         TaskInstance failedTask = nodes.registerTaskFailed( msg.source, msg.id );
         Globals.log.reportError( "Node " + msg.source + " failed to execute task with id " + msg.id + "; node will no longer get tasks of this type" );
-        boolean isnew = gossiper.registerGossip( msg.update, msg.update.source );
-        isnew |= handleNodeUpdateInfo( msg.update );
-        if( isnew ) {
-            recomputeCompletionTimes.set();
-        }
         masterQueue.add( failedTask );
     }
 
@@ -679,6 +588,8 @@ public final class Node extends Thread implements PacketReceiveListener
     {
         handleMessage( msg );
     }
+
+    protected abstract void handleGossipMessage( GossipMessage m );
 
     /** Handle the given message. */
     void handleMessage( Message msg )
@@ -718,7 +629,7 @@ public final class Node extends Thread implements PacketReceiveListener
         }
     }
 
-    private void waitForWorkThreadsToTerminate()
+    protected void waitForWorkThreadsToTerminate()
     {
         for( WorkThread t: workThreads ) {
             if( Settings.traceNodes ){
@@ -726,73 +637,19 @@ public final class Node extends Thread implements PacketReceiveListener
             }
             Utils.waitToTerminate( t );
         }
-        gossiper.setStopped();
         synchronized( this ) {
             stopTime = System.nanoTime();
         }
     }
-    
-    /**
-     * This object only exists to lock the critical section in drainMasterQueue,
-     * and prevent that two threads select the same next task to submit to a worker. 
-     */
-    private final Flag drainLock = new Flag( false );
 
     /** On a locked queue, try to send out as many task as we can. */
-    private void drainMasterQueue()
-    {
-	boolean changed = false;
-
-	if( masterQueue.isEmpty() ) {
-            // Nothing to do, don't bother with the gossip.
-            return;
-        }
-        while( true ) {
-            NodeInfo worker;
-            long taskId;
-            IbisIdentifier node;
-            TaskInstance task;
-
-            synchronized( drainLock ) {
-                NodePerformanceInfo[] tables = gossiper.getGossipCopy();
-                HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
-                Submission submission = masterQueue.getSubmission( localNodeInfoMap, tables );
-                if( submission == null ) {
-                    break;
-                }
-                node = submission.worker;
-                task = submission.task;
-                worker = nodes.get( node );
-                taskId = nextTaskId++;
-
-                worker.registerTaskStart( task, taskId, submission.predictedDuration );
-            }
-            if( Settings.traceMasterQueue || Settings.traceSubmissions ) {
-                Globals.log.reportProgress( "Submitting task " + task + " to " + node );
-            }
-            RunTaskMessage msg = new RunTaskMessage( node, task, taskId );
-            boolean ok = sendPort.send( node, msg );
-            if( ok ){
-                submitMessageCount.add();
-            }
-            else {
-                // Try to put the paste back in the tube.
-                // The send port has already registered the trouble.
-                masterQueue.add( msg.taskInstance );
-                worker.retractTask( taskId );
-            }
-            changed = true;
-        }
-        if( changed ) {
-            recomputeCompletionTimes.set();
-        }
-    }
+    protected abstract void drainMasterQueue();
 
     /**
      * Adds the given task to the work queue of this master.
      * @param task The task instance to add to the queue.
      */
-    void submit( TaskInstance task )
+    protected void submit( TaskInstance task )
     {
         if( Settings.traceNodeProgress || Settings.traceMasterQueue ) {
             Globals.log.reportProgress( "Master: received task " + task );
@@ -814,36 +671,7 @@ public final class Node extends Thread implements PacketReceiveListener
      * @param choices The list of job choices.
      * @return <code>true</code> if the job could be submitted.
      */
-    boolean submit( Object input, boolean submitIfBusy, JobCompletionListener listener, Job...choices )
-    {
-        int choice;
-
-        if( choices.length == 0 ){
-            // No choices? Obviously we won't be able to submit this one.
-            return false;
-        }
-        if( choices.length == 1 && submitIfBusy ){
-            choice = 0;
-        }
-        else {
-            TaskType types[] = new TaskType[choices.length];
-
-            for( int ix=0; ix<choices.length; ix++ ) {
-                Job job = choices[ix];
-
-                types[ix] = job.getFirstTaskType();
-            }
-            HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
-            choice = gossiper.selectFastestTask( types, submitIfBusy, localNodeInfoMap );
-            if( choice<0 ) {
-                // Couldn't submit the job.
-                return false;
-            }
-        }
-        Job job = choices[choice];
-        job.submit( this, input, job, listener );
-        return true;
-    }
+    abstract boolean submit( Object input, boolean submitIfBusy, JobCompletionListener listener, Job...choices );
 
     private boolean keepRunning()
     {
@@ -855,6 +683,8 @@ public final class Node extends Thread implements PacketReceiveListener
         }
         return false;
     }
+
+    abstract void handleTaskResult(RunTaskMessage message, Object result, long runMoment);
 
     private void executeTask( RunTaskMessage message, Task task, Object input, long runMoment )
     {
@@ -882,6 +712,8 @@ public final class Node extends Thread implements PacketReceiveListener
         }
     }
 
+    protected abstract RunTaskMessage getWork();
+    
     /** Run a work thread. Only return when we want to shut down the node. */
     void runWorkThread()
     {
@@ -896,7 +728,7 @@ public final class Node extends Thread implements PacketReceiveListener
                 if( runningTasks.isBelow( numberOfProcessors ) ) {
                     // Only try to start a new task when there are idle
                     // processors.
-                    message = workerQueue.remove( gossiper );
+                    message = getWork();
                     readyForWork = true;
                 }
                 if( message == null ) {
@@ -905,7 +737,6 @@ public final class Node extends Thread implements PacketReceiveListener
                     // Wait a little, there is nothing to do.
                     try {
                 	if( readyForWork ) {
-                	    gossiper.addQuotum();
                 	    if( Settings.traceWaits ) {
                 		Globals.log.reportProgress( "Waiting for " + sleepTime + "ms for new tasks in queue" );
                 	    }
@@ -957,80 +788,16 @@ public final class Node extends Thread implements PacketReceiveListener
         kickAllWorkers(); // We're about to end this thread. Wake all other threads.
     }
 
-    private void failNode( RunTaskMessage message, Throwable t )
+    protected void failNode( RunTaskMessage message, Throwable t )
     {
         TaskType type = message.taskInstance.type;
         Globals.log.reportError( "Node fails for type " + type );
         t.printStackTrace( Globals.log.getPrintStream() );
         boolean allFailed = workerQueue.failTask( type );
-        gossiper.failTask( type );
         sendTaskFailMessage( message.source, message.taskId );
         if( allFailed && !isMaestro ) {
             setStopped();
         }
-    }
-
-    /**
-     * @param message The task that was run.
-     * @param result The result of the task.
-     * @param runMoment The moment the task was started.
-     */
-    void handleTaskResult( RunTaskMessage message, Object result, long runMoment )
-    {
-        long taskCompletionMoment = System.nanoTime();
-
-        TaskType type = message.taskInstance.type;
-        taskResultMessageCount.add();
-
-        TaskType nextTaskType = jobs.getNextTaskType( type );
-        if( nextTaskType == null ){
-            // This was the final step. Report back the result.
-            JobInstanceIdentifier identifier = message.taskInstance.jobInstance;
-            boolean ok = sendJobResultMessage( identifier, result );
-            if( !ok ) {
-        	// Could not send the result message. We're in trouble.
-        	// Just try again.
-        	ok = sendJobResultMessage(identifier, result );
-        	if( !ok ) {
-        	    // Nothing we can do, we give up.
-        	    Globals.log.reportError( "Could not send job result message to " + identifier );
-        	}
-            }
-        }
-        else {
-            // There is a next step to take.
-            TaskInstance nextTask = new TaskInstance( message.taskInstance.jobInstance, nextTaskType, result );
-            submit( nextTask );
-        }
-
-        // Update statistics.
-        final long computeInterval = taskCompletionMoment-runMoment;
-        long averageComputeTime = workerQueue.countTask( type, computeInterval );
-        gossiper.setComputeTime( type, averageComputeTime );
-        runningTasks.down();
-        if( Settings.traceNodeProgress || Settings.traceRemainingJobTime ) {
-            long queueInterval = runMoment-message.getQueueMoment();
-            Globals.log.reportProgress( "Completed " + message.taskInstance + "; queueInterval=" + Utils.formatNanoseconds( queueInterval ) + "; runningTasks=" + runningTasks );
-        }
-        long workerDwellTime = taskCompletionMoment-message.getQueueMoment();
-        if( traceStats ) {
-            double now = 1e-9*(System.nanoTime()-startTime);
-            System.out.println( "TRACE:workerDwellTime " + type + " " + now + " " + 1e-9*workerDwellTime );
-        }
-        Message msg = new TaskCompletedMessage( message.taskId, workerDwellTime );
-        boolean ok = sendPort.send( message.source, msg );
-
-        if( !ok ) {
-            // Could not send the result message. We're desperate.
-            // First simply try again.
-            ok = sendPort.send( message.source, msg );
-            if( !ok ) {
-        	// Unfortunately, that didn't work.
-        	// TODO: think up another way to recover from failed result report.
-        	Globals.log.reportError( "Failed to send task completed message to " + message.source );
-            }
-        }
-        doUpdateRecentMasters.set();
     }
 
     /**
@@ -1040,10 +807,7 @@ public final class Node extends Thread implements PacketReceiveListener
      * @param maximalWaitTime The maximal time in ms to wait for these nodes.
      * @return The actual number of nodes there was information for at the moment we stopped waiting.
      */
-    public int waitForReadyNodes( int n, long maximalWaitTime )
-    {
-        return gossiper.waitForReadyNodes( n, maximalWaitTime );
-    }
+    public abstract int waitForReadyNodes( int n, long maximalWaitTime );
 
     /**
      * Writes the given progress message to the logger.
@@ -1070,5 +834,32 @@ public final class Node extends Thread implements PacketReceiveListener
     public void reportInternalError( String msg )
     {
         Globals.log.reportInternalError( msg );
+    }
+
+    /**
+     * @param theIbis The ibis that has joined.
+     */
+    protected void registerIbisJoined(IbisIdentifier theIbis)
+    {
+        boolean local = theIbis.equals( Globals.localIbis.identifier() );
+        if( !local ){
+            if( terminator != null ) {
+                terminator.registerNode( theIbis );
+            }
+        }
+        sendPort.registerDestination( theIbis );
+        nodes.registerNode( theIbis, local );
+    }
+
+    /**
+     * @param jobs2
+     * @param goForMaestro
+     * @return The newly constructed node.
+     * @throws IOException 
+     * @throws IbisCreationFailedException 
+     */
+    public static Node createNode( JobList jobs2, boolean goForMaestro ) throws IbisCreationFailedException, IOException
+    {
+        return new QNode( jobs2, goForMaestro );
     }
 }
