@@ -8,6 +8,7 @@ import ibis.ipl.IbisIdentifier;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.HashMap;
 
 /**
  * A node using ant routing.
@@ -15,7 +16,7 @@ import java.io.PrintStream;
  * @author Kees van Reeuwijk
  *
  */
-public class AntNode extends Node
+public class ObsoleteAntNode extends Node
 {
     private AntRoutingTable antRoutingTable = new AntRoutingTable();
 
@@ -27,7 +28,7 @@ public class AntNode extends Node
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public AntNode(JobList jobs, boolean runForMaestro) throws IbisCreationFailedException, IOException
+    public ObsoleteAntNode(JobList jobs, boolean runForMaestro) throws IbisCreationFailedException, IOException
     {
         super( jobs, runForMaestro );
     }
@@ -103,7 +104,8 @@ public class AntNode extends Node
             TaskInstance task;
     
             synchronized( antRoutingTable ) {
-                Submission submission = masterQueue.getAntSubmission( antRoutingTable );
+                HashMap<IbisIdentifier,LocalNodeInfo> localNodeInfoMap = nodes.getLocalNodeInfo();
+                Submission submission = masterQueue.getAntSubmission( localNodeInfoMap, antRoutingTable );
                 if( submission == null ) {
                     break;
                 }
@@ -147,6 +149,7 @@ public class AntNode extends Node
     @Override
     protected void updateRecentMasters()
     {
+	// Nothing to do.
     }
 
     /** Print some statistics about the entire worker run. */
@@ -236,5 +239,6 @@ public class AntNode extends Node
     @Override
     protected void handleGossipMessage( GossipMessage m )
     {
+	// Nothing to do.
     }
 }

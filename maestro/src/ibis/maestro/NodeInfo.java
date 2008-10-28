@@ -371,4 +371,9 @@ final class NodeInfo
         }
         return new LocalNodeInfo( suspect, currentTasks, allowance, transmissionTime, predictedDuration );
     }
+
+    synchronized boolean isAvailable( TaskType t )
+    {
+	return nodeTaskInfoList[t.index].isAvailable();
+    }
 }

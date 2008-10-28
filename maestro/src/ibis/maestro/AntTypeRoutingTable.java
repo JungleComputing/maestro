@@ -8,11 +8,16 @@ import java.util.ArrayList;
 /**
  * The ant routing table for one specific type.
  * @author Kees van Reeuwijk
- *
  */
 public class AntTypeRoutingTable {
-    ArrayList<NodeInfo> nodes = new ArrayList<NodeInfo>();
-    long updateTimeStamp = -1;
+    final TaskType type;
+    final ArrayList<NodeInfo> nodes = new ArrayList<NodeInfo>();
+    private long updateTimeStamp = -1;
+
+    AntTypeRoutingTable( TaskType type )
+    {
+	this.type = type;
+    }
 
     void addNode( NodeInfo node )
     {
@@ -53,5 +58,24 @@ public class AntTypeRoutingTable {
             }
         }
     }
-    
+
+    synchronized NodeInfo getBestReadyWorker( TaskType t )
+    {
+	for( int ix=0; ix<nodes.size(); ix++ ) {
+	    NodeInfo node = nodes.get( ix );
+	    if( node.isAvailable( t ) ) {
+		return node;
+	    }
+	}
+	return null;
+    }
+
+    synchronized void removeNode( IbisIdentifier theIbis )
+    {
+	int ix = findIbis( theIbis );
+
+	if( ix>=0 ) {
+	    nodes.remove( ix );
+	}
+    }
 }
