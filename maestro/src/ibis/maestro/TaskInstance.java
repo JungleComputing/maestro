@@ -55,7 +55,8 @@ class TaskInstance implements Serializable {
     }
 
     /**
-     * @return
+     * Returns the hash code of this task instance.
+     * @return The hash code.
      */
     @Override
     public int hashCode() {

@@ -68,7 +68,6 @@ class SendPortCache extends LinkedHashMap<IbisIdentifier,SendPortCacheConnection
      * @param ibis The ibis for which we want a SendPort
      * @return The SendPort, or <code>null</code> if the ibis could not be reached.
      */
-    @SuppressWarnings("synthetic-access")
     synchronized SendPort getSendPort( IbisIdentifier ibis )
     {
         SendPortCacheConnectionInfo info;

@@ -37,7 +37,6 @@ class PacketUpcallReceivePort implements MessageUpcall {
      * @throws IOException 
      * @throws ClassNotFoundException 
      */
-    @SuppressWarnings("unchecked")
     public void upcall( ReadMessage msg ) throws IOException, ClassNotFoundException
     {
         Message data = (Message) msg.readObject();

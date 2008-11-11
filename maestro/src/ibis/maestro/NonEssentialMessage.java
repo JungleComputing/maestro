@@ -4,6 +4,9 @@ import ibis.ipl.IbisIdentifier;
 
 abstract class NonEssentialMessage extends Message
 {
+    /** FIXME. */
+    private static final long serialVersionUID = 1L;
+
     /** For the sender, when to try sending the message again. 
      * For the receiver, the actual moment (according to the sender clock)
      * the message was sent.

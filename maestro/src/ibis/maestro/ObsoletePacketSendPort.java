@@ -366,7 +366,6 @@ class ObsoletePacketSendPort {
      * @param timeout The timeout of the transmission.
      * @return <code>true</code> if the message could be sent.
      */
-    @SuppressWarnings("synthetic-access")
     boolean tryToSend( IbisIdentifier id, Message msg, int timeout )
     {
         boolean ok = false;
