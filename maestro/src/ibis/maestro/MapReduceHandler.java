@@ -75,7 +75,7 @@ public class MapReduceHandler extends Thread implements JobCompletionListener
 	if( Settings.traceMapReduce ){
 	    Globals.log.reportProgress( "MapReduce: Submitting " + id + " to " + Arrays.deepToString(jobChoices ) );
 	}
-        boolean submitted = localNode.submit( input, submitIfBusy, this, jobChoices );
+        boolean submitted = localNode.submit( input, id, submitIfBusy, this, jobChoices );
         if( !submitted ){
             labeler.returnLabel( label );
         }

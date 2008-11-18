@@ -266,9 +266,10 @@ final class NodeInfo
      */
     void registerTaskStart( TaskInstance task, long id, long predictedDuration )
     {
-        NodeTaskInfo workerTaskInfo = nodeTaskInfoList[task.type.index];
+        TaskType type = task.type;
+	NodeTaskInfo workerTaskInfo = nodeTaskInfoList[type.index];
         if( workerTaskInfo == null ) {
-            Globals.log.reportInternalError( "No worker task info for task type " + task.type );
+            Globals.log.reportInternalError( "No worker task info for task type " + type );
         }
         else {
             workerTaskInfo.incrementOutstandingTasks();

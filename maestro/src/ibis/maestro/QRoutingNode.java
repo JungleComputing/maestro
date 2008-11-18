@@ -11,10 +11,11 @@ import java.io.PrintStream;
 import java.util.HashMap;
 
 /**
- * @author Kees van Reeuwijk
- *
+ * A node using QRouting.
+ * 
+ * @author Kees van Reeuwijk.
  */
-public class QNode extends Node
+public class QRoutingNode extends Node
 {
     private final Gossiper gossiper;
     private final Flag doUpdateRecentMasters = new Flag( false );
@@ -28,7 +29,7 @@ public class QNode extends Node
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public QNode(JobList jobs, boolean runForMaestro) throws IbisCreationFailedException, IOException
+    public QRoutingNode(JobList jobs, boolean runForMaestro) throws IbisCreationFailedException, IOException
     {
         super( jobs, runForMaestro );
         recentMasterList.register( Globals.localIbis.identifier() );
@@ -81,7 +82,8 @@ public class QNode extends Node
      * @return <code>true</code> if the job could be submitted.
      */
     @Override
-    boolean submit( Object input, boolean submitIfBusy, JobCompletionListener listener, Job...choices )
+    public
+    boolean submit( Object input, Object userId, boolean submitIfBusy, JobCompletionListener listener, Job...choices )
     {
         int choice;
 
@@ -108,7 +110,7 @@ public class QNode extends Node
             }
         }
         Job job = choices[choice];
-        job.submit( this, input, job, listener );
+        job.submit( this, input, job, listener, null );
         return true;
     }
 
@@ -153,7 +155,7 @@ public class QNode extends Node
             if( Settings.traceMasterQueue || Settings.traceSubmissions ) {
                 Globals.log.reportProgress( "Submitting task " + task + " to " + node );
             }
-            RunTaskMessage msg = new RunTaskMessage( node, task, taskId );
+            RunTaskMessage msg = new RunTaskMessage( node, task, taskId, null );
             boolean ok = sendPort.send( node, msg );
             if( ok ){
                 submitMessageCount.add();
@@ -230,7 +232,7 @@ public class QNode extends Node
      * @param runMoment The moment the task was started.
      */
     @Override
-    void handleTaskResult(RunTaskMessage message, Object result, long runMoment)
+    void handleTaskResult( RunTaskMessage message, Object result, long runMoment )
     {
         long taskCompletionMoment = System.nanoTime();
     
@@ -254,7 +256,7 @@ public class QNode extends Node
         }
         else {
             // There is a next step to take.
-            TaskInstance nextTask = new TaskInstance( message.taskInstance.jobInstance, nextTaskType, result );
+            TaskInstance nextTask = new TaskInstance( message.taskInstance.jobInstance, nextTaskType, result, null );
             submit( nextTask );
         }
     
@@ -303,7 +305,6 @@ public class QNode extends Node
         }
         doUpdateRecentMasters.set();
         postTaskReceivedMessage( source, msg.taskId );
-        // FIXME: send a task received message & remove stats from task completed.
         int length = workerQueue.add( msg );
         if( gossiper != null ) {
             gossiper.setQueueLength( msg.taskInstance.type, length );
@@ -377,5 +378,11 @@ public class QNode extends Node
         	this.notify();
             }
         }
+    }
+
+    @Override
+    void handleAntInfoMessage(AntInfoMessage antInfoMessage)
+    {
+	Globals.log.reportInternalError( "Received an ant trail, while this node does Q routing" );
     }
 }

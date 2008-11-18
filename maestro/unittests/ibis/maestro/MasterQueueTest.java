@@ -16,7 +16,7 @@ public class MasterQueueTest extends TestCase
     {
         for( Integer id: ids ) {
             JobInstanceIdentifier jobInstance = new JobInstanceIdentifier( id, null, null );
-            TaskInstance ti = new TaskInstance( jobInstance, type, 0 );
+            TaskInstance ti = new TaskInstance( jobInstance, type, 0, null );
             queue.add( ti );
         }
     }
@@ -27,7 +27,7 @@ public class MasterQueueTest extends TestCase
             if( queue.isEmpty() ) {
                 fail( "Queue is empty, while I expected " + id );
             }
-            TaskInstance ti = queue.remove();
+            TaskInstance ti = queue.remove().task;
 
             if( ti.jobInstance.id != id ) {
                 fail( "Unexpected task from master queue: " + ti.jobInstance.id + " instead of " + id );

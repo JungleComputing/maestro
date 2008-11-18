@@ -22,9 +22,9 @@ public class AntRoutingTable
         }
     }
 
-    void update( TaskType type, IbisIdentifier ibis, long timestamp )
+    private void update( int i, IbisIdentifier ibis, long timestamp )
     {
-        antTypeRoutingTable[type.index].update( ibis, timestamp );
+        antTypeRoutingTable[i].update( ibis, timestamp );
     }
 
     NodeInfo getWorker( TaskType type )
@@ -37,5 +37,17 @@ public class AntRoutingTable
 	for( AntTypeRoutingTable t: antTypeRoutingTable ) {
 	    t.removeNode( theIbis );
 	}
+    }
+
+    void addNode( NodeInfo node )
+    {
+	for( AntTypeRoutingTable t: antTypeRoutingTable ) {
+	    t.addNode( node );
+	}
+    }
+
+    protected void handleAntPoint( AntPoint p )
+    {
+	update( p.typeIndex, p.workerIbis, p.timestamp );
     }
 }

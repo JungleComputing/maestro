@@ -248,7 +248,7 @@ class TestProg
 	    System.out.println( "I am maestro; submitting " + taskCount + " tasks" );
 	    for( int i=0; i<taskCount; i++ ){
 		Integer length = 12*i;
-		job.submit( node, length, i, listener );
+		node.submit( length, i, true, listener, job );
 	    }
 	}
 	node.waitToTerminate();

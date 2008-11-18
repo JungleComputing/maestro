@@ -2,6 +2,7 @@ package ibis.maestro;
 
 import java.io.PrintStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * A job, consisting of a sequence of tasks.
@@ -47,7 +48,8 @@ public final class Job
          * @return True iff this and the given object are equal.
          */
         @Override
-        public boolean equals(Object obj) {
+        public boolean equals( Object obj )
+        {
             if (this == obj){
                 return true;
             }
@@ -110,30 +112,20 @@ public final class Job
     }
 
     /**
-     * Submits a task for execution. 
-     * @param tii The job instance this task belongs to.
-     * @param taskNo The sequence number of the task to execute in the list of tasks of a job.
-     * @param value The input value of the task.
-     */
-    private void submitATask( Node node, JobInstanceIdentifier tii, int taskNo, Object value )
-    {
-        TaskType type = taskTypes[taskNo];
-        TaskInstance j = new TaskInstance( tii, type, value );
-        node.submit( j );
-    }
-
-    /**
      * Submits a job by giving a user-defined identifier, and the input value to the first task of the job.
      * @param node The node this job should run on.
      * @param value The value to submit.
      * @param userId The identifier for the user of this job.
      * @param listener The listener that should be informed when this job is completed.
+     * @param antTrail The initial ant trail to use for this job.
      */
-    public void submit( Node node, Object value, Object userId, JobCompletionListener listener )
+    void submit( Node node, Object value, Object userId, JobCompletionListener listener, ArrayList<AntPoint> antTrail )
     {
         JobInstanceIdentifier tii = buildJobInstanceIdentifier( userId );
         node.addRunningJob( tii, this, listener );
-        submitATask( node, tii, 0, value );
+        TaskType type = taskTypes[0];
+	TaskInstance j = new TaskInstance( tii, type, value, antTrail );
+	node.submit( j );
     }
 
     /**

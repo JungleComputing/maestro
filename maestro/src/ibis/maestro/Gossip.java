@@ -107,7 +107,7 @@ class Gossip
      * a task on
      * a given master from the moment it enters its master queue to
      * the moment its entire job is completed.
-     * @param masterQueueIntervals The time in nanoseconds for each task it is estimated to dwell on the master queue.
+     * @param masterQueueIntervals The time in nanoseconds for each task it is estimated to dwell in the master queue.
      * @param localNodeInfoMap 
      */
     synchronized void recomputeCompletionTimes( long masterQueueIntervals[], JobList jobs, HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap )
@@ -118,7 +118,10 @@ class Gossip
             int nextIndex = -1;
 
             for( int typeIndex: indexList ) {
-                long t = Utils.safeAdd( masterQueueIntervals[typeIndex], getBestCompletionTimeAfterMasterQueue( typeIndex, nextIndex, localNodeInfoMap ) );
+                long t = Utils.safeAdd(
+                    masterQueueIntervals[typeIndex],
+                    getBestCompletionTimeAfterMasterQueue( typeIndex, nextIndex, localNodeInfoMap )
+                );
                 localPerformanceInfo.completionInfo[typeIndex] = t;
                 nextIndex = typeIndex;
             }
@@ -169,7 +172,7 @@ class Gossip
     }
 
     /** Overwrite the worker queue info of our local information with the new info.
-     * @param update
+     * @param update The new information.
      */
     synchronized void registerWorkerQueueInfo( WorkerQueueInfo[] update )
     {

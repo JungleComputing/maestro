@@ -38,7 +38,7 @@ public class JobWaiter implements JobCompletionListener
     {
 	Object id = new WaiterJobIdentifier( taskNo++ );
         outstandingTasks++;
-        job.submit( node, input, id, this );
+        node.submit( input, id, true, this, job );
     }
 
     /**

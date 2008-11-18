@@ -15,18 +15,21 @@ import java.io.Serializable;
 public class AntPoint implements Serializable
 {
     private static final long serialVersionUID = 1L;
-    final IbisIdentifier ibis;
+    final IbisIdentifier masterIbis;
+    final IbisIdentifier workerIbis;
     final long timestamp;
     final int typeIndex;
 
     /**
-     * @param ibis
+     * @param masterIbis
+     * @param workerIbis
      * @param timestamp
      * @param typeIndex
      */
-    public AntPoint( final IbisIdentifier ibis, final long timestamp, final int typeIndex )
+    public AntPoint( final IbisIdentifier masterIbis, final IbisIdentifier workerIbis, final long timestamp, final int typeIndex )
     {
-        this.ibis = ibis;
+        this.masterIbis = masterIbis;
+        this.workerIbis = workerIbis;
         this.timestamp = timestamp;
         this.typeIndex = typeIndex;
     }

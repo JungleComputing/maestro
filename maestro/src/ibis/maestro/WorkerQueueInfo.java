@@ -14,17 +14,22 @@ class WorkerQueueInfo implements Serializable
     int queueLength;
     int queueLengthSequenceNumber;
     long dequeueTimePerTask;
-    long computeTime;
+    long executionTime;
 
     /**
      * @param queueLength The worker queue length.
+     * @param queueLengthSequenceNumber The sequence number of this queue length.
+     *     Used to avoid multiple updates to the worker allowance on multiple
+     *     transmissions of the same WoekrQueueInfo instance.
+     * @param dequeueTimePerTask The current wait time in the worker queue divided by the queue length.
+     * @param executionTime The execution time of a task.
      */
-    WorkerQueueInfo( int queueLength, int queueLengthSequenceNumber, long dequeueTimePerTask, long computeTime )
+    WorkerQueueInfo( int queueLength, int queueLengthSequenceNumber, long dequeueTimePerTask, long executionTime )
     {
 	this.queueLength = queueLength;
 	this.queueLengthSequenceNumber = queueLengthSequenceNumber;
 	this.dequeueTimePerTask = dequeueTimePerTask;
-	this.computeTime = computeTime;
+	this.executionTime = executionTime;
     }
 
     /**
@@ -34,12 +39,12 @@ class WorkerQueueInfo implements Serializable
     @Override
     public String toString()
     {
-        return "(ql=" + queueLength + ",dq/t=" + Utils.formatNanoseconds( dequeueTimePerTask ) + ",compute=" + Utils.formatNanoseconds( computeTime ) + ")";
+        return "(ql=" + queueLength + ",dq/t=" + Utils.formatNanoseconds( dequeueTimePerTask ) + ",compute=" + Utils.formatNanoseconds( executionTime ) + ")";
     }
 
     String format()
     {
-        return String.format( "%3d %9s %9s", queueLength, Utils.formatNanoseconds( dequeueTimePerTask ), Utils.formatNanoseconds( computeTime ) );
+        return String.format( "%3d %9s %9s", queueLength, Utils.formatNanoseconds( dequeueTimePerTask ), Utils.formatNanoseconds( executionTime ) );
     }
 
     static String topLabel()
@@ -59,12 +64,12 @@ class WorkerQueueInfo implements Serializable
 
     void failTask()
     {
-	computeTime = Long.MAX_VALUE;
+	executionTime = Long.MAX_VALUE;
     }
 
     void setComputeTime( long t )
     {
-	computeTime = t;
+	executionTime = t;
     }
 
     synchronized void setQueueTimePerTask( long queueTimePerTask, int newQueueLength )

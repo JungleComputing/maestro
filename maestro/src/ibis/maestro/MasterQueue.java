@@ -21,7 +21,7 @@ final class MasterQueue
 {
     int taskCount = 0;
     private final TypeInfo queueTypes[];
-    protected final ArrayList<TaskInstance> queue = new ArrayList<TaskInstance>();
+    protected final ArrayList<MasterQueueEntry> queue = new ArrayList<MasterQueueEntry>();
 
     /**
      * Statistics per type for the different task types in the queue.
@@ -120,7 +120,7 @@ final class MasterQueue
         }
     }
 
-    private static int findInsertionPoint( ArrayList<TaskInstance> queue, TaskInstance e )
+    private static int findInsertionPoint( ArrayList<MasterQueueEntry> queue, TaskInstance e )
     {
         // Good old binary search.
         int start = 0;
@@ -137,7 +137,7 @@ final class MasterQueue
             if( mid == start ){
                 break;
             }
-            long midId = queue.get( mid ).jobInstance.id;
+            long midId = queue.get( mid ).task.jobInstance.id;
             if( midId<id ){
                 // Mid should come before us.
                 start = mid;
@@ -149,7 +149,7 @@ final class MasterQueue
         }
         // This comparison is probably rarely necessary, but corner cases
         // are a pain, so I'm safe rather than sorry.
-        long startId = queue.get( start ).jobInstance.id;
+        long startId = queue.get( start ).task.jobInstance.id;
         if( startId<id ){
             return end;
         }
@@ -167,7 +167,7 @@ final class MasterQueue
     
     private void dumpQueue( PrintStream s)
     {
-        for( TaskInstance e: queue ) {
+        for( MasterQueueEntry e: queue ) {
             s.print( e.shortLabel() );
             s.print( ' ' );
         }
@@ -182,7 +182,7 @@ final class MasterQueue
         TypeInfo info = queueTypes[type.index];
         int length = info.registerAdd();
         int pos = findInsertionPoint( queue, task );
-        queue.add( pos, task );
+        queue.add( pos, new MasterQueueEntry( task ) );
         if( Settings.traceQueuing ) {
             Globals.log.reportProgress( "Adding " + task.formatJobAndType() + " at position " + pos + " of master queue; length is now " + queue.size() + "; " + length + " of type " + type );
         }
@@ -215,7 +215,7 @@ final class MasterQueue
         }
     }
 
-    protected TaskInstance remove()
+    MasterQueueEntry remove()
     {
         return queue.remove( 0 );
     }
@@ -325,7 +325,8 @@ final class MasterQueue
     {
         int ix = 0;
         while( ix<queue.size() ) {
-            final TaskInstance task = queue.get( ix );
+            final MasterQueueEntry e = queue.get( ix );
+            final TaskInstance task = e.task;
             final TaskType type = task.type;
             Submission sub = selectBestWorker( localNodeInfoMap, tables, task );
             if( sub != null ) {
@@ -353,7 +354,8 @@ final class MasterQueue
     {
         int ix = 0;
         while( ix<queue.size() ) {
-            final TaskInstance task = queue.get( ix );
+            final MasterQueueEntry e = queue.get( ix );
+            final TaskInstance task = e.task;
             final TaskType type = task.type;
  
             Submission sub = selectBestWorker( localNodeInfoMap, antRoutingTable, task );
@@ -406,6 +408,13 @@ final class MasterQueue
     {
 	while( queue.remove( task ) ) {
 	    // Nothing.
+	}
+    }
+
+    void add( ArrayList<TaskInstance> l )
+    {
+	for( TaskInstance task: l ) {
+	    add( task );
 	}
     }
 }

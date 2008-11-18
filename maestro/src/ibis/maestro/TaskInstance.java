@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 
 /**
  * The representation of a task instance.
@@ -13,16 +14,19 @@ class TaskInstance implements Serializable {
     final TaskType type;
     final Object input;
     private boolean orphan = false;
+    final ArrayList<AntPoint> antTrail;
 
     /**
      * @param tii The job this task belongs to.
      * @param type The type of this task instance.
      * @param input The input for this task.
      */
-    TaskInstance( JobInstanceIdentifier tii, TaskType type, Object input) {
+    TaskInstance( JobInstanceIdentifier tii, TaskType type, Object input, ArrayList<AntPoint> antTrail )
+    {
 	jobInstance = tii;
 	this.type = type;
 	this.input = input;
+	this.antTrail = antTrail;
     }
 
     String formatJobAndType()

@@ -182,7 +182,7 @@ final class NodeList
         HashMap<IbisIdentifier, LocalNodeInfo> res = new HashMap<IbisIdentifier, LocalNodeInfo>();
         for( Map.Entry<IbisIdentifier, NodeInfo> entry : ibisToNodeMap.entrySet() ) {
             NodeInfo nodeInfo = entry.getValue();
-            
+
             res.put( entry.getKey(), nodeInfo.getLocalInfo() );
         }
         return res;

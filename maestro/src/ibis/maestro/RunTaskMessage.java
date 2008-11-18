@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.util.ArrayList;
+
 import ibis.ipl.IbisIdentifier;
 
 
@@ -20,6 +22,7 @@ final class RunTaskMessage extends Message
     private transient long queueMoment = 0L;
     private transient int queueLength = 0;
     final IbisIdentifier source;
+    final ArrayList<AntPoint> antTrail;
 
     /**
      * Given a task and its source, constructs a new RunTaskMessage.
@@ -27,12 +30,13 @@ final class RunTaskMessage extends Message
      * @param task The task to run.
      * @param taskId The identifier of the task.
      */
-    RunTaskMessage( IbisIdentifier workerIdentifier, TaskInstance task, long taskId )
+    RunTaskMessage( IbisIdentifier workerIdentifier, TaskInstance task, long taskId, ArrayList<AntPoint> antTrail )
     {
         this.source = Globals.localIbis.identifier();
 	this.workerIdentifier = workerIdentifier;
 	this.taskInstance = task;
         this.taskId = taskId;
+        this.antTrail = antTrail;
     }
 
     /** Set the start time of this task to the given time in ns.
