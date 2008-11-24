@@ -21,12 +21,12 @@ public class AntPoint implements Serializable
     final int typeIndex;
 
     /**
-     * @param masterIbis
-     * @param workerIbis
-     * @param timestamp
-     * @param typeIndex
+     * @param masterIbis The master of this task submission.
+     * @param workerIbis The worker of this task submission.
+     * @param timestamp The timestamp of the task submission.
+     * @param typeIndex The type of task.
      */
-    public AntPoint( final IbisIdentifier masterIbis, final IbisIdentifier workerIbis, final long timestamp, final int typeIndex )
+    AntPoint( final IbisIdentifier masterIbis, final IbisIdentifier workerIbis, final long timestamp, final int typeIndex )
     {
         this.masterIbis = masterIbis;
         this.workerIbis = workerIbis;

@@ -39,9 +39,10 @@ class GossipNodeList
     {
 
         /**
+         * Compares two gossip nodes, and ranks them according to priority.
          * 
-         * @param arg0
-         * @param arg1
+         * @param arg0 The first node to compare.
+         * @param arg1 The second node to compare.
          * @return <code>-1</code> if node arg0 should have priority over arg1, or <code>1</code> for the reverse.
          */
         @Override

@@ -182,17 +182,21 @@ public abstract class Node extends Thread implements PacketReceiveListener
 	sendPort = new PacketSendPort( this, localIbis.identifier() );
 	terminator = buildTerminator();
 	receivePort = new PacketUpcallReceivePort( localIbis, Globals.receivePortName, this );
-	for( int i=0; i<workThreads.length; i++ ) {
-	    final WorkThread t = new WorkThread( this );
-	    workThreads[i] = t;
-	    t.start();
-	}
 	this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
 	startTime = System.nanoTime();
 	start();
 	registry.enableEvents();
 	if( Settings.traceNodes ) {
 	    Globals.log.log( "Started a Maestro node" );
+	}
+    }
+
+    void constructAndStartWorkThreads()
+    {
+	for( int i=0; i<workThreads.length; i++ ) {
+	    final WorkThread t = new WorkThread( this );
+	    workThreads[i] = t;
+	    t.start();
 	}
     }
 
@@ -816,15 +820,18 @@ public abstract class Node extends Thread implements PacketReceiveListener
     }
 
     /**
-     * @param jobs2
-     * @param goForMaestro
+     * @param jobs The list of jobs to support.
+     * @param goForMaestro If <code>true</code>, try to become maestro.
      * @return The newly constructed node.
-     * @throws IOException 
-     * @throws IbisCreationFailedException 
+     * @throws IOException Thrown if there is an I/O error during the creation of this node.
+     * @throws IbisCreationFailedException Thrown if for some reason the ibis of this node could not be created.
      */
-    public static Node createNode( JobList jobs2, boolean goForMaestro ) throws IbisCreationFailedException, IOException
+    public static Node createNode( JobList jobs, boolean goForMaestro ) throws IbisCreationFailedException, IOException
     {
-	return new QRoutingNode( jobs2, goForMaestro );
+	if( Settings.USE_ANT_ROUTING ) {
+	    return new AntRoutingNode( jobs, goForMaestro );
+	}
+	return new QRoutingNode( jobs, goForMaestro );
     }
 
     /**

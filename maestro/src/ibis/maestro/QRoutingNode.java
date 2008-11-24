@@ -29,12 +29,15 @@ public class QRoutingNode extends Node
      * @throws IbisCreationFailedException Thrown if for some reason we cannot create an ibis.
      * @throws IOException Thrown if for some reason we cannot communicate.
      */
-    public QRoutingNode(JobList jobs, boolean runForMaestro) throws IbisCreationFailedException, IOException
+    QRoutingNode( JobList jobs, boolean runForMaestro ) throws IbisCreationFailedException, IOException
     {
+        // FIXME: don't start the work threads in the constructor. They might
+	// access this node before it has been properly constructed.
         super( jobs, runForMaestro );
         recentMasterList.register( Globals.localIbis.identifier() );
         gossiper = new Gossiper( sendPort, isMaestro(), jobs );
         gossiper.start();
+        super.constructAndStartWorkThreads();
     }
 
     /**
@@ -332,7 +335,7 @@ public class QRoutingNode extends Node
      * @param theIbis The ibis that has joined.
      */
     @Override
-    protected void registerIbisJoined(IbisIdentifier theIbis)
+    protected void registerIbisJoined( IbisIdentifier theIbis )
     {
         super.registerIbisJoined( theIbis );
         boolean local = theIbis.equals( Globals.localIbis.identifier() );

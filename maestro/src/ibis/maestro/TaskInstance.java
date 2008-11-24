@@ -73,8 +73,9 @@ class TaskInstance implements Serializable {
     }
 
     /**
-     * @param obj
-     * @return
+     * Determines whether the given object equals this task instance.
+     * @param obj The object to compare with.
+     * @return True iff the given object equals this task instance.
      */
     @Override
     public boolean equals(Object obj) {

@@ -34,12 +34,18 @@ class PacketUpcallReceivePort implements MessageUpcall {
     /** Handle the upcall of the ipl port. Only public because the interface requires it.
      * 
      * @param msg The message to handle.
-     * @throws IOException 
-     * @throws ClassNotFoundException 
+     * @throws IOException Thrown if for some reason the given message could not be read. 
+     * @throws ClassNotFoundException Thrown if for some reason the 
      */
-    public void upcall( ReadMessage msg ) throws IOException, ClassNotFoundException
+    public void upcall( ReadMessage msg ) throws IOException
     {
-        Message data = (Message) msg.readObject();
+        Message data;
+	try {
+	    data = (Message) msg.readObject();
+	} catch (ClassNotFoundException e) {
+	    Globals.log.reportInternalError( "Cannot read message in upcall: class not found: " + e.getLocalizedMessage() );
+	    return;
+	}
         data.arrivalMoment = System.nanoTime();
         //msg.finish();
         listener.messageReceived( data );

@@ -27,7 +27,7 @@ public class MasterQueueTest extends TestCase
             if( queue.isEmpty() ) {
                 fail( "Queue is empty, while I expected " + id );
             }
-            TaskInstance ti = queue.remove().task;
+            TaskInstance ti = queue.remove();
 
             if( ti.jobInstance.id != id ) {
                 fail( "Unexpected task from master queue: " + ti.jobInstance.id + " instead of " + id );

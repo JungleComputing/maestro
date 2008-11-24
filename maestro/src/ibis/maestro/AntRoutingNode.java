@@ -35,6 +35,7 @@ public class AntRoutingNode extends Node
 	recentMasterList.register( Globals.localIbis.identifier() );
 	gossiper = new Gossiper( sendPort, isMaestro(), jobs );
 	gossiper.start();
+        super.constructAndStartWorkThreads();
     }
 
     /**
