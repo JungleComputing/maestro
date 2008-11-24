@@ -47,6 +47,7 @@ public class AntTypeRoutingTable {
             updateTimeStamp = timestamp;
             
             int ix = findIbis( ibis );
+            // FIXME: handle ix<0 case.
             if( ix == 0 ){
                 // Already at the start, don't bother.
                 return;
@@ -59,12 +60,21 @@ public class AntTypeRoutingTable {
         }
     }
 
-    synchronized NodeInfo getBestReadyWorker( TaskType t )
+    synchronized NodeInfo getBestReadyWorker()
     {
+	if( Settings.traceAntRouting ) {
+	    Globals.log.reportProgress( "Ant router: get best ready worker for " + type );
+	}
 	for( int ix=0; ix<nodes.size(); ix++ ) {
 	    NodeInfo node = nodes.get( ix );
-	    if( node.isAvailable( t ) ) {
+	    if( node.isAvailable( type ) ) {
+		if( Settings.traceAntRouting ) {
+		    Globals.log.reportProgress( "Worker " + node + " is best available" );
+		}
 		return node;
+	    }
+	    if( Settings.traceAntRouting ) {
+		Globals.log.reportProgress( "Worker " + node + " is busy" );
 	    }
 	}
 	return null;

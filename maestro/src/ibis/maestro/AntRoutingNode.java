@@ -373,10 +373,12 @@ public class AntRoutingNode extends Node
     @Override
     protected void handleGossipMessage( GossipMessage m )
     {
+	// TODO: is it really necessary to handle gossip in AntRoutingNode??
+	boolean changed = false;
+
 	if( Settings.traceNodeProgress || Settings.traceRegistration || Settings.traceGossip ){
 	    Globals.log.reportProgress( "Received gossip message from " + m.source + " with " + m.gossip.length + " items"  );
 	}
-	boolean changed = false;
 	for( NodePerformanceInfo i: m.gossip ) {
 	    changed |= gossiper.registerGossip( i, m.source );
 	    changed |= handleNodeUpdateInfo( i );

@@ -33,4 +33,14 @@ public class AntPoint implements Serializable
         this.timestamp = timestamp;
         this.typeIndex = typeIndex;
     }
+    
+    /**
+     * Returns a string representation of this ant routing.
+     * @return The string representation.
+     */
+    @Override
+    public String toString()
+    {
+	return "ant routing for type " + Globals.allTaskTypes[typeIndex] + " @" + timestamp + ": " + masterIbis + "->" + workerIbis;
+    }
 }

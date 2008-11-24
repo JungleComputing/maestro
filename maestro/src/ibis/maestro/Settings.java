@@ -83,11 +83,14 @@ class Settings {
     /** Dump the worker queue after each change? */
     static final boolean dumpWorkerQueue = false;
 
-    /** Announce all submissions. */
+    /** Announce all submissions? */
     static final boolean traceSubmissions = false;
 
-    /** Trace the adventures of the terminator thread. */
+    /** Trace the adventures of the terminator thread? */
     static final boolean traceTerminator = false;
+
+    /** Trace ant routing administration? */
+    static final boolean traceAntRouting = true;
 
     // --- Configuration (tuning) constants. ----
     // Unfortunately we still need some magic numbers.

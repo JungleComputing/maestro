@@ -29,10 +29,10 @@ public class AntRoutingTable
 
     NodeInfo getWorker( TaskType type )
     {
-	return antTypeRoutingTable[type.index].getBestReadyWorker( type );
+	return antTypeRoutingTable[type.index].getBestReadyWorker();
     }
 
-    void removeNode(IbisIdentifier theIbis)
+    void removeNode( IbisIdentifier theIbis )
     {
 	for( AntTypeRoutingTable t: antTypeRoutingTable ) {
 	    t.removeNode( theIbis );
@@ -48,6 +48,9 @@ public class AntRoutingTable
 
     protected void handleAntPoint( AntPoint p )
     {
+	if( Settings.traceAntRouting ) {
+	    Globals.log.reportProgress( "Handling ant route reinforcement" + p );
+	}
 	update( p.typeIndex, p.workerIbis, p.timestamp );
     }
 }
