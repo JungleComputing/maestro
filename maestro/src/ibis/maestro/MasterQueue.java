@@ -323,22 +323,33 @@ final class MasterQueue
      */
     synchronized Submission getSubmission( HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap, NodePerformanceInfo[] tables )
     {
+	int busyTypeIndex = -1; // Don't even consider tasks of this type, all workers are busy.
         int ix = 0;
         while( ix<queue.size() ) {
             final TaskInstance task = queue.get( ix );
             final TaskType type = task.type;
-            Submission sub = selectBestWorker( localNodeInfoMap, tables, task );
-            if( sub != null ) {
-                queue.remove( ix );
-                TypeInfo queueTypeInfo = queueTypes[type.index];
-                int length = queueTypeInfo.registerRemove();
-                if( Settings.traceMasterQueue || Settings.traceQueuing ) {
-                    Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type );
-                }
-                return sub;
+            if( type.index == busyTypeIndex ) {
+        	if( Settings.traceMasterQueue || Settings.traceQueuing ) {
+        	    Globals.log.reportProgress( "Type " + type + " has no ready workers, don't bother" );
+        	}
             }
-            if( Settings.traceMasterQueue ){
-                Globals.log.reportProgress( "No ready worker for task type " + type );
+            else {
+        	Submission sub = selectBestWorker( localNodeInfoMap, tables, task );
+        	if( sub == null ) {
+        	    busyTypeIndex = type.index;
+        	}
+        	else {
+        	    queue.remove( ix );
+        	    TypeInfo queueTypeInfo = queueTypes[type.index];
+        	    int length = queueTypeInfo.registerRemove();
+        	    if( Settings.traceMasterQueue || Settings.traceQueuing ) {
+        		Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type );
+        	    }
+        	    return sub;
+        	}
+        	if( Settings.traceMasterQueue ){
+        	    Globals.log.reportProgress( "No ready worker for task type " + type );
+        	}
             }
             ix++;
         }
@@ -347,27 +358,39 @@ final class MasterQueue
 
     /**
      * @param antRoutingTable
-     * @return
+     * @return A task to submit.
      */
     Submission getAntSubmission( HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap, AntRoutingTable antRoutingTable )
     {
         int ix = 0;
+        int busyTypeIndex = -1;  // No workers for this type.
+
         while( ix<queue.size() ) {
             final TaskInstance task = queue.get( ix );
             final TaskType type = task.type;
  
-            Submission sub = selectBestWorker( localNodeInfoMap, antRoutingTable, task );
-            if( sub != null ) {
-                queue.remove( ix );
-                TypeInfo queueTypeInfo = queueTypes[type.index];
-                int length = queueTypeInfo.registerRemove();
-                if( Settings.traceMasterQueue || Settings.traceQueuing ) {
-                    Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type );
-                }
-                return sub;
+            if( type.index == busyTypeIndex ) {
+        	if( Settings.traceMasterQueue || Settings.traceQueuing ) {
+        	    Globals.log.reportProgress( "Type " + type + " has no ready workers, don't bother" );
+        	}
             }
-            if( Settings.traceMasterQueue ){
-                Globals.log.reportProgress( "No ready worker for task type " + type );
+            else {
+        	Submission sub = selectBestWorker( localNodeInfoMap, antRoutingTable, task );
+        	if( sub == null ) {
+        	    busyTypeIndex = type.index;
+        	}
+        	else {
+        	    queue.remove( ix );
+        	    TypeInfo queueTypeInfo = queueTypes[type.index];
+        	    int length = queueTypeInfo.registerRemove();
+        	    if( Settings.traceMasterQueue || Settings.traceQueuing ) {
+        		Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type );
+        	    }
+        	    return sub;
+        	}
+        	if( Settings.traceMasterQueue ){
+        	    Globals.log.reportProgress( "No ready worker for task type " + type );
+        	}
             }
             ix++;
         }

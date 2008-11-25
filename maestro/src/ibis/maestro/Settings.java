@@ -141,5 +141,5 @@ class Settings {
     static final long DEFAULT_TERMINATOR_SLEEP = 100;
 
     /** Should Maestro use ant routing? TODO: make ant routing flag settable. */
-    static final boolean USE_ANT_ROUTING = false;
+    static final boolean USE_ANT_ROUTING = true;
 }
