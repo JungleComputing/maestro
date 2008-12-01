@@ -30,11 +30,12 @@ public class QRoutingNode extends Node
      */
     QRoutingNode( JobList jobs, boolean runForMaestro ) throws IbisCreationFailedException, IOException
     {
-        // FIXME: don't start the work threads in the constructor. They might
-	// access this node before it has been properly constructed.
         super( jobs, runForMaestro );
         recentMasterList.register( Globals.localIbis.identifier() );
-        super.constructAndStartWorkThreads();
+        super.startThreads();
+        if( Settings.traceNodes ) {
+            Globals.log.log( "Started a Maestro node using Q routing" );
+        }
     }
 
     /**

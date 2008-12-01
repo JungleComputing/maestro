@@ -32,7 +32,10 @@ public class AntRoutingNode extends Node
     {
 	super( jobs, runForMaestro );
 	recentMasterList.register( Globals.localIbis.identifier() );
-        super.constructAndStartWorkThreads();
+        super.startThreads();
+        if( Settings.traceNodes ) {
+            Globals.log.log( "Started a Maestro node using ant routing" );
+        }
     }
 
     /**
