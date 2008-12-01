@@ -34,6 +34,7 @@ public abstract class Node extends Thread implements PacketReceiveListener
     private static final int workThreadCount = numberOfProcessors+Settings.EXTRA_WORK_THREADS;
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
     private final Terminator terminator;
+    protected final Gossiper gossiper;
 
     protected final MessageQueue outgoingMessageQueue = new MessageQueue();
 
@@ -183,21 +184,24 @@ public abstract class Node extends Thread implements PacketReceiveListener
 	terminator = buildTerminator();
 	receivePort = new PacketUpcallReceivePort( localIbis, Globals.receivePortName, this );
 	this.traceStats = System.getProperty( "ibis.maestro.traceWorkerStatistics" ) != null;
-	startTime = System.nanoTime();
-	start();
-	registry.enableEvents();
-	if( Settings.traceNodes ) {
-	    Globals.log.log( "Started a Maestro node" );
-	}
+        gossiper = new Gossiper( sendPort, isMaestro(), jobs );
+        startTime = System.nanoTime();
     }
 
     void constructAndStartWorkThreads()
     {
+        gossiper.start();
 	for( int i=0; i<workThreads.length; i++ ) {
 	    final WorkThread t = new WorkThread( this );
 	    workThreads[i] = t;
 	    t.start();
 	}
+        start();
+        final Registry registry = Globals.localIbis.registry();
+        registry.enableEvents();
+        if( Settings.traceNodes ) {
+            Globals.log.log( "Started a Maestro node" );
+        }
     }
 
     private Terminator buildTerminator()

@@ -17,7 +17,6 @@ import java.util.HashMap;
  */
 public class QRoutingNode extends Node
 {
-    private final Gossiper gossiper;
     private final Flag doUpdateRecentMasters = new Flag( false );
     private final Flag recomputeCompletionTimes = new Flag( false );
 
@@ -35,8 +34,6 @@ public class QRoutingNode extends Node
 	// access this node before it has been properly constructed.
         super( jobs, runForMaestro );
         recentMasterList.register( Globals.localIbis.identifier() );
-        gossiper = new Gossiper( sendPort, isMaestro(), jobs );
-        gossiper.start();
         super.constructAndStartWorkThreads();
     }
 

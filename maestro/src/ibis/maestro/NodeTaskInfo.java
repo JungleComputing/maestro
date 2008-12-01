@@ -225,7 +225,7 @@ final class NodeTaskInfo
         return allowance;
     }
 
-    boolean isAvailable()
+    synchronized boolean isAvailable()
     {
 	return outstandingTasks<allowance;
     }

@@ -17,7 +17,6 @@ import java.util.HashMap;
  */
 public class AntRoutingNode extends Node
 {
-    private final Gossiper gossiper;
     private final Flag doUpdateRecentMasters = new Flag( false );
     private AntRoutingTable antRoutingTable = new AntRoutingTable();
 
@@ -33,8 +32,6 @@ public class AntRoutingNode extends Node
     {
 	super( jobs, runForMaestro );
 	recentMasterList.register( Globals.localIbis.identifier() );
-	gossiper = new Gossiper( sendPort, isMaestro(), jobs );
-	gossiper.start();
         super.constructAndStartWorkThreads();
     }
 
@@ -174,8 +171,8 @@ public class AntRoutingNode extends Node
 	if( Settings.traceNodeProgress ){
 	    Globals.log.reportProgress( "Received node update message " + m );
 	}
-	boolean isnew = gossiper.registerGossip( m.update, m.update.source );
-	isnew |= handleNodeUpdateInfo( m.update );
+	gossiper.registerGossip( m.update, m.update.source );
+	handleNodeUpdateInfo( m.update );
     }
 
     @Override

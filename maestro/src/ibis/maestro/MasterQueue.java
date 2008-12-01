@@ -71,7 +71,7 @@ final class MasterQueue
             return elements;
         }
 
-        synchronized int registerRemove()
+        synchronized void registerRemove()
         {
             long now = System.nanoTime();
             if( frontChangedTime != 0 ) {
@@ -89,7 +89,6 @@ final class MasterQueue
             else {
                 frontChangedTime = now;
             }
-            return elements;
         }
 
         /**
@@ -341,8 +340,9 @@ final class MasterQueue
         	else {
         	    queue.remove( ix );
         	    TypeInfo queueTypeInfo = queueTypes[type.index];
-        	    int length = queueTypeInfo.registerRemove();
+        	    queueTypeInfo.registerRemove();
         	    if( Settings.traceMasterQueue || Settings.traceQueuing ) {
+                        int length = queueTypeInfo.elements;
         		Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type );
         	    }
         	    return sub;
@@ -382,8 +382,9 @@ final class MasterQueue
         	else {
         	    queue.remove( ix );
         	    TypeInfo queueTypeInfo = queueTypes[type.index];
-        	    int length = queueTypeInfo.registerRemove();
+        	    queueTypeInfo.registerRemove();
         	    if( Settings.traceMasterQueue || Settings.traceQueuing ) {
+                        int length = queueTypeInfo.elements;
         		Globals.log.reportProgress( "Removing " + task.formatJobAndType() + " from master queue; length is now " + queue.size() + "; " + length + " of type " + type );
         	    }
         	    return sub;
