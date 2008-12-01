@@ -23,7 +23,7 @@ public abstract class Node extends Thread implements PacketReceiveListener
 {
     static final IbisCapabilities ibisCapabilities = new IbisCapabilities( IbisCapabilities.MEMBERSHIP_UNRELIABLE, IbisCapabilities.ELECTIONS_STRICT );
     protected final PacketSendPort sendPort;
-    final PacketUpcallReceivePort receivePort;
+    private final PacketUpcallReceivePort receivePort;
     protected final long startTime;
     private long stopTime = 0;
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
