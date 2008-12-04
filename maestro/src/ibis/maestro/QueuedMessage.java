@@ -4,12 +4,11 @@ import ibis.ipl.IbisIdentifier;
 
 /**
  * A entry in a message queue, containing a message and a destination.
-
+ * 
  * @author Kees van Reeuwijk
- *
+ * 
  */
-class QueuedMessage
-{
+class QueuedMessage {
     final IbisIdentifier destination;
     final Message msg;
 
@@ -17,11 +16,10 @@ class QueuedMessage
      * @param destination
      * @param msg
      */
-    QueuedMessage( final IbisIdentifier destination, final Message msg )
-    {
-        super();
-        this.destination = destination;
-        this.msg = msg;
+    QueuedMessage(final IbisIdentifier destination, final Message msg) {
+	super();
+	this.destination = destination;
+	this.msg = msg;
     }
 
 }

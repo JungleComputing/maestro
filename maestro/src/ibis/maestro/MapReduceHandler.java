@@ -6,16 +6,14 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 /**
- * Handles the execution of a map/reduce task.
- * In particular, it handles the submission of sub-tasks,
- * waits for their completion, applies the reduction,
+ * Handles the execution of a map/reduce task. In particular, it handles the
+ * submission of sub-tasks, waits for their completion, applies the reduction,
  * and handles the result.
  * 
  * @author Kees van Reeuwijk
- *
+ * 
  */
-public class MapReduceHandler extends Thread implements JobCompletionListener
-{
+public class MapReduceHandler extends Thread implements JobCompletionListener {
     final Node localNode;
     final MapReduceTask reducer;
     final LabelTracker labeler = new LabelTracker();
@@ -23,25 +21,26 @@ public class MapReduceHandler extends Thread implements JobCompletionListener
     final long runMoment;
 
     /**
-     * @param localNode The node we are running on.
-     * @param reducer The reducer to run on each result we're waiting for.
+     * @param localNode
+     *            The node we are running on.
+     * @param reducer
+     *            The reducer to run on each result we're waiting for.
      */
-    MapReduceHandler( Node localNode, MapReduceTask reducer, RunTaskMessage message, long runMoment )
-    {
+    MapReduceHandler(Node localNode, MapReduceTask reducer,
+	    RunTaskMessage message, long runMoment) {
 	this.localNode = localNode;
 	this.reducer = reducer;
 	this.message = message;
 	this.runMoment = runMoment;
     }
 
-    private static final class Id implements Serializable
-    {
+    private static final class Id implements Serializable {
 	private static final long serialVersionUID = 1L;
 
 	final Object userID;
 	final Label label;
 
-	private Id( final Object userID, final Label label ) {
+	private Id(final Object userID, final Label label) {
 	    super();
 	    this.userID = userID;
 	    this.label = label;
@@ -51,75 +50,87 @@ public class MapReduceHandler extends Thread implements JobCompletionListener
 	 * @return A string representation of this id.
 	 */
 	@Override
-	public String toString()
-	{
+	public String toString() {
 	    return "label=" + label + " userID=" + userID;
 	}
     }
 
-    /** Submits a new job instance with the given input for the first task of the job.
-     * Maestro is free to pick one of the given list of alternative jobs.
-     * Internally we keep track of the number of submitted jobs so that
-     * we can wait for all of them to complete.
-     * @param input Input for the (first task of the) job.
-     * @param userId The identifier the user attaches to this job.
-     * @param submitIfBusy If <code>true</code> the job is submitted even if all workers are currently busy.
-     * @param jobChoices The list of possible jobs to submit to.
+    /**
+     * Submits a new job instance with the given input for the first task of the
+     * job. Maestro is free to pick one of the given list of alternative jobs.
+     * Internally we keep track of the number of submitted jobs so that we can
+     * wait for all of them to complete.
+     * 
+     * @param input
+     *            Input for the (first task of the) job.
+     * @param userId
+     *            The identifier the user attaches to this job.
+     * @param submitIfBusy
+     *            If <code>true</code> the job is submitted even if all workers
+     *            are currently busy.
+     * @param jobChoices
+     *            The list of possible jobs to submit to.
      * @return <code>true</code> iff the job instance was submitted.
      */
     @SuppressWarnings("synthetic-access")
-    public synchronized boolean submit( Object input, Object userId, boolean submitIfBusy, Job... jobChoices )
-    {
+    public synchronized boolean submit(Object input, Object userId,
+	    boolean submitIfBusy, Job... jobChoices) {
 	Label label = labeler.nextLabel();
-	Object id = new Id( userId, label );
-	if( Settings.traceMapReduce ){
-	    Globals.log.reportProgress( "MapReduce: Submitting " + id + " to " + Arrays.deepToString(jobChoices ) );
+	Object id = new Id(userId, label);
+	if (Settings.traceMapReduce) {
+	    Globals.log.reportProgress("MapReduce: Submitting " + id + " to "
+		    + Arrays.deepToString(jobChoices));
 	}
-        boolean submitted = localNode.submit( input, id, submitIfBusy, this, jobChoices );
-        if( !submitted ){
-            labeler.returnLabel( label );
-        }
-        return submitted;
+	boolean submitted = localNode.submit(input, id, submitIfBusy, this,
+		jobChoices);
+	if (!submitted) {
+	    labeler.returnLabel(label);
+	}
+	return submitted;
     }
 
     /**
-     * Handle the completion of a task. We do this by storing the result
-     * in a local array.
-     * @param node The node we're running on.
-     * @param userId The identifier of the job that was completed.
-     * @param result The result of the job.
+     * Handle the completion of a task. We do this by storing the result in a
+     * local array.
+     * 
+     * @param node
+     *            The node we're running on.
+     * @param userId
+     *            The identifier of the job that was completed.
+     * @param result
+     *            The result of the job.
      */
     @Override
-    public synchronized void jobCompleted( Node node, Object userId, Object result )
-    {
-	if( Settings.traceMapReduce ){
-	    Globals.log.reportProgress( "MapReduce: got back " + userId );
+    public synchronized void jobCompleted(Node node, Object userId,
+	    Object result) {
+	if (Settings.traceMapReduce) {
+	    Globals.log.reportProgress("MapReduce: got back " + userId);
 	}
-	if( !(userId instanceof Id) ){
-	    Globals.log.reportInternalError( "The identifier is not a MapReduceHandler.Id but a " + userId.getClass() );
+	if (!(userId instanceof Id)) {
+	    Globals.log
+		    .reportInternalError("The identifier is not a MapReduceHandler.Id but a "
+			    + userId.getClass());
 	    return;
 	}
 	Id id = (Id) userId;
-	labeler.returnLabel( id.label );
-	reducer.reduce( id.userID, result );
+	labeler.returnLabel(id.label);
+	reducer.reduce(id.userID, result);
     }
 
     /**
-     * Runs this thread. We assume that the map phase has been completed,
-     * so all we have to do is wait for the return of all results.
-     * The user should not use this method.
+     * Runs this thread. We assume that the map phase has been completed, so all
+     * we have to do is wait for the return of all results. The user should not
+     * use this method.
      */
     @Override
-    public void run()
-    {
+    public void run() {
 	try {
 	    labeler.waitForAllLabels();
-	}
-	catch( InterruptedException x ) {
+	} catch (InterruptedException x) {
 	    // Nothing we can do.
 	}
 	Object result = reducer.getResult();
-	localNode.handleTaskResult( message, result, runMoment );
+	localNode.handleTaskResult(message, result, runMoment);
     }
 
 }

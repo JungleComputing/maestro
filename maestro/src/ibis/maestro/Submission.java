@@ -6,7 +6,7 @@ import ibis.ipl.IbisIdentifier;
  * A simple class to store a task, worker pair.
  * 
  * @author Kees van Reeuwijk
- *
+ * 
  */
 class Submission {
     final TaskInstance task;
@@ -18,8 +18,7 @@ class Submission {
      * @param worker
      * @param predictedDuration
      */
-    Submission(TaskInstance task, IbisIdentifier worker,
-	    long predictedDuration) {
+    Submission(TaskInstance task, IbisIdentifier worker, long predictedDuration) {
 	this.task = task;
 	this.worker = worker;
 	this.predictedDuration = predictedDuration;

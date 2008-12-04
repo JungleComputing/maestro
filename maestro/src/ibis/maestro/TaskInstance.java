@@ -5,8 +5,9 @@ import java.util.ArrayList;
 
 /**
  * The representation of a task instance.
+ * 
  * @author Kees van Reeuwijk
- *
+ * 
  */
 class TaskInstance implements Serializable {
     private static final long serialVersionUID = -5669565112253289488L;
@@ -17,49 +18,51 @@ class TaskInstance implements Serializable {
     final ArrayList<AntPoint> antTrail;
 
     /**
-     * @param tii The job this task belongs to.
-     * @param type The type of this task instance.
-     * @param input The input for this task.
+     * @param tii
+     *            The job this task belongs to.
+     * @param type
+     *            The type of this task instance.
+     * @param input
+     *            The input for this task.
      */
-    TaskInstance( JobInstanceIdentifier tii, TaskType type, Object input, ArrayList<AntPoint> antTrail )
-    {
+    TaskInstance(JobInstanceIdentifier tii, TaskType type, Object input,
+	    ArrayList<AntPoint> antTrail) {
 	jobInstance = tii;
 	this.type = type;
 	this.input = input;
 	this.antTrail = antTrail;
     }
 
-    String formatJobAndType()
-    {
+    String formatJobAndType() {
 	return "(jobId=" + jobInstance.id + ",type=" + type + ")";
     }
+
     /**
      * Returns a string representation of this task instance.
+     * 
      * @return The string representation.
      */
     @Override
-    public String toString()
-    {
-        return "(task instance: job instance=" + jobInstance + " type=" + type + " input=" + input + ")";
+    public String toString() {
+	return "(task instance: job instance=" + jobInstance + " type=" + type
+		+ " input=" + input + ")";
     }
 
-    String shortLabel()
-    {
-        return jobInstance.label() + "#" + type;
+    String shortLabel() {
+	return jobInstance.label() + "#" + type;
     }
 
-    void setOrphan()
-    {
+    void setOrphan() {
 	orphan = true;
     }
-    
-    boolean isOrphan()
-    {
+
+    boolean isOrphan() {
 	return orphan;
     }
 
     /**
      * Returns the hash code of this task instance.
+     * 
      * @return The hash code.
      */
     @Override
@@ -74,7 +77,9 @@ class TaskInstance implements Serializable {
 
     /**
      * Determines whether the given object equals this task instance.
-     * @param obj The object to compare with.
+     * 
+     * @param obj
+     *            The object to compare with.
      * @return True iff the given object equals this task instance.
      */
     @Override

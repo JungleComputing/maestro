@@ -4,16 +4,13 @@ import java.util.ArrayList;
 
 import ibis.ipl.IbisIdentifier;
 
-
-
 /**
  * Tell the worker to execute the task contained in this message.
  * 
  * @author Kees van Reeuwijk
- *
+ * 
  */
-final class RunTaskMessage extends Message
-{
+final class RunTaskMessage extends Message {
     /** */
     private static final long serialVersionUID = 1L;
     final IbisIdentifier workerIdentifier;
@@ -26,59 +23,66 @@ final class RunTaskMessage extends Message
 
     /**
      * Given a task and its source, constructs a new RunTaskMessage.
-     * @param source Who sent this task, as an identifier we know about.
-     * @param task The task to run.
-     * @param taskId The identifier of the task.
+     * 
+     * @param source
+     *            Who sent this task, as an identifier we know about.
+     * @param task
+     *            The task to run.
+     * @param taskId
+     *            The identifier of the task.
      */
-    RunTaskMessage( IbisIdentifier workerIdentifier, TaskInstance task, long taskId, ArrayList<AntPoint> antTrail )
-    {
-        this.source = Globals.localIbis.identifier();
+    RunTaskMessage(IbisIdentifier workerIdentifier, TaskInstance task,
+	    long taskId, ArrayList<AntPoint> antTrail) {
+	this.source = Globals.localIbis.identifier();
 	this.workerIdentifier = workerIdentifier;
 	this.taskInstance = task;
-        this.taskId = taskId;
-        this.antTrail = antTrail;
+	this.taskId = taskId;
+	this.antTrail = antTrail;
     }
 
-    /** Set the start time of this task to the given time in ns.
-     * @param t The start time.
-     * @param queueLength The length of the work queue at this moment.
+    /**
+     * Set the start time of this task to the given time in ns.
+     * 
+     * @param t
+     *            The start time.
+     * @param queueLength
+     *            The length of the work queue at this moment.
      */
-    void setQueueMoment( long t, int queueLength )
-    {
-        this.queueMoment = t;
-        this.queueLength = queueLength;
+    void setQueueMoment(long t, int queueLength) {
+	this.queueMoment = t;
+	this.queueLength = queueLength;
     }
 
-    /** Returns the registered enqueuing moment.
+    /**
+     * Returns the registered enqueuing moment.
      * 
      * @return The registered enqueuing moment.
      */
-    long getQueueMoment()
-    {
-        return queueMoment;
+    long getQueueMoment() {
+	return queueMoment;
     }
 
-    /** Returns the registered queue length at the moment of enqueuing.
+    /**
+     * Returns the registered queue length at the moment of enqueuing.
      * 
      * @return The registered queue length.
      */
-    int getQueueLength()
-    {
-        return queueLength;
+    int getQueueLength() {
+	return queueLength;
     }
 
     /**
      * Returns a string representation of this task messabge.
+     * 
      * @return The string representation.
      */
     @Override
-    public String toString()
-    {
-	return "Task message for task " + taskId + " of type " + taskInstance.type;
+    public String toString() {
+	return "Task message for task " + taskId + " of type "
+		+ taskInstance.type;
     }
 
-    String label()
-    {
-        return taskInstance.shortLabel();
+    String label() {
+	return taskInstance.shortLabel();
     }
 }

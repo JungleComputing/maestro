@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-class CompletedJobJist extends Queue<CompletedJob>
-{
+class CompletedJobJist extends Queue<CompletedJob> {
     // Nothing extra.
 }

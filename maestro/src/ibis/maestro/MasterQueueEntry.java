@@ -11,13 +11,11 @@ final class MasterQueueEntry {
      * @param task
      * @param antTrail
      */
-    MasterQueueEntry( TaskInstance task )
-    {
-        this.task = task;
+    MasterQueueEntry(TaskInstance task) {
+	this.task = task;
     }
 
-    String shortLabel() 
-    {
+    String shortLabel() {
 	return task.shortLabel();
     }
 }
