@@ -33,7 +33,7 @@ class ObsoletePacketSendPort {
     private Counter localSentCount = new Counter();
     private final CacheInfo cache[] = new CacheInfo[Settings.CONNECTION_CACHE_SIZE];
     private int clockHand = 0; // The next cache slot we might want to evict,
-			       // traversing the list circularly
+    // traversing the list circularly
 
     /**
      * The list of known destinations. Register a destination before trying to
@@ -136,7 +136,7 @@ class ObsoletePacketSendPort {
     /** One entry in the connection cache administration. */
     static class CacheInfo {
 	int useCount; // If >0, port is currently used. Never evict such an
-		      // entry.
+	// entry.
 	boolean recentlyUsed;
 	DestinationInfo owner;
 	SendPort port;
@@ -291,9 +291,9 @@ class ObsoletePacketSendPort {
 
 	    if (info == null) {
 		info = new DestinationInfo(theIbis, false); // We know the local
-							    // node has
-							    // registered
-							    // itself.
+		// node has
+		// registered
+		// itself.
 		destinations.put(theIbis, info);
 	    }
 	}
@@ -304,7 +304,7 @@ class ObsoletePacketSendPort {
 	    message.arrivalMoment = System.nanoTime();
 	    node.messageReceived(message);
 	    len = 0; // We're not going to compute a size just for the
-		     // statistics.
+	    // statistics.
 	    localSentCount.add();
 	    if (Settings.traceSends) {
 		System.out.println("Sent local message " + message);

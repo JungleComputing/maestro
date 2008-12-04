@@ -95,8 +95,9 @@ public class AntRoutingNode extends Node {
      * @return <code>true</code> if the job could be submitted.
      */
     @Override
-    public boolean submit(Object input, Serializable userId, boolean submitIfBusy,
-	    JobCompletionListener listener, Job... choices) {
+    public boolean submit(Object input, Serializable userId,
+	    boolean submitIfBusy, JobCompletionListener listener,
+	    Job... choices) {
 	int choice;
 
 	if (choices.length == 0) {
@@ -114,7 +115,7 @@ public class AntRoutingNode extends Node {
 		types[ix] = job.getFirstTaskType();
 	    }
 	    choice = 0; // FIXME: do something smarter for task choice in ant
-			// routing.
+	    // routing.
 	    if (choice < 0) {
 		// Couldn't submit the job.
 		return false;
@@ -198,7 +199,7 @@ public class AntRoutingNode extends Node {
     protected void updateRecentMasters() {
 	NodePerformanceInfo update = gossiper.getLocalUpdate();
 	handleNodeUpdateInfo(update); // Treat the local node as a honorary
-				      // recent master.
+	// recent master.
 	UpdateNodeMessage msg = new UpdateNodeMessage(update);
 	for (IbisIdentifier ibis : recentMasterList.getArray()) {
 	    if (Settings.traceUpdateMessages) {
@@ -381,8 +382,9 @@ public class AntRoutingNode extends Node {
 	antRoutingTable.addNode(info);
     }
 
-    protected void registerNewGossipHasArrived()
-    {
+    @Override
+    protected void registerNewGossipHasArrived() {
+	// We're not interested.
     }
 
     /**
@@ -399,7 +401,7 @@ public class AntRoutingNode extends Node {
 
     @Override
     void handleAntInfoMessage(AntInfoMessage antInfoMessage) {
-	handleAntBackTrail(antInfoMessage.antPoints, antInfoMessage.antPoints
-		.size() - 1);
+	int sz = antInfoMessage.antPoints.size() - 1;
+	handleAntBackTrail(antInfoMessage.antPoints, sz);
     }
 }

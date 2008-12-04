@@ -22,7 +22,7 @@ class Terminator extends Thread {
     private int failedMessageCount = 0;
     private int messageCount = 0;
     private final long initialSleepTime; // Time in ms before the first stop
-					 // message.
+    // message.
     private final long sleepTime; // Time in ms between stop messages.
 
     Terminator(double startQuotum, double nodeQuotum, long initialSleepTime,

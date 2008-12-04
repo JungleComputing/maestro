@@ -154,9 +154,9 @@ final class NodeList {
 	NodeInfo nodeInfo = ibisToNodeMap.get(source);
 	if (nodeInfo == null) {
 	    nodeInfo = registerNode(source, false); // This must be a remote
-						    // node, since we certainly
-						    // have registered the local
-						    // node.
+	    // node, since we certainly
+	    // have registered the local
+	    // node.
 	}
 	return nodeInfo;
     }

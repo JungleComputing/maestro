@@ -18,9 +18,9 @@ import java.util.List;
  * 
  */
 final class MasterQueue {
-    int taskCount = 0;
+    private int taskCount = 0;
     private final TypeInfo queueTypes[];
-    protected final ArrayList<TaskInstance> queue = new ArrayList<TaskInstance>();
+    private final ArrayList<TaskInstance> queue = new ArrayList<TaskInstance>();
 
     /**
      * Statistics per type for the different task types in the queue.
@@ -29,7 +29,7 @@ final class MasterQueue {
      */
     private static final class TypeInfo {
 	/** The type these statistics are about. */
-	final TaskType type;
+	private final TaskType type;
 
 	/** The total number of tasks of this type that entered the queue. */
 	private long taskCount = 0;
@@ -43,7 +43,7 @@ final class MasterQueue {
 	private long frontChangedTime = 0;
 
 	/** The estimated time interval between tasks being dequeued. */
-	final TimeEstimate dequeueInterval = new TimeEstimate(
+	private final TimeEstimate dequeueInterval = new TimeEstimate(
 		1 * Utils.MILLISECOND_IN_NANOSECONDS);
 
 	TypeInfo(final TaskType type) {
@@ -162,7 +162,7 @@ final class MasterQueue {
 	return queue.isEmpty();
     }
 
-    private void dumpQueue(PrintStream s) {
+    private synchronized void dumpQueue(PrintStream s) {
 	for (TaskInstance e : queue) {
 	    s.print(e.shortLabel());
 	    s.print(' ');
@@ -215,7 +215,7 @@ final class MasterQueue {
 	}
     }
 
-    TaskInstance remove() {
+    synchronized TaskInstance remove() {
 	return queue.remove(0);
     }
 
@@ -304,7 +304,7 @@ final class MasterQueue {
 	    AntRoutingTable table, TaskInstance task) {
 	NodePerformanceInfo best = null;
 
-	NodeInfo candidate = table.getWorker(task.type);
+	NodeInfo candidate = table.getBestReadyWorker(task.type);
 	if (candidate == null) {
 	    if (Settings.traceMasterQueue) {
 		Globals.log.reportProgress("No workers for task of type "
@@ -334,7 +334,7 @@ final class MasterQueue {
 	    HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
 	    NodePerformanceInfo[] tables) {
 	int busyTypeIndex = -1; // Don't even consider tasks of this type, all
-				// workers are busy.
+	// workers are busy.
 	int ix = 0;
 	while (ix < queue.size()) {
 	    final TaskInstance task = queue.get(ix);
@@ -377,7 +377,7 @@ final class MasterQueue {
      * @param antRoutingTable
      * @return A task to submit.
      */
-    Submission getAntSubmission(
+    synchronized Submission getAntSubmission(
 	    HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
 	    AntRoutingTable antRoutingTable) {
 	int ix = 0;

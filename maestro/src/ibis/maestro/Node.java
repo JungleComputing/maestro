@@ -60,7 +60,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
     protected long nextTaskId = 0;
     private final UpDownCounter idleProcessors = new UpDownCounter(
 	    -Settings.EXTRA_WORK_THREADS); // Yes, we start with a negative
-					   // number of idle processors.
+    // number of idle processors.
     protected Counter submitMessageCount = new Counter();
     private final Counter taskReceivedMessageCount = new Counter();
     protected Counter taskResultMessageCount = new Counter();
@@ -182,7 +182,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	    isMaestro = m.equals(localIbis.identifier());
 	    if (isMaestro) {
 		enableRegistration.set(); // We're maestro, we're allowed to
-					  // register with others.
+		// register with others.
 	    }
 	} else {
 	    isMaestro = false;
@@ -363,7 +363,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 		    .reportProgress("This node has been declared dead, stopping..");
 	    setStopped();
 	    masterQueue.clear(); // Nobody seems to be interested in any work we
-				 // still have.
+	    // still have.
 	    kickAllWorkers();
 	}
     }
@@ -534,7 +534,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	    Globals.log.reportProgress("Received node update message " + m);
 	}
 	final NodeInfo nodeInfo = nodes.get(m.source); // The get will create an
-						       // entry if necessary.
+	// entry if necessary.
 	boolean changed = false;
 	changed = nodeInfo.registerWorkerQueueInfo(m.workerQueueInfo);
 	changed |= nodeInfo.registerAsCommunicating();
@@ -635,35 +635,38 @@ public abstract class Node extends Thread implements PacketReceiveListener {
     public void messageReceived(Message msg) {
 	handleMessage(msg);
     }
-    
+
     protected abstract void registerNewGossipHasArrived();
 
     /**
      * A node has sent us a gossip message, handle it.
-     * @param m The gossip message.
+     * 
+     * @param m
+     *            The gossip message.
      */
-    protected void handleGossipMessage( GossipMessage m )
-    {
-        boolean changed = false;
+    protected void handleGossipMessage(GossipMessage m) {
+	boolean changed = false;
 
-        if( Settings.traceNodeProgress || Settings.traceRegistration || Settings.traceGossip ){
-            Globals.log.reportProgress( "Received gossip message from " + m.source + " with " + m.gossip.length + " items"  );
-        }
-        for( NodePerformanceInfo i: m.gossip ) {
-            changed |= gossiper.registerGossip( i, m.source );
-            changed |= handleNodeUpdateInfo( i );
-        }
-        if( m.needsReply ) {
-            if( !m.source.equals( Globals.localIbis.identifier() ) ) {
-                gossiper.queueGossipReply( m.source );
-            }
-        }
-        if( changed ) {
-            registerNewGossipHasArrived();
-            synchronized( this ) {
-                this.notify();
-            }
-        }
+	if (Settings.traceNodeProgress || Settings.traceRegistration
+		|| Settings.traceGossip) {
+	    Globals.log.reportProgress("Received gossip message from "
+		    + m.source + " with " + m.gossip.length + " items");
+	}
+	for (NodePerformanceInfo i : m.gossip) {
+	    changed |= gossiper.registerGossip(i, m.source);
+	    changed |= handleNodeUpdateInfo(i);
+	}
+	if (m.needsReply) {
+	    if (!m.source.equals(Globals.localIbis.identifier())) {
+		gossiper.queueGossipReply(m.source);
+	    }
+	}
+	if (changed) {
+	    registerNewGossipHasArrived();
+	    synchronized (this) {
+		this.notify();
+	    }
+	}
     }
 
     /** Handle the given message. */
@@ -863,7 +866,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	    overheadDuration += threadOverhead;
 	}
 	kickAllWorkers(); // We're about to end this thread. Wake all other
-			  // threads.
+	// threads.
     }
 
     protected void failNode(RunTaskMessage message, Throwable t) {
@@ -957,8 +960,8 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	}
 	sendPort.registerDestination(theIbis);
 	nodes.registerNode(theIbis, local);
-        if (!local) {
-            gossiper.registerNode(theIbis);
-        }
+	if (!local) {
+	    gossiper.registerNode(theIbis);
+	}
     }
 }

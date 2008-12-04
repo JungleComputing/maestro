@@ -36,7 +36,7 @@ class Gossiper extends Thread {
 	this.sendPort = sendPort;
 	this.gossipQuotum = new UpDownCounter(isMaestro ? 40 : 4);
 	setDaemon(true);
-        setPriority(Thread.MAX_PRIORITY);
+	setPriority(Thread.MAX_PRIORITY);
 	gossip = new Gossip(jobs);
     }
 
@@ -84,7 +84,7 @@ class Gossiper extends Thread {
 		len = writeMessage.finish();
 	    }
 	    long stopTime = System.nanoTime();
-	    if (Settings.traceSends || Settings.traceGossip ) {
+	    if (Settings.traceSends || Settings.traceGossip) {
 		Globals.log.reportProgress("Gossiper: sent message of " + len
 			+ " bytes in "
 			+ Utils.formatNanoseconds(stopTime - setupTime)
@@ -171,9 +171,10 @@ class Gossiper extends Thread {
 		// ignore.
 	    }
 	}
-        if( Settings.traceGossip ){
-            Globals.log.reportProgress( "Gossiper: has stopped, thread ends now" );
-        }
+	if (Settings.traceGossip) {
+	    Globals.log
+		    .reportProgress("Gossiper: has stopped, thread ends now");
+	}
     }
 
     void registerNode(IbisIdentifier ibis) {

@@ -65,6 +65,9 @@ public class AntTypeRoutingTable {
 	    Globals.log.reportProgress("Ant router: get best ready worker for "
 		    + type);
 	}
+	// Simply pick the first available node. The ant trails
+	// are supposed to put the most successful one first
+	// (or at least do so for most of the time.)
 	for (int ix = 0; ix < nodes.size(); ix++) {
 	    NodeInfo node = nodes.get(ix);
 	    if (node.isAvailable(type)) {
@@ -82,10 +85,6 @@ public class AntTypeRoutingTable {
     }
 
     synchronized void removeNode(IbisIdentifier theIbis) {
-	int ix = findIbis(theIbis);
-
-	if (ix >= 0) {
-	    nodes.remove(ix);
-	}
+	nodes.remove(theIbis);
     }
 }

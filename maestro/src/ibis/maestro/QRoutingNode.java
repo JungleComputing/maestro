@@ -74,7 +74,7 @@ public class QRoutingNode extends Node {
     @Override
     protected void waitForWorkThreadsToTerminate() {
 	super.waitForWorkThreadsToTerminate();
-        gossiper.setStopped();
+	gossiper.setStopped();
     }
 
     /**
@@ -95,8 +95,9 @@ public class QRoutingNode extends Node {
      * @return <code>true</code> if the job could be submitted.
      */
     @Override
-    public boolean submit(Object input, Serializable userId, boolean submitIfBusy,
-	    JobCompletionListener listener, Job... choices) {
+    public boolean submit(Object input, Serializable userId,
+	    boolean submitIfBusy, JobCompletionListener listener,
+	    Job... choices) {
 	int choice;
 
 	if (choices.length == 0) {
@@ -211,7 +212,7 @@ public class QRoutingNode extends Node {
     protected void updateRecentMasters() {
 	NodePerformanceInfo update = gossiper.getLocalUpdate();
 	handleNodeUpdateInfo(update); // Treat the local node as a honorary
-				      // recent master.
+	// recent master.
 	UpdateNodeMessage msg = new UpdateNodeMessage(update);
 	for (IbisIdentifier ibis : recentMasterList.getArray()) {
 	    if (Settings.traceUpdateMessages) {
@@ -361,9 +362,9 @@ public class QRoutingNode extends Node {
 	super.updateAdministration();
     }
 
-    protected void registerNewGossipHasArrived()
-    {
-        recomputeCompletionTimes.set();
+    @Override
+    protected void registerNewGossipHasArrived() {
+	recomputeCompletionTimes.set();
     }
 
     /**

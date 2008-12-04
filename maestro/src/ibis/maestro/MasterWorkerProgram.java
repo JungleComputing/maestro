@@ -265,14 +265,14 @@ class MasterWorkerProgram {
 	    if (waitNodes > 0) {
 		System.out.println("Waiting for " + waitNodes + " ready nodes");
 		int n = node.waitForReadyNodes(waitNodes, 3 * 60 * 1000); // Wait
-									  // for
-									  // maximally
-									  // 3
-									  // minutes
-									  // for
-									  // this
-									  // many
-									  // nodes.
+		// for
+		// maximally
+		// 3
+		// minutes
+		// for
+		// this
+		// many
+		// nodes.
 		System.out.println("There are now " + n + " nodes available");
 		if (n * 3 < waitNodes) {
 		    System.out

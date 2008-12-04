@@ -18,8 +18,8 @@ class JobInstanceIdentifier implements Serializable {
 
     /**
      * The identifier the user has added to the job instance when submitting it.
-     * We require it to implement serializable to make sure we don't
-     * get obscure runtime errors.
+     * We require it to implement serializable to make sure we don't get obscure
+     * runtime errors.
      */
     final Serializable userId;
 

@@ -24,7 +24,7 @@ public class AntRoutingTable {
 	antTypeRoutingTable[i].update(ibis, timestamp);
     }
 
-    NodeInfo getWorker(TaskType type) {
+    NodeInfo getBestReadyWorker(TaskType type) {
 	return antTypeRoutingTable[type.index].getBestReadyWorker();
     }
 

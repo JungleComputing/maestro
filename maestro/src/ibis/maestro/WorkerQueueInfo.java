@@ -78,8 +78,8 @@ class WorkerQueueInfo implements Serializable {
     synchronized void setQueueTimePerTask(long queueTimePerTask,
 	    int newQueueLength) {
 	this.dequeueTimePerTask = queueTimePerTask; // We must take the recently
-						    // dequeued task into
-						    // account.
+	// dequeued task into
+	// account.
 	this.queueLength = newQueueLength;
 	this.queueLengthSequenceNumber++;
     }

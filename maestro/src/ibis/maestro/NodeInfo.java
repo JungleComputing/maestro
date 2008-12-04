@@ -209,7 +209,7 @@ final class NodeInfo {
      */
     TaskInstance registerTaskCompleted(TaskCompletedMessage result) {
 	final long id = result.taskId; // The identifier of the task, as handed
-				       // out by us.
+	// out by us.
 
 	ActiveTask task = extractActiveTask(id);
 
@@ -269,7 +269,7 @@ final class NodeInfo {
      */
     void registerTaskReceived(TaskReceivedMessage result) {
 	final long id = result.taskId; // The identifier of the task, as handed
-				       // out by us.
+	// out by us.
 	int ix = searchActiveTask(id);
 
 	if (ix < 0) {

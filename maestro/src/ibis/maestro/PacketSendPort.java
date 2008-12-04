@@ -171,7 +171,7 @@ class PacketSendPort {
 	    message.arrivalMoment = System.nanoTime();
 	    node.messageReceived(message);
 	    len = 0; // We're not going to compute a size just for the
-		     // statistics.
+	    // statistics.
 	    localSentCount.add();
 	    if (Settings.traceSends) {
 		Globals.log.reportProgress("Sent local message " + message);

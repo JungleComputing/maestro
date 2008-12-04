@@ -10,7 +10,7 @@ import java.io.Serializable;
  */
 class OneTestProg {
     private static final int ITERATIONS = 8000; // The number of times we should
-						// do the addition.
+    // do the addition.
     private static final int ARRAY_SIZE = 100000;
 
     private static class Listener implements JobCompletionListener {
