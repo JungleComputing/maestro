@@ -384,6 +384,10 @@ public class AntRoutingNode extends Node {
 	antRoutingTable.addNode(info);
     }
 
+    protected void registerNewGossipHasArrived()
+    {
+    }
+
     /**
      * A worker has sent use a completion message for a task. Process it.
      * 
@@ -394,38 +398,6 @@ public class AntRoutingNode extends Node {
     protected void handleTaskCompletedMessage(TaskCompletedMessage result) {
 	super.handleTaskCompletedMessage(result);
 	doUpdateRecentMasters.set();
-    }
-
-    /**
-     * A node has sent us a gossip message, handle it.
-     * 
-     * @param m
-     *            The gossip message.
-     */
-    @Override
-    protected void handleGossipMessage(GossipMessage m) {
-	// TODO: is it really necessary to handle gossip in AntRoutingNode??
-	boolean changed = false;
-
-	if (Settings.traceNodeProgress || Settings.traceRegistration
-		|| Settings.traceGossip) {
-	    Globals.log.reportProgress("Received gossip message from "
-		    + m.source + " with " + m.gossip.length + " items");
-	}
-	for (NodePerformanceInfo i : m.gossip) {
-	    changed |= gossiper.registerGossip(i, m.source);
-	    changed |= handleNodeUpdateInfo(i);
-	}
-	if (m.needsReply) {
-	    if (!m.source.equals(Globals.localIbis.identifier())) {
-		gossiper.queueGossipReply(m.source);
-	    }
-	}
-	if (changed) {
-	    synchronized (this) {
-		this.notify();
-	    }
-	}
     }
 
     @Override

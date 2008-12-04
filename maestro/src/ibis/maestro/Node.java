@@ -634,8 +634,36 @@ public abstract class Node extends Thread implements PacketReceiveListener {
     public void messageReceived(Message msg) {
 	handleMessage(msg);
     }
+    
+    protected abstract void registerNewGossipHasArrived();
 
-    protected abstract void handleGossipMessage(GossipMessage m);
+    /**
+     * A node has sent us a gossip message, handle it.
+     * @param m The gossip message.
+     */
+    protected void handleGossipMessage( GossipMessage m )
+    {
+        boolean changed = false;
+
+        if( Settings.traceNodeProgress || Settings.traceRegistration || Settings.traceGossip ){
+            Globals.log.reportProgress( "Received gossip message from " + m.source + " with " + m.gossip.length + " items"  );
+        }
+        for( NodePerformanceInfo i: m.gossip ) {
+            changed |= gossiper.registerGossip( i, m.source );
+            changed |= handleNodeUpdateInfo( i );
+        }
+        if( m.needsReply ) {
+            if( !m.source.equals( Globals.localIbis.identifier() ) ) {
+                gossiper.queueGossipReply( m.source );
+            }
+        }
+        if( changed ) {
+            registerNewGossipHasArrived();
+            synchronized( this ) {
+                this.notify();
+            }
+        }
+    }
 
     /** Handle the given message. */
     void handleMessage(Message msg) {
