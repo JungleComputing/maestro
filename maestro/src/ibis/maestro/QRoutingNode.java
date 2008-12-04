@@ -72,8 +72,8 @@ public class QRoutingNode extends Node {
 
     @Override
     protected void waitForWorkThreadsToTerminate() {
-	gossiper.setStopped();
 	super.waitForWorkThreadsToTerminate();
+        gossiper.setStopped();
     }
 
     /**
