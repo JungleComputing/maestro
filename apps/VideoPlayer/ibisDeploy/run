@@ -1,0 +1,40 @@
+#!/bin/sh
+
+#SERVERHOST=localhost
+#SERVERHOST=babylon.few.vu.nl
+#SERVERHOST=lily.local
+SERVERHOST=fs0.das3.cs.vu.nl
+
+# Check setting of VIDEOPLAYER_HOME
+if [ -z "$VIDEOPLAYER_HOME" ];  then
+    echo "please set VIDEOPLAYER_HOME to the location of your VideoPlayer installation" 1>&2
+    exit 1
+fi
+
+# Jar-files from library.
+LIBCLASSPATH=""
+add_to_libclasspath () {
+    JARFILES=`cd "$1" && ls *.jar 2>/dev/null`
+    for i in ${JARFILES} ; do
+	if [ -z "$LIBCLASSPATH" ] ; then
+	    LIBCLASSPATH="$1/$i"
+	else
+	    LIBCLASSPATH="$LIBCLASSPATH:$1/$i"
+	fi
+    done
+}
+
+# Add the jar files in the VideoPlayer lib dir to the classpath.
+add_to_libclasspath "${VIDEOPLAYER_HOME}"/lib
+add_to_libclasspath ./javagat
+add_to_libclasspath deploy.jar
+
+# And finally, run ...
+#    -Dsmartsockets.file="$VIDEOPLAYER_HOME"/smartsockets.properties \
+#    -Dibis.maestro.traceWorkerStatistics \
+exec java \
+    -server \
+    -classpath "$CLASSPATH:$LIBCLASSPATH" \
+    -Dlog4j.configuration=file:"$VIDEOPLAYER_HOME"/log4j.properties \
+    -Dibis.server.address=$SERVERHOST:5437 \
+     ibis.deploy.cli.CommandLine "$@"
