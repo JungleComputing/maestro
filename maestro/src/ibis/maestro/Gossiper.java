@@ -171,6 +171,9 @@ class Gossiper extends Thread {
 		// ignore.
 	    }
 	}
+        if( Settings.traceGossip ){
+            Globals.log.reportProgress( "Gossiper: has stopped, thread ends now" );
+        }
     }
 
     void registerNode(IbisIdentifier ibis) {

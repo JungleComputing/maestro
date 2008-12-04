@@ -949,6 +949,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
      */
     protected void registerIbisJoined(IbisIdentifier theIbis) {
 	final boolean local = theIbis.equals(Globals.localIbis.identifier());
+
 	if (!local) {
 	    if (terminator != null) {
 		terminator.registerNode(theIbis);
