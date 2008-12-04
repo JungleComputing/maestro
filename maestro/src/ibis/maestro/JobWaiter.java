@@ -37,7 +37,7 @@ public class JobWaiter implements JobCompletionListener {
      */
     @SuppressWarnings("synthetic-access")
     public synchronized void submit(Node node, Job job, Object input) {
-	Object id = new WaiterJobIdentifier(taskNo++);
+	Serializable id = new WaiterJobIdentifier(taskNo++);
 	outstandingTasks++;
 	node.submit(input, id, true, this, job);
     }

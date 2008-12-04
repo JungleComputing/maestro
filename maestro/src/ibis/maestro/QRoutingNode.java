@@ -8,6 +8,7 @@ import ibis.ipl.IbisIdentifier;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.HashMap;
 
 /**
@@ -94,7 +95,7 @@ public class QRoutingNode extends Node {
      * @return <code>true</code> if the job could be submitted.
      */
     @Override
-    public boolean submit(Object input, Object userId, boolean submitIfBusy,
+    public boolean submit(Object input, Serializable userId, boolean submitIfBusy,
 	    JobCompletionListener listener, Job... choices) {
 	int choice;
 
@@ -122,7 +123,7 @@ public class QRoutingNode extends Node {
 	    }
 	}
 	Job job = choices[choice];
-	job.submit(this, input, job, listener, null);
+	job.submit(this, input, userId, listener, null);
 	return true;
     }
 

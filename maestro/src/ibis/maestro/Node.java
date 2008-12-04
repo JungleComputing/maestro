@@ -10,6 +10,7 @@ import ibis.ipl.RegistryEventHandler;
 
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Properties;
 
@@ -737,7 +738,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
      *            The list of job choices.
      * @return <code>true</code> if the job could be submitted.
      */
-    public abstract boolean submit(Object input, Object userId,
+    public abstract boolean submit(Object input, Serializable userId,
 	    boolean submitIfBusy, JobCompletionListener listener,
 	    Job... choices);
 

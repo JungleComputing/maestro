@@ -111,7 +111,7 @@ public final class Job {
      * @return The newly constructed identifier.
      */
     private JobInstanceIdentifier buildJobInstanceIdentifier(
-	    Object userIdentifier) {
+	    Serializable userIdentifier) {
 	return new JobInstanceIdentifier(userIdentifier, Globals.localIbis
 		.identifier());
     }
@@ -132,7 +132,7 @@ public final class Job {
      * @param antTrail
      *            The initial ant trail to use for this job.
      */
-    void submit(Node node, Object value, Object userId,
+    void submit(Node node, Object value, Serializable userId,
 	    JobCompletionListener listener, ArrayList<AntPoint> antTrail) {
 	JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
 	node.addRunningJob(tii, this, listener);

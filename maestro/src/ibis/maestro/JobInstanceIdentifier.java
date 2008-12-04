@@ -18,8 +18,10 @@ class JobInstanceIdentifier implements Serializable {
 
     /**
      * The identifier the user has added to the job instance when submitting it.
+     * We require it to implement serializable to make sure we don't
+     * get obscure runtime errors.
      */
-    final Object userId;
+    final Serializable userId;
 
     /** The ibis to which the final result should be transmitted. */
     final IbisIdentifier ibis;
@@ -32,7 +34,7 @@ class JobInstanceIdentifier implements Serializable {
      * @param ibis
      *            The ibis to send the result to.
      */
-    JobInstanceIdentifier(long id, Object userId, IbisIdentifier ibis) {
+    JobInstanceIdentifier(long id, Serializable userId, IbisIdentifier ibis) {
 	this.id = id;
 	this.userId = userId;
 	this.ibis = ibis;
@@ -46,7 +48,7 @@ class JobInstanceIdentifier implements Serializable {
      * @param ibis
      *            The ibis to send the result to.
      */
-    JobInstanceIdentifier(Object userId, IbisIdentifier ibis) {
+    JobInstanceIdentifier(Serializable userId, IbisIdentifier ibis) {
 	this(serialNo++, userId, ibis);
     }
 

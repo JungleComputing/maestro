@@ -76,7 +76,7 @@ public class MapReduceHandler extends Thread implements JobCompletionListener {
     public synchronized boolean submit(Object input, Object userId,
 	    boolean submitIfBusy, Job... jobChoices) {
 	Label label = labeler.nextLabel();
-	Object id = new Id(userId, label);
+	Serializable id = new Id(userId, label);
 	if (Settings.traceMapReduce) {
 	    Globals.log.reportProgress("MapReduce: Submitting " + id + " to "
 		    + Arrays.deepToString(jobChoices));
