@@ -360,19 +360,6 @@ public class QRoutingNode extends Node {
 	super.updateAdministration();
     }
 
-    /**
-     * @param theIbis
-     *            The ibis that has joined.
-     */
-    @Override
-    protected void registerIbisJoined(IbisIdentifier theIbis) {
-	super.registerIbisJoined(theIbis);
-	boolean local = theIbis.equals(Globals.localIbis.identifier());
-	if (!local) {
-	    gossiper.registerNode(theIbis);
-	}
-    }
-
     protected void registerNewGossipHasArrived()
     {
         recomputeCompletionTimes.set();

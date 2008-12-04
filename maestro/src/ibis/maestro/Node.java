@@ -955,5 +955,8 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	}
 	sendPort.registerDestination(theIbis);
 	nodes.registerNode(theIbis, local);
+        if (!local) {
+            gossiper.registerNode(theIbis);
+        }
     }
 }

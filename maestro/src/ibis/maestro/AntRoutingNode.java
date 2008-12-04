@@ -376,10 +376,6 @@ public class AntRoutingNode extends Node {
     @Override
     protected void registerIbisJoined(IbisIdentifier theIbis) {
 	super.registerIbisJoined(theIbis);
-	boolean local = theIbis.equals(Globals.localIbis.identifier());
-	if (!local) {
-	    gossiper.registerNode(theIbis);
-	}
 	NodeInfo info = nodes.get(theIbis);
 	antRoutingTable.addNode(info);
     }
