@@ -36,6 +36,7 @@ class Gossiper extends Thread {
 	this.sendPort = sendPort;
 	this.gossipQuotum = new UpDownCounter(isMaestro ? 40 : 4);
 	setDaemon(true);
+        setPriority(Thread.MAX_PRIORITY);
 	gossip = new Gossip(jobs);
     }
 
@@ -164,7 +165,7 @@ class Gossiper extends Thread {
 		    }
 		}
 		synchronized (this) {
-		    this.wait(waittime);
+		    wait(waittime);
 		}
 	    } catch (InterruptedException e) {
 		// ignore.
