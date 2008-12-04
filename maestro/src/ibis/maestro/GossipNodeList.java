@@ -91,6 +91,11 @@ class GossipNodeList {
             }
 	    nodes.add(new GossipNode(ibis));
 	}
+        else {
+            if( Settings.traceGossip ){
+                Globals.log.reportProgress( "Gossiper: ignored local ibis " + ibis );
+            }            
+        }
     }
 
     /**
