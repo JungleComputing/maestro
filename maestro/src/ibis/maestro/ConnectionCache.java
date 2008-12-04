@@ -28,6 +28,7 @@ class ConnectionCache {
 	    SendPort port = cache.getSendPort(ibis);
 	    if (port == null) {
 		// We could not create a connection to this ibis.
+                Globals.log.reportError( "Could not get send port for ibis " + ibis );
 		node.setSuspect(ibis);
 		cache.closeSendPort(ibis);
 		return -1;
@@ -36,6 +37,7 @@ class ConnectionCache {
 	    msg.writeObject(message);
 	    len = msg.finish();
 	} catch (IOException x) {
+            Globals.log.reportError( "Could not get send port for ibis " + ibis + ": " + x );
 	    node.setSuspect(ibis);
 	    cache.closeSendPort(ibis);
 	}
