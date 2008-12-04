@@ -65,6 +65,12 @@ final class NodeInfo {
 		    unpredictable, pessimisticPingTime);
 	}
     }
+    
+    @Override
+    public String toString()
+    {
+        return ibis.toString();
+    }
 
     NodeTaskInfo get(TaskType t) {
 	return nodeTaskInfoList[t.index];

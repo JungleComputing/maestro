@@ -4,7 +4,7 @@ Mainly for comparison reasons, Maestro also implements ant routing for
 the distribution of work. By default Q routing is used. Ant routing is
 enabled by a property. All nodes should use the same routing.
 
-ibis.maestron.useAntRouting
+ibis.maestro.useAntRouting
    If set to an arbitrary value, the Ibis node will use ant routing.
    
 == Terminator ==
