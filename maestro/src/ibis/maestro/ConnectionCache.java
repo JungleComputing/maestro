@@ -22,7 +22,7 @@ class ConnectionCache {
 	this.node = node;
     }
 
-    long cachedSendMessage(IbisIdentifier ibis, Object message) {
+    long cachedSendMessage(IbisIdentifier ibis, Message message) {
 	long len = -1;
 	try {
 	    SendPort port = cache.getSendPort(ibis);
@@ -49,7 +49,7 @@ class ConnectionCache {
      *            The ibis to send to.
      * @return The WriteMessage to fill.
      */
-    long uncachedSendMessage(IbisIdentifier ibis, Object message) {
+    long uncachedSendMessage(IbisIdentifier ibis, Message message) {
 	long len = -1;
 	SendPort port = null;
 	try {
@@ -88,7 +88,7 @@ class ConnectionCache {
      *            The ibis to send to.
      * @return The WriteMessage to fill.
      */
-    long sendMessage(IbisIdentifier ibis, Object message) {
+    long sendMessage(IbisIdentifier ibis, Message message) {
 	long sz;
 
 	if (Settings.CACHE_CONNECTIONS) {
