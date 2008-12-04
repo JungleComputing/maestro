@@ -129,6 +129,11 @@ class JpegCompressedImage extends CompressedImage {
 
             return img24.toJpegImage();
         }
+        if( img instanceof RGB48Image ) {
+            RGB24Image img24 = RGB24Image.convert( img );
+            
+            return img24.toJpegImage();
+        }
         System.err.println( "Don't know how to convert a " + img.getClass() + " to a JPeg image" );
         return null;
     }

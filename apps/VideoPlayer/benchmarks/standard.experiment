@@ -1,0 +1,49 @@
+# Experiment file for standard speedup curve.
+
+# Valid parameters for jobs:
+# KEY                 COMMENT
+# application.name    Name of application to run
+# application.*       All valid entries for an application, overriding any
+#                     specified in the application referenced
+# process.count       Total number of processes started
+# cluster.name        Name of cluster to run application on
+# cluster.*           All valid entries for a cluster, overriding any
+#                     specified in the cluster referenced
+# resource.count      Number of machines used on the cluster
+# pool.name           Pool name. Defaults to name of experiment if unspecified
+# pool.size           Size of pool. Only used in a closed-world application
+# shared.hub          if "true" (or unset), this job shares a hub with other
+#                     jobs on this cluster. If "false" a hub is started
+#                     especially for it
+
+# Default settings:
+default.application.name = VideoPlayer
+#default.process.count =
+default.cluster.name = VU
+#default.resource.count =
+#default.pool.name =
+#default.pool.size =
+#default.shared.hub =
+
+# Details of job "job1"
+run1.process.count = 1
+run1.resource.count = 1
+run1.pool.name = standardSpeedup1
+#job1.pool.size =
+#job1.shared.hub =
+
+run2.process.count = 2
+run2.resource.count = 2
+run2.pool.name = standardSpeedup2
+
+run3.process.count = 3
+run3.resource.count = 3
+run3.pool.name = standardSpeedup3
+
+run4.process.count = 4
+run4.resource.count = 4
+run4.pool.name = standardSpeedup4
+
+run8.process.count = 8
+run8.resource.count = 8
+run8.pool.name = standardSpeedup8

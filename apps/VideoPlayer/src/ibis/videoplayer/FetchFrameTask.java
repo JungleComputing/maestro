@@ -38,7 +38,7 @@ public class FetchFrameTask implements AtomicTask
         try {
             frame = Image.load( frameFile, frameno );
         } catch (IOException e) {
-            System.err.println( "Can not load frame '" + frameFile + "'" );
+            node.reportError( "Can not load frame '" + frameFile + "'" );
             e.printStackTrace();
             frame = null;
         }

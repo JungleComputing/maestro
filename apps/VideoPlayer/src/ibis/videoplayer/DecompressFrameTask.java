@@ -48,6 +48,7 @@ public class DecompressFrameTask implements AtomicTask
         // FIXME: do something sane here.
         for( int y=0; y<frame.height; y++ ){
             int base = y*frame.width;
+
             for( int ry = 0; ry<REPEAT; ry++ ){
                 for( int x=0; x<frame.width; x++ ){
                     int ix = base + x;
