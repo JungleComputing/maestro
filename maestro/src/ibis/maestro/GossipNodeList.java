@@ -86,6 +86,9 @@ class GossipNodeList {
     synchronized void add(IbisIdentifier ibis) {
 	if (!ibis.equals(Globals.localIbis.identifier())) {
 	    // We're not going to gossip to ourselves.
+            if( Settings.traceGossip ){
+                Globals.log.reportProgress( "Gossiper: added new ibis " + ibis );
+            }
 	    nodes.add(new GossipNode(ibis));
 	}
     }
@@ -98,6 +101,9 @@ class GossipNodeList {
      */
     synchronized void remove(IbisIdentifier ibis) {
 	extractGossipNode(ibis);
+        if( Settings.traceGossip ){
+            Globals.log.reportProgress( "Gossiper: removed ibis " + ibis );
+        }
     }
 
     /**
