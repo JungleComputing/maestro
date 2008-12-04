@@ -48,7 +48,7 @@ class Gossiper extends Thread {
 	long startTime = System.nanoTime();
 	msg.sendMoment = startTime;
 	if (Settings.traceGossip) {
-	    Globals.log.reportProgress("Sending gossip message to " + target
+	    Globals.log.reportProgress("Gossiper: sending message to " + target
 		    + "; needsReply=" + needsReply);
 	    if (target.equals(Globals.localIbis.identifier())) {
 		Globals.log.reportInternalError("Sending gossip to ourselves");
@@ -83,8 +83,8 @@ class Gossiper extends Thread {
 		len = writeMessage.finish();
 	    }
 	    long stopTime = System.nanoTime();
-	    if (Settings.traceSends) {
-		Globals.log.reportProgress("Sent gossip message of " + len
+	    if (Settings.traceSends || Settings.traceGossip ) {
+		Globals.log.reportProgress("Gossiper: sent message of " + len
 			+ " bytes in "
 			+ Utils.formatNanoseconds(stopTime - setupTime)
 			+ "; setup time "
@@ -249,7 +249,7 @@ class Gossiper extends Thread {
      */
     void queueGossipReply(IbisIdentifier source) {
 	if (Settings.traceGossip) {
-	    Globals.log.reportProgress("Send a gossip reply to " + source);
+	    Globals.log.reportProgress("Gossiper: send a reply to " + source);
 	}
 	synchronized (nodesToReplyTo) {
 	    nodesToReplyTo.add(source);
