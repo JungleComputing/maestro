@@ -15,7 +15,7 @@
 # Default settings:
 #default.main.class =
 #default.arguments =
-default.libs = ../lib/ipl,lib/ipl-apps,log4j.properties,../lib/maestro-0.0.1.jar
+default.libs = ../lib,../log4j.properties
 #default.input.files =
 #default.output.files =
 #default.system.properties =
