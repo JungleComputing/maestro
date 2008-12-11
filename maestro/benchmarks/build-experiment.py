@@ -29,7 +29,7 @@ s = Template( """# Generated experiment file
 run$p.application.name = TestProg
 run$p.process.count = $p
 run$p.cluster.name = VU
-run$p.pool.name = $prefix-run-$p
+run$p.pool.name = $prefix-run$p
 run$p.application.output.files = $l
 run$p.resource.count = $p
 """ )
