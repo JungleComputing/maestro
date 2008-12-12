@@ -3,6 +3,7 @@
 import sys
 from string import Template
 import string
+jobsPerProcessor=20000
 
 def usage():
     print "Usage: " + sys.argv[0] + " <prefix> <nodes>"
@@ -34,5 +35,5 @@ run$p.application.output.files = $l
 run$p.application.arguments = $n
 run$p.resource.count = $p
 """ )
-print s.substitute( n=p*10000, prefix=prefix, p=p, l=string.join( list, "," ) )
+print s.substitute( n=p*jobsPerProcessor, prefix=prefix, p=p, l=string.join( list, "," ) )
 
