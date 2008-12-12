@@ -24,5 +24,5 @@ elif [ `expr $NR_NODES \* 2` = "$NR_PROCS" ]; then
 
 fi
 
-echo $PRUN $OPTION -asocial -t $RUNTIME -np $NR_NODES $JAVA $ARGS
+echo $PRUN $OPTION -asocial -t $RUNTIME -np $NR_NODES -o plain-run$NR_NODES-out $JAVA $ARGS
 exec $PRUN $OPTION -asocial -t $RUNTIME -np $NR_NODES -o plain-run$NR_NODES-out $JAVA $ARGS
