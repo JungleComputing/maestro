@@ -32,6 +32,9 @@ TestProg.arguments = 10000
 #RegistryUpcalls.system.properties =
 #RegistryUpcalls.java.options =
 
+VideoPlayerBenchmarkProgram.main.class = ibis.videoplayer.BenchmarkProgram
+VideoPlayerBenchmarkProgram.libs = ../lib,../log4j.properties,./videoplayer-0.0.1.jar
+
 # Application "RegistryBenchmark"
 RegistryBenchmark.main.class = ibis.ipl.benchmarks.registry.Main
 RegistryBenchmark.arguments = --runtime 60

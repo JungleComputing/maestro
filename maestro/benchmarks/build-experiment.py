@@ -3,7 +3,7 @@
 import sys
 from string import Template
 import string
-jobsPerProcessor=20000
+jobsPerProcessor=100
 
 def usage():
     print "Usage: " + sys.argv[0] + " <prefix> <nodes>"
@@ -27,7 +27,7 @@ list = []
 for n in range(p):
     list.append( prefix + "-run%d-out.%d" % ( p, n ) )
 s = Template( """# Generated experiment file
-run$p.application.name = TestProg
+run$p.application.name = VideoPlayerBenchmarkProgram
 run$p.process.count = $p
 run$p.cluster.name = VU
 run$p.pool.name = $prefix-run$p
