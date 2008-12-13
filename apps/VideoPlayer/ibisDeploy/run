@@ -27,7 +27,7 @@ add_to_libclasspath () {
 # Add the jar files in the VideoPlayer lib dir to the classpath.
 add_to_libclasspath "${VIDEOPLAYER_HOME}"/lib
 add_to_libclasspath ./javagat
-add_to_libclasspath deploy.jar
+add_to_libclasspath .
 
 # And finally, run ...
 #    -Dsmartsockets.file="$VIDEOPLAYER_HOME"/smartsockets.properties \
