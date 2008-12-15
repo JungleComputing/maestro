@@ -203,7 +203,7 @@ public class RenderMovieProgram implements JobCompletionListener
                         else {
                             int n = frameno++;
                             RenderFrameTask.RenderInfo info = new RenderFrameTask.RenderInfo( WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, n, init + scene );
-                            convertTask.submit( node, info, new Integer( n ), this );
+                            node.submit(info, new Integer( n ), true, this, convertTask);
                             System.out.println( "Submitted frame " + n );
                             outstandingJobs++;
                         }

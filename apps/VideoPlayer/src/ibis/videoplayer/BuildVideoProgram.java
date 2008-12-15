@@ -68,7 +68,7 @@ public class BuildVideoProgram {
         int fragmentCount = (frameCount+Settings.FRAME_FRAGMENT_COUNT-1)/Settings.FRAME_FRAGMENT_COUNT;
         Listener listener = new Listener( fragmentCount );
 	Job getFrameTask = BuildFragmentTask.createGetFrameJob( jobList );
-	Job playTask = jobList.createJob( "videoplayer", new BuildFragmentTask( getFrameTask ) );
+	Job playJob = jobList.createJob( "videoplayer", new BuildFragmentTask( getFrameTask ) );
 
         Node node = Node.createNode( jobList, goForMaestro );
         System.out.println( "Node created" );
@@ -78,7 +78,7 @@ public class BuildVideoProgram {
                 final int endFrame = frame+Settings.FRAME_FRAGMENT_COUNT-1;
                 FrameNumberRange range = new FrameNumberRange( frame, endFrame );
                 listener.waitForRoom();
-                playTask.submit( node, range, frame, listener );
+                node.submit(range, range, true, listener, playJob);
             }
         }
         node.waitToTerminate();

@@ -48,7 +48,7 @@ class BenchmarkProgram {
             }
         }
 
-        Object getLabel() {
+        Serializable getLabel() {
             return labelTracker.nextLabel();
         }
 
@@ -542,8 +542,8 @@ class BenchmarkProgram {
         long startTime = System.nanoTime();
         if( node.isMaestro() ) {
             for( int frame=0; frame<frames; frame++ ){
-                Object label = listener.getLabel();
-                convertJob.submit( node, frame, label, listener );
+                Serializable label = listener.getLabel();
+                node.submit( frame, label, true, listener, convertJob);
             }
             listener.setFinished();
             System.out.println( "Jobs submitted" );
