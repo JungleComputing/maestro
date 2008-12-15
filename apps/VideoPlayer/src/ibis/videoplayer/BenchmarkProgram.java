@@ -550,7 +550,7 @@ class BenchmarkProgram {
         }
         node.waitToTerminate();
         long stopTime = System.nanoTime();
-        System.out.println( "Duration of this run: " + Utils.formatNanoseconds( stopTime-startTime ) );
+        System.out.println( "DURATION " + (stopTime-startTime) );
     }
 
     /** The command-line interface of this program.
