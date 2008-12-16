@@ -1,23 +1,28 @@
 #
 
-PLOTFILES=speedup.eps
+PLOTFILES=plain.eps
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
 
 DEPLOYFILES=das3.grid das3.script maestro.applications
 
-plain-one-%.experiment: build-one-experiment.py
-	python build-experiment.py plain-one $* > $@
+plain-one-%.experiment: build-plain-one-experiment.py
+	python build-plain-one-experiment.py $* > $@
 
-plain-%.experiment: build-experiment.py
-	python build-experiment.py plain $* > $@
+plain-%.experiment: build-plain-experiment.py
+	python build-plain-experiment.py $* > $@
+
+plain-one-%.result: plain-one-%.experiment run-experiment $(DEPLOYFILES) $(VIDEO_PLAYER_JAR)
+	./run-experiment $<
+	python average-duration.py $* plain-run$*-out.* > plain-one-$*.result
+	mv -f plain-run$*-out.* logs
 
 plain-%.result: plain-%.experiment run-experiment $(DEPLOYFILES) $(VIDEO_PLAYER_JAR)
 	./run-experiment $<
 	python average-duration.py $* plain-run$*-out.* > plain-$*.result
 	mv -f plain-run$*-out.* logs
 
-RANGE=1 2 4 8 12 16 20 32 40 64
+RANGE=1 2 4 8 12 16 20 32 40 52 64 72 80
 PLAIN_POINTS=$(patsubst %,plain-%.result,$(RANGE))
 PLAIN_ONE_POINTS=$(patsubst %,plain-one-%.result,$(RANGE))
 
@@ -39,7 +44,7 @@ plain-one.table: $(PLAIN_ONE_POINTS)
 plain.pdf: plain.eps plain.table plain-one.table
 	ps2pdf plain.eps > plain.pdf
 
-plain.eps: plain.table plain-eps.gpl
+plain.eps: plain.table plain-one.table plain-eps.gpl
 	gnuplot plain-eps.gpl > $@
 
 clean:
@@ -51,4 +56,4 @@ empty:
 ###
 # Dependencies
 
-plain.eps plain.pdf: plain.table
+plain.eps plain.pdf: plain.table plain-one.table
