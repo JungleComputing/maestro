@@ -5,8 +5,7 @@ package ibis.videoplayer;
 
 import java.io.Serializable;
 
-class FrameNumberRange implements Serializable
-{
+class FrameNumberRange implements Serializable {
     private static final long serialVersionUID = -7295339911112467893L;
     final int startFrameNumber;
     final int endFrameNumber;
@@ -20,13 +19,13 @@ class FrameNumberRange implements Serializable
         this.endFrameNumber = endFrameNumber;
     }
 
-    /** Returns a string
-     * representation of this frame number range.
+    /**
+     * Returns a string representation of this frame number range.
+     * 
      * @return The string representation.
      */
     @Override
-    public String toString()
-    {
+    public String toString() {
         return "[" + startFrameNumber + ".." + endFrameNumber + "]";
     }
 }
