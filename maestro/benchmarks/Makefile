@@ -9,13 +9,17 @@ DEPLOYFILES=das3.grid das3.script maestro.applications
 %.experiment: build-experiment.py
 	python build-experiment.py $* > $@
 
-%.result: %.experiment run-experiment $(DEPLOYFILES) $(VIDEO_PLAYER_JAR)
+%.logs: %.experiment run-experiment $(DEPLOYFILES) $(VIDEO_PLAYER_JAR)
 	echo "export TAG=$*" > settag-$*.sh
-	rm -rf logs/$*-output
+	rm -rf $*.logs
 	./run-experiment $*.experiment
-	python average-duration.py $* $*-output/out* > $*.result
-	mv -f $*-output logs
 	rm -f settag-$*.sh
+
+baseline.result: onetask-1.logs
+	python average-duration.py $* baseline baseline $*.logs/out* > $*.result
+
+%.result: %.logs
+	python average-duration.py $* `cat baseline.result` $*.logs/out* > $*.result
 
 RANGE=2 4 8 12 16 20 32 40 52 64 72 80
 PLAIN_POINTS=$(patsubst %,plain-%.result,1 $(RANGE))
@@ -24,7 +28,7 @@ NO_POINTS=$(patsubst %,no-%.result,$(RANGE))
 SLOW_POINTS=$(patsubst %,slow-%.result,$(RANGE))
 
 
-PRECIOUSJUNK=*.result $(PLOTFILES) plain.table one.table slow.table no.table
+PRECIOUSJUNK=*.logs *.result $(PLOTFILES) plain.table one.table slow.table no.table
 JUNK=*.experiment
 
 all: $(PLOTFILES)

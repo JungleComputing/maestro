@@ -3,7 +3,8 @@
 import sys
 from string import Template
 import string
-jobsPerProcessor=1000
+import constants
+jobsPerProcessor=constants.jobsPerProcessor
 
 # Translation table from measurement type to command-line arguments
 args = {
@@ -41,7 +42,7 @@ run$p.process.count = $p
 run$p.cluster.name = VU
 run$p.pool.name = $arg-pool
 run$p.application.input.files = settag-$arg.sh
-run$p.application.output.files = $arg-output
+run$p.application.output.files = $arg.logs
 run$p.application.arguments = $args
 run$p.resource.count = $p
 """ )

@@ -25,6 +25,6 @@ elif [ `expr $NR_NODES \* 2` = "$NR_PROCS" ]; then
 fi
 
 source ./settag*.sh
-mkdir $TAG-output
-echo $PRUN $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $TAG-output/out $JAVA $ARGS
-exec $PRUN $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $TAG-output/out $JAVA $ARGS
+mkdir $TAG.logs
+echo $PRUN $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $TAG.logs/out $JAVA $ARGS
+exec $PRUN $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $TAG.logs/out $JAVA $ARGS
