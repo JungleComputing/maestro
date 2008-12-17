@@ -40,6 +40,7 @@ run$p.application.name = VideoPlayerBenchmarkProgram
 run$p.process.count = $p
 run$p.cluster.name = VU
 run$p.pool.name = $arg-pool
+run$p.application.input.files = settag-$arg.sh
 run$p.application.output.files = $arg-output
 run$p.application.arguments = $args
 run$p.resource.count = $p

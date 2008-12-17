@@ -25,8 +25,8 @@ if len(sys.argv) < 3:
     usage()
     sys.exit( 1 )
 
-elements = split( sys.argv[1], '-' )
-label=elements[0]
+elements = string.split( sys.argv[1], '-' )
+label=elements[1]
 sum = 0
 count = 0
 for fnm in sys.argv[2:]:
