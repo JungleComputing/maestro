@@ -1,7 +1,9 @@
 import sys
+import string
 
 if len( sys.argv ) != 5:
-    print 'Bad number of parameters'
+    print 'Bad number of parameters: %d instead of 4' % len( sys.argv )
+    print 'Parameters: [' + string.join( sys.argv, ',' ) + ']'
     sys.exit( 1 )
 
 label_learn = sys.argv[1]

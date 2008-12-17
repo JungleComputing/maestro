@@ -1,5 +1,7 @@
 #
 
+.PRECIOUS: *.log
+
 PLOTFILES=plain.pdf
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
@@ -15,17 +17,18 @@ DEPLOYFILES=das3.grid das3.script maestro.applications
 	./run-experiment $*.experiment
 	rm -f settag-$*.sh
 
-baseline.result: onetask-1.logs
-	python average-duration.py $* baseline baseline $*.logs/out* > $*.result
-
-%.result: %.logs
-	python average-duration.py $* `cat baseline.result` $*.logs/out* > $*.result
+%.result: %.logs average-duration.py
+	python average-duration.py $* $*.logs/out.* > $@
 
 RANGE=2 4 8 12 16 20 32 40 52 64 72 80
 PLAIN_POINTS=$(patsubst %,plain-%.result,1 $(RANGE))
 ONETASK_POINTS=$(patsubst %,onetask-%.result,1 $(RANGE))
 NO_POINTS=$(patsubst %,no-%.result,$(RANGE))
 SLOW_POINTS=$(patsubst %,slow-%.result,$(RANGE))
+LEARNPLAIN_POINTS=$(patsubst %,plain-%.learned-result,1 $(RANGE))
+LEARNONETASK_POINTS=$(patsubst %,onetask-%.learned-result,1 $(RANGE))
+LEARNNO_POINTS=$(patsubst %,no-%.learned-result,$(RANGE))
+LEARNSLOW_POINTS=$(patsubst %,slow-%.learned-result,$(RANGE))
 
 
 PRECIOUSJUNK=*.logs *.result $(PLOTFILES) plain.table one.table slow.table no.table
@@ -48,10 +51,26 @@ no.table: $(NO_POINTS)
 slow.table: $(SLOW_POINTS)
 	cat $(SLOW_POINTS) > $@
 
+%.learned-result: %.result learn%.result subtract-results.py
+	echo learn$*.result $*.result
+	python subtract-results.py `cat learn$*.result` `cat $*.result` > $@
+
+learnedplain.table: $(LEARNEDPLAIN_POINTS)
+	cat $(LEARNEDPLAIN_POINTS) > $@
+
+learnedonetask.table: $(LEARNEDONETASK_POINTS)
+	cat $(LEARNEDONETASK_POINTS) > $@
+
+learnedno.table: $(LEARNEDNO_POINTS)
+	cat $(LEARNEDNO_POINTS) > $@
+
+learnedslow.table: $(LEARNEDSLOW_POINTS)
+	cat $(LEARNEDSLOW_POINTS) > $@
+
 plain.pdf: plain.eps
 	ps2pdf plain.eps > plain.pdf
 
-plain.eps: slow.table onetask.table no.table plain.table plain-eps.gpl
+plain.eps: slow.table learnedslow.table onetask.table learnedonetask.table no.table learnedno.table plain.table learnedplain.table plain-eps.gpl
 	gnuplot plain-eps.gpl > $@
 
 clean:

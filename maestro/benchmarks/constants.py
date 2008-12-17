@@ -1,1 +1,2 @@
 jobsPerProcessor=2000
+learnJobsPerProcessor=200
