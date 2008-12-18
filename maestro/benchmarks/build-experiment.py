@@ -36,6 +36,7 @@ args = {
     'slow':['-oddslowscale','-evenslowsharpen',jobs],
     'learnslow':['-oddslowscale','-evenslowsharpen',learnJobs]
 }
+
 if not elements[0] in args.keys():
     l = string.join( args.keys(), ',' )
     print "Unknown benchmark type '" + elements[0] + "'; I only know [" + l + "]"

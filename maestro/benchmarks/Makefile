@@ -1,12 +1,15 @@
 #
 
-PLOTFILES=plain.pdf
+PLOTFILES=overhead.pdf fault-tolerance.pdf
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
 
 DEPLOYFILES=das3.grid das3.script maestro.applications
 
-%.experiment: build-experiment.py
+termination-%.experiment:
+	python build-termination-experiment.py termination-$* > $@
+
+%.experiment:
 	python build-experiment.py $* > $@
 
 %.logs: %.experiment run-experiment $(DEPLOYFILES) $(VIDEO_PLAYER_JAR)
@@ -32,8 +35,13 @@ LEARNEDONETASK_POINTS=$(patsubst %,onetask-%.learned-result,1 $(RANGE))
 LEARNEDNO_POINTS=$(patsubst %,no-%.learned-result,$(RANGE))
 LEARNEDSLOW_POINTS=$(patsubst %,slow-%.learned-result,$(RANGE))
 
-POINTS=$(PLAIN_POINTS) $(ONETASK_POINTS) $(NO_POINTS) $(SLOW_POINTS) $(LEARNPLAIN_POINTS) $(LEARNONETASK_POINTS) $(LEARNNO_POINTS) $(LEARNSLOW_POINTS)
+TERMINATION_FRACTIONS=0.0 0.2 0.4 0.6 0.8
+TERMINATION_PLAIN_POINTS=${patsubst %,termination-plain-%.result,$(TERMINATION_FRACTIONS)}
+TERMINATION_SLOW_POINTS=${patsubst %,termination-slow-%.result,$(TERMINATION_FRACTIONS)}
+
+POINTS=$(PLAIN_POINTS) $(ONETASK_POINTS) $(NO_POINTS) $(SLOW_POINTS) $(LEARNPLAIN_POINTS) $(LEARNONETASK_POINTS) $(LEARNNO_POINTS) $(LEARNSLOW_POINTS) $(TERMINATION_PLAIN_POINTS) $(TERMINATION_SLOW_POINTS)
 LOGFILES=$(POINTS:.result=.logs)
+
 .PRECIOUS: $(LOGFILES)
 
 
@@ -57,6 +65,12 @@ no.table: $(NO_POINTS)
 slow.table: $(SLOW_POINTS)
 	cat $(SLOW_POINTS) > $@
 
+termination-plain.table: $(TERMINATION_PLAIN_POINTS)
+	cat $(TERMINATION_PLAIN_POINTS) > $@
+
+termination-slow.table: $(TERMINATION_SLOW_POINTS)
+	cat $(TERMINATION_SLOW_POINTS) > $@
+
 %.learned-result: %.result learn%.result subtract-results.py
 	echo learn$*.result $*.result
 	python subtract-results.py `cat learn$*.result` `cat $*.result` > $@
@@ -73,11 +87,17 @@ learnedno.table: $(LEARNEDNO_POINTS)
 learnedslow.table: $(LEARNEDSLOW_POINTS)
 	cat $(LEARNEDSLOW_POINTS) > $@
 
-plain.pdf: plain.eps
-	ps2pdf plain.eps > plain.pdf
+overhead.pdf: overhead.eps
+	ps2pdf overhead.eps > overhead.pdf
 
-plain.eps: slow.table learnedslow.table onetask.table learnedonetask.table no.table learnedno.table plain.table learnedplain.table plain-eps.gpl
-	gnuplot plain-eps.gpl > $@
+overhead.eps: slow.table learnedslow.table onetask.table learnedonetask.table no.table learnedno.table plain.table learnedplain.table overhead-eps.gpl
+	gnuplot overhead-eps.gpl > $@
+
+fault-tolerance.pdf: fault-tolerance.eps
+	ps2pdf fault-tolerance.eps > fault-tolerance.pdf
+
+fault-tolerance.eps: termination-plain.table termination-slow.table fault-tolerance-eps.gpl
+	gnuplot fault-tolerance-eps.gpl > $@
 
 clean:
 	rm -f $(JUNK)
