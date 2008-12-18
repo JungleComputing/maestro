@@ -171,7 +171,6 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 		masterQueue = new MasterQueue(allTypes);
 		workerQueue = new WorkerQueue(jobs);
 		nodes = new NodeList(workerQueue);
-		ibisProperties.setProperty("ibis.pool.name", "MaestroPool");
 		registryEventHandler = new NodeRegistryEventHandler();
 		Globals.localIbis = IbisFactory.createIbis(ibisCapabilities,
 				ibisProperties, true, registryEventHandler,
