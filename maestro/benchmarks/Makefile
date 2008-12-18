@@ -1,7 +1,5 @@
 #
 
-.PRECIOUS: *.log
-
 PLOTFILES=plain.pdf
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
@@ -25,10 +23,18 @@ PLAIN_POINTS=$(patsubst %,plain-%.result,1 $(RANGE))
 ONETASK_POINTS=$(patsubst %,onetask-%.result,1 $(RANGE))
 NO_POINTS=$(patsubst %,no-%.result,$(RANGE))
 SLOW_POINTS=$(patsubst %,slow-%.result,$(RANGE))
-LEARNPLAIN_POINTS=$(patsubst %,plain-%.learned-result,1 $(RANGE))
-LEARNONETASK_POINTS=$(patsubst %,onetask-%.learned-result,1 $(RANGE))
-LEARNNO_POINTS=$(patsubst %,no-%.learned-result,$(RANGE))
-LEARNSLOW_POINTS=$(patsubst %,slow-%.learned-result,$(RANGE))
+LEARNPLAIN_POINTS=$(patsubst %,learnplain-%.result,1 $(RANGE))
+LEARNONETASK_POINTS=$(patsubst %,learnonetask-%.result,1 $(RANGE))
+LEARNNO_POINTS=$(patsubst %,learnno-%.result,$(RANGE))
+LEARNSLOW_POINTS=$(patsubst %,learnslow-%.result,$(RANGE))
+LEARNEDPLAIN_POINTS=$(patsubst %,plain-%.learned-result,1 $(RANGE))
+LEARNEDONETASK_POINTS=$(patsubst %,onetask-%.learned-result,1 $(RANGE))
+LEARNEDNO_POINTS=$(patsubst %,no-%.learned-result,$(RANGE))
+LEARNEDSLOW_POINTS=$(patsubst %,slow-%.learned-result,$(RANGE))
+
+POINTS=$(PLAIN_POINTS) $(ONETASK_POINTS) $(NO_POINTS) $(SLOW_POINTS) $(LEARNPLAIN_POINTS) $(LEARNONETASK_POINTS) $(LEARNNO_POINTS) $(LEARNSLOW_POINTS)
+LOGFILES=$(POINTS:.result=.logs)
+.PRECIOUS: $(LOGFILES)
 
 
 PRECIOUSJUNK=*.logs *.result $(PLOTFILES) plain.table one.table slow.table no.table
@@ -37,7 +43,7 @@ JUNK=*.experiment
 all: $(PLOTFILES)
 
 x:
-	echo [$(ONETASK_POINTS)] 
+	echo [$(LOGFILES)] 
 
 plain.table: $(PLAIN_POINTS)
 	cat $(PLAIN_POINTS) > $@
