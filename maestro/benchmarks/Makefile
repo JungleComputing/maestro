@@ -20,7 +20,7 @@ termination-%.experiment:
 	rm -f settag-$*.sh
 
 %.result: %.logs average-duration.py
-	python average-duration.py $* $*.logs/out.* > $@
+	python average-duration.py $* $@ $*.logs/out.*
 
 #RANGE=2 4 8 12 16 20 32 40 52 64 72 80
 RANGE=2 4 8 12 16 20 32 40 52 64
@@ -75,7 +75,7 @@ termination-slow.table: $(TERMINATION_SLOW_POINTS)
 
 %.learned-result: %.result learn%.result subtract-results.py
 	echo learn$*.result $*.result
-	python subtract-results.py `cat learn$*.result` `cat $*.result` > $@
+	python subtract-results.py `cat learn$*.result` `cat $*.result` $@
 
 learnedplain.table: $(LEARNEDPLAIN_POINTS)
 	cat $(LEARNEDPLAIN_POINTS) > $@

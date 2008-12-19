@@ -19,10 +19,10 @@ def getDuration( fnm ):
     return res
 
 def usage():
-    print "Usage: " + sys.argv[0] + " <nproc> <file>...<file>"
+    print "Usage: " + sys.argv[0] + " <tag> <output-file> <file>...<file>"
 
-if len(sys.argv) < 3:
-    print "I get " + `(len(sys.argv)-1)` + " arguments, while I need at least 2"
+if len(sys.argv) < 4:
+    print "I get " + `(len(sys.argv)-1)` + " arguments, while I need at least 3"
     usage()
     sys.exit( 1 )
 
@@ -30,12 +30,19 @@ elements = string.split( sys.argv[1], '-' )
 label=elements[1]
 sum = 0
 count = 0
-for fnm in sys.argv[2:]:
+output_file = sys.argv[2]
+files = sys.argv[3:]
+for fnm in files:
     d = getDuration( fnm )
-    if d == None:
-        print 'No ' + durationString + ' found in file "' + fnm + '"'
-        sys.exit( 1 )
-    else:
+    if d != None:
         sum += d
         count += 1
-print label, 1e-9*(sum/count)
+
+if count<1:
+    l = string.join( files, "," )
+    print "None of the files [" + l "] contains the string '" + durationString + "'"
+    sys.exit( 1 )
+
+fhnd = open( output_file, 'w' )
+fhnd.write( "%s %f\n" % (label, 1e-9*(sum/count) )
+fhnd.close()
