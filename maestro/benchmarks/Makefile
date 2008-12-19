@@ -1,6 +1,7 @@
 #
 
-PLOTFILES=overhead.pdf fault-tolerance.pdf
+#PLOTFILES=overhead.pdf fault-tolerance.pdf
+PLOTFILES=overhead.pdf
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
 
@@ -21,7 +22,8 @@ termination-%.experiment:
 %.result: %.logs average-duration.py
 	python average-duration.py $* $*.logs/out.* > $@
 
-RANGE=2 4 8 12 16 20 32 40 52 64 72 80
+#RANGE=2 4 8 12 16 20 32 40 52 64 72 80
+RANGE=2 4 8 12 16 20 32 40 52 64
 PLAIN_POINTS=$(patsubst %,plain-%.result,1 $(RANGE))
 ONETASK_POINTS=$(patsubst %,onetask-%.result,1 $(RANGE))
 NO_POINTS=$(patsubst %,no-%.result,$(RANGE))
