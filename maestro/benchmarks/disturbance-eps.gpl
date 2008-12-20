@@ -1,0 +1,13 @@
+set size 0.7
+set key left
+set term postscript eps
+set data style linespoints
+set xlabel "Number of processors"
+set ylabel "Execution time"
+set yrange [0:*]
+plot \
+ 'plain.table' title 'Homogeneous',  \
+ 'no.table' title 'Scaling task, sharpening task disabled',  \
+ 'learnedno.table' title 'Scaling task, sharpening task disabled, after initial learning',  \
+ 'slow.table' title 'Scaling task, sharpening task 4 times slower',  \
+ 'learnedslow.table' title 'Scaling task, sharpening task 4 times slower, after initial learning'

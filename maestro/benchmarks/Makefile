@@ -1,7 +1,7 @@
 #
 
 #PLOTFILES=overhead.pdf fault-tolerance.pdf
-PLOTFILES=overhead.pdf
+PLOTFILES=homogeneous.pdf disturbance.pdf
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
 
@@ -19,7 +19,7 @@ termination-%.experiment:
 	./run-experiment $*.experiment
 	rm -f settag-$*.sh
 
-%.result: %.logs average-duration.py
+%.result: %.logs
 	python average-duration.py $* $@ $*.logs/out.*
 
 #RANGE=2 4 8 12 16 20 32 40 52 64 72 80
@@ -73,7 +73,7 @@ termination-plain.table: $(TERMINATION_PLAIN_POINTS)
 termination-slow.table: $(TERMINATION_SLOW_POINTS)
 	cat $(TERMINATION_SLOW_POINTS) > $@
 
-%.learned-result: %.result learn%.result subtract-results.py
+%.learned-result: %.result learn%.result
 	echo learn$*.result $*.result
 	python subtract-results.py `cat learn$*.result` `cat $*.result` $@
 
@@ -89,11 +89,14 @@ learnedno.table: $(LEARNEDNO_POINTS)
 learnedslow.table: $(LEARNEDSLOW_POINTS)
 	cat $(LEARNEDSLOW_POINTS) > $@
 
-overhead.pdf: overhead.eps
-	ps2pdf overhead.eps > overhead.pdf
+%.pdf: %.eps
+	ps2pdf $*.eps > $@
 
-overhead.eps: slow.table learnedslow.table onetask.table learnedonetask.table no.table learnedno.table plain.table learnedplain.table overhead-eps.gpl
-	gnuplot overhead-eps.gpl > $@
+disturbance.eps: slow.table learnedslow.table no.table learnedno.table  disturbance-eps.gpl
+	gnuplot disturbance-eps.gpl > $@
+
+homogeneous.eps: onetask.table learnedonetask.table plain.table learnedplain.table homogeneous-eps.gpl
+	gnuplot homogeneous-eps.gpl > $@
 
 fault-tolerance.pdf: fault-tolerance.eps
 	ps2pdf fault-tolerance.eps > fault-tolerance.pdf

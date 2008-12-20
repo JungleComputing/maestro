@@ -40,9 +40,9 @@ for fnm in files:
 
 if count<1:
     l = string.join( files, "," )
-    print "None of the files [" + l "] contains the string '" + durationString + "'"
+    print "None of the files [" + l + "] contains the string '" + durationString + "'"
     sys.exit( 1 )
 
 fhnd = open( output_file, 'w' )
-fhnd.write( "%s %f\n" % (label, 1e-9*(sum/count) )
+fhnd.write( "%s %f\n" % (label, 1e-9*(sum/count) ) )
 fhnd.close()
