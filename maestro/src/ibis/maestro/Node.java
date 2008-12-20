@@ -140,7 +140,8 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 
 		@Override
 		public void poolTerminated(IbisIdentifier arg0) {
-			// TODO: can we do something useful with the poolTerminated() signal?
+			// TODO: can we do something useful with the poolTerminated()
+			// signal?
 
 		}
 	}

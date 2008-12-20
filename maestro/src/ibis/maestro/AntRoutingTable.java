@@ -9,41 +9,41 @@ import ibis.ipl.IbisIdentifier;
  * 
  */
 public class AntRoutingTable {
-    AntTypeRoutingTable antTypeRoutingTable[];
+	AntTypeRoutingTable antTypeRoutingTable[];
 
-    AntRoutingTable() {
-	TaskType[] allTaskTypes = Globals.allTaskTypes;
-	antTypeRoutingTable = new AntTypeRoutingTable[allTaskTypes.length];
+	AntRoutingTable() {
+		TaskType[] allTaskTypes = Globals.allTaskTypes;
+		antTypeRoutingTable = new AntTypeRoutingTable[allTaskTypes.length];
 
-	for (int i = 0; i < allTaskTypes.length; i++) {
-	    antTypeRoutingTable[i] = new AntTypeRoutingTable(allTaskTypes[i]);
+		for (int i = 0; i < allTaskTypes.length; i++) {
+			antTypeRoutingTable[i] = new AntTypeRoutingTable(allTaskTypes[i]);
+		}
 	}
-    }
 
-    private void update(int i, IbisIdentifier ibis, long timestamp) {
-	antTypeRoutingTable[i].update(ibis, timestamp);
-    }
-
-    NodeInfo getBestReadyWorker(TaskType type) {
-	return antTypeRoutingTable[type.index].getBestReadyWorker();
-    }
-
-    void removeNode(IbisIdentifier theIbis) {
-	for (AntTypeRoutingTable t : antTypeRoutingTable) {
-	    t.removeNode(theIbis);
+	private void update(int i, IbisIdentifier ibis, long timestamp) {
+		antTypeRoutingTable[i].update(ibis, timestamp);
 	}
-    }
 
-    void addNode(NodeInfo node) {
-	for (AntTypeRoutingTable t : antTypeRoutingTable) {
-	    t.addNode(node);
+	NodeInfo getBestReadyWorker(TaskType type) {
+		return antTypeRoutingTable[type.index].getBestReadyWorker();
 	}
-    }
 
-    protected void handleAntPoint(AntPoint p) {
-	if (Settings.traceAntRouting) {
-	    Globals.log.reportProgress("Handling ant route reinforcement" + p);
+	void removeNode(IbisIdentifier theIbis) {
+		for (AntTypeRoutingTable t : antTypeRoutingTable) {
+			t.removeNode(theIbis);
+		}
 	}
-	update(p.typeIndex, p.workerIbis, p.timestamp);
-    }
+
+	void addNode(NodeInfo node) {
+		for (AntTypeRoutingTable t : antTypeRoutingTable) {
+			t.addNode(node);
+		}
+	}
+
+	protected void handleAntPoint(AntPoint p) {
+		if (Settings.traceAntRouting) {
+			Globals.log.reportProgress("Handling ant route reinforcement" + p);
+		}
+		update(p.typeIndex, p.workerIbis, p.timestamp);
+	}
 }

@@ -11,21 +11,21 @@ import ibis.ipl.IbisIdentifier;
  * 
  */
 final class TaskFailMessage extends Message {
-    private static final long serialVersionUID = 5158569253342276404L;
-    final IbisIdentifier source;
-    final long id;
+	private static final long serialVersionUID = 5158569253342276404L;
+	final IbisIdentifier source;
+	final long id;
 
-    /**
-     * Constructs a new result message.
-     * 
-     * @param id
-     *            The identifier of the job this is a result for.
-     * @param update
-     *            Information about the new state of the node.
-     */
-    public TaskFailMessage(long id) {
-	this.source = Globals.localIbis.identifier();
-	this.id = id;
-    }
+	/**
+	 * Constructs a new result message.
+	 * 
+	 * @param id
+	 *            The identifier of the job this is a result for.
+	 * @param update
+	 *            Information about the new state of the node.
+	 */
+	public TaskFailMessage(long id) {
+		this.source = Globals.localIbis.identifier();
+		this.id = id;
+	}
 
 }

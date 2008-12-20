@@ -10,13 +10,13 @@ import ibis.ipl.IbisIdentifier;
  * 
  */
 final class StopNodeMessage extends Message {
-    private static final long serialVersionUID = 5158569253342276404L;
-    final IbisIdentifier source;
+	private static final long serialVersionUID = 5158569253342276404L;
+	final IbisIdentifier source;
 
-    /**
-     * Constructs a new stop node message.
-     */
-    StopNodeMessage() {
-	this.source = Globals.localIbis.identifier();
-    }
+	/**
+	 * Constructs a new stop node message.
+	 */
+	StopNodeMessage() {
+		this.source = Globals.localIbis.identifier();
+	}
 }

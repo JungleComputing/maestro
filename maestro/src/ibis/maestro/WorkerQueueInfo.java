@@ -8,84 +8,84 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  */
 class WorkerQueueInfo implements Serializable {
-    private static final long serialVersionUID = 1L;
+	private static final long serialVersionUID = 1L;
 
-    int queueLength;
-    int queueLengthSequenceNumber;
-    long dequeueTimePerTask;
-    long executionTime;
+	int queueLength;
+	int queueLengthSequenceNumber;
+	long dequeueTimePerTask;
+	long executionTime;
 
-    /**
-     * @param queueLength
-     *            The worker queue length.
-     * @param queueLengthSequenceNumber
-     *            The sequence number of this queue length. Used to avoid
-     *            multiple updates to the worker allowance on multiple
-     *            transmissions of the same WoekrQueueInfo instance.
-     * @param dequeueTimePerTask
-     *            The current wait time in the worker queue divided by the queue
-     *            length.
-     * @param executionTime
-     *            The execution time of a task.
-     */
-    WorkerQueueInfo(int queueLength, int queueLengthSequenceNumber,
-	    long dequeueTimePerTask, long executionTime) {
-	this.queueLength = queueLength;
-	this.queueLengthSequenceNumber = queueLengthSequenceNumber;
-	this.dequeueTimePerTask = dequeueTimePerTask;
-	this.executionTime = executionTime;
-    }
+	/**
+	 * @param queueLength
+	 *            The worker queue length.
+	 * @param queueLengthSequenceNumber
+	 *            The sequence number of this queue length. Used to avoid
+	 *            multiple updates to the worker allowance on multiple
+	 *            transmissions of the same WoekrQueueInfo instance.
+	 * @param dequeueTimePerTask
+	 *            The current wait time in the worker queue divided by the queue
+	 *            length.
+	 * @param executionTime
+	 *            The execution time of a task.
+	 */
+	WorkerQueueInfo(int queueLength, int queueLengthSequenceNumber,
+			long dequeueTimePerTask, long executionTime) {
+		this.queueLength = queueLength;
+		this.queueLengthSequenceNumber = queueLengthSequenceNumber;
+		this.dequeueTimePerTask = dequeueTimePerTask;
+		this.executionTime = executionTime;
+	}
 
-    /**
-     * Returns a string representation of this completion info. (Overrides
-     * method in superclass.)
-     * 
-     * @return The string representation.
-     */
-    @Override
-    public String toString() {
-	return "(ql=" + queueLength + ",dq/t="
-		+ Utils.formatNanoseconds(dequeueTimePerTask) + ",compute="
-		+ Utils.formatNanoseconds(executionTime) + ")";
-    }
+	/**
+	 * Returns a string representation of this completion info. (Overrides
+	 * method in superclass.)
+	 * 
+	 * @return The string representation.
+	 */
+	@Override
+	public String toString() {
+		return "(ql=" + queueLength + ",dq/t="
+				+ Utils.formatNanoseconds(dequeueTimePerTask) + ",compute="
+				+ Utils.formatNanoseconds(executionTime) + ")";
+	}
 
-    String format() {
-	return String.format("%3d %9s %9s", queueLength, Utils
-		.formatNanoseconds(dequeueTimePerTask), Utils
-		.formatNanoseconds(executionTime));
-    }
+	String format() {
+		return String.format("%3d %9s %9s", queueLength, Utils
+				.formatNanoseconds(dequeueTimePerTask), Utils
+				.formatNanoseconds(executionTime));
+	}
 
-    static String topLabel() {
-	return String.format("%3s %9s %9s", "ql", "dequeue", "compute");
-    }
+	static String topLabel() {
+		return String.format("%3s %9s %9s", "ql", "dequeue", "compute");
+	}
 
-    static String emptyFormat() {
-	return String.format("%23s", "---");
-    }
+	static String emptyFormat() {
+		return String.format("%23s", "---");
+	}
 
-    static Object topLabelType(TaskType type) {
-	return String.format("%23s", type.toString());
-    }
+	static Object topLabelType(TaskType type) {
+		return String.format("%23s", type.toString());
+	}
 
-    void failTask() {
-	executionTime = Long.MAX_VALUE;
-    }
+	void failTask() {
+		executionTime = Long.MAX_VALUE;
+	}
 
-    void setComputeTime(long t) {
-	executionTime = t;
-    }
+	void setComputeTime(long t) {
+		executionTime = t;
+	}
 
-    synchronized void setQueueTimePerTask(long queueTimePerTask,
-	    int newQueueLength) {
-	this.dequeueTimePerTask = queueTimePerTask; // We must take the recently
-	// dequeued task into
-	// account.
-	this.queueLength = newQueueLength;
-	this.queueLengthSequenceNumber++;
-    }
+	synchronized void setQueueTimePerTask(long queueTimePerTask,
+			int newQueueLength) {
+		this.dequeueTimePerTask = queueTimePerTask; // We must take the recently
+		// dequeued task into
+		// account.
+		this.queueLength = newQueueLength;
+		this.queueLengthSequenceNumber++;
+	}
 
-    synchronized void setQueueLength(int newQueueLength) {
-	this.queueLength = newQueueLength;
-	this.queueLengthSequenceNumber++;
-    }
+	synchronized void setQueueLength(int newQueueLength) {
+		this.queueLength = newQueueLength;
+		this.queueLengthSequenceNumber++;
+	}
 }

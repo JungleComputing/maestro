@@ -11,17 +11,17 @@ import java.util.LinkedList;
  *            The type of element in the list.
  */
 class Queue<T> {
-    private final LinkedList<T> list = new LinkedList<T>();
+	private final LinkedList<T> list = new LinkedList<T>();
 
-    protected synchronized void add(T e) {
-	list.add(e);
-    }
-
-    protected synchronized T removeIfAny() {
-	if (list.isEmpty()) {
-	    return null;
+	protected synchronized void add(T e) {
+		list.add(e);
 	}
-	return list.removeFirst();
-    }
+
+	protected synchronized T removeIfAny() {
+		if (list.isEmpty()) {
+			return null;
+		}
+		return list.removeFirst();
+	}
 
 }

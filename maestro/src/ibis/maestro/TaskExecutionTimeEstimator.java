@@ -7,10 +7,10 @@ package ibis.maestro;
  * @author Kees van Reeuwijk.
  */
 public interface TaskExecutionTimeEstimator {
-    /**
-     * Returns an estimate in nanoseconds of the compute time of this task.
-     * 
-     * @return The estimated compute time of this task in nanoseconds.
-     */
-    long estimateTaskExecutionTime();
+	/**
+	 * Returns an estimate in nanoseconds of the compute time of this task.
+	 * 
+	 * @return The estimated compute time of this task in nanoseconds.
+	 */
+	long estimateTaskExecutionTime();
 }

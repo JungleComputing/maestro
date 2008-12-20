@@ -6,24 +6,24 @@ package ibis.maestro;
  * @author Kees van Reeuwijk.
  */
 class Counter {
-    private int value = 0;
+	private int value = 0;
 
-    synchronized void add() {
-	value++;
-    }
+	synchronized void add() {
+		value++;
+	}
 
-    synchronized int get() {
-	return value;
-    }
+	synchronized int get() {
+		return value;
+	}
 
-    /**
-     * Returns a string representation of this counter. (Overrides method in
-     * superclass.)
-     * 
-     * @return The string representation.
-     */
-    @Override
-    synchronized public String toString() {
-	return Integer.toString(value);
-    }
+	/**
+	 * Returns a string representation of this counter. (Overrides method in
+	 * superclass.)
+	 * 
+	 * @return The string representation.
+	 */
+	@Override
+	synchronized public String toString() {
+		return Integer.toString(value);
+	}
 }

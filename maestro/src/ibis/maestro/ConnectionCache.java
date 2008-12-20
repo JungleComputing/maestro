@@ -13,118 +13,118 @@ import java.io.PrintStream;
  * @author Kees van Reeuwijk.
  */
 class ConnectionCache {
-    private final Node node;
-    private final SendPortCache cache = new SendPortCache(
-	    Settings.CONNECTION_CACHE_SIZE,
-	    Settings.CONNECTION_CACHE_MAXIMAL_UNUSED_COUNT);
+	private final Node node;
+	private final SendPortCache cache = new SendPortCache(
+			Settings.CONNECTION_CACHE_SIZE,
+			Settings.CONNECTION_CACHE_MAXIMAL_UNUSED_COUNT);
 
-    ConnectionCache(Node node) {
-	this.node = node;
-    }
-
-    long cachedSendMessage(IbisIdentifier ibis, Message message) {
-	long len = -1;
-	try {
-	    SendPort port = cache.getSendPort(ibis);
-	    if (port == null) {
-		// We could not create a connection to this ibis.
-		Globals.log.reportError("Could not get send port for ibis "
-			+ ibis);
-		node.setSuspect(ibis);
-		cache.closeSendPort(ibis);
-		return -1;
-	    }
-	    WriteMessage msg = port.newMessage();
-	    msg.writeObject(message);
-	    len = msg.finish();
-	} catch (IOException x) {
-	    Globals.log.reportError("Could not get send port for ibis " + ibis
-		    + ": " + x);
-	    node.setSuspect(ibis);
-	    cache.closeSendPort(ibis);
+	ConnectionCache(Node node) {
+		this.node = node;
 	}
-	return len;
-    }
 
-    /**
-     * Given an ibis, returns a WriteMessage to use.
-     * 
-     * @param ibis
-     *            The ibis to send to.
-     * @return The WriteMessage to fill.
-     */
-    long uncachedSendMessage(IbisIdentifier ibis, Message message) {
-	long len = -1;
-	SendPort port = null;
-	try {
-	    port = Globals.localIbis.createSendPort(PacketSendPort.portType);
-	    port.connect(ibis, Globals.receivePortName,
-		    Settings.ESSENTIAL_COMMUNICATION_TIMEOUT, true);
-	    WriteMessage msg = null;
-	    try {
-		msg = port.newMessage();
-		msg.writeObject(message);
-	    } finally {
-		if (msg != null) {
-		    len = msg.finish();
+	long cachedSendMessage(IbisIdentifier ibis, Message message) {
+		long len = -1;
+		try {
+			SendPort port = cache.getSendPort(ibis);
+			if (port == null) {
+				// We could not create a connection to this ibis.
+				Globals.log.reportError("Could not get send port for ibis "
+						+ ibis);
+				node.setSuspect(ibis);
+				cache.closeSendPort(ibis);
+				return -1;
+			}
+			WriteMessage msg = port.newMessage();
+			msg.writeObject(message);
+			len = msg.finish();
+		} catch (IOException x) {
+			Globals.log.reportError("Could not get send port for ibis " + ibis
+					+ ": " + x);
+			node.setSuspect(ibis);
+			cache.closeSendPort(ibis);
 		}
-	    }
-	    port.close();
-	    return len;
-	} catch (IOException x) {
-	    node.setSuspect(ibis);
-	} finally {
-	    try {
-		if (port != null) {
-		    port.close();
+		return len;
+	}
+
+	/**
+	 * Given an ibis, returns a WriteMessage to use.
+	 * 
+	 * @param ibis
+	 *            The ibis to send to.
+	 * @return The WriteMessage to fill.
+	 */
+	long uncachedSendMessage(IbisIdentifier ibis, Message message) {
+		long len = -1;
+		SendPort port = null;
+		try {
+			port = Globals.localIbis.createSendPort(PacketSendPort.portType);
+			port.connect(ibis, Globals.receivePortName,
+					Settings.ESSENTIAL_COMMUNICATION_TIMEOUT, true);
+			WriteMessage msg = null;
+			try {
+				msg = port.newMessage();
+				msg.writeObject(message);
+			} finally {
+				if (msg != null) {
+					len = msg.finish();
+				}
+			}
+			port.close();
+			return len;
+		} catch (IOException x) {
+			node.setSuspect(ibis);
+		} finally {
+			try {
+				if (port != null) {
+					port.close();
+				}
+			} catch (Throwable x) {
+				// Nothing we can do.
+			}
 		}
-	    } catch (Throwable x) {
-		// Nothing we can do.
-	    }
+		return len;
 	}
-	return len;
-    }
 
-    /**
-     * Given an ibis, returns a WriteMessage to use.
-     * 
-     * @param ibis
-     *            The ibis to send to.
-     * @return The WriteMessage to fill.
-     */
-    long sendMessage(IbisIdentifier ibis, Message message) {
-	long sz;
+	/**
+	 * Given an ibis, returns a WriteMessage to use.
+	 * 
+	 * @param ibis
+	 *            The ibis to send to.
+	 * @return The WriteMessage to fill.
+	 */
+	long sendMessage(IbisIdentifier ibis, Message message) {
+		long sz;
 
-	if (Settings.CACHE_CONNECTIONS) {
-	    sz = cachedSendMessage(ibis, message);
-	} else {
-	    sz = uncachedSendMessage(ibis, message);
-	}
-	return sz;
-    }
-
-    void printStatistics(PrintStream s) {
-	cache.printStatistics(s);
-    }
-
-    long sendNonEssentialMessage(IbisIdentifier ibis, Message message) {
-	long len = -1;
-	if (Settings.CACHE_CONNECTIONS) {
-	    try {
-		SendPort port = cache.getExistingSendPort(ibis);
-		if (port == null) {
-		    // No port in cache, don't try to send the message.
-		    return -1;
+		if (Settings.CACHE_CONNECTIONS) {
+			sz = cachedSendMessage(ibis, message);
+		} else {
+			sz = uncachedSendMessage(ibis, message);
 		}
-		WriteMessage msg = port.newMessage();
-		msg.writeObject(message);
-		len = msg.finish();
-	    } catch (IOException x) {
-		node.setSuspect(ibis);
-		cache.closeSendPort(ibis);
-	    }
+		return sz;
 	}
-	return len;
-    }
+
+	void printStatistics(PrintStream s) {
+		cache.printStatistics(s);
+	}
+
+	long sendNonEssentialMessage(IbisIdentifier ibis, Message message) {
+		long len = -1;
+		if (Settings.CACHE_CONNECTIONS) {
+			try {
+				SendPort port = cache.getExistingSendPort(ibis);
+				if (port == null) {
+					// No port in cache, don't try to send the message.
+					return -1;
+				}
+				WriteMessage msg = port.newMessage();
+				msg.writeObject(message);
+				len = msg.finish();
+			} catch (IOException x) {
+				node.setSuspect(ibis);
+				cache.closeSendPort(ibis);
+			}
+		}
+		return len;
+	}
 
 }
