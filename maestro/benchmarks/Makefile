@@ -10,7 +10,7 @@ DEPLOYFILES=das3.grid das3.script maestro.applications
 termination-%.experiment:
 	python build-termination-experiment.py termination-$* > $@
 
-%.experiment:
+%.experiment: build-experiment.py
 	python build-experiment.py $* > $@
 
 %.logs: %.experiment run-experiment $(DEPLOYFILES) $(VIDEO_PLAYER_JAR)
@@ -23,7 +23,7 @@ termination-%.experiment:
 	python average-duration.py $* $@ $*.logs/out.*
 
 #RANGE=2 4 8 12 16 20 32 40 52 64 72 80
-RANGE=2 4 8 12 16 20 32 40 52 64
+RANGE=2 4 8 12 16 20 32 40 52 64 72 80
 PLAIN_POINTS=$(patsubst %,plain-%.result,1 $(RANGE))
 ONETASK_POINTS=$(patsubst %,onetask-%.result,1 $(RANGE))
 NO_POINTS=$(patsubst %,no-%.result,$(RANGE))
