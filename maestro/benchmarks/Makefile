@@ -24,24 +24,24 @@ termination-%.experiment:
 
 #RANGE=2 4 8 12 16 20 32 40 52 64 72 80
 RANGE=2 4 8 12 16 20 32 40 52 64 72 80
-PLAIN_POINTS=$(patsubst %,plain-%.result,1 $(RANGE))
-ONETASK_POINTS=$(patsubst %,onetask-%.result,1 $(RANGE))
-NO_POINTS=$(patsubst %,no-%.result,$(RANGE))
-SLOW_POINTS=$(patsubst %,slow-%.result,$(RANGE))
-LEARNPLAIN_POINTS=$(patsubst %,learnplain-%.result,1 $(RANGE))
-LEARNONETASK_POINTS=$(patsubst %,learnonetask-%.result,1 $(RANGE))
-LEARNNO_POINTS=$(patsubst %,learnno-%.result,$(RANGE))
-LEARNSLOW_POINTS=$(patsubst %,learnslow-%.result,$(RANGE))
-LEARNEDPLAIN_POINTS=$(patsubst %,plain-%.learned-result,1 $(RANGE))
-LEARNEDONETASK_POINTS=$(patsubst %,onetask-%.learned-result,1 $(RANGE))
-LEARNEDNO_POINTS=$(patsubst %,no-%.learned-result,$(RANGE))
-LEARNEDSLOW_POINTS=$(patsubst %,slow-%.learned-result,$(RANGE))
+PLAIN_2000_POINTS=$(patsubst %,plain-%-2000.result,1 $(RANGE))
+ONETASK_2000_POINTS=$(patsubst %,onetask-%-2000.result,1 $(RANGE))
+NO_2000_POINTS=$(patsubst %,no-%-2000.result,$(RANGE))
+SLOW_2000_POINTS=$(patsubst %,slow-%-2000.result,$(RANGE))
+PLAIN_200_POINTS=$(patsubst %,plain-%-200.result,1 $(RANGE))
+ONETASK_200_POINTS=$(patsubst %,onetask-%-200.result,1 $(RANGE))
+NO_200_POINTS=$(patsubst %,no-%-200.result,$(RANGE))
+SLOW_200_POINTS=$(patsubst %,slow-%-200.result,$(RANGE))
+PLAIN_LEARNED_POINTS=$(patsubst %,plain-%.learned-result,1 $(RANGE))
+ONETASK_LEARNED_POINTS=$(patsubst %,onetask-%.learned-result,1 $(RANGE))
+NO_LEARNED_POINTS=$(patsubst %,no-%.learned-result,$(RANGE))
+SLOW_LEARNED_POINTS=$(patsubst %,slow-%.learned-result,$(RANGE))
 
 TERMINATION_FRACTIONS=0.0 0.2 0.4 0.6 0.8
-TERMINATION_PLAIN_POINTS=${patsubst %,termination-plain-%.result,$(TERMINATION_FRACTIONS)}
-TERMINATION_SLOW_POINTS=${patsubst %,termination-slow-%.result,$(TERMINATION_FRACTIONS)}
+TERMINATION_PLAIN_2000_POINTS=${patsubst %,termination-plain-%.result,$(TERMINATION_FRACTIONS)}
+TERMINATION_SLOW_2000_POINTS=${patsubst %,termination-slow-%.result,$(TERMINATION_FRACTIONS)}
 
-POINTS=$(PLAIN_POINTS) $(ONETASK_POINTS) $(NO_POINTS) $(SLOW_POINTS) $(LEARNPLAIN_POINTS) $(LEARNONETASK_POINTS) $(LEARNNO_POINTS) $(LEARNSLOW_POINTS) $(TERMINATION_PLAIN_POINTS) $(TERMINATION_SLOW_POINTS)
+POINTS=$(PLAIN_2000_POINTS) $(ONETASK_2000_POINTS) $(NO_2000_POINTS) $(SLOW_2000_POINTS) $(PLAIN_200_POINTS) $(ONETASK_200_POINTS) $(NO_200_POINTS) $(SLOW_200_POINTS) $(TERMINATION_PLAIN_2000_POINTS) $(TERMINATION_SLOW_2000_POINTS)
 LOGFILES=$(POINTS:.result=.logs)
 
 .PRECIOUS: $(LOGFILES)
@@ -55,39 +55,38 @@ all: $(PLOTFILES)
 x:
 	echo [$(LOGFILES)] 
 
-plain.table: $(PLAIN_POINTS)
-	cat $(PLAIN_POINTS) > $@
+plain.table: $(PLAIN_2000_POINTS)
+	cat $(PLAIN_2000_POINTS) > $@
 
-onetask.table: $(ONETASK_POINTS)
-	cat $(ONETASK_POINTS) > $@
+onetask.table: $(ONETASK_2000_POINTS)
+	cat $(ONETASK_2000_POINTS) > $@
 
-no.table: $(NO_POINTS)
-	cat $(NO_POINTS) > $@
+no.table: $(NO_2000_POINTS)
+	cat $(NO_2000_POINTS) > $@
 
-slow.table: $(SLOW_POINTS)
-	cat $(SLOW_POINTS) > $@
+slow.table: $(SLOW_2000_POINTS)
+	cat $(SLOW_2000_POINTS) > $@
 
-termination-plain.table: $(TERMINATION_PLAIN_POINTS)
-	cat $(TERMINATION_PLAIN_POINTS) > $@
+termination-plain.table: $(TERMINATION_PLAIN_2000_POINTS)
+	cat $(TERMINATION_PLAIN_2000_POINTS) > $@
 
-termination-slow.table: $(TERMINATION_SLOW_POINTS)
-	cat $(TERMINATION_SLOW_POINTS) > $@
+termination-slow.table: $(TERMINATION_SLOW_2000_POINTS)
+	cat $(TERMINATION_SLOW_2000_POINTS) > $@
 
-%.learned-result: %.result learn%.result
-	echo learn$*.result $*.result
-	python subtract-results.py `cat learn$*.result` `cat $*.result` $@
+%.learned-result: %-2000.result %-200.result
+	python subtract-results.py `cat $*-200.result` `cat $*-2000.result` $@
 
-learnedplain.table: $(LEARNEDPLAIN_POINTS)
-	cat $(LEARNEDPLAIN_POINTS) > $@
+learnedplain.table: $(PLAIN_LEARNED_POINTS)
+	cat $(PLAIN_LEARNED_POINTS) > $@
 
-learnedonetask.table: $(LEARNEDONETASK_POINTS)
-	cat $(LEARNEDONETASK_POINTS) > $@
+learnedonetask.table: $(ONETASK_LEARNED_POINTS)
+	cat $(ONETASK_LEARNED_POINTS) > $@
 
-learnedno.table: $(LEARNEDNO_POINTS)
-	cat $(LEARNEDNO_POINTS) > $@
+learnedno.table: $(NO_LEARNED_POINTS)
+	cat $(NO_LEARNED_POINTS) > $@
 
-learnedslow.table: $(LEARNEDSLOW_POINTS)
-	cat $(LEARNEDSLOW_POINTS) > $@
+learnedslow.table: $(SLOW_LEARNED_POINTS)
+	cat $(SLOW_LEARNED_POINTS) > $@
 
 %.pdf: %.eps
 	ps2pdf $*.eps > $@
