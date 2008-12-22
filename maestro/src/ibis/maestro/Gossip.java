@@ -12,20 +12,20 @@ import java.util.HashMap;
  * @author Kees van Reeuwijk.
  */
 class Gossip {
-	private ArrayList<NodePerformanceInfo> gossipList = new ArrayList<NodePerformanceInfo>();
-	private NodePerformanceInfo localPerformanceInfo;
+	private final ArrayList<NodePerformanceInfo> gossipList = new ArrayList<NodePerformanceInfo>();
+	private final NodePerformanceInfo localPerformanceInfo;
 
 	GossipMessage constructMessage(IbisIdentifier target, boolean needsReply) {
-		NodePerformanceInfo content[] = getCopy();
+		final NodePerformanceInfo content[] = getCopy();
 		return new GossipMessage(target, content, needsReply);
 	}
 
 	Gossip(JobList jobs) {
-		int numberOfProcessors = Runtime.getRuntime().availableProcessors();
-		int sz = Globals.allTaskTypes.length;
-		long completionInfo[] = new long[sz];
-		WorkerQueueInfo queueInfo[] = new WorkerQueueInfo[sz];
-		long taskTimes[] = jobs.getInitialTaskTimes();
+		final int numberOfProcessors = Runtime.getRuntime().availableProcessors();
+		final int sz = Globals.allTaskTypes.length;
+		final long completionInfo[] = new long[sz];
+		final WorkerQueueInfo queueInfo[] = new WorkerQueueInfo[sz];
+		final long taskTimes[] = jobs.getInitialTaskTimes();
 		for (int i = 0; i < sz; i++) {
 			queueInfo[i] = new WorkerQueueInfo(0, 0, 0L, taskTimes[i]);
 		}
@@ -33,12 +33,12 @@ class Gossip {
 				queueInfo, Globals.localIbis.identifier(), numberOfProcessors,
 				System.nanoTime());
 		gossipList.add(localPerformanceInfo);
-		int indexLists[][] = jobs.getIndexLists();
+		final int indexLists[][] = jobs.getIndexLists();
 
-		for (int indexList[] : indexLists) {
+		for (final int indexList[] : indexLists) {
 			int t = 0;
 
-			for (int typeIndex : indexList) {
+			for (final int typeIndex : indexList) {
 				localPerformanceInfo.completionInfo[typeIndex] = t;
 				t += taskTimes[typeIndex];
 			}
@@ -51,8 +51,8 @@ class Gossip {
 	}
 
 	synchronized NodePerformanceInfo[] getCopy() {
-		NodePerformanceInfo content[] = new NodePerformanceInfo[gossipList
-				.size()];
+		final NodePerformanceInfo content[] = new NodePerformanceInfo[gossipList
+		                                                              .size()];
 		for (int i = 0; i < content.length; i++) {
 			content[i] = gossipList.get(i).getDeepCopy();
 		}
@@ -61,7 +61,7 @@ class Gossip {
 
 	private int searchInfo(IbisIdentifier ibis) {
 		for (int ix = 0; ix < gossipList.size(); ix++) {
-			NodePerformanceInfo i = gossipList.get(ix);
+			final NodePerformanceInfo i = gossipList.get(ix);
 
 			if (i.source.equals(ibis)) {
 				return ix;
@@ -89,12 +89,12 @@ class Gossip {
 			HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
 		long res = Long.MAX_VALUE;
 
-		for (NodePerformanceInfo node : gossipList) {
-			LocalNodeInfo info = localNodeInfoMap.get(node.source);
+		for (final NodePerformanceInfo node : gossipList) {
+			final LocalNodeInfo info = localNodeInfoMap.get(node.source);
 
 			if (info != null) {
-				long xmitTime = info.getTransmissionTime(ix);
-				long val = Utils.safeAdd(xmitTime, node.getCompletionOnWorker(
+				final long xmitTime = info.getTransmissionTime(ix);
+				final long val = Utils.safeAdd(xmitTime, node.getCompletionOnWorker(
 						ix, nextIx));
 
 				if (val < res) {
@@ -120,13 +120,14 @@ class Gossip {
 	synchronized void recomputeCompletionTimes(long masterQueueIntervals[],
 			JobList jobs,
 			HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
-		int indexLists[][] = jobs.getIndexLists();
+		final int indexLists[][] = jobs.getIndexLists();
 
-		for (int indexList[] : indexLists) {
+		for (final int indexList[] : indexLists) {
 			int nextIndex = -1;
 
-			for (int typeIndex : indexList) {
-				long t = Utils.safeAdd(masterQueueIntervals[typeIndex],
+			for (final int typeIndex : indexList) {
+				final long masterQueueInterval = masterQueueIntervals == null ? 0L : masterQueueIntervals[typeIndex];
+				final long t = Utils.safeAdd(masterQueueInterval,
 						getBestCompletionTimeAfterMasterQueue(typeIndex,
 								nextIndex, localNodeInfoMap));
 				localPerformanceInfo.completionInfo[typeIndex] = t;
@@ -144,10 +145,10 @@ class Gossip {
 	 * @return True iff we learned something new.
 	 */
 	synchronized boolean register(NodePerformanceInfo update) {
-		int ix = searchInfo(update.source);
+		final int ix = searchInfo(update.source);
 		if (ix >= 0) {
 			// This is an update for the same node.
-			NodePerformanceInfo i = gossipList.get(ix);
+			final NodePerformanceInfo i = gossipList.get(ix);
 
 			if (update.timeStamp > i.timeStamp) {
 				// This is more recent info, overwrite the old entry.
@@ -173,7 +174,7 @@ class Gossip {
 	synchronized void removeInfoForNode(IbisIdentifier ibis) {
 		if (false) {
 			// TODO: enable again or remove method.
-			int ix = searchInfo(ibis);
+			final int ix = searchInfo(ibis);
 
 			if (ix >= 0) {
 				gossipList.remove(ix);
@@ -199,7 +200,7 @@ class Gossip {
 
 	synchronized void print(PrintStream s) {
 		NodePerformanceInfo.printTopLabel(s);
-		for (NodePerformanceInfo entry : gossipList) {
+		for (final NodePerformanceInfo entry : gossipList) {
 			entry.print(s);
 		}
 	}
@@ -223,10 +224,10 @@ class Gossip {
 	int waitForReadyNodes(int nodes, long maximalWaitTime) {
 		final long deadline = System.currentTimeMillis() + maximalWaitTime;
 		while (true) {
-			long now = System.currentTimeMillis();
-			long sleepTime = Math.max(1L, deadline - now);
+			final long now = System.currentTimeMillis();
+			final long sleepTime = Math.max(1L, deadline - now);
 			synchronized (this) {
-				int sz = size();
+				final int sz = size();
 				Globals.log.reportProgress("There are now " + sz
 						+ " ready workers");
 				if (sz >= nodes || now > deadline) {
@@ -234,7 +235,7 @@ class Gossip {
 				}
 				try {
 					wait(sleepTime);
-				} catch (InterruptedException e) {
+				} catch (final InterruptedException e) {
 					// Ignore
 				}
 			}
@@ -257,11 +258,11 @@ class Gossip {
 			HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
 		long bestTime = Long.MAX_VALUE;
 
-		for (NodePerformanceInfo info : gossipList) {
-			LocalNodeInfo localNodeInfo = localNodeInfoMap.get(info.source);
+		for (final NodePerformanceInfo info : gossipList) {
+			final LocalNodeInfo localNodeInfo = localNodeInfoMap.get(info.source);
 
 			if (localNodeInfo != null) {
-				long t = info.estimateJobCompletion(localNodeInfo, type,
+				final long t = info.estimateJobCompletion(localNodeInfo, type,
 						!submitIfBusy);
 				if (t < bestTime) {
 					bestTime = t;

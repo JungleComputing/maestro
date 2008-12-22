@@ -114,8 +114,8 @@ final class NodeInfo {
 				// FindBug complains about the sequence number being unlocked,
 				// but this is a copy...
 				changed |= nodeTaskInfo.controlAllowance(
-						workerInfo.queueLength,
-						workerInfo.queueLengthSequenceNumber);
+						workerInfo.getQueueLength(),
+						workerInfo.getQueueLengthSequenceNumber());
 			}
 		}
 		return changed;

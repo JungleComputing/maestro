@@ -118,7 +118,7 @@ class NodePerformanceInfo implements Serializable {
 			// already running tasks some penalty to encourage spreading the
 			// load
 			// over nodes.
-			unpredictableOverhead = (currentTasks * queueInfo.executionTime) / 10;
+			unpredictableOverhead = (currentTasks * queueInfo.getExecutionTime()) / 10;
 		} else {
 			final int allowance = localNodeInfo.getAllowance(type);
 			if (ignoreBusyProcessors && currentTasks >= allowance) {
@@ -133,10 +133,10 @@ class NodePerformanceInfo implements Serializable {
 			}
 		}
 		final long transmissionTime = localNodeInfo.getTransmissionTime(type);
-		final int waitingTasks = Math.max( 0, (1+queueInfo.queueLength+currentTasks)-numberOfProcessors );
+		final int waitingTasks = Math.max( 0, (1+queueInfo.getQueueLength()+currentTasks)-numberOfProcessors );
 		final long total = Utils.safeAdd(transmissionTime,
-				waitingTasks * queueInfo.dequeueTimePerTask,
-				queueInfo.executionTime, completionInterval,
+				waitingTasks * queueInfo.getDequeueTimePerTask(),
+				queueInfo.getExecutionTime(), completionInterval,
 				unpredictableOverhead);
 		if (Settings.traceRemainingJobTime) {
 			Globals.log.reportProgress("Estimated completion time for "
@@ -166,8 +166,8 @@ class NodePerformanceInfo implements Serializable {
 		} else {
 			nextCompletionInterval = 0L;
 		}
-		return Utils.safeAdd((1 + info.queueLength) * info.dequeueTimePerTask,
-				info.executionTime, nextCompletionInterval);
+		return Utils.safeAdd((1 + info.getQueueLength()) * info.getDequeueTimePerTask(),
+				info.getExecutionTime(), nextCompletionInterval);
 	}
 
 	void print(PrintStream s) {
@@ -216,7 +216,7 @@ class NodePerformanceInfo implements Serializable {
 	void setComputeTime(TaskType type, long t) {
 		final WorkerQueueInfo info = workerQueueInfo[type.index];
 		if (info != null) {
-			info.setComputeTime(t);
+			info.setExecutionTime(t);
 			timeStamp = System.nanoTime();
 		}
 	}

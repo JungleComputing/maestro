@@ -75,7 +75,6 @@ final class MasterQueue {
 			if (frontChangedTime != 0) {
 				// We know when this entry became the front of the queue.
 				final long i = now - frontChangedTime;
-				// Ignore the changed flag returned by this method.
 				dequeueInterval.addSample(i);
 			}
 			elements--;
@@ -247,7 +246,7 @@ final class MasterQueue {
 
 		for (final NodePerformanceInfo info : tables) {
 			final LocalNodeInfo localNodeInfo = localNodeInfoMap
-					.get(info.source);
+			.get(info.source);
 			final long val = info.estimateJobCompletion(localNodeInfo,
 					task.type, true);
 
@@ -264,7 +263,7 @@ final class MasterQueue {
 			s.print("Best worker: ");
 			for (final NodePerformanceInfo info : tables) {
 				final LocalNodeInfo localNodeInfo = localNodeInfoMap
-						.get(info.source);
+				.get(info.source);
 				final long val = info.estimateJobCompletion(localNodeInfo,
 						task.type, true);
 				s.print(Utils.formatNanoseconds(val));
@@ -288,7 +287,7 @@ final class MasterQueue {
 		}
 		final LocalNodeInfo localNodeInfo = localNodeInfoMap.get(best.source);
 		final long predictedDuration = localNodeInfo
-				.getPredictedDuration(task.type);
+		.getPredictedDuration(task.type);
 		return new Submission(task, best.source, predictedDuration);
 	}
 
@@ -320,9 +319,9 @@ final class MasterQueue {
 					+ " for task of type " + task.type);
 		}
 		final LocalNodeInfo localNodeInfo = localNodeInfoMap
-				.get(candidate.ibis);
+		.get(candidate.ibis);
 		final long predictedDuration = localNodeInfo
-				.getPredictedDuration(task.type);
+		.getPredictedDuration(task.type);
 		return new Submission(task, candidate.ibis, predictedDuration);
 	}
 

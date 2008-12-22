@@ -10,10 +10,10 @@ import java.io.Serializable;
 class WorkerQueueInfo implements Serializable {
 	private static final long serialVersionUID = 1L;
 
-	int queueLength;
-	int queueLengthSequenceNumber;
-	long dequeueTimePerTask;
-	long executionTime;
+	private int queueLength;
+	private int queueLengthSequenceNumber;
+	private long dequeueTimePerTask;
+	private long executionTime;
 
 	/**
 	 * @param queueLength
@@ -30,7 +30,7 @@ class WorkerQueueInfo implements Serializable {
 	 */
 	WorkerQueueInfo(int queueLength, int queueLengthSequenceNumber,
 			long dequeueTimePerTask, long executionTime) {
-		this.queueLength = queueLength;
+		this.setQueueLength(queueLength);
 		this.queueLengthSequenceNumber = queueLengthSequenceNumber;
 		this.dequeueTimePerTask = dequeueTimePerTask;
 		this.executionTime = executionTime;
@@ -44,15 +44,15 @@ class WorkerQueueInfo implements Serializable {
 	 */
 	@Override
 	public String toString() {
-		return "(ql=" + queueLength + ",dq/t="
-				+ Utils.formatNanoseconds(dequeueTimePerTask) + ",compute="
-				+ Utils.formatNanoseconds(executionTime) + ")";
+		return "(ql=" + getQueueLength() + ",dq/t="
+		+ Utils.formatNanoseconds(getDequeueTimePerTask()) + ",compute="
+		+ Utils.formatNanoseconds(getExecutionTime()) + ")";
 	}
 
 	String format() {
-		return String.format("%3d %9s %9s", queueLength, Utils
-				.formatNanoseconds(dequeueTimePerTask), Utils
-				.formatNanoseconds(executionTime));
+		return String.format("%3d %9s %9s", getQueueLength(), Utils
+				.formatNanoseconds(getDequeueTimePerTask()), Utils
+				.formatNanoseconds(getExecutionTime()));
 	}
 
 	static String topLabel() {
@@ -68,11 +68,11 @@ class WorkerQueueInfo implements Serializable {
 	}
 
 	void failTask() {
-		executionTime = Long.MAX_VALUE;
+		this.executionTime = Long.MAX_VALUE;
 	}
 
-	void setComputeTime(long t) {
-		executionTime = t;
+	void setExecutionTime(long t) {
+		this.executionTime = t;
 	}
 
 	synchronized void setQueueTimePerTask(long queueTimePerTask,
@@ -80,12 +80,33 @@ class WorkerQueueInfo implements Serializable {
 		this.dequeueTimePerTask = queueTimePerTask; // We must take the recently
 		// dequeued task into
 		// account.
-		this.queueLength = newQueueLength;
-		this.queueLengthSequenceNumber++;
+		this.setQueueLength(newQueueLength);
+		this.queueLengthSequenceNumber = this
+		.getQueueLengthSequenceNumber() + 1;
 	}
 
 	synchronized void setQueueLength(int newQueueLength) {
 		this.queueLength = newQueueLength;
-		this.queueLengthSequenceNumber++;
+		this.queueLengthSequenceNumber = this
+		.getQueueLengthSequenceNumber() + 1;
+	}
+
+	long getExecutionTime() {
+		return executionTime;
+	}
+
+	int getQueueLength() {
+		return queueLength;
+	}
+
+	long getDequeueTimePerTask() {
+		if( Settings.IGNORE_QUEUE_TIME ){
+			return 0L;
+		}
+		return dequeueTimePerTask;
+	}
+
+	int getQueueLengthSequenceNumber() {
+		return queueLengthSequenceNumber;
 	}
 }
