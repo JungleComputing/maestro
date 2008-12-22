@@ -27,7 +27,6 @@ if len(sys.argv) < 4:
     sys.exit( 1 )
 
 elements = string.split( sys.argv[1], '-' )
-label=elements[1]
 sum = 0
 count = 0
 output_file = sys.argv[2]
@@ -43,6 +42,9 @@ if count<1:
     print "None of the files [" + l + "] contains the string '" + durationString + "'"
     sys.exit( 1 )
 
+frames = int( elements[2] )
+duration = 1e-9*(sum/count)
+timePerFrame = duration/frames
 fhnd = open( output_file, 'w' )
-fhnd.write( "%s %f\n" % (label, 1e-9*(sum/count) ) )
+fhnd.write( "%s %s %f %f\n" % (elements[1], elements[2], duration, timePerFrame ) )
 fhnd.close()

@@ -12,7 +12,6 @@ shift
 ARGS=$*
 
 OPTION=-1
-RUNTIME=0:20:00
 
 if [ `expr $NR_NODES \* 4` = "$NR_PROCS" ]; then
 

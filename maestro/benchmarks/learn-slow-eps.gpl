@@ -1,0 +1,11 @@
+set size 0.7
+set key left
+set term postscript eps
+set data style linespoints
+set xlabel "Number of frames per processor"
+set ylabel "Execution time per frame"
+set yrange [0:*]
+plot \
+ 'learn-slow-4.table' using 2:4 title '4 nodes',  \
+ 'learn-slow-16.table' using 2:4 title '16 nodes',  \
+ 'learn-slow-64.table' using 2:4 title '64 nodes'
