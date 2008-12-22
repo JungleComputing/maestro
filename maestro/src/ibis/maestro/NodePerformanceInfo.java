@@ -132,12 +132,10 @@ class NodePerformanceInfo implements Serializable {
 				return Long.MAX_VALUE;
 			}
 		}
-		// FIXME: handle this hard-coded pessimistic estimate of transmission
-		// time more robustly.
-		final long transmissionTime = 3*localNodeInfo.getTransmissionTime(type);
-		final int extra = (currentTasks >= numberOfProcessors) ? 1 : 0;
+		final long transmissionTime = localNodeInfo.getTransmissionTime(type);
+		final int waitingTasks = Math.max( 0, (1+queueInfo.queueLength+currentTasks)-numberOfProcessors );
 		final long total = Utils.safeAdd(transmissionTime,
-				(extra + queueInfo.queueLength) * queueInfo.dequeueTimePerTask,
+				waitingTasks * queueInfo.dequeueTimePerTask,
 				queueInfo.executionTime, completionInterval,
 				unpredictableOverhead);
 		if (Settings.traceRemainingJobTime) {
