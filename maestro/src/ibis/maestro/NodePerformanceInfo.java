@@ -121,15 +121,21 @@ class NodePerformanceInfo implements Serializable {
 			unpredictableOverhead = (currentTasks * queueInfo.getExecutionTime()) / 10;
 		} else {
 			final int allowance = localNodeInfo.getAllowance(type);
-			if (ignoreBusyProcessors && currentTasks >= allowance) {
-				if (Settings.traceRemainingJobTime) {
-					Globals.log
-					.reportError("Node "
-							+ source
-							+ " uses its allowance, no completion estimate: currentTasks="
-							+ currentTasks + " allowance=" + allowance);
+			if (currentTasks>=allowance ){
+				if (ignoreBusyProcessors) {
+					if (Settings.traceRemainingJobTime) {
+						Globals.log
+						.reportError("Node "
+								+ source
+								+ " uses its allowance, no completion estimate: currentTasks="
+								+ currentTasks + " allowance=" + allowance);
+					}
+					return Long.MAX_VALUE;
 				}
-				return Long.MAX_VALUE;
+				else {
+					final int extraTasks = currentTasks-allowance;
+					unpredictableOverhead = extraTasks*extraTasks*queueInfo.getExecutionTime();
+				}
 			}
 		}
 		final long transmissionTime = localNodeInfo.getTransmissionTime(type);

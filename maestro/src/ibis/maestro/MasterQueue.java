@@ -248,7 +248,7 @@ final class MasterQueue {
 			final LocalNodeInfo localNodeInfo = localNodeInfoMap
 			.get(info.source);
 			final long val = info.estimateJobCompletion(localNodeInfo,
-					task.type, true);
+					task.type, Settings.HARD_ALLOWANCES );
 
 			if (val < bestInterval) {
 				bestInterval = val;
