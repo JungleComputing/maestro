@@ -47,14 +47,16 @@ class TimeEstimate {
 			average = val;
 			initial = false;
 		}
-		average = (2 * average + val) / 3;
+		else {
+			average = (2 * average + val) / 3;
+		}
 	}
 
 	/**
 	 * If we don't have a better estimate, use this one.
 	 * 
 	 * @param v
-	 *            The new time estimate.
+	 *            The new initial time estimate.
 	 */
 	public void setInitialEstimate(long v) {
 		if (initial) {

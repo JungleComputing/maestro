@@ -268,8 +268,9 @@ final class NodeInfo {
 	 */
 	void registerTaskReceived(TaskReceivedMessage result) {
 		final ActiveTask task;
-		final long id = result.taskId; // The identifier of the task, as handed
-		// out by us.
+
+		// The identifier of the task, as handed out by us.
+		final long id = result.taskId;
 		synchronized( this ){
 			final int ix = searchActiveTask(id);
 

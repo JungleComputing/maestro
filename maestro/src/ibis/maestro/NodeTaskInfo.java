@@ -33,8 +33,8 @@ final class NodeTaskInfo {
 
 	private boolean failed = false;
 
-	private Counter missedAllowanceDeadlines = new Counter();
-	private Counter missedRescheduleDeadlines = new Counter();
+	private final Counter missedAllowanceDeadlines = new Counter();
+	private final Counter missedRescheduleDeadlines = new Counter();
 
 	/**
 	 * Constructs a new information class for a particular task type for a
@@ -74,9 +74,9 @@ final class NodeTaskInfo {
 	@Override
 	public String toString() {
 		return "[taskInfo=" + taskInfo + " worker=" + nodeInfo
-				+ " transmissionTimeEstimate=" + transmissionTimeEstimate
-				+ " outstandingTasks=" + outstandingTasks
-				+ " maximalAllowance=" + allowance + "]";
+		+ " transmissionTimeEstimate=" + transmissionTimeEstimate
+		+ " outstandingTasks=" + outstandingTasks
+		+ " maximalAllowance=" + allowance + "]";
 	}
 
 	/**
@@ -90,7 +90,7 @@ final class NodeTaskInfo {
 		outstandingTasks--;
 		roundtripTimeEstimate.addSample(roundtripTime);
 		if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
-			String label = "task=" + taskInfo + " worker=" + nodeInfo;
+			final String label = "task=" + taskInfo + " worker=" + nodeInfo;
 			Globals.log.reportProgress(label + ": roundTripTimeEstimate="
 					+ roundtripTimeEstimate);
 		}
@@ -105,9 +105,9 @@ final class NodeTaskInfo {
 	synchronized void registerTaskReceived(long transmissionTime) {
 		transmissionTimeEstimate.addSample(transmissionTime);
 		if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
-			String label = "task=" + taskInfo + " worker=" + nodeInfo;
+			final String label = "task=" + taskInfo + " worker=" + nodeInfo;
 			Globals.log.reportProgress(label + ": transmissionTimeEstimate="
-					+ roundtripTimeEstimate);
+					+ transmissionTimeEstimate);
 		}
 	}
 
@@ -169,7 +169,7 @@ final class NodeTaskInfo {
 			// at our current maximal allowance.
 			// Also, we should only regulate on a more recent sequence number
 			// than we already have.
-			int oldAllowance = allowance;
+			final int oldAllowance = allowance;
 
 			allowanceSequenceNumber = sequenceNumber;
 			if (queueLength < 1) {
@@ -220,8 +220,8 @@ final class NodeTaskInfo {
 					+ " tasks; maximal allowance " + maximalEverAllowance
 					+ ", xmit time " + transmissionTimeEstimate
 					+ (failed ? " FAILED" : ""));
-			int missedAllowance = missedAllowanceDeadlines.get();
-			int missedReschedule = missedRescheduleDeadlines.get();
+			final int missedAllowance = missedAllowanceDeadlines.get();
+			final int missedReschedule = missedRescheduleDeadlines.get();
 			if (missedAllowance > 0 || missedReschedule > 0) {
 				s.println("  " + taskInfo.type
 						+ ": missed deadlines: allowance: " + missedAllowance

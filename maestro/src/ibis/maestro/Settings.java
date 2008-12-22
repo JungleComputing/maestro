@@ -65,7 +65,7 @@ class Settings {
 	/** Trace the adventures of the map/reduce handler. */
 	static final boolean traceMapReduce = false;
 
-	/** Trace registration of the nodes with eachother. */
+	/** Trace registration of the nodes with each other. */
 	static final boolean traceRegistration = false;
 
 	/** Trace all sent update messages. */
@@ -146,7 +146,7 @@ class Settings {
 	/** The default sleep time in ms between node terminations. */
 	static final long DEFAULT_TERMINATOR_SLEEP = 100;
 
-	/** Should Maestro use ant routing? TODO: make ant routing flag settable. */
+	/** Should Maestro use ant routing? */
 	static final boolean USE_ANT_ROUTING = System
-			.getProperty("ibis.maestro.useAntRouting") != null;
+	.getProperty("ibis.maestro.useAntRouting") != null;
 }
