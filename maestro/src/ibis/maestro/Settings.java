@@ -151,7 +151,7 @@ class Settings {
 	.getProperty("ibis.maestro.useAntRouting") != null;
 
 	/** Don't take the time tasks spend the queues into account. */
-	static final boolean IGNORE_QUEUE_TIME = true;
+	static final boolean IGNORE_QUEUE_TIME = false;
 
 	/** If set, processors over their allowancee never get a new task,
 	 * otherwise they can get one if they are significantly faster.

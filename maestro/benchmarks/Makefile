@@ -5,7 +5,7 @@ PLOTFILES=homogeneous.pdf disturbance.pdf learn-plain.pdf learn-slow.pdf
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
 
-DEPLOYFILES=das3.grid das3.script maestro.applications
+DEPLOYFILES=das3.grid das3.script maestro.applications ../lib/maestro-0.0.1.jar
 
 TABLES=slow-2000.table no-2000.table onetask-2000.table plain-2000.table learn-plain-4.table learn-plain-16.table learn-plain-64.table learn-slow-4.table learn-slow-16.table learn-slow-64.table
 
@@ -25,7 +25,8 @@ termination-%.experiment:
 %.result: %.logs
 	python average-duration.py $* $@ $*.logs/out.*
 
-LEARNRANGE=100 200 500 1000 1500 2000 3000 4000 5000
+LEARNRANGE=4000 3000 2000 1500 1000 500 200 100
+#RANGE=80 72 64 52 40 32 28 20 16 12 8 4 2
 RANGE=2 4 8 12 16 20 28 32 40 52 64 72 80
 
 PLAIN_2000_POINTS=$(patsubst %,plain-%-2000.result,1 $(RANGE))
