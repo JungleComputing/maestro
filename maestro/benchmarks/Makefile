@@ -10,7 +10,14 @@ DEPLOYFILES=das3.grid das3.script maestro.applications ../lib/maestro-0.0.1.jar
 TABLES=slow-2000.table no-2000.table onetask-2000.table plain-2000.table learn-plain-4.table learn-plain-16.table learn-plain-64.table learn-slow-4.table learn-slow-16.table learn-slow-64.table
 
 termination-%.experiment: build-termination-experiment.py
-	python build-termination-experiment.py termination-$* > $@
+	python build-termination-experiment.py $* > $@
+
+termination-%.logs: termination-%.experiment run-experiment $(DEPLOYFILES) $(VIDEO_PLAYER_JAR)
+	echo "export TAG=termination-$*" > settag-termination-$*.sh
+	python compute-termination-runtime.py $* >> settag-termination-$*.sh
+	rm -rf termination-$*.logs
+	./run-experiment termination-$*.experiment
+	rm -f settag-termination-$*.sh
 
 %.experiment: build-experiment.py
 	python build-experiment.py $* > $@

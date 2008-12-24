@@ -17,7 +17,7 @@ if len(sys.argv) != 2:
 
 arg = sys.argv[1]
 elements = arg.split( '-' )
-frac=elements[2]
+frac=elements[1]
 p=constants.processorsForFaultTolerance
 
 jobs = `p*jobsPerProcessor`
@@ -32,17 +32,17 @@ label = label.replace( '.', '-' )
 
 props='ibis.maestro.terminatorStartQuotum=0,ibis.maestro.terminatorInitialSleepTime=1000,ibis.maestro.terminatorSleepTime=100,ibis.maestro.terminatorNodeQuotum=' + frac
 
-if not elements[1] in args.keys():
+if not elements[0] in args.keys():
     l = string.join( args.keys(), ',' )
-    print "Unknown benchmark type '" + elements[1] + "'; I only know [" + l + "]"
+    print "Unknown benchmark type '" + elements[0] + "'; I only know [" + l + "]"
     sys.exit( 1 )
-arguments = args[elements[1]]
+arguments = args[elements[0]]
 s = Template( """# Generated experiment file
 $label.application.name = VideoPlayerBenchmarkProgram
 $label.process.count = $p
 $label.cluster.name = VU
 $label.pool.name = $arg-pool
-$label.application.input.files = settag-$arg.sh
+$label.application.input.files = settag-termination-$arg.sh
 $label.application.output.files = $arg.logs
 $label.application.arguments = $args
 $label.application.system.properties = $props
