@@ -367,8 +367,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 			Globals.log
 			.reportProgress("This node has been declared dead, stopping..");
 			setStopped();
-			masterQueue.clear(); // Nobody seems to be interested in any work we
-			// still have.
+			masterQueue.clear(); // Nobody is interested in any work we have.
 			kickAllWorkers();
 		}
 	}

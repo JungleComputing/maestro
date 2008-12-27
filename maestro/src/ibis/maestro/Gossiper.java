@@ -19,6 +19,7 @@ import java.util.LinkedList;
 class Gossiper extends Thread {
 	private boolean stopped = false;
 	private final GossipNodeList nodes = new GossipNodeList();
+	private final IbisSet deadNodes = new IbisSet();
 	private final Gossip gossip;
 	private final UpDownCounter gossipQuotum;
 	private final Counter messageCount = new Counter();
@@ -45,8 +46,8 @@ class Gossiper extends Thread {
 	}
 
 	private void sendGossip(IbisIdentifier target, boolean needsReply) {
-		GossipMessage msg = gossip.constructMessage(target, needsReply);
-		long startTime = System.nanoTime();
+		final GossipMessage msg = gossip.constructMessage(target, needsReply);
+		final long startTime = System.nanoTime();
 		msg.sendMoment = startTime;
 		if (Settings.traceGossip) {
 			Globals.log.reportProgress("Gossiper: sending message to " + target
@@ -72,18 +73,18 @@ class Gossiper extends Thread {
 		SendPort port = null;
 		try {
 			long len;
-			IbisIdentifier theIbis = msg.destination;
+			final IbisIdentifier theIbis = msg.destination;
 			port = Globals.localIbis.createSendPort(PacketSendPort.portType);
 			port.connect(theIbis, Globals.receivePortName,
 					Settings.OPTIONAL_COMMUNICATION_TIMEOUT, false);
-			long setupTime = System.nanoTime();
-			WriteMessage writeMessage = port.newMessage();
+			final long setupTime = System.nanoTime();
+			final WriteMessage writeMessage = port.newMessage();
 			try {
 				writeMessage.writeObject(msg);
 			} finally {
 				len = writeMessage.finish();
 			}
-			long stopTime = System.nanoTime();
+			final long stopTime = System.nanoTime();
 			if (Settings.traceSends || Settings.traceGossip) {
 				Globals.log.reportProgress("Gossiper: sent message of " + len
 						+ " bytes in "
@@ -99,14 +100,14 @@ class Gossiper extends Thread {
 					sentBytes += len;
 				}
 			}
-		} catch (IOException e) {
+		} catch (final IOException e) {
 			failedGossipMessageCount.add();
 		} finally {
 			try {
 				if (port != null) {
 					port.close();
 				}
-			} catch (Throwable x) {
+			} catch (final Throwable x) {
 				// Nothing we can do.
 			}
 		}
@@ -120,8 +121,8 @@ class Gossiper extends Thread {
 			return;
 		}
 		while (gossipQuotum.isAbove(0)) {
-			long now = System.currentTimeMillis();
-			IbisIdentifier target = nodes.getStaleNode(now);
+			final long now = System.currentTimeMillis();
+			final IbisIdentifier target = nodes.getStaleNode(now);
 			if (target == null) {
 				// Nobody to gossip. Stop.
 				break;
@@ -146,7 +147,7 @@ class Gossiper extends Thread {
 		while (!isStopped()) {
 			drainReplyQueue();
 			sendCurrentGossipMessages();
-			long waittime = computeWaitTimeInMilliseconds();
+			final long waittime = computeWaitTimeInMilliseconds();
 			// We are not supposed to wait if there are
 			// still messages in the current list, but a perverse
 			// scheduler might have allowed a thread to add to the
@@ -158,7 +159,7 @@ class Gossiper extends Thread {
 				if (Settings.traceGossip) {
 					if (waittime == 0) {
 						Globals.log
-								.reportProgress("Gossiper: waiting indefinitely");
+						.reportProgress("Gossiper: waiting indefinitely");
 					} else {
 						Globals.log.reportProgress("Gossiper: waiting "
 								+ waittime + " ms");
@@ -167,13 +168,13 @@ class Gossiper extends Thread {
 				synchronized (this) {
 					wait(waittime);
 				}
-			} catch (InterruptedException e) {
+			} catch (final InterruptedException e) {
 				// ignore.
 			}
 		}
 		if (Settings.traceGossip) {
 			Globals.log
-					.reportProgress("Gossiper: has stopped, thread ends now");
+			.reportProgress("Gossiper: has stopped, thread ends now");
 		}
 	}
 
@@ -190,6 +191,7 @@ class Gossiper extends Thread {
 	}
 
 	void removeNode(IbisIdentifier ibis) {
+		deadNodes.add( ibis );
 		nodes.remove(ibis);
 		gossip.removeInfoForNode(ibis);
 		synchronized (this) {
@@ -198,14 +200,18 @@ class Gossiper extends Thread {
 	}
 
 	boolean registerGossip(NodePerformanceInfo update, IbisIdentifier source) {
+		if( deadNodes.contains( update.source ) ){
+			// Somebody sent us gossip about a dead node.Ignore it.
+			return false;
+		}
 		gossipItemCount.add();
-		boolean isnew = gossip.register(update);
+		final boolean isnew = gossip.register(update);
 		if (isnew) {
 			gossipQuotum.up(2);
 			if (update.source.equals(Globals.localIbis.identifier())) {
 				// Somebody sent us info about ourselves, if it's too old,
 				// send that node an update,
-				long staleness = gossip.getLocalTimestamp() - update.timeStamp;
+				final long staleness = gossip.getLocalTimestamp() - update.timeStamp;
 				if (staleness > Settings.GOSSIP_EXPIRATION_IN_CLUSTER
 						&& source != null) {
 					nodes.needsUrgentUpdate(source);
@@ -334,8 +340,8 @@ class Gossiper extends Thread {
 		int bestIx = -1;
 		long bestTime = Long.MAX_VALUE;
 		for (int ix = 0; ix < types.length; ix++) {
-			TaskType type = types[ix];
-			long t = computeCompletionTime(type, submitIfBusy, localNodeInfoMap);
+			final TaskType type = types[ix];
+			final long t = computeCompletionTime(type, submitIfBusy, localNodeInfoMap);
 			if (t < bestTime) {
 				bestTime = t;
 				bestIx = ix;

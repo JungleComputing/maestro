@@ -22,7 +22,7 @@ class GossipNodeList {
 		final long updateInterval; // Time interval in ms for each new update.
 
 		private static long computeUpdateInterval(IbisIdentifier ibis) {
-			boolean sameCluster = Utils.areInSameCluster(Globals.localIbis
+			final boolean sameCluster = Utils.areInSameCluster(Globals.localIbis
 					.identifier(), ibis);
 			return sameCluster ? Settings.GOSSIP_EXPIRATION_IN_CLUSTER
 					: Settings.GOSSIP_EXPIRATION_BETWEEN_CLUSTERS;
@@ -37,7 +37,7 @@ class GossipNodeList {
 	}
 
 	private static final class GossipNodeComparator implements
-			Comparator<GossipNode> {
+	Comparator<GossipNode> {
 
 		/**
 		 * Compares two gossip nodes, and ranks them according to priority.
@@ -76,7 +76,7 @@ class GossipNodeList {
 	}
 
 	long computeWaitTimeInMilliseconds() {
-		GossipNode node = nodes.peek();
+		final GossipNode node = nodes.peek();
 		if (node == null) {
 			return 0l; // No nodes to gossip with. Wait indefinitely.
 		}
@@ -121,7 +121,7 @@ class GossipNodeList {
 	 *         any.
 	 */
 	private GossipNode extractGossipNode(IbisIdentifier ibis) {
-		for (GossipNode m : nodes) {
+		for (final GossipNode m : nodes) {
 			if (ibis.equals(m.ibis)) {
 				nodes.remove(m);
 				return m;
@@ -138,12 +138,12 @@ class GossipNodeList {
 	 *            The ibis for which we had a recent update.
 	 */
 	synchronized void hadRecentUpdate(IbisIdentifier source) {
-		GossipNode node = extractGossipNode(source);
+		final GossipNode node = extractGossipNode(source);
 		if (node == null) {
 			return; // Not in our administration; let's keep it like that.
 		}
 		node.nextUpdateMoment = System.currentTimeMillis()
-				+ node.updateInterval;
+		+ node.updateInterval;
 		nodes.add(node);
 	}
 
@@ -155,7 +155,7 @@ class GossipNodeList {
 	 *            The ibis for which we want an urgent update.
 	 */
 	synchronized void needsUrgentUpdate(IbisIdentifier source) {
-		GossipNode node = extractGossipNode(source);
+		final GossipNode node = extractGossipNode(source);
 		if (node == null) {
 			return; // Not in our administration; let's keep it like that.
 		}
