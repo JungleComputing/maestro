@@ -169,14 +169,15 @@ final class MasterQueue {
 		s.println();
 	}
 
+	@SuppressWarnings("synthetic-access")
 	private void unsynchronizedAdd(TaskInstance task) {
 		taskCount++;
 		final TaskType type = task.type;
 		final int pos = findInsertionPoint(queue, task);
 		queue.add(pos, task);
+		final TypeInfo info = queueTypes[type.index];
+		final int length = info.registerAdd();
 		if (Settings.traceQueuing) {
-			final TypeInfo info = queueTypes[type.index];
-			final int length = info.registerAdd();
 			Globals.log.reportProgress("Adding " + task.formatJobAndType()
 					+ " at position " + pos
 					+ " of master queue; length is now " + queue.size() + "; "
