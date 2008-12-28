@@ -494,9 +494,9 @@ class BenchmarkProgram {
 			} else if (arg.equalsIgnoreCase("-evenslowsharpen")) {
 				evenSlowSharpen = true;
 			} else if (arg.equalsIgnoreCase("-oddnoscale")) {
-				oddNoScale = false;
+				oddNoScale = true;
 			} else if (arg.equalsIgnoreCase("-evennoscale")) {
-				evenNoScale = false;
+				evenNoScale = true;
 			} else if (arg.equalsIgnoreCase("-slowscale")) {
 				slowScale = true;
 			} else if (arg.equalsIgnoreCase("-oddslowscale")) {
