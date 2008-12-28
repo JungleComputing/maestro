@@ -95,7 +95,7 @@ class WorkerQueueInfo implements Serializable {
 		return executionTime;
 	}
 
-	int getQueueLength() {
+	synchronized int getQueueLength() {
 		return queueLength;
 	}
 

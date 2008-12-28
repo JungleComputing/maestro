@@ -24,7 +24,7 @@ public class AntTypeRoutingTable {
 
 	private int findIbis(IbisIdentifier ibis) {
 		for (int ix = 0; ix < nodes.size(); ix++) {
-			NodeInfo info = nodes.get(ix);
+			final NodeInfo info = nodes.get(ix);
 
 			if (info.ibis.equals(ibis)) {
 				return ix;
@@ -46,7 +46,7 @@ public class AntTypeRoutingTable {
 		if (timestamp > updateTimeStamp) {
 			updateTimeStamp = timestamp;
 
-			int ix = findIbis(ibis);
+			final int ix = findIbis(ibis);
 			// FIXME: handle ix<0 case.
 			if (ix == 0) {
 				// Already at the start, don't bother.
@@ -54,7 +54,7 @@ public class AntTypeRoutingTable {
 			}
 			if (ix > 0) {
 				// Put this node in front.
-				NodeInfo info = nodes.remove(ix);
+				final NodeInfo info = nodes.remove(ix);
 				nodes.add(0, info);
 			}
 		}
@@ -69,7 +69,7 @@ public class AntTypeRoutingTable {
 		// are supposed to put the most successful one first
 		// (or at least do so for most of the time.)
 		for (int ix = 0; ix < nodes.size(); ix++) {
-			NodeInfo node = nodes.get(ix);
+			final NodeInfo node = nodes.get(ix);
 			if (node.isAvailable(type)) {
 				if (Settings.traceAntRouting) {
 					Globals.log.reportProgress("Worker " + node
@@ -85,6 +85,9 @@ public class AntTypeRoutingTable {
 	}
 
 	synchronized void removeNode(IbisIdentifier theIbis) {
-		nodes.remove(theIbis);
+		final int ix = findIbis(theIbis);
+		if( ix>=0 ){
+			nodes.remove(ix);
+		}
 	}
 }
