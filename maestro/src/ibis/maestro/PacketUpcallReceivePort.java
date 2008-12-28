@@ -20,7 +20,7 @@ class PacketUpcallReceivePort implements MessageUpcall {
 			PortType.CONNECTION_MANY_TO_ONE, PortType.RECEIVE_AUTO_UPCALLS,
 			PortType.RECEIVE_EXPLICIT);
 	private final ReceivePort port;
-	private PacketReceiveListener listener;
+	private final PacketReceiveListener listener;
 
 	/**
 	 * Constructs a new PacketSendPort.
@@ -53,14 +53,15 @@ class PacketUpcallReceivePort implements MessageUpcall {
 		Message data;
 		try {
 			data = (Message) msg.readObject();
-		} catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 			Globals.log
-					.reportInternalError("Cannot read message in upcall: class not found: "
-							+ e.getLocalizedMessage());
+			.reportInternalError("Cannot read message in upcall: class not found: "
+					+ e.getLocalizedMessage());
 			return;
 		}
 		data.arrivalMoment = System.nanoTime();
-		// msg.finish();
+		// FIXME: disable this one again.
+		msg.finish();
 		listener.messageReceived(data);
 	}
 
