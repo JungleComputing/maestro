@@ -32,7 +32,7 @@ public final class JobList {
 	}
 
 	private Job searchJobID(Job.JobIdentifier id) {
-		for (Job t : jobs) {
+		for (final Job t : jobs) {
 			if (t.id.equals(id)) {
 				return t;
 			}
@@ -41,18 +41,18 @@ public final class JobList {
 	}
 
 	TaskType getPreviousTaskType(TaskType t) {
-		Job job = searchJobID(t.job);
+		final Job job = searchJobID(t.job);
 		if (job == null) {
 			Globals.log
-					.reportInternalError("getPreviousTaskType(): task type with unknown job id: "
-							+ t);
+			.reportInternalError("getPreviousTaskType(): task type with unknown job id: "
+					+ t);
 			return null;
 		}
 		return job.getPreviousTaskType(t);
 	}
 
 	void printStatistics(PrintStream s) {
-		for (Job t : jobs) {
+		for (final Job t : jobs) {
 			t.printStatistics(s);
 		}
 	}
@@ -64,10 +64,10 @@ public final class JobList {
 	 *            The job to register.
 	 */
 	void registerJob(Job job) {
-		Task tasks[] = job.tasks;
+		final Task tasks[] = job.tasks;
 
 		for (int i = 0; i < tasks.length; i++) {
-			Task t = tasks[i];
+			final Task t = tasks[i];
 
 			final TaskType taskType = job.taskTypes[i];
 			if (t.isSupported()) {
@@ -77,7 +77,7 @@ public final class JobList {
 				}
 				supportedTaskTypes.add(taskType);
 			}
-			int ix = taskType.index;
+			final int ix = taskType.index;
 			while (allTaskTypes.size() <= ix) {
 				allTaskTypes.add(null);
 			}
@@ -99,8 +99,8 @@ public final class JobList {
 	 * @return A new job instance representing this job.
 	 */
 	public Job createJob(String name, Task... tasks) {
-		int jobId = jobCounter++;
-		Job job = new Job(jobId, name, tasks);
+		final int jobId = jobCounter++;
+		final Job job = new Job(jobId, name, tasks);
 
 		jobs.add(job);
 		registerJob(job);
@@ -114,7 +114,7 @@ public final class JobList {
 	 */
 	TaskType[] getSupportedTaskTypes() {
 		return supportedTaskTypes.toArray(new TaskType[supportedTaskTypes
-				.size()]);
+		                                               .size()]);
 	}
 
 	Job findJob(TaskType type) {
@@ -122,13 +122,13 @@ public final class JobList {
 	}
 
 	Task getTask(TaskType type) {
-		Job job = findJob(type);
-		Task task = job.tasks[type.taskNo];
+		final Job job = findJob(type);
+		final Task task = job.tasks[type.taskNo];
 		return task;
 	}
 
 	TaskType getNextTaskType(TaskType type) {
-		Job job = findJob(type);
+		final Job job = findJob(type);
 		return job.getNextTaskType(type);
 	}
 
@@ -149,11 +149,11 @@ public final class JobList {
 	 * @return The index of the next type.
 	 */
 	int getNextIndex(int ix) {
-		TaskType type = allTaskTypes.get(ix);
+		final TaskType type = allTaskTypes.get(ix);
 		if (type == null) {
 			return -1;
 		}
-		TaskType nextType = getNextTaskType(type);
+		final TaskType nextType = getNextTaskType(type);
 		if (nextType == null) {
 			return -1;
 		}
@@ -167,21 +167,25 @@ public final class JobList {
 	 * @return
 	 */
 	int[][] getIndexLists() {
-		int res[][] = new int[jobs.size()][];
+		final int res[][] = new int[jobs.size()][];
 		int jobno = 0;
-		for (Job job : jobs) {
+		for (final Job job : jobs) {
 			res[jobno++] = job.updateIndices;
 		}
 		return res;
 	}
 
 	long[] getInitialTaskTimes() {
-		long res[] = new long[allTaskTypes.size()];
+		final long res[] = new long[allTaskTypes.size()];
 		int i = 0;
-		for (TaskType t : allTaskTypes) {
-			Task task = getTask(t);
-			if (task instanceof TaskExecutionTimeEstimator) {
-				TaskExecutionTimeEstimator estimator = (TaskExecutionTimeEstimator) task;
+		for (final TaskType t : allTaskTypes) {
+			final Task task = getTask(t);
+			if( !task.isSupported() ){
+				// Not supported by this node.
+				res[i++] = Long.MAX_VALUE;
+			}
+			else if (task instanceof TaskExecutionTimeEstimator) {
+				final TaskExecutionTimeEstimator estimator = (TaskExecutionTimeEstimator) task;
 				res[i++] = estimator.estimateTaskExecutionTime();
 			} else {
 				res[i++] = 0l;

@@ -195,7 +195,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 		}
 		Globals.log.reportProgress("Started ibis " + localIbis.identifier()
 				+ ": isMaestro=" + isMaestro);
-		if (!isMaestro && Globals.supportedTaskTypes.length == 0) {
+		if (!isMaestro && supportedTypes.length == 0) {
 			Globals.log
 			.reportProgress("This node does not support any types, and isn't the maestro. Stopping");
 			stopped.set();
