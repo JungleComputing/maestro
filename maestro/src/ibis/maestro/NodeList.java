@@ -207,4 +207,8 @@ final class NodeList {
 		}
 		return res;
 	}
+
+	synchronized int size() {
+		return ibisToNodeMap.size();
+	}
 }

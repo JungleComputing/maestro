@@ -105,10 +105,12 @@ public class QRoutingNode extends Node {
 			return false;
 		}
 		if (choices.length == 1 && submitIfBusy) {
+			waitForRoom();
 			choice = 0;
 		} else {
 			final TaskType types[] = new TaskType[choices.length];
 
+			waitForRoom();
 			for (int ix = 0; ix < choices.length; ix++) {
 				final Job job = choices[ix];
 

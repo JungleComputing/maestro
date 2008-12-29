@@ -668,7 +668,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 		if (changed) {
 			registerNewGossipHasArrived();
 			synchronized (this) {
-				this.notify();
+				this.notifyAll();
 			}
 		}
 	}
@@ -702,7 +702,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 					+ msg.getClass());
 		}
 		synchronized (this) {
-			this.notify();
+			this.notifyAll();
 		}
 	}
 
@@ -790,6 +790,26 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	}
 
 	protected abstract RunTaskMessage getWork();
+
+	/**
+	 * Wait until the master queue has drained to a reasonable level.
+	 */
+	void waitForRoom()
+	{
+		while( true ){
+			synchronized( this ){
+				if( masterQueue.hasRoom( nodes.size() ) ){
+					return;
+				}
+				try {
+					this.wait( Settings.ROOM_POLL_INTERVAL );
+				} catch (final InterruptedException e) {
+					// Ignore
+				}
+			}
+		}
+
+	}
 
 	/** Run a work thread. Only return when we want to shut down the node. */
 	void runWorkThread() {
