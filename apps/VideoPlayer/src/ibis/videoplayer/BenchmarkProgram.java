@@ -174,7 +174,7 @@ class BenchmarkProgram {
 			return generateFrame(frame);
 		}
 
-		private Object generateFrame(int frame) {
+		private static Object generateFrame(int frame) {
 			return RGB24Image.buildGradientImage(frame, DVD_WIDTH, DVD_HEIGHT,
 					(byte) frame, (byte) (frame / 10), (byte) (frame / 100));
 		}
@@ -202,7 +202,8 @@ class BenchmarkProgram {
 		}
 	}
 
-	private static final class ScaleUpFrameTask implements AtomicTask {
+	private static final class ScaleUpFrameTask implements AtomicTask,
+	TaskExecutionTimeEstimator {
 		private static final long serialVersionUID = 5452987225377415308L;
 		private final int factor;
 		private final boolean slow;
@@ -262,9 +263,28 @@ class BenchmarkProgram {
 		public boolean isSupported() {
 			return allowed;
 		}
+
+		/**
+		 * Estimates the time to execute this task. (Overrides method in
+		 * superclass.) We simply time the actual execution of frame generation,
+		 * so this is as accurate as it gets.
+		 * 
+		 * @return The estimated time in ns to execute this task.
+		 */
+		@SuppressWarnings("synthetic-access")
+		@Override
+		public long estimateTaskExecutionTime() {
+			if( !allowed ){
+				return Long.MAX_VALUE;
+			}
+			final Object frame = GenerateFrameTask.generateFrame(0);
+			final long startTime = System.nanoTime();
+			run( frame, null );
+			return System.nanoTime() - startTime;
+		}
 	}
 
-	private static final class SharpenFrameTask implements AtomicTask {
+	private static final class SharpenFrameTask implements AtomicTask, TaskExecutionTimeEstimator {
 		private static final long serialVersionUID = 54529872253774153L;
 		private final boolean slow;
 		private final boolean allowed;
@@ -322,6 +342,25 @@ class BenchmarkProgram {
 		@Override
 		public boolean isSupported() {
 			return allowed;
+		}
+
+		/**
+		 * Estimates the time to execute this task. (Overrides method in
+		 * superclass.) We simply time the actual execution of frame generation,
+		 * so this is as accurate as it gets.
+		 * 
+		 * @return The estimated time in ns to execute this task.
+		 */
+		@SuppressWarnings("synthetic-access")
+		@Override
+		public long estimateTaskExecutionTime() {
+			if( !allowed ){
+				return Long.MAX_VALUE;
+			}
+			final Object frame = GenerateFrameTask.generateFrame(0);
+			final long startTime = System.nanoTime();
+			run( frame, null );
+			return 4*(System.nanoTime() - startTime);
 		}
 	}
 
