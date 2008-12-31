@@ -163,22 +163,27 @@ final class NodeTaskInfo {
 			allowance = 0;
 			return false;
 		}
-		if (allowanceSequenceNumber < sequenceNumber
-				&& allowance == outstandingTasks) {
+		if (allowanceSequenceNumber < sequenceNumber ){
+			// Only control the allowance based on new information.
+
+			allowanceSequenceNumber = sequenceNumber;
 			// We can only regulate the allowance if we are
 			// at our current maximal allowance.
 			// Also, we should only regulate on a more recent sequence number
 			// than we already have.
 			final int oldAllowance = allowance;
-
-			allowanceSequenceNumber = sequenceNumber;
-			if (queueLength < 1) {
-				allowance++;
-			} else if (queueLength > 4) {
-				// There are a lot of items in the queue; take a larger step.
+			if( queueLength>4 ){
+				// Crude control of the allowance is always allowed.
 				allowance -= 2;
-			} else if (queueLength > 1) {
-				allowance--;
+			}
+			else if( allowance<=outstandingTasks) {
+				// Detailed control of the allowance only makes sense
+				// if we currently fill the allowance.
+				if (queueLength < 1) {
+					allowance++;
+				} else if (queueLength > 1) {
+					allowance--;
+				}
 			}
 			if (allowance < 0) {
 				// Yes, we are prepared to cut off a worker entirely.
