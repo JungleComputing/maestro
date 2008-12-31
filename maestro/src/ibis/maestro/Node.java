@@ -51,6 +51,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 
 	/** The list of nodes we know about. */
 	protected final NodeList nodes;
+	protected final IbisSet deadNodes = new IbisSet();
 
 	private boolean isMaestro;
 
@@ -353,6 +354,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 		if (terminator != null) {
 			terminator.removeNode(theIbis);
 		}
+		deadNodes.add(theIbis);
 		final ArrayList<TaskInstance> orphans = nodes.removeNode(theIbis);
 		for (final TaskInstance ti : orphans) {
 			ti.setOrphan();
@@ -423,7 +425,9 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 			if (msg == null) {
 				return;
 			}
-			sendPort.send(msg.destination, msg.msg);
+			if( !deadNodes.contains(msg.destination) ){
+				sendPort.send(msg.destination, msg.msg);
+			}
 		}
 	}
 
@@ -487,6 +491,9 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	 */
 	protected boolean sendJobResultMessage(JobInstanceIdentifier id,
 			Object result) {
+		if( deadNodes.contains(id.ibis) ){
+			return false;
+		}
 		final Message msg = new JobResultMessage(id, result);
 		jobResultMessageCount.add();
 		return sendPort.send(id.ibis, msg);
@@ -518,6 +525,9 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	 * @return <code>true</code> if the message could be sent.
 	 */
 	private boolean sendTaskFailMessage(IbisIdentifier ibis, long taskId) {
+		if( deadNodes.contains(ibis) ){
+			return false;
+		}
 		final Message msg = new TaskFailMessage(taskId);
 		taskFailMessageCount.add();
 		return sendPort.send(ibis, msg);

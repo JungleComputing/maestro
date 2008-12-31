@@ -18,7 +18,7 @@ import java.util.HashMap;
  */
 public class AntRoutingNode extends Node {
 	private final Flag doUpdateRecentMasters = new Flag(false);
-	private AntRoutingTable antRoutingTable = new AntRoutingTable();
+	private final AntRoutingTable antRoutingTable = new AntRoutingTable();
 
 	/**
 	 * Constructs a new Maestro node using the given list of jobs. Optionally
@@ -34,7 +34,7 @@ public class AntRoutingNode extends Node {
 	 *             Thrown if for some reason we cannot communicate.
 	 */
 	public AntRoutingNode(JobList jobs, boolean runForMaestro)
-			throws IbisCreationFailedException, IOException {
+	throws IbisCreationFailedException, IOException {
 		super(jobs, runForMaestro);
 		recentMasterList.register(Globals.localIbis.identifier());
 		super.startThreads();
@@ -107,10 +107,10 @@ public class AntRoutingNode extends Node {
 		if (choices.length == 1 && submitIfBusy) {
 			choice = 0;
 		} else {
-			TaskType types[] = new TaskType[choices.length];
+			final TaskType types[] = new TaskType[choices.length];
 
 			for (int ix = 0; ix < choices.length; ix++) {
-				Job job = choices[ix];
+				final Job job = choices[ix];
 
 				types[ix] = job.getFirstTaskType();
 			}
@@ -121,13 +121,13 @@ public class AntRoutingNode extends Node {
 				return false;
 			}
 		}
-		Job job = choices[choice];
+		final Job job = choices[choice];
 		job.submit(this, input, userId, listener, new ArrayList<AntPoint>());
 		return true;
 	}
 
 	private final RecentMasterList recentMasterList = new RecentMasterList();
-	private Counter updateMessageCount = new Counter();
+	private final Counter updateMessageCount = new Counter();
 
 	/** On a locked queue, try to send out as many tasks as we can. */
 	@Override
@@ -143,9 +143,9 @@ public class AntRoutingNode extends Node {
 			TaskInstance task;
 
 			synchronized (antRoutingTable) {
-				HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap = nodes
-						.getLocalNodeInfo();
-				Submission submission = masterQueue.getAntSubmission(
+				final HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap = nodes
+				.getLocalNodeInfo();
+				final Submission submission = masterQueue.getAntSubmission(
 						localNodeInfoMap, antRoutingTable);
 				if (submission == null) {
 					break;
@@ -162,13 +162,13 @@ public class AntRoutingNode extends Node {
 				Globals.log.reportProgress("Submitting task " + task + " to "
 						+ node);
 			}
-			ArrayList<AntPoint> antTrail = task.antTrail;
-			AntPoint point = new AntPoint(Globals.localIbis.identifier(), null,
+			final ArrayList<AntPoint> antTrail = task.antTrail;
+			final AntPoint point = new AntPoint(Globals.localIbis.identifier(), null,
 					System.nanoTime(), task.type.index);
 			antTrail.add(point);
-			RunTaskMessage msg = new RunTaskMessage(node, task, taskId,
+			final RunTaskMessage msg = new RunTaskMessage(node, task, taskId,
 					antTrail);
-			boolean ok = sendPort.send(node, msg);
+			final boolean ok = sendPort.send(node, msg);
 			if (ok) {
 				submitMessageCount.add();
 			} else {
@@ -197,11 +197,11 @@ public class AntRoutingNode extends Node {
 
 	@Override
 	protected void updateRecentMasters() {
-		NodePerformanceInfo update = gossiper.getLocalUpdate();
+		final NodePerformanceInfo update = gossiper.getLocalUpdate();
 		handleNodeUpdateInfo(update); // Treat the local node as a honorary
 		// recent master.
-		UpdateNodeMessage msg = new UpdateNodeMessage(update);
-		for (IbisIdentifier ibis : recentMasterList.getArray()) {
+		final UpdateNodeMessage msg = new UpdateNodeMessage(update);
+		for (final IbisIdentifier ibis : recentMasterList.getArray()) {
 			if (Settings.traceUpdateMessages) {
 				Globals.log.reportProgress("Sending " + msg + " to " + ibis);
 			}
@@ -245,16 +245,16 @@ public class AntRoutingNode extends Node {
 	@SuppressWarnings("unchecked")
 	@Override
 	void handleTaskResult(RunTaskMessage message, Object result, long runMoment) {
-		long taskCompletionMoment = System.nanoTime();
+		final long taskCompletionMoment = System.nanoTime();
 
-		TaskType type = message.taskInstance.type;
+		final TaskType type = message.taskInstance.type;
 		taskResultMessageCount.add();
 
-		TaskType nextTaskType = jobs.getNextTaskType(type);
-		ArrayList<AntPoint> oldAntTrail = message.taskInstance.antTrail;
+		final TaskType nextTaskType = jobs.getNextTaskType(type);
+		final ArrayList<AntPoint> oldAntTrail = message.taskInstance.antTrail;
 		if (nextTaskType == null) {
 			// This was the final step. Report back the result.
-			JobInstanceIdentifier identifier = message.taskInstance.jobInstance;
+			final JobInstanceIdentifier identifier = message.taskInstance.jobInstance;
 			boolean ok = sendJobResultMessage(identifier, result);
 			if (!ok) {
 				// Could not send the result message. We're in trouble.
@@ -263,16 +263,16 @@ public class AntRoutingNode extends Node {
 				if (!ok) {
 					// Nothing we can do, we give up.
 					Globals.log
-							.reportError("Could not send job result message to "
-									+ identifier);
+					.reportError("Could not send job result message to "
+							+ identifier);
 				}
 			}
 			handleAntBackTrail(oldAntTrail, oldAntTrail.size() - 1);
 		} else {
 			// There is a next step to take.
-			ArrayList<AntPoint> antTrail = (ArrayList<AntPoint>) oldAntTrail
-					.clone();
-			TaskInstance nextTask = new TaskInstance(
+			final ArrayList<AntPoint> antTrail = (ArrayList<AntPoint>) oldAntTrail
+			.clone();
+			final TaskInstance nextTask = new TaskInstance(
 					message.taskInstance.jobInstance, nextTaskType, result,
 					antTrail);
 			submit(nextTask);
@@ -280,45 +280,47 @@ public class AntRoutingNode extends Node {
 
 		// Update statistics.
 		final long computeInterval = taskCompletionMoment - runMoment;
-		long averageComputeTime = workerQueue.countTask(type, computeInterval);
+		final long averageComputeTime = workerQueue.countTask(type, computeInterval);
 		gossiper.setComputeTime(type, averageComputeTime);
 		runningTasks.down();
 		if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
-			long queueInterval = runMoment - message.getQueueMoment();
+			final long queueInterval = runMoment - message.getQueueMoment();
 			Globals.log.reportProgress("Completed " + message.taskInstance
 					+ "; queueInterval="
 					+ Utils.formatNanoseconds(queueInterval)
 					+ "; runningTasks=" + runningTasks);
 		}
-		long workerDwellTime = taskCompletionMoment - message.getQueueMoment();
+		final long workerDwellTime = taskCompletionMoment - message.getQueueMoment();
 		if (traceStats) {
-			double now = 1e-9 * (System.nanoTime() - startTime);
+			final double now = 1e-9 * (System.nanoTime() - startTime);
 			System.out.println("TRACE:workerDwellTime " + type + " " + now
 					+ " " + 1e-9 * workerDwellTime);
 		}
-		Message msg = new TaskCompletedMessage(message.taskId, workerDwellTime);
-		boolean ok = sendPort.send(message.source, msg);
+		if( !deadNodes.contains( message.source ) ){
+			final Message msg = new TaskCompletedMessage(message.taskId, workerDwellTime);
+			boolean ok = sendPort.send(message.source, msg);
 
-		if (!ok) {
-			// Could not send the result message. We're desperate.
-			// First simply try again.
-			ok = sendPort.send(message.source, msg);
 			if (!ok) {
-				// Unfortunately, that didn't work.
-				// TODO: think up another way to recover from failed result
-				// report.
-				Globals.log
-						.reportError("Failed to send task completed message to "
-								+ message.source);
+				// Could not send the result message. We're desperate.
+				// First simply try again.
+				ok = sendPort.send(message.source, msg);
+				if (!ok) {
+					// Unfortunately, that didn't work.
+					// TODO: think up another way to recover from failed result
+					// report.
+					Globals.log
+					.reportError("Failed to send task completed message to "
+							+ message.source);
+				}
 			}
 		}
 		doUpdateRecentMasters.set();
 	}
 
 	private void sendAntBackTrail(ArrayList<AntPoint> trail, int ix) {
-		Message msg = new AntInfoMessage(new ArrayList<AntPoint>(trail.subList(
+		final Message msg = new AntInfoMessage(new ArrayList<AntPoint>(trail.subList(
 				0, ix)));
-		IbisIdentifier dest = trail.get(ix).masterIbis;
+		final IbisIdentifier dest = trail.get(ix).masterIbis;
 		super.outgoingMessageQueue.add(dest, msg);
 	}
 
@@ -327,7 +329,7 @@ public class AntRoutingNode extends Node {
 			if (ix < 0) {
 				return;
 			}
-			AntPoint p = trail.get(ix);
+			final AntPoint p = trail.get(ix);
 			if (!p.masterIbis.equals(Globals.localIbis.identifier())) {
 				// Not for us; send it to the node that handled it.
 				break;
@@ -346,14 +348,14 @@ public class AntRoutingNode extends Node {
 	 */
 	@Override
 	protected void handleRunTaskMessage(RunTaskMessage msg) {
-		IbisIdentifier source = msg.source;
-		boolean isDead = nodes.registerAsCommunicating(source);
+		final IbisIdentifier source = msg.source;
+		final boolean isDead = nodes.registerAsCommunicating(source);
 		if (!isDead && !source.equals(Globals.localIbis.identifier())) {
 			recentMasterList.register(source);
 		}
 		doUpdateRecentMasters.set();
 		postTaskReceivedMessage(source, msg.taskId);
-		int length = workerQueue.add(msg);
+		final int length = workerQueue.add(msg);
 		if (gossiper != null) {
 			gossiper.setQueueLength(msg.taskInstance.type, length);
 		}
@@ -378,7 +380,7 @@ public class AntRoutingNode extends Node {
 	@Override
 	protected void registerIbisJoined(IbisIdentifier theIbis) {
 		super.registerIbisJoined(theIbis);
-		NodeInfo info = nodes.get(theIbis);
+		final NodeInfo info = nodes.get(theIbis);
 		antRoutingTable.addNode(info);
 	}
 
@@ -401,7 +403,7 @@ public class AntRoutingNode extends Node {
 
 	@Override
 	void handleAntInfoMessage(AntInfoMessage antInfoMessage) {
-		int sz = antInfoMessage.antPoints.size() - 1;
+		final int sz = antInfoMessage.antPoints.size() - 1;
 		handleAntBackTrail(antInfoMessage.antPoints, sz);
 	}
 }

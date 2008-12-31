@@ -305,20 +305,22 @@ public class QRoutingNode extends Node {
 			System.out.println("TRACE:workerDwellTime " + type + " " + now
 					+ " " + 1e-9 * workerDwellTime);
 		}
-		final Message msg = new TaskCompletedMessage(message.taskId, workerDwellTime);
-		boolean ok = sendPort.send(message.source, msg);
+		if( !deadNodes.contains( message.source ) ){
+			final Message msg = new TaskCompletedMessage(message.taskId, workerDwellTime);
+			boolean ok = sendPort.send(message.source, msg);
 
-		if (!ok) {
-			// Could not send the result message. We're desperate.
-			// First simply try again.
-			ok = sendPort.send(message.source, msg);
 			if (!ok) {
-				// Unfortunately, that didn't work.
-				// TODO: think up another way to recover from failed result
-				// report.
-				Globals.log
-				.reportError("Failed to send task completed message to "
-						+ message.source);
+				// Could not send the result message. We're desperate.
+				// First simply try again.
+				ok = sendPort.send(message.source, msg);
+				if (!ok) {
+					// Unfortunately, that didn't work.
+					// TODO: think up another way to recover from failed result
+					// report.
+					Globals.log
+					.reportError("Failed to send task completed message to "
+							+ message.source);
+				}
 			}
 		}
 		doUpdateRecentMasters.set();
