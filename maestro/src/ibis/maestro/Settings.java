@@ -153,7 +153,7 @@ class Settings {
 	/** Don't take the time tasks spend the queues into account. */
 	static final boolean IGNORE_QUEUE_TIME = false;
 
-	/** If set, processors over their allowancee never get a new task,
+	/** If set, processors over their allowance never get a new task,
 	 * otherwise they can get one if they are significantly faster.
 	 */
 	static final boolean HARD_ALLOWANCES = true;
@@ -162,10 +162,10 @@ class Settings {
 	static final long ROOM_POLL_INTERVAL = 2L;
 
 	/** The number of tasks in the master queue before we start blocking. */
-	static final int MAESTRO_MASTER_ROOM = 10;
+	static final int MAESTRO_MASTER_ROOM = 20;
 
 	/** The minimal duration in ns of a running job before we consider
 	 * submitting it again.
 	 */
-	static final long LATE_JOB_DURATION = 100*Utils.MILLISECOND_IN_NANOSECONDS;
+	static final long LATE_JOB_DURATION = 200*Utils.MILLISECOND_IN_NANOSECONDS;
 }
