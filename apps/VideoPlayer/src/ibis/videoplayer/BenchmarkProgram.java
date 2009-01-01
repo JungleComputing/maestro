@@ -7,10 +7,12 @@ import ibis.maestro.JobList;
 import ibis.maestro.LabelTracker;
 import ibis.maestro.Node;
 import ibis.maestro.TaskExecutionTimeEstimator;
+import ibis.maestro.LabelTracker.Label;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Run some conversions on a directory full of images.
@@ -49,6 +51,15 @@ class BenchmarkProgram {
 				System.out
 				.println("I got all job results back; stopping test program");
 				node.setStopped();
+			}
+			final long returned = labelTracker.getReturnedLabels();
+			final long issued = labelTracker.getIssuedLabels();
+			if( (returned%500) == 0 ){
+				System.out.println( "Now " + returned + " of " + issued + " frames returned" );
+			}
+			if( (issued-returned)<20 ){
+				final Label[] l = labelTracker.listOutstandingLabels();
+				System.out.println( "Waiting for " + Arrays.deepToString(l) );
 			}
 		}
 
