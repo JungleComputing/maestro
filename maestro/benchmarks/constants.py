@@ -1,3 +1,4 @@
 jobsPerProcessor=2000
 learnJobsPerProcessor=200
-processorsForFaultTolerance=50
+terminationJobsPerProcessor=1000
+processorsForFaultTolerance=32

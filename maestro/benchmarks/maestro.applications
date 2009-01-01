@@ -16,7 +16,7 @@
 #default.main.class =
 #default.arguments =
 default.libs = ../lib,../log4j.properties
-default.jvm.options = -server,-Xmx1000M
+default.jvm.options = -server,-Xmx1200M,-XX:+HeapDumpOnOutOfMemoryError
 #default.input.files =
 #default.output.files =
 #default.system.properties =

@@ -1,7 +1,7 @@
 #
 
 #PLOTFILES=overhead.pdf fault-tolerance.pdf
-PLOTFILES=homogeneous.pdf disturbance.pdf learn-plain.pdf learn-slow.pdf fault-tolerance.pdf
+PLOTFILES=homogeneous.pdf disturbance.pdf learn-plain.pdf learn-slow.pdf # fault-tolerance.pdf
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
 
@@ -29,11 +29,16 @@ termination-%.logs: termination-%.experiment run-experiment $(DEPLOYFILES) $(VID
 	./run-experiment $*.experiment
 	rm -f settag-$*.sh
 
-%.result: %.logs
+termination-%.result: termination-%.logs average-termination-duration.py
+	python average-termination-duration.py $* $@ termination-$*.logs/out.*
+
+%.result: %.logs average-duration.py
 	python average-duration.py $* $@ $*.logs/out.*
 
 LEARNRANGE=4000 3000 2000 1500 1000 500 200 100
 #RANGE=80 72 64 52 40 32 28 20 16 12 8 4 2
+#RANGE=2 4 8 12 16 20 28 32 40 52 64 72 80
+#RANGE=2 4 8 12
 RANGE=2 4 8 12 16 20 28 32 40 52 64 72 80
 
 PLAIN_2000_POINTS=$(patsubst %,plain-%-2000.result,1 $(RANGE))
@@ -112,7 +117,7 @@ termination-slow-2000.table: $(TERMINATION_SLOW_2000_POINTS)
 %.pdf: %.eps
 	ps2pdf $*.eps > $@
 
-disturbance.eps: slow-2000.table no-2000.table disturbance-eps.gpl
+disturbance.eps: slow-2000.table no-2000.table disturbance-eps.gpl plain-2000.table
 	gnuplot disturbance-eps.gpl > $@
 
 homogeneous.eps: onetask-2000.table plain-2000.table homogeneous-eps.gpl

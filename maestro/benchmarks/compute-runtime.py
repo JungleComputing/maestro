@@ -27,7 +27,7 @@ if jobsPerProcessor<2:
 
 fiveMinutes = 5*60
 
-runtime = 2*jobsPerProcessor/3
+runtime = jobsPerProcessor
 if runtime<fiveMinutes:
     runtime = fiveMinutes
 print "RUNTIME=%d" % runtime

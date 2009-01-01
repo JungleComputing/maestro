@@ -4,8 +4,7 @@ import sys
 from string import Template
 import string
 import constants
-jobsPerProcessor=constants.jobsPerProcessor
-learnJobsPerProcessor=constants.learnJobsPerProcessor
+jobsPerProcessor=constants.terminationJobsPerProcessor
 
 def usage():
     print "Usage: " + sys.argv[0] + " <specification>"
@@ -30,7 +29,7 @@ args = {
 label=sys.argv[1]
 label = label.replace( '.', '-' )
 
-props='ibis.maestro.terminatorStartQuotum=0,ibis.maestro.terminatorInitialSleepTime=1000,ibis.maestro.terminatorSleepTime=100,ibis.maestro.terminatorNodeQuotum=' + frac
+props='ibis.maestro.terminatorStartQuotum=0,ibis.maestro.terminatorInitialSleepTime=2000,ibis.maestro.terminatorSleepTime=30000,ibis.maestro.terminatorNodeQuotum=' + frac
 
 if not elements[0] in args.keys():
     l = string.join( args.keys(), ',' )
@@ -43,7 +42,7 @@ $label.process.count = $p
 $label.cluster.name = VU
 $label.pool.name = $arg-pool
 $label.application.input.files = settag-termination-$arg.sh
-$label.application.output.files = $arg.logs
+$label.application.output.files = termination-$arg.logs
 $label.application.arguments = $args
 $label.application.system.properties = $props
 $label.resource.count = $p
