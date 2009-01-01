@@ -285,29 +285,16 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	 * Set this node to the stopped state. This does not mean that the node
 	 * stops immediately, but it does mean the master and worker try to wind
 	 * down the work.
-	 * 
-	 * @param clearQueues
-	 *            If <code>true</code> clear all work queues.
 	 */
-	public void setStopped(boolean clearQueues) {
+	public void setStopped() {
 		if (Settings.traceNodes) {
 			Globals.log.reportProgress("Set node to stopped state");
 		}
 		stopped.set();
-		if (clearQueues) {
-			masterQueue.clear();
-			workerQueue.clear();
-		}
+		masterQueue.clear();
+		runningJobs.clear();
+		workerQueue.clear();
 		kickAllWorkers();
-	}
-
-	/**
-	 * Set this node to the stopped state. This does not mean that the node
-	 * stops immediately, but it does mean the master and worker try to wind
-	 * down the work.
-	 */
-	public void setStopped() {
-		setStopped(false);
 	}
 
 	/**
@@ -363,14 +350,11 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 		if (maestro != null && theIbis.equals(maestro)) {
 			Globals.log.reportProgress("The maestro has left; stopping..");
 			setStopped();
-			kickAllWorkers();
 		} else if (theIbis.equals(Globals.localIbis.identifier())) {
 			// The registry has declared us dead. We might as well stop.
 			Globals.log
 			.reportProgress("This node has been declared dead, stopping..");
 			setStopped();
-			masterQueue.clear(); // Nobody is interested in any work we have.
-			kickAllWorkers();
 		}
 	}
 
@@ -493,7 +477,9 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	protected boolean sendJobResultMessage(JobInstanceIdentifier id,
 			Object result) {
 		if( deadNodes.contains(id.ibis) ){
-			return false;
+			// We say it has been delivered to avoid error recovery.
+			// Think of this as an optimization.
+			return true;
 		}
 		final Message msg = new JobResultMessage(id, result);
 		jobResultMessageCount.add();
@@ -732,7 +718,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 
 	private void restartLateJobs()
 	{
-		if( masterQueue.isEmpty() ){
+		if( masterQueue.isEmpty() && !stopped.isSet() ){
 			final TaskInstance job = runningJobs.getLateJob();
 			if( job != null ){
 				Globals.log.reportProgress( "Resubmitted late job " + job );
