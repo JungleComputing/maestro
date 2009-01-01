@@ -720,7 +720,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 
 	private void restartLateJobs()
 	{
-		if( masterQueue.isEmpty() && !stopped.isSet() ){
+		if( masterQueue.isEmpty() && workerQueue.isEmpty() && !stopped.isSet() ){
 			final TaskInstance job = runningJobs.getLateJob();
 			if( job != null ){
 				Globals.log.reportProgress( "Resubmitted late job " + job );
