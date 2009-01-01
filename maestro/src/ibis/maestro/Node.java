@@ -389,9 +389,9 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 		}
 	}
 
-	void addRunningJob(JobInstanceIdentifier id, Job job,
+	void addRunningJob(JobInstanceIdentifier id, TaskInstance taskInstance, Job job,
 			JobCompletionListener listener) {
-		runningJobs.add(new JobInstanceInfo(id, job, listener));
+		runningJobs.add(new JobInstanceInfo(id, taskInstance, job, listener));
 	}
 
 	/**
@@ -438,6 +438,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	protected void updateAdministration() {
 		drainCompletedJobList();
 		drainOutgoingMessageQueue();
+		restartLateJobs();
 		drainMasterQueue();
 		nodes.checkDeadlines(System.nanoTime());
 	}
@@ -729,6 +730,18 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 		}
 	}
 
+	private void restartLateJobs()
+	{
+		if( masterQueue.isEmpty() ){
+			final TaskInstance job = runningJobs.getLateJob();
+			if( job != null ){
+				Globals.log.reportProgress( "Resubmitted late job " + job );
+				masterQueue.add( job );
+			}
+		}
+
+	}
+
 	/** On a locked queue, try to send out as many task as we can. */
 	protected abstract void drainMasterQueue();
 
@@ -808,7 +821,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	{
 		while( true ){
 			synchronized( this ){
-				if( masterQueue.hasRoom( nodes.size() ) ){
+				if( masterQueue.hasRoom() ){
 					return;
 				}
 				try {

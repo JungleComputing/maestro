@@ -455,7 +455,7 @@ final class MasterQueue {
 		}
 	}
 
-	synchronized boolean hasRoom( int workers ) {
-		return queue.size()<Settings.MASTER_ROOM;
+	synchronized boolean hasRoom() {
+		return queue.size()<Settings.MAESTRO_MASTER_ROOM;
 	}
 }

@@ -1,12 +1,11 @@
-// File: $Id: $
-
 package ibis.maestro;
 
 class JobInstanceInfo {
 	final JobInstanceIdentifier identifier;
 	final Job job;
 	final JobCompletionListener listener;
-	final long startTime = System.nanoTime();
+	long startTime = System.nanoTime();
+	final TaskInstance taskInstance;
 
 	/**
 	 * Constructs an information class for the given job identifier.
@@ -18,9 +17,10 @@ class JobInstanceInfo {
 	 * @param listener
 	 *            The completion listener associated with the job.
 	 */
-	JobInstanceInfo(final JobInstanceIdentifier identifier, Job job,
+	JobInstanceInfo(final JobInstanceIdentifier identifier, TaskInstance taskInstance, Job job,
 			final JobCompletionListener listener) {
 		this.identifier = identifier;
+		this.taskInstance = taskInstance;
 		this.job = job;
 		this.listener = listener;
 	}

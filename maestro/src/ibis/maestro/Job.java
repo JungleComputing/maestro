@@ -95,7 +95,7 @@ public final class Job {
 			if (tasks[i] instanceof UnpredictableAtomicTask) {
 				unpredictable = true;
 			}
-			int newIndex = index + i;
+			final int newIndex = index + i;
 			taskTypes[i] = new TaskType(this.id, i, (tasks.length - 1) - i,
 					unpredictable, newIndex);
 			updateIndices[updateIndex++] = newIndex;
@@ -134,11 +134,11 @@ public final class Job {
 	 */
 	void submit(Node node, Object value, Serializable userId,
 			JobCompletionListener listener, ArrayList<AntPoint> antTrail) {
-		JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
-		node.addRunningJob(tii, this, listener);
-		TaskType type = taskTypes[0];
-		TaskInstance j = new TaskInstance(tii, type, value, antTrail);
-		node.submit(j);
+		final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
+		final TaskType type = taskTypes[0];
+		final TaskInstance taskInstance = new TaskInstance(tii, type, value, antTrail);
+		node.addRunningJob(tii, taskInstance, this, listener);
+		node.submit(taskInstance);
 	}
 
 	/**
@@ -162,8 +162,8 @@ public final class Job {
 	TaskType getPreviousTaskType(TaskType taskType) {
 		if (!id.equals(taskType.job)) {
 			Globals.log
-					.reportInternalError("getPreviousTaskType(): not my job: "
-							+ taskType.job);
+			.reportInternalError("getPreviousTaskType(): not my job: "
+					+ taskType.job);
 			return null;
 		}
 		if (taskType.taskNo > 0) {
