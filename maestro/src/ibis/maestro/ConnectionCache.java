@@ -25,20 +25,20 @@ class ConnectionCache {
 	long cachedSendMessage(IbisIdentifier ibis, Message message) {
 		long len = -1;
 		try {
-			SendPort port = cache.getSendPort(ibis);
+			final SendPort port = cache.getSendPort(ibis);
 			if (port == null) {
 				// We could not create a connection to this ibis.
-				Globals.log.reportError("Could not get send port for ibis "
+				Globals.log.reportInternalError("Could not get send port for ibis "
 						+ ibis);
 				node.setSuspect(ibis);
 				cache.closeSendPort(ibis);
 				return -1;
 			}
-			WriteMessage msg = port.newMessage();
+			final WriteMessage msg = port.newMessage();
 			msg.writeObject(message);
 			len = msg.finish();
-		} catch (IOException x) {
-			Globals.log.reportError("Could not get send port for ibis " + ibis
+		} catch (final IOException x) {
+			Globals.log.reportInternalError("Could not get send port for ibis " + ibis
 					+ ": " + x);
 			node.setSuspect(ibis);
 			cache.closeSendPort(ibis);
@@ -71,14 +71,14 @@ class ConnectionCache {
 			}
 			port.close();
 			return len;
-		} catch (IOException x) {
+		} catch (final IOException x) {
 			node.setSuspect(ibis);
 		} finally {
 			try {
 				if (port != null) {
 					port.close();
 				}
-			} catch (Throwable x) {
+			} catch (final Throwable x) {
 				// Nothing we can do.
 			}
 		}
@@ -111,15 +111,15 @@ class ConnectionCache {
 		long len = -1;
 		if (Settings.CACHE_CONNECTIONS) {
 			try {
-				SendPort port = cache.getExistingSendPort(ibis);
+				final SendPort port = cache.getExistingSendPort(ibis);
 				if (port == null) {
 					// No port in cache, don't try to send the message.
 					return -1;
 				}
-				WriteMessage msg = port.newMessage();
+				final WriteMessage msg = port.newMessage();
 				msg.writeObject(message);
 				len = msg.finish();
-			} catch (IOException x) {
+			} catch (final IOException x) {
 				node.setSuspect(ibis);
 				cache.closeSendPort(ibis);
 			}

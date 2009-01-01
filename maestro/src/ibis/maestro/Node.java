@@ -343,10 +343,6 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 		}
 		deadNodes.add(theIbis);
 		final ArrayList<TaskInstance> orphans = nodes.removeNode(theIbis);
-		for (final TaskInstance ti : orphans) {
-			ti.setOrphan();
-		}
-		masterQueue.add(orphans);
 		if (maestro != null && theIbis.equals(maestro)) {
 			Globals.log.reportProgress("The maestro has left; stopping..");
 			setStopped();
@@ -355,6 +351,12 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 			Globals.log
 			.reportProgress("This node has been declared dead, stopping..");
 			setStopped();
+		}
+		if( !stopped.isSet() ){
+			for (final TaskInstance ti : orphans) {
+				ti.setOrphan();
+			}
+			masterQueue.add(orphans);
 		}
 	}
 
