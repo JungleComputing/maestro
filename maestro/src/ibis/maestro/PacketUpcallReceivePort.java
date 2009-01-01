@@ -60,8 +60,7 @@ class PacketUpcallReceivePort implements MessageUpcall {
 			return;
 		}
 		data.arrivalMoment = System.nanoTime();
-		// FIXME: disable this one again.
-		msg.finish();
+		// msg.finish();
 		listener.messageReceived(data);
 	}
 

@@ -156,11 +156,13 @@ class Settings {
 	/** If set, processors over their allowancee never get a new task,
 	 * otherwise they can get one if they are significantly faster.
 	 */
-	static final boolean HARD_ALLOWANCES = false;
+	static final boolean HARD_ALLOWANCES = true;
 
 	/** Time in ms between polling attempts for free room in the master queue. */
 	static final long ROOM_POLL_INTERVAL = 2L;
 
 	/** The number of tasks per worker in the master queue before we start blocking. */
 	static final int ROOM_PER_WORKER = 10;
+
+        static final int MASTER_ROOM = 10;
 }
