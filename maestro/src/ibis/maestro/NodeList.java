@@ -32,10 +32,10 @@ final class NodeList {
 			Globals.log.reportProgress("remove node " + theIbis);
 		}
 		ArrayList<TaskInstance> orphans = null;
-		final NodeInfo wi = ibisToNodeMap.get(theIbis);
+		final NodeInfo node = ibisToNodeMap.get(theIbis);
 
-		if (wi != null) {
-			orphans = wi.setDead();
+		if (node != null) {
+			orphans = node.setDead();
 		}
 		return orphans;
 	}

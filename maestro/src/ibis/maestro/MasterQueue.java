@@ -5,7 +5,6 @@ import ibis.ipl.IbisIdentifier;
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 
 /**
  * A class representing the master work queue.
@@ -169,12 +168,20 @@ final class MasterQueue {
 		s.println();
 	}
 
+	/**
+	 * Submit a new task, belonging to the job with the given identifier, to the
+	 * queue.
+	 * 
+	 * @param task
+	 *            The task to submit.
+	 */
 	@SuppressWarnings("synthetic-access")
-	private void unsynchronizedAdd(TaskInstance task) {
+	protected synchronized void add(TaskInstance task) {
 		taskCount++;
-		final TaskType type = task.type;
 		final int pos = findInsertionPoint(queue, task);
 		queue.add(pos, task);
+
+		final TaskType type = task.type;
 		final TypeInfo info = queueTypes[type.index];
 		final int length = info.registerAdd();
 		if (Settings.traceQueuing) {
@@ -189,27 +196,16 @@ final class MasterQueue {
 	}
 
 	/**
-	 * Submit a new task, belonging to the job with the given identifier, to the
-	 * queue.
-	 * 
-	 * @param task
-	 *            The task to submit.
-	 */
-	protected synchronized void add(TaskInstance task) {
-		unsynchronizedAdd(task);
-	}
-
-	/**
 	 * Adds all the task instances in the given list to the queue. The list may
 	 * be <code>null</code>.
 	 * 
 	 * @param l
 	 *            The list of task instances to add.
 	 */
-	protected synchronized void add(List<TaskInstance> l) {
-		if (l != null) {
-			for (final TaskInstance ti : l) {
-				unsynchronizedAdd(ti);
+	void add(ArrayList<TaskInstance> l) {
+		if( l != null ){
+			for (final TaskInstance task : l) {
+				add(task);
 			}
 		}
 	}
@@ -456,33 +452,6 @@ final class MasterQueue {
 	synchronized void removeDuplicates(TaskInstance task) {
 		while (queue.remove(task)) {
 			// Nothing.
-		}
-	}
-
-	void add(ArrayList<TaskInstance> l) {
-		for (final TaskInstance task : l) {
-			add(task);
-		}
-	}
-
-	/**
-	 * Only return when the queue is of reasonable size, defined here as having
-	 * no more than 25 tasks per available processor.
-	 */
-	void waitForReasonableQueueSize(int numberOfNodes) {
-		while (true) {
-			synchronized (this) {
-				final int sz = queue.size();
-
-				if (sz < numberOfNodes * 25) {
-					return;
-				}
-				try {
-					this.wait();
-				} catch (final InterruptedException e) {
-					// Ignore
-				}
-			}
 		}
 	}
 

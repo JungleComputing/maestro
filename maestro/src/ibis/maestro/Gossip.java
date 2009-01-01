@@ -51,8 +51,8 @@ class Gossip {
 	}
 
 	synchronized NodePerformanceInfo[] getCopy() {
-		final NodePerformanceInfo content[] = new NodePerformanceInfo[gossipList
-		                                                              .size()];
+		final int size = gossipList.size();
+		final NodePerformanceInfo content[] = new NodePerformanceInfo[size];
 		for (int i = 0; i < content.length; i++) {
 			content[i] = gossipList.get(i).getDeepCopy();
 		}

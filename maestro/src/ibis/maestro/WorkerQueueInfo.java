@@ -30,7 +30,7 @@ class WorkerQueueInfo implements Serializable {
 	 */
 	WorkerQueueInfo(int queueLength, int queueLengthSequenceNumber,
 			long dequeueTimePerTask, long executionTime) {
-		this.setQueueLength(queueLength);
+		this.queueLength = queueLength;
 		this.queueLengthSequenceNumber = queueLengthSequenceNumber;
 		this.dequeueTimePerTask = dequeueTimePerTask;
 		this.executionTime = executionTime;
@@ -85,7 +85,7 @@ class WorkerQueueInfo implements Serializable {
 	}
 
 	synchronized void setQueueLength(int newQueueLength) {
-		if( this.queueLength != newQueueLength ){
+		if( this.queueLength != newQueueLength){
 			this.queueLength = newQueueLength;
 			queueLengthSequenceNumber++;
 		}
@@ -109,4 +109,5 @@ class WorkerQueueInfo implements Serializable {
 	int getQueueLengthSequenceNumber() {
 		return queueLengthSequenceNumber;
 	}
+
 }
