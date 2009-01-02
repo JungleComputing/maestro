@@ -47,7 +47,11 @@ class BenchmarkProgram {
 				System.exit(1);
 			}
 			labelTracker.returnLabel((LabelTracker.Label) id);
-			if (sentFinal && labelTracker.allAreReturned()) {
+			boolean finished;
+			synchronized( this ){
+				finished = sentFinal && labelTracker.allAreReturned();
+			}
+			if (finished) {
 				System.out
 				.println("I got all job results back; stopping test program");
 				node.setStopped();
@@ -68,8 +72,12 @@ class BenchmarkProgram {
 		}
 
 		void setFinished(Node node) {
-			sentFinal = true;
-			if( labelTracker.allAreReturned() ){
+			boolean finished;
+			synchronized( this ){
+				sentFinal = true;
+				finished = labelTracker.allAreReturned();
+			}
+			if( finished ){
 				System.out
 				.println("I got all job results back; stopping test program");
 				node.setStopped();
