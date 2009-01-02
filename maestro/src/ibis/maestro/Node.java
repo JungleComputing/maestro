@@ -302,10 +302,10 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	 */
 	public void waitToTerminate() {
 		if (Settings.traceNodes) {
-			Globals.log.reportProgress("Waiting for node to terminate");
+			Globals.log.reportProgress("Waiting for node to stop");
 		}
 
-		waitForWorkThreadsToTerminate();
+		stopped.waitUntilSet();
 		if (Settings.traceNodes) {
 			Globals.log.reportProgress("Node has terminated");
 		}
@@ -706,12 +706,14 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	}
 
 	protected void waitForWorkThreadsToTerminate() {
-		for (final WorkThread t : workThreads) {
-			if (Settings.traceNodes) {
-				Globals.log.reportProgress("Waiting for termination of thread "
-						+ t);
+		if( isMaestro ){
+			for (final WorkThread t : workThreads) {
+				if (Settings.traceNodes) {
+					Globals.log.reportProgress("Waiting for termination of thread "
+							+ t);
+				}
+				Utils.waitToTerminate(t);
 			}
-			Utils.waitToTerminate(t);
 		}
 		synchronized (this) {
 			stopTime = System.nanoTime();

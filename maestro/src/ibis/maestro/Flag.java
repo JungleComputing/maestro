@@ -12,16 +12,20 @@ class Flag {
 		this.flag = flag;
 	}
 
-	synchronized void set() {
-		flag = true;
+	void set() {
+		set( true );
 	}
 
-	synchronized void reset() {
-		flag = false;
+	void reset() {
+		set( false );
 	}
 
 	synchronized void set(boolean val) {
+		final boolean changed = flag == val;
 		flag = val;
+		if( changed ){
+			this.notifyAll();
+		}
 	}
 
 	synchronized boolean isSet() {
@@ -29,8 +33,27 @@ class Flag {
 	}
 
 	synchronized boolean getAndReset() {
-		boolean res = flag;
+		final boolean res = flag;
 		flag = false;
+		if( res ){
+			this.notifyAll();
+		}
 		return res;
+	}
+
+	void waitUntilSet() {
+		while( true ){
+			synchronized( this ){
+				if( flag ){
+					return;
+				}
+
+				try {
+					this.wait();
+				} catch (final InterruptedException e) {
+					// Ignore.
+				}
+			}
+		}
 	}
 }

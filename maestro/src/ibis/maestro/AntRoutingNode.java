@@ -73,8 +73,8 @@ public class AntRoutingNode extends Node {
 
 	@Override
 	protected void waitForWorkThreadsToTerminate() {
-		gossiper.setStopped();
 		super.waitForWorkThreadsToTerminate();
+		gossiper.setStopped();
 	}
 
 	/**
