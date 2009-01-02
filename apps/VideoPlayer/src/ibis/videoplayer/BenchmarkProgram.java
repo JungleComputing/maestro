@@ -67,8 +67,13 @@ class BenchmarkProgram {
 			return labelTracker.nextLabel();
 		}
 
-		void setFinished() {
+		void setFinished(Node node) {
 			sentFinal = true;
+			if( labelTracker.allAreReturned() ){
+				System.out
+				.println("I got all job results back; stopping test program");
+				node.setStopped();
+			}
 		}
 	}
 
@@ -658,7 +663,7 @@ class BenchmarkProgram {
 				final Serializable label = listener.getLabel();
 				node.submit(frame, label, true, listener, convertJob);
 			}
-			listener.setFinished();
+			listener.setFinished(node);
 			System.out.println("Jobs submitted");
 		}
 		node.waitToTerminate();
