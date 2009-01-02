@@ -21,7 +21,7 @@ class Flag {
 	}
 
 	synchronized void set(boolean val) {
-		final boolean changed = flag == val;
+		final boolean changed = flag != val;
 		flag = val;
 		if( changed ){
 			this.notifyAll();
