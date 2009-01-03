@@ -432,7 +432,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 	/** Print some statistics about the entire worker run. */
 	synchronized void printStatistics(PrintStream s) {
 		if (stopTime < startTime) {
-			Globals.log.reportError("Node didn't stop yet");
+			Globals.log.reportError("printStatistics(): Node didn't stop yet");
 			stopTime = System.nanoTime();
 		}
 		s.printf("# work threads  = %5d\n", workThreads.length);
