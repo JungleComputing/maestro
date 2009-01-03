@@ -8,7 +8,9 @@ VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
 DEPLOYFILES=das3.grid das3.script maestro.applications ../lib/maestro-0.0.1.jar
 
 TABLES=slow-2000.table no-2000.table onetask-2000.table plain-2000.table \
-  learn-plain-4.table learn-plain-16.table learn-plain-64.table learn-slow-4.table learn-slow-16.table learn-slow-64.table
+  learn-plain-4.table learn-plain-16.table learn-plain-64.table \
+  learn-slow-4.table learn-slow-16.table learn-slow-64.table \
+  termination-plain-2000.table termination-slow-2000.table
 
 termination-%.experiment: build-termination-experiment.py
 	python build-termination-experiment.py $* > $@
@@ -46,6 +48,7 @@ PLAIN_2000_POINTS=$(patsubst %,plain-%-2000.result,1 $(RANGE))
 ONETASK_2000_POINTS=$(patsubst %,onetask-%-2000.result,1 $(RANGE))
 NO_2000_POINTS=$(patsubst %,no-%-2000.result,$(RANGE))
 SLOW_2000_POINTS=$(patsubst %,slow-%-2000.result,$(RANGE))
+ONESLOW_2000_POINTS=$(patsubst %,oneslow-%-2000.result,$(RANGE))
 PLAIN_200_POINTS=$(patsubst %,plain-%-200.result,1 $(RANGE))
 ONETASK_200_POINTS=$(patsubst %,onetask-%-200.result,1 $(RANGE))
 NO_200_POINTS=$(patsubst %,no-%-200.result,$(RANGE))
@@ -63,7 +66,7 @@ TERMINATION_FRACTIONS=0.0 0.2 0.4 0.6 0.8
 TERMINATION_PLAIN_2000_POINTS=${patsubst %,termination-plain-%.result,$(TERMINATION_FRACTIONS)}
 TERMINATION_SLOW_2000_POINTS=${patsubst %,termination-slow-%.result,$(TERMINATION_FRACTIONS)}
 
-POINTS=$(PLAIN_2000_POINTS) $(ONETASK_2000_POINTS) $(NO_2000_POINTS) $(SLOW_2000_POINTS) $(PLAIN_200_POINTS) $(ONETASK_200_POINTS) $(NO_200_POINTS) $(SLOW_200_POINTS) $(TERMINATION_PLAIN_2000_POINTS) $(TERMINATION_SLOW_2000_POINTS)
+POINTS=$(PLAIN_2000_POINTS) $(ONETASK_2000_POINTS) $(NO_2000_POINTS) $(SLOW_2000_POINTS) $(ONESLOW_2000_POINTS) $(PLAIN_200_POINTS) $(ONETASK_200_POINTS) $(NO_200_POINTS) $(SLOW_200_POINTS) $(TERMINATION_PLAIN_2000_POINTS) $(TERMINATION_SLOW_2000_POINTS)
 LOGFILES=$(POINTS:.result=.logs)
 
 .PRECIOUS: $(LOGFILES)
@@ -106,6 +109,9 @@ onetask-2000.table: $(ONETASK_2000_POINTS)
 no-2000.table: $(NO_2000_POINTS)
 	cat $(NO_2000_POINTS) > $@
 
+oneslow-2000.table: $(ONESLOW_2000_POINTS)
+	cat $(ONESLOW_2000_POINTS) > $@
+
 slow-2000.table: $(SLOW_2000_POINTS)
 	cat $(SLOW_2000_POINTS) > $@
 
@@ -118,7 +124,7 @@ termination-slow-2000.table: $(TERMINATION_SLOW_2000_POINTS)
 %.pdf: %.eps
 	ps2pdf $*.eps > $@
 
-disturbance.eps: slow-2000.table no-2000.table disturbance-eps.gpl plain-2000.table
+disturbance.eps: oneslow-2000.table slow-2000.table no-2000.table disturbance-eps.gpl plain-2000.table
 	gnuplot disturbance-eps.gpl > $@
 
 homogeneous.eps: onetask-2000.table plain-2000.table homogeneous-eps.gpl

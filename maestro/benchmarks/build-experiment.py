@@ -34,6 +34,7 @@ args = {
     'onetask':['-onetask',jobs],
     'no':['-oddnoscale','-evennosharpen',jobs],
     'slow':['-oddslowscale','-evenslowsharpen',jobs],
+    'oneslow':['-onetask','-oddslowscale','-evenslowsharpen',jobs],
 }
 
 if not elements[0] in args.keys():

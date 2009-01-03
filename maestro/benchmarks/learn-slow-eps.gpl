@@ -2,7 +2,7 @@ set size 0.7
 set key left
 set term postscript eps
 set data style linespoints
-set xlabel "Number of frames per processor"
+set xlabel "Number of frames per node"
 set ylabel "Execution time per frame"
 set yrange [0:*]
 plot \
