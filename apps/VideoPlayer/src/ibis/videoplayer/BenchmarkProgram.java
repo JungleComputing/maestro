@@ -91,7 +91,7 @@ class BenchmarkProgram {
 	}
 
 	// Do all the image processing steps in one go. Used as baseline.
-	private static final class ProcessFrameTask implements AtomicTask {
+	private static final class ProcessFrameTask implements AtomicTask, TaskExecutionTimeEstimator {
 		private static final long serialVersionUID = -7976035811697720295L;
 		final boolean slowScale;
 		final boolean slowSharpen;
@@ -134,11 +134,9 @@ class BenchmarkProgram {
 				img.scaleUp(2);
 				img.scaleUp(2);
 				img.scaleUp(2);
-				img.scaleUp(2);
 			}
 			img = img.scaleUp(2);
 			if (slowSharpen) {
-				img = img.sharpen();
 				img = img.sharpen();
 				img = img.sharpen();
 				img = img.sharpen();
@@ -170,6 +168,20 @@ class BenchmarkProgram {
 			return true;
 		}
 
+
+		/**
+		 * Estimates the time to execute this task. (Overrides method in
+		 * superclass.) We simply time the actual execution of frame generation,
+		 * so this is as accurate as it gets.
+		 * 
+		 * @return The estimated time in ns to execute this task.
+		 */
+		@Override
+		public long estimateTaskExecutionTime() {
+			final long startTime = System.nanoTime();
+			run(0, null);
+			return System.nanoTime() - startTime;
+		}
 	}
 
 	private static final class GenerateFrameTask implements AtomicTask,
@@ -274,7 +286,6 @@ class BenchmarkProgram {
 				img.scaleUp(factor);
 				img.scaleUp(factor);
 				img.scaleUp(factor);
-				img.scaleUp(factor);
 			}
 			final Object res = img.scaleUp(factor);
 			return res;
@@ -352,7 +363,6 @@ class BenchmarkProgram {
 				node.reportInternalError( "Sharpen task invoked, although not allowed" );
 			}
 			if( slow ) {
-				img = img.sharpen();
 				img = img.sharpen();
 				img = img.sharpen();
 				img = img.sharpen();
