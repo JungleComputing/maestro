@@ -1,13 +1,14 @@
 #
 
 #PLOTFILES=overhead.pdf fault-tolerance.pdf
-PLOTFILES=homogeneous.pdf disturbance.pdf learn-plain.pdf learn-slow.pdf # fault-tolerance.pdf
+PLOTFILES=homogeneous.pdf disturbance.pdf learn-plain.pdf learn-slow.pdf fault-tolerance.pdf
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
 
 DEPLOYFILES=das3.grid das3.script maestro.applications ../lib/maestro-0.0.1.jar
 
-TABLES=slow-2000.table no-2000.table onetask-2000.table plain-2000.table learn-plain-4.table learn-plain-16.table learn-plain-64.table learn-slow-4.table learn-slow-16.table learn-slow-64.table
+TABLES=slow-2000.table no-2000.table onetask-2000.table plain-2000.table \
+  learn-plain-4.table learn-plain-16.table learn-plain-64.table learn-slow-4.table learn-slow-16.table learn-slow-64.table
 
 termination-%.experiment: build-termination-experiment.py
 	python build-termination-experiment.py $* > $@
@@ -35,11 +36,11 @@ termination-%.result: termination-%.logs average-termination-duration.py
 %.result: %.logs average-duration.py
 	python average-duration.py $* $@ $*.logs/out.*
 
-LEARNRANGE=4000 3000 2000 1500 1000 500 200 100
+LEARNRANGE=4000 3000 2000 1500 1000 500 350 200 150 100
 #RANGE=80 72 64 52 40 32 28 20 16 12 8 4 2
 #RANGE=2 4 8 12 16 20 28 32 40 52 64 72 80
 #RANGE=2 4 8 12
-RANGE=2 4 8 12 16 20 28 32 40 52 64 72 80
+RANGE=2 4 6 8 12 16 20 28 32 40 52 64 72 80
 
 PLAIN_2000_POINTS=$(patsubst %,plain-%-2000.result,1 $(RANGE))
 ONETASK_2000_POINTS=$(patsubst %,onetask-%-2000.result,1 $(RANGE))
@@ -123,10 +124,10 @@ disturbance.eps: slow-2000.table no-2000.table disturbance-eps.gpl plain-2000.ta
 homogeneous.eps: onetask-2000.table plain-2000.table homogeneous-eps.gpl
 	gnuplot homogeneous-eps.gpl > $@
 
-learn-plain.eps: learn-plain-4.table learn-plain-16.table learn-plain-64.table  learn-plain-eps.gpl
+learn-plain.eps: learn-plain-64.table learn-plain-16.table learn-plain-4.table  learn-plain-eps.gpl
 	gnuplot learn-plain-eps.gpl > $@
 
-learn-slow.eps: learn-slow-4.table learn-slow-16.table learn-slow-64.table  learn-slow-eps.gpl
+learn-slow.eps: learn-slow-64.table learn-slow-16.table learn-slow-4.table  learn-slow-eps.gpl
 	gnuplot learn-slow-eps.gpl > $@
 
 fault-tolerance.eps: termination-plain-2000.table termination-slow-2000.table fault-tolerance-eps.gpl

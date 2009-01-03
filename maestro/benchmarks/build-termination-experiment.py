@@ -29,7 +29,7 @@ args = {
 label=sys.argv[1]
 label = label.replace( '.', '-' )
 
-props='ibis.maestro.terminatorStartQuotum=0,ibis.maestro.terminatorInitialSleepTime=2000,ibis.maestro.terminatorSleepTime=30000,ibis.maestro.terminatorNodeQuotum=' + frac
+props='ibis.maestro.terminatorStartQuotum=0,ibis.maestro.terminatorInitialSleepTime=2000,ibis.maestro.terminatorSleepTime=2000,ibis.maestro.terminatorNodeQuotum=' + frac
 
 if not elements[0] in args.keys():
     l = string.join( args.keys(), ',' )
