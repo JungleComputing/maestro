@@ -136,7 +136,10 @@ learn-plain.eps: learn-plain-64.table learn-plain-16.table learn-plain-4.table  
 learn-slow.eps: learn-slow-64.table learn-slow-16.table learn-slow-4.table  learn-slow-eps.gpl
 	gnuplot learn-slow-eps.gpl > $@
 
-fault-tolerance.eps: termination-plain-2000.table termination-slow-2000.table fault-tolerance-eps.gpl
+termination-ideal.table: build-ideal-termination-table.py
+	python build-ideal-termination-table.py `cat termination-plain-0.0.result` $(TERMINATION_FRACTIONS) > $@
+
+fault-tolerance.eps: termination-ideal.table termination-plain-2000.table termination-slow-2000.table fault-tolerance-eps.gpl
 	gnuplot fault-tolerance-eps.gpl > $@
 
 clean:

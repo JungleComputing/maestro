@@ -45,7 +45,8 @@ if count<1:
 killFraction = float( elements[1] )
 frames = constants.terminationJobsPerProcessor
 duration = 1e-9*(sum/count)
-timePerFrame = (1-killFraction)*(duration/frames)
+#timePerFrame = (1-killFraction)*(duration/frames)
+timePerFrame = (duration/frames)
 fhnd = open( output_file, 'w' )
 fhnd.write( "%s %f %f\n" % (elements[1], duration, timePerFrame ) )
 fhnd.close()
