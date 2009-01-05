@@ -215,7 +215,7 @@ final class MasterQueue {
 	}
 
 	@SuppressWarnings("synthetic-access")
-	void printStatistics(PrintStream s) {
+	synchronized void printStatistics(PrintStream s) {
 		for (final TypeInfo t : queueTypes) {
 			if (t != null) {
 				t.printStatistics(s);
