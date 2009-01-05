@@ -27,7 +27,7 @@ def getTaskCounts( fnm ):
         if taskLabel != None:
             count = extractTaskCount( line )
             res[taskLabel] = count
-        if startsWith( line, workerString ):
+        if startsWith( line, workerString ) and line[-2] == ':':
             taskLabel = extractTaskLabel( line )
         else:
             taskLabel = None

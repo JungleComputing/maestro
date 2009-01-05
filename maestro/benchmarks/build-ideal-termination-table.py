@@ -11,7 +11,7 @@ if len(sys.argv) < 5:
     usage()
     sys.exit( 1 )
 
-base = float( sys.argv[3] )
+base = float( sys.argv[2] )
 
 for f in sys.argv[4:]:
     frac = float( f )

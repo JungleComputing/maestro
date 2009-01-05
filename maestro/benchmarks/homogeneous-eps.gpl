@@ -1,4 +1,4 @@
-set size 0.7
+set size 0.8
 set key left
 set term postscript eps
 set data style linespoints

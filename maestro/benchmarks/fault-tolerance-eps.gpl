@@ -1,10 +1,10 @@
-set size 0.7
+set size 0.8
 set key left
 set term postscript eps
 set data style linespoints
 set xlabel "Fraction of faulted nodes"
-set ylabel "Execution time per frame"
+set ylabel "Execution time"
 plot \
- 'termination-plain-2000.table' using 1:3 title 'Homogeneous',  \
- 'termination-slow-2000.table' using 1:3 title 'Heterogeneous', \
+ 'termination-plain-2000.table' using 1:2 title 'Homogeneous',  \
+ 'termination-slow-2000.table' using 1:2 title 'Heterogeneous', \
  'termination-ideal.table' using 1:2 title 'Ideal'

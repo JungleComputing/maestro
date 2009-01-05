@@ -1,5 +1,5 @@
-set size 0.7
-set key left
+set size 0.8
+set key bottom right
 set term postscript eps
 set data style linespoints
 set xlabel "Number of nodes"

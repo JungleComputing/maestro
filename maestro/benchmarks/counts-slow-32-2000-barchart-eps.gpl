@@ -1,14 +1,11 @@
-set size 0.7
-set key right
+set size 0.8
+set key bottom right
 set term postscript enhanced color eps
 set xlabel "Node"
 set ylabel "# of frames"
-set style line 1 lw 0 lc rgb "#000080"
-set style line 2 lw 0 lc rgb "#C0C0C0"
 unset xtics
 unset ytics
 set boxwidth 0.75 absolute
-#set style fill solid border -1
 set style fill solid border -1
 set style histogram rowstacked
 set style data histograms
