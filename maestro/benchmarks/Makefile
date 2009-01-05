@@ -35,10 +35,20 @@ termination-%.logs: termination-%.experiment run-experiment $(DEPLOYFILES) $(VID
 termination-%.result: termination-%.logs average-termination-duration.py
 	python average-termination-duration.py $* $@ termination-$*.logs/out.*
 
+%.counts: %.logs average-duration.py
+	python extract-task-counts.py $@ $*.logs/out.*
+
 %.result: %.logs average-duration.py
 	python average-duration.py $* $@ $*.logs/out.*
 
-LEARNRANGE=4000 3000 2000 1500 1000 500 350 200 150 100
+slow-32-2000-counts.eps: slow-32-2000.counts counts-slow-32-2000-barchart-eps.gpl
+	gnuplot counts-slow-32-2000-barchart-eps.gpl > $@
+
+plain-32-2000-counts.eps: plain-32-2000.counts counts-slow-32-2000-barchart-eps.gpl
+	gnuplot counts-plain-32-2000-barchart-eps.gpl > $@
+
+#LEARNRANGE=4000 3000 2000 1500 1000 500 350 200 150 100
+LEARNRANGE=3000 2000 1500 1000 500 350 200 150 100
 #RANGE=80 72 64 52 40 32 28 20 16 12 8 4 2
 #RANGE=2 4 8 12 16 20 28 32 40 52 64 72 80
 #RANGE=2 4 8 12
@@ -72,8 +82,8 @@ LOGFILES=$(POINTS:.result=.logs)
 .PRECIOUS: $(LOGFILES)
 
 
-PRECIOUSJUNK=*.logs *.result $(PLOTFILES) plain-2000.table one.table slow-2000.table no-2000.table
-JUNK=*.experiment
+PRECIOUSJUNK=*.logs $(PLOTFILES) plain-2000.table one.table slow-2000.table no-2000.table
+JUNK=*.experiment *.result *.counts
 
 all: $(PLOTFILES)
 
@@ -124,7 +134,7 @@ termination-slow-2000.table: $(TERMINATION_SLOW_2000_POINTS)
 %.pdf: %.eps
 	ps2pdf $*.eps > $@
 
-disturbance.eps: oneslow-2000.table slow-2000.table no-2000.table disturbance-eps.gpl plain-2000.table
+disturbance.eps: slow-2000.table no-2000.table disturbance-eps.gpl plain-2000.table oneslow-2000.table
 	gnuplot disturbance-eps.gpl > $@
 
 homogeneous.eps: onetask-2000.table plain-2000.table homogeneous-eps.gpl
@@ -136,7 +146,7 @@ learn-plain.eps: learn-plain-64.table learn-plain-16.table learn-plain-4.table  
 learn-slow.eps: learn-slow-64.table learn-slow-16.table learn-slow-4.table  learn-slow-eps.gpl
 	gnuplot learn-slow-eps.gpl > $@
 
-termination-ideal.table: build-ideal-termination-table.py
+termination-ideal.table: build-ideal-termination-table.py termination-plain-0.0.result
 	python build-ideal-termination-table.py `cat termination-plain-0.0.result` $(TERMINATION_FRACTIONS) > $@
 
 fault-tolerance.eps: termination-ideal.table termination-plain-2000.table termination-slow-2000.table fault-tolerance-eps.gpl

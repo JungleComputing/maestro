@@ -8,5 +8,5 @@ set yrange [0:*]
 plot \
  'plain-2000.table' using 1:4 title 'Homogeneous',  \
  'no-2000.table' using 1:4 title 'Disabled tasks',  \
- 'slow-2000.table' using 1:4 title 'Slower tasks' \
+ 'slow-2000.table' using 1:4 title 'Slower tasks', \
  'oneslow-2000.table' using 1:4 title 'One slow task'
