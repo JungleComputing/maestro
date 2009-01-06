@@ -125,18 +125,12 @@ termination-plain-2000.table: $(TERMINATION_PLAIN_2000_POINTS)
 termination-slow-2000.table: $(TERMINATION_SLOW_2000_POINTS)
 	cat $(TERMINATION_SLOW_2000_POINTS) > $@
 
-slow-32-2000-counts.eps: slow-32-2000.counts counts-slow-32-2000-barchart-eps.gpl
-	gnuplot counts-slow-32-2000-barchart-eps.gpl > $@
-
 %-counts.eps: %.counts counts-barchart-eps.gpl
 	rm -rf $*-tmp
 	mkdir $*-tmp
 	cp $*.counts $*-tmp/data.counts
 	cd $*-tmp && gnuplot ../counts-barchart-eps.gpl > ../$@
 	rm -rf $*-tmp
-
-plain-32-2000-counts.eps: plain-32-2000.counts counts-slow-32-2000-barchart-eps.gpl
-	gnuplot counts-plain-32-2000-barchart-eps.gpl > $@
 
 %.pdf: %.eps
 	ps2pdf $*.eps > $@

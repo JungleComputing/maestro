@@ -1,16 +1,17 @@
-set size 0.8
-set key left
+set size 1.3
+set key reverse Right outside
 set term postscript enhanced color eps
-set xlabel "Node"
-set ylabel "# of frames"
+#set xlabel "Node"
+set ylabel "Number of frames"
 unset xtics
-unset ytics
-set boxwidth 0.75 absolute
-set style fill solid border -1
-set style histogram rowstacked
+#unset ytics
+set boxwidth 0.85 absolute
+set style fill solid border -2
 set style data histograms
+#set style histogram rowstacked
+set style histogram columnstacked
 plot \
- 'data.counts' using 2 title "Generate", \
+ 'data.counts' using 2 title "Generate" , \
  'data.counts' using 3 title "Scale" , \
  '' using 4 title "Sharpen" , \
  '' using 5 title "Compress", \
