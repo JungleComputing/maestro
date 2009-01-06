@@ -139,8 +139,9 @@ class NodePerformanceInfo implements Serializable {
 			}
 		}
 		final long transmissionTime = localNodeInfo.getTransmissionTime(type);
-		final int waitingTasks = Math.max( 0, (1+queueInfo.getQueueLength()+currentTasks)-numberOfProcessors );
-		long queueTime = waitingTasks * queueInfo.getDequeueTimePerTask();
+		//final int waitingTasks = Math.max( 0, (1+queueInfo.getQueueLength()+currentTasks)-numberOfProcessors );
+		//long queueTime = waitingTasks * queueInfo.getDequeueTimePerTask();
+		final long queueTime = queueInfo.getQueueTime();
 		final long total = Utils.safeAdd(transmissionTime,
 				queueTime,
 				queueInfo.getExecutionTime(), completionInterval,
@@ -178,7 +179,7 @@ class NodePerformanceInfo implements Serializable {
 		} else {
 			nextCompletionInterval = 0L;
 		}
-		return Utils.safeAdd((1 + info.getQueueLength()) * info.getDequeueTimePerTask(),
+		return Utils.safeAdd(info.getQueueTime(),
 				info.getExecutionTime(), nextCompletionInterval);
 	}
 
@@ -233,11 +234,11 @@ class NodePerformanceInfo implements Serializable {
 		}
 	}
 
-	void setQueueTimePerTask(TaskType type, long queueTimePerTask,
-			int queueLength) {
+	void setQueueTime(TaskType type,
+			int queueLength, long queueTime) {
 		final WorkerQueueInfo info = workerQueueInfo[type.index];
 		if (info != null) {
-			info.setQueueTimePerTask(queueTimePerTask, queueLength);
+			info.setQueueTime(queueLength, queueTime);
 			timeStamp = System.nanoTime();
 		}
 	}

@@ -284,10 +284,10 @@ class Gossip {
 		localPerformanceInfo.setComputeTime(type, t);
 	}
 
-	void setQueueTimePerTask(TaskType type, long queueTimePerTask,
-			int queueLength) {
-		localPerformanceInfo.setQueueTimePerTask(type, queueTimePerTask,
-				queueLength);
+	void setQueueTime(TaskType type,
+			int queueLength, long queueTime) {
+		localPerformanceInfo.setQueueTime(type,
+				queueLength,queueTime);
 	}
 
 	void setQueueLength(TaskType type, int queueLength) {

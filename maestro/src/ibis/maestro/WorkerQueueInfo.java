@@ -12,7 +12,7 @@ class WorkerQueueInfo implements Serializable {
 
 	private int queueLength;
 	private int queueLengthSequenceNumber;
-	private long dequeueTimePerTask;
+	private long queueTime;
 	private long executionTime;
 
 	/**
@@ -28,11 +28,11 @@ class WorkerQueueInfo implements Serializable {
 	 * @param executionTime
 	 *            The execution time of a task.
 	 */
-	WorkerQueueInfo(int queueLength, int queueLengthSequenceNumber,
-			long dequeueTimePerTask, long executionTime) {
+	WorkerQueueInfo(int queueLength, int queueLengthSequenceNumber
+			, long queueTime, long executionTime) {
 		this.queueLength = queueLength;
 		this.queueLengthSequenceNumber = queueLengthSequenceNumber;
-		this.dequeueTimePerTask = dequeueTimePerTask;
+		this.queueTime = queueTime;
 		this.executionTime = executionTime;
 	}
 
@@ -44,14 +44,14 @@ class WorkerQueueInfo implements Serializable {
 	 */
 	@Override
 	public String toString() {
-		return "(ql=" + getQueueLength() + ",dq/t="
-		+ Utils.formatNanoseconds(getDequeueTimePerTask()) + ",compute="
+		return "(ql=" + getQueueLength() + ",qt="
+		+ Utils.formatNanoseconds(getQueueTime()) + ",compute="
 		+ Utils.formatNanoseconds(getExecutionTime()) + ")";
 	}
 
 	String format() {
 		return String.format("%3d %9s %9s", getQueueLength(), Utils
-				.formatNanoseconds(getDequeueTimePerTask()), Utils
+				.formatNanoseconds(getQueueTime()), Utils
 				.formatNanoseconds(getExecutionTime()));
 	}
 
@@ -75,9 +75,9 @@ class WorkerQueueInfo implements Serializable {
 		this.executionTime = t;
 	}
 
-	synchronized void setQueueTimePerTask(long queueTimePerTask,
-			int newQueueLength) {
-		this.dequeueTimePerTask = queueTimePerTask;
+	synchronized void setQueueTime(
+			int newQueueLength, long queueTime) {
+		this.queueTime = queueTime;
 		if( this.queueLength != newQueueLength ){
 			this.queueLength = newQueueLength;
 			queueLengthSequenceNumber++;
@@ -99,11 +99,8 @@ class WorkerQueueInfo implements Serializable {
 		return queueLength;
 	}
 
-	long getDequeueTimePerTask() {
-		if( Settings.IGNORE_QUEUE_TIME ){
-			return 0L;
-		}
-		return dequeueTimePerTask;
+	long getQueueTime(){
+		return queueTime;
 	}
 
 	int getQueueLengthSequenceNumber() {
