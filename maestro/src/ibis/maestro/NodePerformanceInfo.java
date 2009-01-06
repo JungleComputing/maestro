@@ -140,8 +140,9 @@ class NodePerformanceInfo implements Serializable {
 		}
 		final long transmissionTime = localNodeInfo.getTransmissionTime(type);
 		final int waitingTasks = Math.max( 0, (1+queueInfo.getQueueLength()+currentTasks)-numberOfProcessors );
+		long queueTime = waitingTasks * queueInfo.getDequeueTimePerTask();
 		final long total = Utils.safeAdd(transmissionTime,
-				waitingTasks * queueInfo.getDequeueTimePerTask(),
+				queueTime,
 				queueInfo.getExecutionTime(), completionInterval,
 				unpredictableOverhead);
 		if (Settings.traceRemainingJobTime) {
@@ -158,6 +159,11 @@ class NodePerformanceInfo implements Serializable {
 	 * 
 	 * @param ix
 	 *            The index of the type we're interested in.
+	 *            @param nextIx
+	 *            The index of the next type to the one we're interested in,
+	 *            so that we can get the (already calculated) completion
+	 *            time from that one. A value <code>-1</code> means
+	 *            there is no next type.
 	 */
 	long getCompletionOnWorker(int ix, int nextIx) {
 		final WorkerQueueInfo info = workerQueueInfo[ix];
