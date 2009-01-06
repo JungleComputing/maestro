@@ -1,8 +1,10 @@
-set size 1.3
+#set size 1.3
+set size 0.5
 set key reverse Right outside
 set term postscript enhanced color eps
 #set xlabel "Node"
 set ylabel "Number of frames"
+set yrange [0:*]
 unset xtics
 #unset ytics
 set boxwidth 0.85 absolute
