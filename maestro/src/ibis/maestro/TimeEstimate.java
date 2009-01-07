@@ -8,6 +8,7 @@ package ibis.maestro;
 class TimeEstimate {
 	private long average;
 	private boolean initial = true;
+	private long sampleTime = System.nanoTime()-Settings.SAMPLE_DECAY_TIME_NS/3;
 
 	/**
 	 * Constructs a new time estimate with the given initial value.
@@ -33,7 +34,11 @@ class TimeEstimate {
 	 * @return The average time.
 	 */
 	long getAverage() {
-		return average;
+		final long now = System.nanoTime();
+		final long decayTime = now - sampleTime;
+		final double frac = ((double) decayTime)/((double) Settings.SAMPLE_DECAY_TIME_NS);
+		final double fade = Math.exp( -frac );
+		return (long) (fade*average);
 	}
 
 	/**
@@ -50,6 +55,7 @@ class TimeEstimate {
 		else {
 			average = (2 * average + val) / 3;
 		}
+		sampleTime = System.nanoTime();
 	}
 
 	/**

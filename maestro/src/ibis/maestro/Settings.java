@@ -168,4 +168,6 @@ class Settings {
 	 * submitting it again.
 	 */
 	static final long LATE_JOB_DURATION = 200*Utils.MILLISECOND_IN_NANOSECONDS;
+
+	static final long SAMPLE_DECAY_TIME_NS = 200*Utils.MILLISECOND_IN_NANOSECONDS;
 }
