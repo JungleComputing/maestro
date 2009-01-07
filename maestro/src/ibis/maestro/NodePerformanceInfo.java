@@ -106,7 +106,8 @@ class NodePerformanceInfo implements Serializable {
 		}
 		final int currentTasks = localNodeInfo.getCurrentTasks(type);
 		final long executionTime = queueInfo.getExecutionTime();
-		if (type.unpredictable) {
+		// FIXME: remove this again
+		if (true || type.unpredictable) {
 			if (ignoreBusyProcessors && currentTasks >= numberOfProcessors) {
 				// Don't submit jobs, there are no idle processors.
 				if (Settings.traceRemainingJobTime) {
