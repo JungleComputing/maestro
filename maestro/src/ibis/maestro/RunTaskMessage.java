@@ -1,8 +1,8 @@
 package ibis.maestro;
 
-import java.util.ArrayList;
-
 import ibis.ipl.IbisIdentifier;
+
+import java.util.ArrayList;
 
 /**
  * Tell the worker to execute the task contained in this message.
@@ -17,7 +17,6 @@ final class RunTaskMessage extends Message {
 	final TaskInstance taskInstance;
 	final long taskId;
 	private transient long queueMoment = 0L;
-	private transient int queueLength = 0;
 	final IbisIdentifier source;
 	final ArrayList<AntPoint> antTrail;
 
@@ -45,12 +44,9 @@ final class RunTaskMessage extends Message {
 	 * 
 	 * @param t
 	 *            The start time.
-	 * @param queueLength
-	 *            The length of the work queue at this moment.
 	 */
-	void setQueueMoment(long t, int queueLength) {
+	void setQueueMoment(long t) {
 		this.queueMoment = t;
-		this.queueLength = queueLength;
 	}
 
 	/**
@@ -63,23 +59,14 @@ final class RunTaskMessage extends Message {
 	}
 
 	/**
-	 * Returns the registered queue length at the moment of enqueuing.
-	 * 
-	 * @return The registered queue length.
-	 */
-	int getQueueLength() {
-		return queueLength;
-	}
-
-	/**
-	 * Returns a string representation of this task messabge.
+	 * Returns a string representation of this task message.
 	 * 
 	 * @return The string representation.
 	 */
 	@Override
 	public String toString() {
 		return "Task message for task " + taskId + " of type "
-				+ taskInstance.type;
+		+ taskInstance.type;
 	}
 
 	String label() {

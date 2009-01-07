@@ -287,7 +287,11 @@ final class NodeInfo {
 		}
 		final long transmissionTime = result.arrivalMoment - task.startTime;
 		final NodeTaskInfo nodeTaskInfo = task.nodeTaskInfo;
-		nodeTaskInfo.registerTaskReceived(transmissionTime);
+		if( !local ){
+			// If this is not the local node, this is interesting info.
+			// If it is local, we know better: transmission time is 0.
+			nodeTaskInfo.registerTaskReceived(transmissionTime);
+		}
 		if (Settings.traceNodeProgress) {
 			Globals.log.reportProgress("Master: retired task " + task
 					+ " transmissionTime="

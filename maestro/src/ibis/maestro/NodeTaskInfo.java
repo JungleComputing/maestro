@@ -61,7 +61,7 @@ final class NodeTaskInfo {
 		// Totally unfounded guesses, but we should learn soon enough what the
 		// real values are...
 		this.transmissionTimeEstimate = new TimeEstimate(pingTime);
-		this.roundtripTimeEstimate = new TimeEstimate(2 * pingTime);
+		this.roundtripTimeEstimate = new TimeEstimate(2 * pingTime );
 		if (Settings.traceWorkerList || Settings.traceRemainingJobTime) {
 			Globals.log.reportProgress("Created new WorkerTaskInfo "
 					+ toString());

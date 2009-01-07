@@ -115,7 +115,7 @@ final class WorkerQueue {
 					+ pos + " of worker queue; length is now " + queue.size()
 					+ "; " + length + " of type " + type);
 		}
-		msg.setQueueMoment(msg.arrivalMoment, length);
+		msg.setQueueMoment(msg.arrivalMoment);
 		if (Settings.dumpWorkerQueue) {
 			dumpQueue();
 		}
