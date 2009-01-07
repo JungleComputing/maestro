@@ -55,7 +55,7 @@ final class NodeTaskInfo {
 			boolean unpredictable, long pingTime) {
 		this.taskInfo = taskInfo;
 		this.nodeInfo = worker;
-		this.allowance = (unpredictable || !local) ? 0 : 1;
+		this.allowance = (unpredictable || !local) ? 0 : 2;
 		this.maximalEverAllowance = allowance;
 
 		// Totally unfounded guesses, but we should learn soon enough what the

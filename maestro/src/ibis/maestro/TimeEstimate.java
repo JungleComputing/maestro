@@ -16,7 +16,7 @@ class TimeEstimate {
 	 *            The initial value of the time estimate.
 	 */
 	TimeEstimate(long initial) {
-		average = initial;
+		setInitialEstimate( initial );
 	}
 
 	/**
@@ -60,7 +60,7 @@ class TimeEstimate {
 	 */
 	public void setInitialEstimate(long v) {
 		if (initial) {
-			average = v;
+			average = v/2;  // This estimate is also inaccurate, so underestimate a bit.
 		}
 	}
 }
