@@ -100,26 +100,55 @@ final class WorkerQueue {
 	 * @param msg
 	 *            The task to add to the queue
 	 */
-	synchronized int add(RunTaskMessage msg) {
-		if (activeTime == 0L) {
-			activeTime = msg.arrivalMoment;
-		}
+	int add(RunTaskMessage msg) {
+		final int length;
 		final TaskType type = msg.taskInstance.type;
 		final WorkerQueueTaskInfo info = queueTypes[type.index];
-		final int length = info.registerAdd();
-		final int pos = findInsertionPoint(queue, msg);
-		queue.add(pos, msg);
+		final int pos;
+		synchronized( this ){
+			if (activeTime == 0L) {
+				activeTime = msg.arrivalMoment;
+			}
+			length = info.registerAdd();
+			pos = findInsertionPoint(queue, msg);
+			queue.add(pos, msg);
+		}
 		if (Settings.traceQueuing) {
 			Globals.log.reportProgress("Adding "
 					+ msg.taskInstance.formatJobAndType() + " at position "
 					+ pos + " of worker queue; length is now " + queue.size()
 					+ "; " + length + " of type " + type);
 		}
-		msg.setQueueMoment(msg.arrivalMoment);
 		if (Settings.dumpWorkerQueue) {
 			dumpQueue();
 		}
 		return length;
+	}
+
+	RunTaskMessage remove(Gossiper gossiper) {
+		final RunTaskMessage res;
+		final int length;
+		final WorkerQueueTaskInfo info;
+
+		synchronized( this ){
+			if (queue.isEmpty()) {
+				return null;
+			}
+			res = queue.remove(0);
+			info = queueTypes[res.taskInstance.type.index];
+			length = info.registerRemove();
+		}
+		if (Settings.traceQueuing) {
+			Globals.log.reportProgress("Removing "
+					+ res.taskInstance.formatJobAndType()
+					+ " from worker queue; length is now " + queue.size()
+					+ "; " + length + " of type " + res.taskInstance.type);
+		}
+		if (gossiper != null) {
+			final long queueTimePerTask = info.getDequeueInterval();
+			gossiper.setQueueTimePerTask(res.taskInstance.type, queueTimePerTask, length);
+		}
+		return res;
 	}
 
 	boolean failTask(TaskType type) {
@@ -140,30 +169,6 @@ final class WorkerQueue {
 	long countTask(TaskType type, long computeInterval) {
 		final WorkerQueueTaskInfo info = queueTypes[type.index];
 		return info.countTask(computeInterval, type.unpredictable);
-	}
-
-	RunTaskMessage remove(Gossiper gossiper) {
-		final RunTaskMessage res;
-
-		synchronized( this ){
-			if (queue.isEmpty()) {
-				return null;
-			}
-			res = queue.remove(0);
-		}
-		final WorkerQueueTaskInfo info = queueTypes[res.taskInstance.type.index];
-		final int length = info.registerRemove();
-		if (Settings.traceQueuing) {
-			Globals.log.reportProgress("Removing "
-					+ res.taskInstance.formatJobAndType()
-					+ " from worker queue; length is now " + queue.size()
-					+ "; " + length + " of type " + res.taskInstance.type);
-		}
-		if (gossiper != null) {
-			final long queueTimePerTask = info.getDequeueInterval();
-			gossiper.setQueueTimePerTask(res.taskInstance.type, queueTimePerTask, length);
-		}
-		return res;
 	}
 
 	synchronized long getActiveTime(long startTime) {

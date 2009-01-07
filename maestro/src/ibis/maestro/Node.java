@@ -876,7 +876,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 					runningTasks.up();
 					if (Settings.traceNodeProgress) {
 						final long queueInterval = runMoment
-						- message.getQueueMoment();
+						- message.arrivalMoment;
 						Globals.log.reportProgress("Worker: handed out task "
 								+ message + " of type " + type
 								+ "; it was queued for "

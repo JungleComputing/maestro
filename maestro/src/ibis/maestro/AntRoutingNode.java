@@ -284,13 +284,13 @@ public class AntRoutingNode extends Node {
 		gossiper.setComputeTime(type, averageComputeTime);
 		runningTasks.down();
 		if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
-			final long queueInterval = runMoment - message.getQueueMoment();
+			final long queueInterval = runMoment - message.arrivalMoment;
 			Globals.log.reportProgress("Completed " + message.taskInstance
 					+ "; queueInterval="
 					+ Utils.formatNanoseconds(queueInterval)
 					+ "; runningTasks=" + runningTasks);
 		}
-		final long workerDwellTime = taskCompletionMoment - message.getQueueMoment();
+		final long workerDwellTime = taskCompletionMoment - message.arrivalMoment;
 		if (traceStats) {
 			final double now = 1e-9 * (System.nanoTime() - startTime);
 			System.out.println("TRACE:workerDwellTime " + type + " " + now

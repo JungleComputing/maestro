@@ -16,7 +16,6 @@ final class RunTaskMessage extends Message {
 	final IbisIdentifier workerIdentifier;
 	final TaskInstance taskInstance;
 	final long taskId;
-	private transient long queueMoment = 0L;
 	final IbisIdentifier source;
 	final ArrayList<AntPoint> antTrail;
 
@@ -37,25 +36,6 @@ final class RunTaskMessage extends Message {
 		this.taskInstance = task;
 		this.taskId = taskId;
 		this.antTrail = antTrail;
-	}
-
-	/**
-	 * Set the start time of this task to the given time in ns.
-	 * 
-	 * @param t
-	 *            The start time.
-	 */
-	void setQueueMoment(long t) {
-		this.queueMoment = t;
-	}
-
-	/**
-	 * Returns the registered enqueuing moment.
-	 * 
-	 * @return The registered enqueuing moment.
-	 */
-	long getQueueMoment() {
-		return queueMoment;
 	}
 
 	/**
