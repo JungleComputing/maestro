@@ -105,6 +105,7 @@ class NodePerformanceInfo implements Serializable {
 			return Long.MAX_VALUE;
 		}
 		final int currentTasks = localNodeInfo.getCurrentTasks(type);
+		final long executionTime = queueInfo.getExecutionTime();
 		if (type.unpredictable) {
 			if (ignoreBusyProcessors && currentTasks >= numberOfProcessors) {
 				// Don't submit jobs, there are no idle processors.
@@ -118,7 +119,7 @@ class NodePerformanceInfo implements Serializable {
 			// already running tasks some penalty to encourage spreading the
 			// load
 			// over nodes.
-			unpredictableOverhead = (currentTasks * queueInfo.getExecutionTime()) / 10;
+			unpredictableOverhead = (currentTasks * executionTime) / 10;
 		} else {
 			final int allowance = localNodeInfo.getAllowance(type);
 			final int extraTasks = currentTasks-allowance;
@@ -134,16 +135,16 @@ class NodePerformanceInfo implements Serializable {
 					return Long.MAX_VALUE;
 				}
 				else {
-					unpredictableOverhead = extraTasks*extraTasks*queueInfo.getExecutionTime();
+					unpredictableOverhead = extraTasks*extraTasks*executionTime;
 				}
 			}
 		}
 		final long transmissionTime = localNodeInfo.getTransmissionTime(type);
 		final int waitingTasks = Math.max( 0, (1+queueInfo.getQueueLength()+currentTasks)-numberOfProcessors );
-		long queueTime = waitingTasks * queueInfo.getDequeueTimePerTask();
+		final long queueTime = waitingTasks * queueInfo.getDequeueTimePerTask();
 		final long total = Utils.safeAdd(transmissionTime,
 				queueTime,
-				queueInfo.getExecutionTime(), completionInterval,
+				executionTime, completionInterval,
 				unpredictableOverhead);
 		if (Settings.traceRemainingJobTime) {
 			Globals.log.reportProgress("Estimated completion time for "

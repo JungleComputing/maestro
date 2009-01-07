@@ -50,8 +50,8 @@ final class WorkerQueueTaskInfo {
 		s.println("worker queue for " + type + ": " + incomingTaskCount
 				+ " tasks; dequeue interval: " + dequeueInterval
 				+ "; maximal queue size: " + maxElements);
-		double workPercentage = 100.0 * ((double) totalWorkTime / workTime);
-		PrintStream out = s;
+		final double workPercentage = 100.0 * ((double) totalWorkTime / workTime);
+		final PrintStream out = s;
 		if (outGoingTaskCount > 0) {
 			out.println("Worker: " + type + ":");
 			out.printf("    # tasks          = %5d\n", outGoingTaskCount);
@@ -60,8 +60,8 @@ final class WorkerQueueTaskInfo {
 					+ String.format(" (%.1f%%)", workPercentage));
 			out.println("    work time/task       = "
 					+ Utils
-							.formatNanoseconds(totalWorkTime
-									/ outGoingTaskCount));
+					.formatNanoseconds(totalWorkTime
+							/ outGoingTaskCount));
 			out.println("    av. dequeue interval = "
 					+ Utils.formatNanoseconds(dequeueInterval.getAverage()));
 		} else {
@@ -85,10 +85,10 @@ final class WorkerQueueTaskInfo {
 	}
 
 	int registerRemove() {
-		long now = System.nanoTime();
+		final long now = System.nanoTime();
 		if (frontChangedTime != 0) {
 			// We know when this entry became the front of the queue.
-			long i = now - frontChangedTime;
+			final long i = now - frontChangedTime;
 			dequeueInterval.addSample(i);
 		}
 		elements--;
@@ -101,6 +101,11 @@ final class WorkerQueueTaskInfo {
 			frontChangedTime = now;
 		}
 		return elements;
+	}
+
+	long getDequeueInterval()
+	{
+		return dequeueInterval.getAverage();
 	}
 
 	/**
@@ -143,7 +148,7 @@ final class WorkerQueueTaskInfo {
 	}
 
 	void registerNode(NodeInfo nodeInfo) {
-		NodeTaskInfo nodeTaskInfo = nodeInfo.get(type);
+		final NodeTaskInfo nodeTaskInfo = nodeInfo.get(type);
 		synchronized (this) {
 			if (nodeTaskInfo != null) {
 				workers.add(nodeTaskInfo);

@@ -25,14 +25,14 @@ final class WorkerQueue {
 	 *            The list of job types we support.
 	 */
 	WorkerQueue(JobList jobs) {
-		TaskType[] taskTypes = Globals.allTaskTypes;
+		final TaskType[] taskTypes = Globals.allTaskTypes;
 		queueTypes = new WorkerQueueTaskInfo[taskTypes.length];
-		for (TaskType t : taskTypes) {
-			WorkerQueueTaskInfo queueTypeInfo = new WorkerQueueTaskInfo(t);
+		for (final TaskType t : taskTypes) {
+			final WorkerQueueTaskInfo queueTypeInfo = new WorkerQueueTaskInfo(t);
 			queueTypes[t.index] = queueTypeInfo;
-			Task task = jobs.getTask(t);
+			final Task task = jobs.getTask(t);
 			if (task instanceof TaskExecutionTimeEstimator) {
-				TaskExecutionTimeEstimator estimator = (TaskExecutionTimeEstimator) task;
+				final TaskExecutionTimeEstimator estimator = (TaskExecutionTimeEstimator) task;
 				queueTypeInfo.setInitialComputeTimeEstimate(estimator
 						.estimateTaskExecutionTime());
 			}
@@ -60,13 +60,13 @@ final class WorkerQueue {
 			// it separately.
 			return 0;
 		}
-		long id = msg.taskInstance.jobInstance.id;
+		final long id = msg.taskInstance.jobInstance.id;
 		while (true) {
-			int mid = (start + end) / 2;
+			final int mid = (start + end) / 2;
 			if (mid == start) {
 				break;
 			}
-			long midId = queue.get(mid).taskInstance.jobInstance.id;
+			final long midId = queue.get(mid).taskInstance.jobInstance.id;
 			if (midId < id) {
 				// Mid should come before us.
 				start = mid;
@@ -77,7 +77,7 @@ final class WorkerQueue {
 		}
 		// This comparison is probably rarely necessary, but corner cases
 		// are a pain, so I'm safe rather than sorry.
-		long startId = queue.get(start).taskInstance.jobInstance.id;
+		final long startId = queue.get(start).taskInstance.jobInstance.id;
 		if (startId < id) {
 			return end;
 		}
@@ -86,8 +86,8 @@ final class WorkerQueue {
 
 	private void dumpQueue() {
 		Globals.log.reportProgress("Worker queue: ");
-		PrintStream s = Globals.log.getPrintStream();
-		for (RunTaskMessage m : queue) {
+		final PrintStream s = Globals.log.getPrintStream();
+		for (final RunTaskMessage m : queue) {
 			s.print(m.label());
 			s.print(' ');
 		}
@@ -104,10 +104,10 @@ final class WorkerQueue {
 		if (activeTime == 0L) {
 			activeTime = msg.arrivalMoment;
 		}
-		TaskType type = msg.taskInstance.type;
-		WorkerQueueTaskInfo info = queueTypes[type.index];
-		int length = info.registerAdd();
-		int pos = findInsertionPoint(queue, msg);
+		final TaskType type = msg.taskInstance.type;
+		final WorkerQueueTaskInfo info = queueTypes[type.index];
+		final int length = info.registerAdd();
+		final int pos = findInsertionPoint(queue, msg);
 		queue.add(pos, msg);
 		if (Settings.traceQueuing) {
 			Globals.log.reportProgress("Adding "
@@ -123,13 +123,13 @@ final class WorkerQueue {
 	}
 
 	boolean failTask(TaskType type) {
-		WorkerQueueTaskInfo info = queueTypes[type.index];
+		final WorkerQueueTaskInfo info = queueTypes[type.index];
 		info.failTask();
 
 		// TODO: synchronize this properly; due to race conditions the last two
 		// task types may be failed at the same time without either one
 		// returning false.
-		for (WorkerQueueTaskInfo i : queueTypes) {
+		for (final WorkerQueueTaskInfo i : queueTypes) {
 			if (i != null && !i.hasFailed()) {
 				return false; // There still is a non-failed task type.
 			}
@@ -138,7 +138,7 @@ final class WorkerQueue {
 	}
 
 	long countTask(TaskType type, long computeInterval) {
-		WorkerQueueTaskInfo info = queueTypes[type.index];
+		final WorkerQueueTaskInfo info = queueTypes[type.index];
 		return info.countTask(computeInterval, type.unpredictable);
 	}
 
@@ -146,19 +146,19 @@ final class WorkerQueue {
 		if (queue.isEmpty()) {
 			return null;
 		}
-		RunTaskMessage res = queue.remove(0);
-		WorkerQueueTaskInfo info = queueTypes[res.taskInstance.type.index];
-		int length = info.registerRemove();
+		final RunTaskMessage res = queue.remove(0);
+		final WorkerQueueTaskInfo info = queueTypes[res.taskInstance.type.index];
+		final int length = info.registerRemove();
 		if (Settings.traceQueuing) {
 			Globals.log.reportProgress("Removing "
 					+ res.taskInstance.formatJobAndType()
 					+ " from worker queue; length is now " + queue.size()
 					+ "; " + length + " of type " + res.taskInstance.type);
 		}
-		long queueInterval = System.nanoTime() - res.getQueueMoment();
 		if (gossiper != null) {
-			gossiper.setQueueTimePerTask(res.taskInstance.type, queueInterval
-					/ res.getQueueLength(), length);
+			final long queueInterval = System.nanoTime() - res.getQueueMoment();
+			final long queueTimePerTask = info.getDequeueInterval();
+			gossiper.setQueueTimePerTask(res.taskInstance.type, queueTimePerTask, length);
 		}
 		return res;
 	}
@@ -172,7 +172,7 @@ final class WorkerQueue {
 	}
 
 	synchronized void printStatistics(PrintStream s, long workInterval) {
-		for (WorkerQueueTaskInfo t : queueTypes) {
+		for (final WorkerQueueTaskInfo t : queueTypes) {
 			if (t != null) {
 				t.printStatistics(s, workInterval);
 			}
@@ -184,7 +184,7 @@ final class WorkerQueue {
 	}
 
 	void registerNode(NodeInfo nodeInfo) {
-		for (WorkerQueueTaskInfo info : queueTypes) {
+		for (final WorkerQueueTaskInfo info : queueTypes) {
 			if (info != null) {
 				info.registerNode(nodeInfo);
 			}
