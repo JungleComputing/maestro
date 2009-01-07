@@ -306,6 +306,9 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 		}
 
 		stopped.waitUntilSet();
+		synchronized (this) {
+			stopTime = System.nanoTime();
+		}
 		if (Settings.traceNodes) {
 			Globals.log.reportProgress("Node has terminated");
 		}
@@ -714,9 +717,6 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 				}
 				Utils.waitToTerminate(t);
 			}
-		}
-		synchronized (this) {
-			stopTime = System.nanoTime();
 		}
 	}
 

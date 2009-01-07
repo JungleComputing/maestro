@@ -85,7 +85,7 @@ class Gossip {
 	 *            nodes.
 	 * @return The best average completion time of our workers.
 	 */
-	synchronized long getBestCompletionTimeAfterMasterQueue(int ix, int nextIx,
+	private long getBestCompletionTimeAfterMasterQueue(int ix, int nextIx,
 			HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
 		long res = Long.MAX_VALUE;
 
@@ -127,9 +127,10 @@ class Gossip {
 
 			for (final int typeIndex : indexList) {
 				final long masterQueueInterval = masterQueueIntervals == null ? 0L : masterQueueIntervals[typeIndex];
+				final long bestCompletionTimeAfterMasterQueue = getBestCompletionTimeAfterMasterQueue(typeIndex,
+						nextIndex, localNodeInfoMap);
 				final long t = Utils.safeAdd(masterQueueInterval,
-						getBestCompletionTimeAfterMasterQueue(typeIndex,
-								nextIndex, localNodeInfoMap));
+						bestCompletionTimeAfterMasterQueue);
 				localPerformanceInfo.completionInfo[typeIndex] = t;
 				nextIndex = typeIndex;
 			}
@@ -173,7 +174,7 @@ class Gossip {
 
 	synchronized void removeInfoForNode(IbisIdentifier ibis) {
 		if (false) {
-			// TODO: enable again or remove method.
+			// FIXME: enable again or remove method.
 			final int ix = searchInfo(ibis);
 
 			if (ix >= 0) {

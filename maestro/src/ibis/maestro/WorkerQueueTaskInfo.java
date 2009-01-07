@@ -93,6 +93,9 @@ final class WorkerQueueTaskInfo {
 		}
 		elements--;
 		sequenceNumber++;
+		if( elements<0 ){
+			Globals.log.reportInternalError( "Number of elements in worker queue is now negative?? type=" + type + " elements=" + elements );
+		}
 		if (elements == 0) {
 			// Don't take the next dequeuing into account,
 			// since the queue is now empty.

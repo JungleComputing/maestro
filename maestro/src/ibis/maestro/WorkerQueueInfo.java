@@ -67,11 +67,11 @@ class WorkerQueueInfo implements Serializable {
 		return String.format("%23s", type.toString());
 	}
 
-	void failTask() {
+	synchronized void failTask() {
 		this.executionTime = Long.MAX_VALUE;
 	}
 
-	void setExecutionTime(long t) {
+	synchronized void setExecutionTime(long t) {
 		this.executionTime = t;
 	}
 
@@ -91,7 +91,7 @@ class WorkerQueueInfo implements Serializable {
 		}
 	}
 
-	long getExecutionTime() {
+	synchronized long getExecutionTime() {
 		return executionTime;
 	}
 
@@ -99,14 +99,14 @@ class WorkerQueueInfo implements Serializable {
 		return queueLength;
 	}
 
-	long getDequeueTimePerTask() {
+	synchronized long getDequeueTimePerTask() {
 		if( Settings.IGNORE_QUEUE_TIME ){
 			return 0L;
 		}
 		return dequeueTimePerTask;
 	}
 
-	int getQueueLengthSequenceNumber() {
+	synchronized int getQueueLengthSequenceNumber() {
 		return queueLengthSequenceNumber;
 	}
 

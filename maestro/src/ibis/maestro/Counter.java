@@ -23,7 +23,7 @@ class Counter {
 	 * @return The string representation.
 	 */
 	@Override
-	synchronized public String toString() {
-		return Integer.toString(value);
+	public String toString() {
+		return Integer.toString(get());
 	}
 }

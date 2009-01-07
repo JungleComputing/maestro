@@ -313,7 +313,7 @@ class Gossiper extends Thread {
 		notifyAll();
 	}
 
-	synchronized boolean isStopped() {
+	private synchronized boolean isStopped() {
 		return stopped;
 	}
 

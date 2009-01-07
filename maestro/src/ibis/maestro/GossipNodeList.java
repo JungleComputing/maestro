@@ -83,17 +83,20 @@ class GossipNodeList {
 		return Math.max(1, node.nextUpdateMoment - System.currentTimeMillis());
 	}
 
-	synchronized void add(IbisIdentifier ibis) {
-		if (!ibis.equals(Globals.localIbis.identifier())) {
+	void add(IbisIdentifier ibis) {
+		if (ibis.equals(Globals.localIbis.identifier())) {
+			if (Settings.traceGossip) {
+				Globals.log.reportProgress("Gossiper: ignored local ibis "
+						+ ibis);
+			}
+		}
+		else {
 			// We're not going to gossip to ourselves.
 			if (Settings.traceGossip) {
 				Globals.log.reportProgress("Gossiper: added new ibis " + ibis);
 			}
-			nodes.add(new GossipNode(ibis));
-		} else {
-			if (Settings.traceGossip) {
-				Globals.log.reportProgress("Gossiper: ignored local ibis "
-						+ ibis);
+			synchronized( this ){
+				nodes.add(new GossipNode(ibis));
 			}
 		}
 	}

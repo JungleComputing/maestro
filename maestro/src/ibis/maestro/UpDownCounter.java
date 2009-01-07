@@ -46,8 +46,8 @@ class UpDownCounter {
 	 * @return The string representation.
 	 */
 	@Override
-	synchronized public String toString() {
-		return Integer.toString(value);
+	public String toString() {
+		return Integer.toString(get());
 	}
 
 	synchronized boolean isLessOrEqual(int v) {
@@ -65,16 +65,16 @@ class UpDownCounter {
 	 * @return The actual value at the moment we stopped waiting.
 	 */
 	public int waitForGreaterOrEqual(int n, long duration) {
-		long deadline = System.currentTimeMillis() + duration;
+		final long deadline = System.currentTimeMillis() + duration;
 		while (true) {
-			long waittime = deadline - System.currentTimeMillis();
+			final long waittime = deadline - System.currentTimeMillis();
 			synchronized (this) {
 				if (value >= n || waittime <= 0) {
 					return value;
 				}
 				try {
 					this.wait(waittime);
-				} catch (InterruptedException e) {
+				} catch (final InterruptedException e) {
 					// Not interested.
 				}
 			}

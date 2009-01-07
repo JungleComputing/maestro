@@ -155,6 +155,12 @@ public class QRoutingNode extends Node {
 			TaskInstance task;
 
 			synchronized (drainLock) {
+				// The entire operation
+				// - get a submission
+				// - register its start on the chosen worker
+				// must be atomic to avoid that multiple threads
+				// select the same worker for multiple instances of the
+				// same task type.
 				final NodePerformanceInfo[] tables = gossiper.getGossipCopy();
 				final HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap = nodes
 				.getLocalNodeInfo();

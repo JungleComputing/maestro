@@ -127,14 +127,16 @@ final class NodeInfo {
 	 * 
 	 * @return The list of task instances that were outstanding on this worker.
 	 */
-	synchronized ArrayList<TaskInstance> setDead() {
-		suspect = true;
-		dead = true;
+	ArrayList<TaskInstance> setDead() {
 		final ArrayList<TaskInstance> orphans = new ArrayList<TaskInstance>();
-		for (final ActiveTask t : activeTasks) {
-			orphans.add(t.task);
+		synchronized( this ){
+			suspect = true;
+			dead = true;
+			for (final ActiveTask t : activeTasks) {
+				orphans.add(t.task);
+			}
+			activeTasks.clear(); // Don't let those orphans take up memory.
 		}
-		activeTasks.clear(); // Don't let those orphans take up memory.
 		if (!orphans.isEmpty()) {
 			Globals.log.reportProgress("Rescued " + orphans.size()
 					+ " orphans from dead worker " + ibis);
@@ -154,14 +156,16 @@ final class NodeInfo {
 	/**
 	 * This worker is suspect because it got a communication timeout.
 	 */
-	synchronized void setSuspect() {
+	void setSuspect() {
 		if (local) {
 			Globals.log
 			.reportInternalError("Cannot communicate with local node "
 					+ ibis + "???");
 		} else {
 			Globals.log.reportError("Cannot communicate with node " + ibis);
-			suspect = true;
+			synchronized( this ){
+				suspect = true;
+			}
 		}
 	}
 
@@ -372,18 +376,23 @@ final class NodeInfo {
 		return dead;
 	}
 
-	synchronized boolean checkDeadlines(long now) {
+	boolean checkDeadlines(long now) {
 		final boolean changed = false;
 
-		for (final ActiveTask task : activeTasks) {
-			if (task.getAllowanceDeadline() < now) {
-				// Worker missed an allowance deadline.
-				final long t = now - task.startTime + task.predictedDuration;
-				final NodeTaskInfo workerTaskInfo = task.nodeTaskInfo;
-				if (workerTaskInfo != null) {
-					workerTaskInfo.updateRoundtripTimeEstimate(t);
+		if( false ){
+			// TODO: enable this again when it is sane to do.
+			synchronized( this ){
+				for (final ActiveTask task : activeTasks) {
+					if (task.getAllowanceDeadline() < now) {
+						// Worker missed an allowance deadline.
+						final long t = now - task.startTime + task.predictedDuration;
+						final NodeTaskInfo workerTaskInfo = task.nodeTaskInfo;
+						if (workerTaskInfo != null) {
+							workerTaskInfo.updateRoundtripTimeEstimate(t);
+						}
+						task.setAllowanceDeadline(t);
+					}
 				}
-				task.setAllowanceDeadline(t);
 			}
 		}
 		return changed;

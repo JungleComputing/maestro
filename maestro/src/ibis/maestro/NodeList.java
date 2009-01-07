@@ -27,12 +27,15 @@ final class NodeList {
 	 * @param theIbis
 	 *            The ibis that was gone.
 	 */
-	synchronized ArrayList<TaskInstance> removeNode(IbisIdentifier theIbis) {
+	ArrayList<TaskInstance> removeNode(IbisIdentifier theIbis) {
 		if (Settings.traceWorkerList) {
 			Globals.log.reportProgress("remove node " + theIbis);
 		}
 		ArrayList<TaskInstance> orphans = null;
-		final NodeInfo node = ibisToNodeMap.get(theIbis);
+		final NodeInfo node;
+		synchronized( this ){
+			node = ibisToNodeMap.get(theIbis);
+		}
 
 		if (node != null) {
 			orphans = node.setDead();
@@ -68,8 +71,11 @@ final class NodeList {
 	 * @return The task instance that was completed if it may have duplicates,
 	 *         or <code>null</code>
 	 */
-	synchronized TaskInstance registerTaskCompleted(TaskCompletedMessage result) {
-		final NodeInfo node = ibisToNodeMap.get(result.source);
+	TaskInstance registerTaskCompleted(TaskCompletedMessage result) {
+		final NodeInfo node;
+		synchronized( this ){
+			node = ibisToNodeMap.get(result.source);
+		}
 		if (node == null) {
 			Globals.log.reportError("Task completed message from unknown node "
 					+ result.source);
@@ -86,8 +92,11 @@ final class NodeList {
 	 * @param msg
 	 *            The message.
 	 */
-	synchronized void registerTaskReceived(TaskReceivedMessage msg) {
-		final NodeInfo node = ibisToNodeMap.get(msg.source);
+	void registerTaskReceived(TaskReceivedMessage msg) {
+		final NodeInfo node;
+		synchronized( this ){
+			node = ibisToNodeMap.get(msg.source);
+		}
 		if (node == null) {
 			Globals.log.reportInternalError("Task received message from unknown node "
 					+ msg.source);
@@ -106,9 +115,12 @@ final class NodeList {
 	 *            The id of the failed task.
 	 * @return The task instance that was executed.
 	 */
-	synchronized TaskInstance registerTaskFailed(IbisIdentifier ibis,
+	TaskInstance registerTaskFailed(IbisIdentifier ibis,
 			long taskId) {
-		final NodeInfo node = ibisToNodeMap.get(ibis);
+		final NodeInfo node;
+		synchronized( this ){
+			node = ibisToNodeMap.get(ibis);
+		}
 		if (node == null) {
 			Globals.log.reportError("Task failed message from unknown node "
 					+ ibis);

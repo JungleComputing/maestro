@@ -12,7 +12,7 @@ import java.util.ArrayList;
 public class JobWaiter implements JobCompletionListener {
 	private int taskNo = 0;
 	private int outstandingTasks = 0;
-	private ArrayList<Object> results = new ArrayList<Object>();
+	private final ArrayList<Object> results = new ArrayList<Object>();
 
 	private static class WaiterJobIdentifier implements Serializable {
 		private static final long serialVersionUID = -3256737277889247302L;
@@ -36,9 +36,12 @@ public class JobWaiter implements JobCompletionListener {
 	 *            Input for the (first task of the) job.
 	 */
 	@SuppressWarnings("synthetic-access")
-	public synchronized void submit(Node node, Job job, Object input) {
-		Serializable id = new WaiterJobIdentifier(taskNo++);
-		outstandingTasks++;
+	public void submit(Node node, Job job, Object input) {
+		Serializable id;
+		synchronized( this ){
+			id = new WaiterJobIdentifier(taskNo++);
+			outstandingTasks++;
+		}
 		node.submit(input, id, true, this, job);
 	}
 
@@ -57,7 +60,7 @@ public class JobWaiter implements JobCompletionListener {
 	public synchronized void jobCompleted(Node node, Object userId,
 			Object result) {
 		if (userId instanceof WaiterJobIdentifier) {
-			int ix = ((WaiterJobIdentifier) userId).id;
+			final int ix = ((WaiterJobIdentifier) userId).id;
 			while (results.size() <= ix) {
 				results.add(null);
 			}
@@ -65,8 +68,8 @@ public class JobWaiter implements JobCompletionListener {
 			outstandingTasks--;
 		} else {
 			node
-					.reportError("TaskWaiter: don't know what to do with user identifier "
-							+ userId);
+			.reportError("TaskWaiter: don't know what to do with user identifier "
+					+ userId);
 		}
 		notifyAll();
 	}
@@ -92,7 +95,7 @@ public class JobWaiter implements JobCompletionListener {
 				}
 				try {
 					wait();
-				} catch (InterruptedException e) {
+				} catch (final InterruptedException e) {
 					// Not interesting.
 				}
 			}

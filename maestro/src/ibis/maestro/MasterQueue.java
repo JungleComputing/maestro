@@ -69,20 +69,22 @@ final class MasterQueue {
 			return elements;
 		}
 
-		synchronized void registerRemove() {
+		void registerRemove() {
 			final long now = System.nanoTime();
-			if (frontChangedTime != 0) {
-				// We know when this entry became the front of the queue.
-				final long i = now - frontChangedTime;
-				dequeueInterval.addSample(i);
-			}
-			elements--;
-			if (elements == 0) {
-				// Don't take the next dequeuing into account,
-				// since the queue is now empty.
-				frontChangedTime = 0l;
-			} else {
-				frontChangedTime = now;
+			synchronized( this ){
+				if (frontChangedTime != 0) {
+					// We know when this entry became the front of the queue.
+					final long i = now - frontChangedTime;
+					dequeueInterval.addSample(i);
+				}
+				elements--;
+				if (elements == 0) {
+					// Don't take the next dequeuing into account,
+					// since the queue is now empty.
+					frontChangedTime = 0l;
+				} else {
+					frontChangedTime = now;
+				}
 			}
 		}
 
@@ -160,7 +162,7 @@ final class MasterQueue {
 		return queue.isEmpty();
 	}
 
-	private synchronized void dumpQueue(PrintStream s) {
+	private void dumpQueue(PrintStream s) {
 		for (final TaskInstance e : queue) {
 			s.print(e.shortLabel());
 			s.print(' ');

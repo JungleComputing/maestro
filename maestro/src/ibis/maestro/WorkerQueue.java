@@ -142,11 +142,15 @@ final class WorkerQueue {
 		return info.countTask(computeInterval, type.unpredictable);
 	}
 
-	synchronized RunTaskMessage remove(Gossiper gossiper) {
-		if (queue.isEmpty()) {
-			return null;
+	RunTaskMessage remove(Gossiper gossiper) {
+		final RunTaskMessage res;
+
+		synchronized( this ){
+			if (queue.isEmpty()) {
+				return null;
+			}
+			res = queue.remove(0);
 		}
-		final RunTaskMessage res = queue.remove(0);
 		final WorkerQueueTaskInfo info = queueTypes[res.taskInstance.type.index];
 		final int length = info.registerRemove();
 		if (Settings.traceQueuing) {
@@ -156,7 +160,6 @@ final class WorkerQueue {
 					+ "; " + length + " of type " + res.taskInstance.type);
 		}
 		if (gossiper != null) {
-			final long queueInterval = System.nanoTime() - res.getQueueMoment();
 			final long queueTimePerTask = info.getDequeueInterval();
 			gossiper.setQueueTimePerTask(res.taskInstance.type, queueTimePerTask, length);
 		}
