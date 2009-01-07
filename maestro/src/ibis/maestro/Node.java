@@ -400,7 +400,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 
 	private void drainCompletedJobList() {
 		while (true) {
-			final CompletedJob j = completedJobList.removeIfAny();
+			final CompletedJob j = completedJobList.poll();
 			if (j == null) {
 				break;
 			}

@@ -5,8 +5,7 @@ package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 /**
  * @author Kees van Reeuwijk
@@ -14,17 +13,13 @@ import java.util.List;
  */
 class MessageQueue {
 
-	private List<QueuedMessage> q = new LinkedList<QueuedMessage>();
+	private final ConcurrentLinkedQueue<QueuedMessage> q = new ConcurrentLinkedQueue<QueuedMessage>();
 
-	synchronized void add(IbisIdentifier destination, Message msg) {
+	void add(IbisIdentifier destination, Message msg) {
 		q.add(new QueuedMessage(destination, msg));
 	}
 
-	synchronized QueuedMessage getNext() {
-		if (q.isEmpty()) {
-			return null;
-		}
-
-		return q.remove(0);
+	QueuedMessage getNext() {
+		return q.poll();
 	}
 }
