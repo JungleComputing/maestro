@@ -159,15 +159,15 @@ class Settings {
 	static final boolean HARD_ALLOWANCES = true;
 
 	/** Time in ms between polling attempts for free room in the master queue. */
-	static final long ROOM_POLL_INTERVAL = 2L;
+	static final long ROOM_POLL_INTERVAL = 10L;
 
 	/** The number of tasks in the master queue before we start blocking. */
-	static final int MAESTRO_MASTER_ROOM = 20;
+	static final int MAESTRO_MASTER_ROOM = 25;
 
 	/** The minimal duration in ns of a running job before we consider
 	 * submitting it again.
 	 */
 	static final long LATE_JOB_DURATION = 1*Utils.SECOND_IN_NANOSECONDS;
 
-	static final long SAMPLE_DECAY_TIME_NS = 10*Utils.SECOND_IN_NANOSECONDS;
+    static final int MAXIMAL_QUEUE_FOR_PREDICTABLE = 1;
 }

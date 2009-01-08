@@ -541,9 +541,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 		}
 		final NodeInfo nodeInfo = nodes.get(m.source); // The get will create an
 		// entry if necessary.
-		boolean changed = false;
-		changed = nodeInfo.registerWorkerQueueInfo(m.workerQueueInfo);
-		changed |= nodeInfo.registerAsCommunicating();
+		boolean changed = nodeInfo.registerAsCommunicating();
 		return changed;
 	}
 

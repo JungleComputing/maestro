@@ -70,7 +70,9 @@ public class AntTypeRoutingTable {
 		// (or at least do so for most of the time.)
 		for (int ix = 0; ix < nodes.size(); ix++) {
 			final NodeInfo node = nodes.get(ix);
-			if (node.isAvailable(type)) {
+			// FIXME: ensure that ant routing also honours
+			// worker queue limitations.
+			if ( true ) {
 				if (Settings.traceAntRouting) {
 					Globals.log.reportProgress("Worker " + node
 							+ " is best available");

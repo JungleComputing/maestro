@@ -47,22 +47,21 @@ final class NodeInfo {
 		// For non-local nodes, start with a very pessimistic ping time.
 		// This means that only if we really need another node, we use it.
 		// long pessimisticPingTime = local?0L:Utils.HOUR_IN_NANOSECONDS;
-		long pessimisticPingTime = 0L;
+		long estimatedPingTime = 0L;
 		if (!local) {
-			pessimisticPingTime = Utils.MILLISECOND_IN_NANOSECONDS
+			estimatedPingTime = Utils.MILLISECOND_IN_NANOSECONDS
 			+ Globals.rng
 			.nextInt((int) Utils.MILLISECOND_IN_NANOSECONDS);
 			if (!Utils.areInSameCluster(Globals.localIbis.identifier(), ibis)) {
 				// Be more pessimistic if the nodes are not in the same cluster.
 				// TODO: simply look at the number of differing levels.
-				pessimisticPingTime *= 3;
+				estimatedPingTime *= 3;
 			}
 		}
 		for (int ix = 0; ix < Globals.allTaskTypes.length; ix++) {
 			final WorkerQueueTaskInfo taskInfo = workerQueue.getTaskInfo(ix);
-			final boolean unpredictable = Globals.allTaskTypes[ix].unpredictable;
-			nodeTaskInfoList[ix] = new NodeTaskInfo(taskInfo, this, local,
-					unpredictable, pessimisticPingTime);
+			nodeTaskInfoList[ix] = new NodeTaskInfo(taskInfo, this,
+					estimatedPingTime);
 		}
 	}
 
@@ -95,30 +94,6 @@ final class NodeInfo {
 			}
 		}
 		return -1;
-	}
-
-	boolean registerWorkerQueueInfo(WorkerQueueInfo[] workerQueueInfo) {
-		boolean changed = false;
-
-		if (isDead()) {
-			// It is strange to get info from a dead worker, but we're not going
-			// to try and
-			// revive the worker.
-			return false;
-		}
-		for (int i = 0; i < workerQueueInfo.length; i++) {
-			final WorkerQueueInfo workerInfo = workerQueueInfo[i];
-			final NodeTaskInfo nodeTaskInfo = nodeTaskInfoList[i];
-
-			if (workerInfo != null && nodeTaskInfo != null) {
-				// FindBug complains about the sequence number being unlocked,
-				// but this is a copy...
-				changed |= nodeTaskInfo.controlAllowance(
-						workerInfo.getQueueLength(),
-						workerInfo.getQueueLengthSequenceNumber());
-			}
-		}
-		return changed;
 	}
 
 	/**
@@ -404,7 +379,6 @@ final class NodeInfo {
 
 	synchronized LocalNodeInfo getLocalInfo() {
 		final int currentTasks[] = new int[nodeTaskInfoList.length];
-		final int allowance[] = new int[nodeTaskInfoList.length];
 		final long transmissionTime[] = new long[nodeTaskInfoList.length];
 		final long predictedDuration[] = new long[nodeTaskInfoList.length];
 
@@ -414,19 +388,13 @@ final class NodeInfo {
 				currentTasks[i] = 0;
 				transmissionTime[i] = 0;
 				predictedDuration[i] = Long.MAX_VALUE;
-				allowance[i] = 0;
 			} else {
 				currentTasks[i] = nodeTaskInfo.getCurrentTasks();
 				transmissionTime[i] = nodeTaskInfo.getTransmissionTime();
 				predictedDuration[i] = nodeTaskInfo.estimateRoundtripTime();
-				allowance[i] = nodeTaskInfo.getAllowance();
 			}
 		}
-		return new LocalNodeInfo(suspect, currentTasks, allowance,
+		return new LocalNodeInfo(suspect, currentTasks,
 				transmissionTime, predictedDuration);
-	}
-
-	synchronized boolean isAvailable(TaskType t) {
-		return nodeTaskInfoList[t.index].isAvailable();
 	}
 }
