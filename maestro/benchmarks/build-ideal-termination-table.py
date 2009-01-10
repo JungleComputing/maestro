@@ -2,6 +2,7 @@
 
 import sys
 import string
+import constants
 
 def usage():
     print "Usage: " + sys.argv[0] + " <specification>"
@@ -14,6 +15,7 @@ if len(sys.argv) < 5:
 base = float( sys.argv[2] )
 
 for f in sys.argv[4:]:
-    frac = float( f )
+    faulted = int( f )
+    frac = float( faulted )/float(constants.processorsForFaultTolerance)
     t = base/(1-frac)
     print "%s %f" %(f, t)

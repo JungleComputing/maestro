@@ -1,6 +1,9 @@
-set size 0.8
+set size 1
 set key right
-set term postscript eps
+set term postscript enhanced color eps 14 blacktext solid linewidth 2.5
+set pointsize 1.8
+set border 1+2
+set tics nomirror
 set data style linespoints
 set xlabel "Number of frames per node"
 set ylabel "Execution time per frame"

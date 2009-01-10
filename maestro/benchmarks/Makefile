@@ -1,7 +1,7 @@
 #
 
 #PLOTFILES=overhead.pdf fault-tolerance.pdf
-PLOTFILES=disturbance.eps learn-plain.eps learn-slow.eps slow-16-2000-counts.eps plain-16-2000-counts.eps # fault-tolerance.pdf
+PLOTFILES=disturbance.eps learn-plain.eps learn-slow.eps slow-16-2000-counts.eps plain-16-2000-counts.eps fault-tolerance.eps
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
 
@@ -67,6 +67,7 @@ LEARN_SLOW_16_POINTS=$(patsubst %,slow-16-%.result, $(LEARNRANGE) )
 LEARN_SLOW_64_POINTS=$(patsubst %,slow-64-%.result, $(LEARNRANGE) )
 
 TERMINATION_FRACTIONS=0.0 0.2 0.4 0.6 0.8
+TERMINATION_COUNTS=0 5 11 17 23
 TERMINATION_PLAIN_2000_POINTS=${patsubst %,termination-plain-%.result,$(TERMINATION_FRACTIONS)}
 TERMINATION_SLOW_2000_POINTS=${patsubst %,termination-slow-%.result,$(TERMINATION_FRACTIONS)}
 
@@ -138,7 +139,7 @@ termination-slow-2000.table: $(TERMINATION_SLOW_2000_POINTS)
 %.pdf: %.eps
 	ps2pdf $*.eps > $@
 
-disturbance.eps: slow-2000.table no-2000.table disturbance-eps.gpl plain-2000.table oneslow-2000.table
+disturbance.eps: slow-2000.table no-2000.table disturbance-eps.gpl plain-2000.table oneslow-2000.table onetask-2000.table
 	gnuplot disturbance-eps.gpl > $@
 
 homogeneous.eps: onetask-2000.table plain-2000.table homogeneous-eps.gpl
@@ -151,7 +152,7 @@ learn-slow.eps: learn-slow-64.table learn-slow-16.table learn-slow-4.table  lear
 	gnuplot learn-slow-eps.gpl > $@
 
 termination-ideal.table: build-ideal-termination-table.py termination-plain-0.0.result
-	python build-ideal-termination-table.py `cat termination-plain-0.0.result` $(TERMINATION_FRACTIONS) > $@
+	python build-ideal-termination-table.py `cat termination-plain-0.0.result` $(TERMINATION_COUNTS) > $@
 
 fault-tolerance.eps: termination-ideal.table termination-plain-2000.table termination-slow-2000.table fault-tolerance-eps.gpl
 	gnuplot fault-tolerance-eps.gpl > $@

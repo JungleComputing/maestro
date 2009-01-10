@@ -1,9 +1,12 @@
 set size 1
-set key bottom right
-set term postscript eps
+set key bottom left reverse Left
+set term postscript enhanced blacktext color eps 14 solid linewidth 2.5
 set data style linespoints
+set pointsize 1.8
 set xlabel "Number of nodes"
 set ylabel "Execution time per frame"
+set border 1+2
+set tics nomirror
 set yrange [0:*]
 plot \
  'oneslow-2000.table' using 1:4 title 'Slow nodes, one task', \

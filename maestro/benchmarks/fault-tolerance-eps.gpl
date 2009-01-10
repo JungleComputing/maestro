@@ -1,10 +1,16 @@
 set size 0.8
-set key left
-set term postscript eps
-set data style linespoints
-set xlabel "Fraction of faulted nodes"
+set key left reverse Left
+set border 1+2
+set term postscript enhanced color eps 12
+set style fill solid border -1
+set style data histograms
+set style histogram gap 1
+set xlabel "Number of faulted nodes"
 set ylabel "Execution time"
+set yrange [0:2000]
+set tics nomirror
+set xtics ("0" 0, "5" 1, "11" 2, "17" 3, "23" 4)
 plot \
- 'termination-plain-2000.table' using 1:2 title 'Homogeneous',  \
- 'termination-slow-2000.table' using 1:2 title 'Heterogeneous', \
- 'termination-ideal.table' using 1:2 title 'Ideal'
+ 'termination-ideal.table' using 2 title 'Ideal', \
+ 'termination-plain-2000.table' using 2 title 'Homogeneous nodes',  \
+ 'termination-slow-2000.table' using 2 title 'Slow nodes'
