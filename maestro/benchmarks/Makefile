@@ -1,7 +1,7 @@
 #
 
 #PLOTFILES=overhead.pdf fault-tolerance.pdf
-PLOTFILES=homogeneous.eps disturbance.eps learn-plain.eps learn-slow.eps slow-16-2000-counts.eps plain-16-2000-counts.eps#fault-tolerance.pdf
+PLOTFILES=disturbance.eps learn-plain.eps learn-slow.eps slow-16-2000-counts.eps plain-16-2000-counts.eps # fault-tolerance.pdf
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
 

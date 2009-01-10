@@ -7,16 +7,17 @@ set ylabel "Number of frames"
 set yrange [0:*]
 #unset xtics
 #unset ytics
+set xtic scale 0 0
 set xtics border in scale 1,0.5 nomirror rotate by -45  offset character 0, 0, 0
-set xtics   ("Generate" 0.00000, "Scale" 1.00000, "Sharpen" 2.00000, "Compress" 3.00000, "Discard" 4.00000)
-set boxwidth 0.90 absolute
+set xtics   ("Generate" 0.50000, "Scale" 1.50000, "Sharpen" 2.50000, "Compress" 3.50000, "Discard" 4.50000)
+set boxwidth 0.85 absolute
 set style fill solid border -2
 set style data histograms
 #set style histogram rowstacked
 set style histogram columnstacked
 plot \
- 'data.counts' using 2 title "Generate" , \
- 'data.counts' using 3 title "Scale" , \
- '' using 4 title "Sharpen" , \
- '' using 5 title "Compress", \
- '' using 6 title "Discard"
+ 'data.counts' using 2 , \
+ 'data.counts' using 3 , \
+ '' using 4 , \
+ '' using 5 , \
+ '' using 6 

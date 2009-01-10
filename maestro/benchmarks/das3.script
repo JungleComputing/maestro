@@ -1,4 +1,5 @@
 #!/bin/sh
+set -e
 
 export SGE_ROOT=/usr/local/Cluster-Apps/sge
 PRUN=/usr/local/VU/reserve.sge/bin/prun
@@ -26,4 +27,5 @@ fi
 source ./settag*.sh
 mkdir $TAG.logs
 echo $PRUN $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $TAG.logs/out $JAVA $ARGS
-exec $PRUN $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $TAG.logs/out $JAVA $ARGS
+$PRUN $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $TAG.logs/out $JAVA $ARGS
+sleep 3

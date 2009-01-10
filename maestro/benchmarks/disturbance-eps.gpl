@@ -1,4 +1,4 @@
-set size 0.8
+set size 1
 set key bottom right
 set term postscript eps
 set data style linespoints
@@ -6,7 +6,8 @@ set xlabel "Number of nodes"
 set ylabel "Execution time per frame"
 set yrange [0:*]
 plot \
- 'plain-2000.table' using 1:4 title 'Homogeneous',  \
- 'no-2000.table' using 1:4 title 'Disabled tasks',  \
- 'slow-2000.table' using 1:4 title 'Slower tasks', \
- 'oneslow-2000.table' using 1:4 title 'One slow task'
+ 'oneslow-2000.table' using 1:4 title 'Slow nodes, one task', \
+ 'no-2000.table' using 1:4 title 'Disabled nodes',  \
+ 'slow-2000.table' using 1:4 title 'Slow nodes', \
+ 'plain-2000.table' using 1:4 title 'Homogeneous nodes',  \
+ 'onetask-2000.table' using 1:4 title 'Homogeneous nodes, one task'
