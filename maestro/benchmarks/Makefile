@@ -1,7 +1,7 @@
 #
 
 #PLOTFILES=overhead.pdf fault-tolerance.pdf
-PLOTFILES=homogeneous.pdf disturbance.pdf learn-plain.pdf learn-slow.pdf fault-tolerance.pdf
+PLOTFILES=homogeneous.eps disturbance.eps learn-plain.eps learn-slow.eps slow-16-2000-counts.eps plain-16-2000-counts.eps#fault-tolerance.pdf
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
 
@@ -80,6 +80,9 @@ PRECIOUSJUNK=*.logs $(PLOTFILES) plain-2000.table one.table slow-2000.table no-2
 JUNK=*.experiment *.result *.counts
 
 all: $(PLOTFILES)
+
+install: $(PLOTFILES)
+	cp $(PLOTFILES) ~/hpdc/reeuwijk/documenten/maestro
 
 tables: $(TABLES)
 

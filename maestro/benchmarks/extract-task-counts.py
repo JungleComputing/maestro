@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import sys
+import math
 import string
 import constants
 
@@ -9,6 +10,17 @@ workerString = 'Worker:'
 def startsWith( s, pre ):
     return s[0:len(pre)] == pre
     
+
+def computeVariation( l ):
+    sum = 0
+    for e in l:
+        sum += e
+    average = float( sum )/len( l )
+    diff = 0
+    for e in l:
+        diff += math.fabs( float( e )-average )
+    return diff
+
 def extractTaskLabel( s ):
     s = s[len(workerString):].strip()
     s = s[5:-2]
@@ -34,8 +46,11 @@ def getTaskCounts( fnm ):
     fh.close()
     return res
 
-def second_cmp( a, b ):
-    return cmp( a[1], b[1] )
+def variation_cmp( a, b ):
+    res = cmp( a[1]/500, b[1]/500 )
+    if( res != 0 ):
+        return res
+    return cmp( computeVariation( a ), computeVariation( b ) )
 
 def usage():
     print "Usage: " + sys.argv[0] + " <tag> <output-file> <file>...<file>"
@@ -54,7 +69,7 @@ for fnm in files:
     counts = getTaskCounts( fnm )
     l.append( counts )
 
-l = sorted( l, second_cmp )
+l = sorted( l, variation_cmp )
 output_file = sys.argv[1]
 fhnd = open( output_file, 'w' )
 i = 0
