@@ -4,7 +4,7 @@ VUJob-plain5-20-2000.cluster.name = VU
 VUJob-plain5-20-2000.pool.name = plain5-20-2000-pool
 VUJob-plain5-20-2000.application.input.files = settag-plain5-20-2000.sh
 VUJob-plain5-20-2000.application.output.files = plain5-20-2000-fs0.logs
-VUJob-plain5-20-2000.application.arguments = 40000
+VUJob-plain5-20-2000.application.arguments = -oddslowscale,-evenslowsharpen,40000
 VUJob-plain5-20-2000.resource.count = 4
 
 LeidenJob-plain5-20-2000.application.name = VideoPlayerBenchmarkProgram
@@ -13,7 +13,7 @@ LeidenJob-plain5-20-2000.cluster.name = Leiden
 LeidenJob-plain5-20-2000.pool.name = plain5-20-2000-pool
 LeidenJob-plain5-20-2000.application.input.files = settag-plain5-20-2000.sh
 LeidenJob-plain5-20-2000.application.output.files = plain5-20-2000-fs1.logs
-LeidenJob-plain5-20-2000.application.arguments = 40000
+LeidenJob-plain5-20-2000.application.arguments = -oddslowscale,-evenslowsharpen,40000
 LeidenJob-plain5-20-2000.resource.count = 4
 
 UvAJob-plain5-20-2000.application.name = VideoPlayerBenchmarkProgram
@@ -22,7 +22,7 @@ UvAJob-plain5-20-2000.cluster.name = UvA
 UvAJob-plain5-20-2000.pool.name = plain5-20-2000-pool
 UvAJob-plain5-20-2000.application.input.files = settag-plain5-20-2000.sh
 UvAJob-plain5-20-2000.application.output.files = plain5-20-2000-fs2.logs
-UvAJob-plain5-20-2000.application.arguments = 40000
+UvAJob-plain5-20-2000.application.arguments = -oddslowscale,-evenslowsharpen,40000
 UvAJob-plain5-20-2000.resource.count = 4
 
 DelftJob-plain5-20-2000.application.name = VideoPlayerBenchmarkProgram
@@ -31,7 +31,7 @@ DelftJob-plain5-20-2000.cluster.name = Delft
 DelftJob-plain5-20-2000.pool.name = plain5-20-2000-pool
 DelftJob-plain5-20-2000.application.input.files = settag-plain5-20-2000.sh
 DelftJob-plain5-20-2000.application.output.files = plain5-20-2000-fs3.logs
-DelftJob-plain5-20-2000.application.arguments = 40000
+DelftJob-plain5-20-2000.application.arguments = -oddslowscale,-evenslowsharpen,40000
 DelftJob-plain5-20-2000.resource.count = 4
 
 MultimediaNJob-plain5-20-2000.application.name = VideoPlayerBenchmarkProgram
@@ -40,5 +40,5 @@ MultimediaNJob-plain5-20-2000.cluster.name = MultimediaN
 MultimediaNJob-plain5-20-2000.pool.name = plain5-20-2000-pool
 MultimediaNJob-plain5-20-2000.application.input.files = settag-plain5-20-2000.sh
 MultimediaNJob-plain5-20-2000.application.output.files = plain5-20-2000-fs4.logs
-MultimediaNJob-plain5-20-2000.application.arguments = 40000
+MultimediaNJob-plain5-20-2000.application.arguments = -oddslowscale,-evenslowsharpen,40000
 MultimediaNJob-plain5-20-2000.resource.count = 4
