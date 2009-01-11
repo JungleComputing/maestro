@@ -43,14 +43,14 @@ if not elements[0] in args.keys():
     sys.exit( 1 )
 arguments = args[elements[0]]
 s = Template( """# Generated experiment file
-run$p.application.name = VideoPlayerBenchmarkProgram
-run$p.process.count = $p
-run$p.cluster.name = VU
-run$p.pool.name = $arg-pool
-run$p.application.input.files = settag-$arg.sh
-run$p.application.output.files = $arg.logs
-run$p.application.arguments = $args
-run$p.resource.count = $p
+run-$arg.application.name = VideoPlayerBenchmarkProgram
+run-$arg.process.count = $p
+run-$arg.cluster.name = VU
+run-$arg.pool.name = $arg-pool
+run-$arg.application.input.files = settag-$arg.sh
+run-$arg.application.output.files = $arg-fs0.logs
+run-$arg.application.arguments = $args
+run-$arg.resource.count = $p
 """ )
 print s.substitute( arg=arg, args=string.join( arguments, ',' ), p=p )
 

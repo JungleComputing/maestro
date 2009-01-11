@@ -63,14 +63,14 @@ if len(sys.argv) < 4:
 elements = string.split( sys.argv[1], '-' )
 sum = 0
 count = 0
-files = sys.argv[2:]
+files = sys.argv[3:]
 l = []
 for fnm in files:
     counts = getTaskCounts( fnm )
     l.append( counts )
 
 l = sorted( l, variation_cmp )
-output_file = sys.argv[1]
+output_file = sys.argv[2]
 fhnd = open( output_file, 'w' )
 i = 0
 for e in l:

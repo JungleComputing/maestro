@@ -1,7 +1,7 @@
 #
 
 #PLOTFILES=overhead.pdf fault-tolerance.pdf
-PLOTFILES=disturbance.eps learn-plain.eps learn-slow.eps slow-16-2000-counts.eps plain-16-2000-counts.eps fault-tolerance.eps
+PLOTFILES=disturbance.eps learn-plain.eps learn-slow.eps slow-20-2000-counts.eps plain-20-2000-counts.eps fault-tolerance.eps plain5-20-2000-counts.eps
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
 
@@ -25,21 +25,21 @@ termination-%.logs: termination-%.experiment run-experiment $(DEPLOYFILES) $(VID
 %.experiment: build-experiment.py
 	python build-experiment.py $* > $@
 
-%.logs: %.experiment run-experiment $(DEPLOYFILES) $(VIDEO_PLAYER_JAR)
+%-fs0.logs: %.experiment run-experiment $(DEPLOYFILES) $(VIDEO_PLAYER_JAR)
 	echo "export TAG=$*" > settag-$*.sh
 	python compute-runtime.py $* >> settag-$*.sh
-	rm -rf $*.logs
+	rm -rf $*-fs?.logs
 	./run-experiment $*.experiment
 	rm -f settag-$*.sh
 
 termination-%.result: termination-%.logs average-termination-duration.py
-	python average-termination-duration.py $* $@ termination-$*.logs/out.*
+	python average-termination-duration.py $* $@ termination-$*-fs0.logs/out.*
 
-%.counts: %.logs average-duration.py extract-task-counts.py
-	python extract-task-counts.py $@ $*.logs/out.*
+%.counts: %-fs0.logs extract-task-counts.py
+	python extract-task-counts.py $* $@ $*-fs0.logs/out.*
 
-%.result: %.logs average-duration.py
-	python average-duration.py $* $@ $*.logs/out.*
+%.result: %-fs0.logs average-duration.py
+	python average-duration.py $* $@ $*-fs0.logs/out.*
 
 #LEARNRANGE=4000 3000 2000 1500 1000 500 350 200 150 100
 LEARNRANGE=3000 2000 1500 1000 500 350 200 150 100
@@ -89,6 +89,9 @@ tables: $(TABLES)
 
 x:
 	echo [$(LEARN_PLAIN_4_POINTS)] 
+
+plain5-20-2000.counts: plain5-20-2000-fs0.logs
+	python extract-task-counts.py plain5-20-2000 plain5-20-2000.counts plain5-20-2000-fs0.logs/out.* plain5-20-2000-fs1.logs/out.* plain5-20-2000-fs2.logs/out.* plain5-20-2000-fs3.logs/out.* plain5-20-2000-fs4.logs/out.*
 
 learn-plain-4.table: $(LEARN_PLAIN_4_POINTS)
 	cat $(LEARN_PLAIN_4_POINTS) > $@
