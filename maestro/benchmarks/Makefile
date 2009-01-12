@@ -33,7 +33,7 @@ termination-%.logs: termination-%.experiment run-experiment $(DEPLOYFILES) $(VID
 	rm -f settag-$*.sh
 
 termination-%.result: termination-%.logs average-termination-duration.py
-	python average-termination-duration.py $* $@ termination-$*-fs0.logs/out.*
+	python average-termination-duration.py $* $@ termination-$*.logs/out.*
 
 %.counts: %-fs0.logs extract-task-counts.py
 	python extract-task-counts.py $* $@ $*-fs0.logs/out.*
