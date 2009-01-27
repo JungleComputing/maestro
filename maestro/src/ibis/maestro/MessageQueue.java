@@ -13,13 +13,13 @@ import java.util.concurrent.ConcurrentLinkedQueue;
  */
 class MessageQueue {
 
-	private final ConcurrentLinkedQueue<QueuedMessage> q = new ConcurrentLinkedQueue<QueuedMessage>();
+    private final ConcurrentLinkedQueue<QueuedMessage> q = new ConcurrentLinkedQueue<QueuedMessage>();
 
-	void add(IbisIdentifier destination, Message msg) {
-		q.add(new QueuedMessage(destination, msg));
-	}
+    void add(IbisIdentifier destination, Message msg) {
+        q.add(new QueuedMessage(destination, msg));
+    }
 
-	QueuedMessage getNext() {
-		return q.poll();
-	}
+    QueuedMessage getNext() {
+        return q.poll();
+    }
 }

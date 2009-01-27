@@ -12,58 +12,59 @@ import org.junit.Test;
  */
 public class WorkerQueueTest extends TestCase {
     private static void addToQueue(TaskType type, WorkerQueue queue,
-	    Integer... ids) {
-	for (Integer id : ids) {
-	    JobInstanceIdentifier jobInstance = new JobInstanceIdentifier(id,
-		    null, null);
-	    TaskInstance ti = new TaskInstance(jobInstance, type, 0, null);
-	    RunTaskMessage msg = new RunTaskMessage(null, ti, 0, null);
-	    queue.add(msg);
-	}
+            Integer... ids) {
+        for (Integer id : ids) {
+            JobInstanceIdentifier jobInstance = new JobInstanceIdentifier(id,
+                    null, null);
+            TaskInstance ti = new TaskInstance(jobInstance, type, 0, null);
+            RunTaskMessage msg = new RunTaskMessage(null, ti, 0, null);
+            queue.add(msg);
+        }
     }
 
     private static void removeFromQueue(WorkerQueue queue, Integer... ids) {
-	for (Integer id : ids) {
-	    if (queue.isEmpty()) {
-		fail("Queue is empty, while I expected " + id);
-	    }
-	    RunTaskMessage msg = queue.remove(null);
+        for (Integer id : ids) {
+            if (queue.isEmpty()) {
+                fail("Queue is empty, while I expected " + id);
+            }
+            RunTaskMessage msg = queue.remove(null);
 
-	    if (msg.taskInstance.jobInstance.id != id) {
-		fail("Unexpected task from worker queue: "
-			+ msg.taskInstance.jobInstance.id + " instead of " + id);
-	    }
-	}
+            if (msg.taskInstance.jobInstance.id != id) {
+                fail("Unexpected task from worker queue: "
+                        + msg.taskInstance.jobInstance.id + " instead of " + id);
+            }
+        }
     }
 
     /** */
     @Test
     public void testAdd() {
-	JobIdentifier id = null;
-	TaskType type = new TaskType(id, 0, 1, false, 0);
-	Globals.allTaskTypes = new TaskType[] { type };
-	WorkerQueue queue = new WorkerQueue(null); // FIXME: the null will cause
-	// a crash
+        JobIdentifier id = null;
+        TaskType type = new TaskType(id, 0, 1, false, 0);
+        Globals.allTaskTypes = new TaskType[] { type };
+        WorkerQueue queue = new WorkerQueue(null); // FIXME: the null will
+                                                    // cause
+        // a crash
 
-	addToQueue(type, queue, 0);
-	removeFromQueue(queue, 0);
-	if (!queue.isEmpty()) {
-	    fail("Queue should be empty");
-	}
+        addToQueue(type, queue, 0);
+        removeFromQueue(queue, 0);
+        if (!queue.isEmpty()) {
+            fail("Queue should be empty");
+        }
 
-	addToQueue(type, queue, 1, 0);
-	removeFromQueue(queue, 0, 1);
-	if (!queue.isEmpty()) {
-	    fail("Queue should be empty");
-	}
+        addToQueue(type, queue, 1, 0);
+        removeFromQueue(queue, 0, 1);
+        if (!queue.isEmpty()) {
+            fail("Queue should be empty");
+        }
 
-	addToQueue(type, queue, 4, 3, 2);
-	removeFromQueue(queue, 2);
-	addToQueue(type, queue, 0, 1, 5, 6);
-	removeFromQueue(queue, 0, 1, 3, 4, 5, 6);
-	if (!queue.isEmpty()) {
-	    fail("Queue should be empty");
-	}
+        addToQueue(type, queue, 4, 3, 2);
+        removeFromQueue(queue, 2);
+        addToQueue(type, queue, 0, 1, 5, 6);
+        removeFromQueue(queue, 0, 1, 3, 4, 5, 6);
+        if (!queue.isEmpty()) {
+            fail("Queue should be empty");
+        }
     }
 
 }

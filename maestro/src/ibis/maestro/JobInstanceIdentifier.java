@@ -10,98 +10,99 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk.
  */
 class JobInstanceIdentifier implements Serializable {
-	private static final long serialVersionUID = -7567750999837567234L;
-	private static long serialNo = 0;
+    private static final long serialVersionUID = -7567750999837567234L;
 
-	/** The identifier issued by the maestro to which it was submitted. */
-	final long id;
+    private static long serialNo = 0;
 
-	/**
-	 * The identifier the user has added to the job instance when submitting it.
-	 * We require it to implement serializable to make sure we don't get obscure
-	 * runtime errors.
-	 */
-	final Serializable userId;
+    /** The identifier issued by the maestro to which it was submitted. */
+    final long id;
 
-	/** The ibis to which the final result should be transmitted. */
-	final IbisIdentifier ibis;
+    /**
+     * The identifier the user has added to the job instance when submitting it.
+     * We require it to implement serializable to make sure we don't get obscure
+     * runtime errors.
+     */
+    final Serializable userId;
 
-	/**
-	 * Constructs a new identifier.
-	 * 
-	 * @param userId
-	 *            The user identifier to include.
-	 * @param ibis
-	 *            The ibis to send the result to.
-	 */
-	JobInstanceIdentifier(long id, Serializable userId, IbisIdentifier ibis) {
-		this.id = id;
-		this.userId = userId;
-		this.ibis = ibis;
-	}
+    /** The ibis to which the final result should be transmitted. */
+    final IbisIdentifier ibis;
 
-	/**
-	 * Constructs a new identifier.
-	 * 
-	 * @param userId
-	 *            The user identifier to include.
-	 * @param ibis
-	 *            The ibis to send the result to.
-	 */
-	JobInstanceIdentifier(Serializable userId, IbisIdentifier ibis) {
-		this(serialNo++, userId, ibis);
-	}
+    /**
+     * Constructs a new identifier.
+     * 
+     * @param userId
+     *            The user identifier to include.
+     * @param ibis
+     *            The ibis to send the result to.
+     */
+    JobInstanceIdentifier(long id, Serializable userId, IbisIdentifier ibis) {
+        this.id = id;
+        this.userId = userId;
+        this.ibis = ibis;
+    }
 
-	/**
-	 * Returns a string representation of this job instance identifier.
-	 * 
-	 * @return The string representation.
-	 */
-	@Override
-	public String toString() {
-		return "(job instance: id=" + id + " user id=" + userId + " port="
-				+ ibis + ")";
-	}
+    /**
+     * Constructs a new identifier.
+     * 
+     * @param userId
+     *            The user identifier to include.
+     * @param ibis
+     *            The ibis to send the result to.
+     */
+    JobInstanceIdentifier(Serializable userId, IbisIdentifier ibis) {
+        this(serialNo++, userId, ibis);
+    }
 
-	/**
-	 * Returns a hash code for this job identifier.
-	 * 
-	 * @return The hash code of the identifier.
-	 */
-	@Override
-	public int hashCode() {
-		return (int) (id ^ (id >>> 32));
-	}
+    /**
+     * Returns a string representation of this job instance identifier.
+     * 
+     * @return The string representation.
+     */
+    @Override
+    public String toString() {
+        return "(job instance: id=" + id + " user id=" + userId + " port="
+                + ibis + ")";
+    }
 
-	/**
-	 * Compares this job identifier with the given other object.
-	 * 
-	 * @param obj
-	 *            The other object to compare to.
-	 * @return True iff the two job identifiers are equal.
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		final JobInstanceIdentifier other = (JobInstanceIdentifier) obj;
-		return (id == other.id);
-	}
+    /**
+     * Returns a hash code for this job identifier.
+     * 
+     * @return The hash code of the identifier.
+     */
+    @Override
+    public int hashCode() {
+        return (int) (id ^ (id >>> 32));
+    }
 
-	/**
-	 * Returns a textual representation of this job.
-	 * 
-	 * @return
-	 */
-	String label() {
-		return "J" + id;
-	}
+    /**
+     * Compares this job identifier with the given other object.
+     * 
+     * @param obj
+     *            The other object to compare to.
+     * @return True iff the two job identifiers are equal.
+     */
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final JobInstanceIdentifier other = (JobInstanceIdentifier) obj;
+        return (id == other.id);
+    }
+
+    /**
+     * Returns a textual representation of this job.
+     * 
+     * @return
+     */
+    String label() {
+        return "J" + id;
+    }
 
 }

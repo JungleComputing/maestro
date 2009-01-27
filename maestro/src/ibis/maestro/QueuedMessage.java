@@ -9,17 +9,18 @@ import ibis.ipl.IbisIdentifier;
  * 
  */
 class QueuedMessage {
-	final IbisIdentifier destination;
-	final Message msg;
+    final IbisIdentifier destination;
 
-	/**
-	 * @param destination
-	 * @param msg
-	 */
-	QueuedMessage(final IbisIdentifier destination, final Message msg) {
-		super();
-		this.destination = destination;
-		this.msg = msg;
-	}
+    final Message msg;
+
+    /**
+     * @param destination
+     * @param msg
+     */
+    QueuedMessage(final IbisIdentifier destination, final Message msg) {
+        super();
+        this.destination = destination;
+        this.msg = msg;
+    }
 
 }

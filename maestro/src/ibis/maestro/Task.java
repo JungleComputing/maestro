@@ -7,17 +7,17 @@ package ibis.maestro;
  * 
  */
 public interface Task {
-	/**
-	 * Returns the name of this task, suitable for human consumption.
-	 * 
-	 * @return The name of this task.
-	 */
-	String getName();
+    /**
+     * Returns the name of this task, suitable for human consumption.
+     * 
+     * @return The name of this task.
+     */
+    String getName();
 
-	/**
-	 * Returns true iff this task can run in this context.
-	 * 
-	 * @return True iff this task can run.
-	 */
-	abstract boolean isSupported();
+    /**
+     * Returns true iff this task can run in this context.
+     * 
+     * @return True iff this task can run.
+     */
+    abstract boolean isSupported();
 }

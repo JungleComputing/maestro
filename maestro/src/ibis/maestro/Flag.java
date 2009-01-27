@@ -6,54 +6,54 @@ package ibis.maestro;
  * @author Kees van Reeuwijk.
  */
 class Flag {
-	private boolean flag;
+    private boolean flag;
 
-	Flag(boolean flag) {
-		this.flag = flag;
-	}
+    Flag(boolean flag) {
+        this.flag = flag;
+    }
 
-	void set() {
-		set( true );
-	}
+    void set() {
+        set(true);
+    }
 
-	void reset() {
-		set( false );
-	}
+    void reset() {
+        set(false);
+    }
 
-	synchronized void set(boolean val) {
-		final boolean changed = flag != val;
-		flag = val;
-		if( changed ){
-			this.notifyAll();
-		}
-	}
+    synchronized void set(boolean val) {
+        final boolean changed = flag != val;
+        flag = val;
+        if (changed) {
+            this.notifyAll();
+        }
+    }
 
-	synchronized boolean isSet() {
-		return flag;
-	}
+    synchronized boolean isSet() {
+        return flag;
+    }
 
-	synchronized boolean getAndReset() {
-		final boolean res = flag;
-		flag = false;
-		if( res ){
-			this.notifyAll();
-		}
-		return res;
-	}
+    synchronized boolean getAndReset() {
+        final boolean res = flag;
+        flag = false;
+        if (res) {
+            this.notifyAll();
+        }
+        return res;
+    }
 
-	void waitUntilSet() {
-		while( true ){
-			synchronized( this ){
-				if( flag ){
-					return;
-				}
+    void waitUntilSet() {
+        while (true) {
+            synchronized (this) {
+                if (flag) {
+                    return;
+                }
 
-				try {
-					this.wait();
-				} catch (final InterruptedException e) {
-					// Ignore.
-				}
-			}
-		}
-	}
+                try {
+                    this.wait();
+                } catch (final InterruptedException e) {
+                    // Ignore.
+                }
+            }
+        }
+    }
 }

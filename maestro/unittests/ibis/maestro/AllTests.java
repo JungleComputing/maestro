@@ -16,12 +16,12 @@ public class AllTests {
      * @return The testsuite.
      */
     public static Test suite() {
-	TestSuite suite = new TestSuite("Test for ibis.maestro");
-	// $JUnit-BEGIN$
-	suite.addTestSuite(WorkerQueueTest.class);
-	suite.addTestSuite(MasterQueueTest.class);
-	// $JUnit-END$
-	return suite;
+        TestSuite suite = new TestSuite("Test for ibis.maestro");
+        // $JUnit-BEGIN$
+        suite.addTestSuite(WorkerQueueTest.class);
+        suite.addTestSuite(MasterQueueTest.class);
+        // $JUnit-END$
+        return suite;
     }
 
 }

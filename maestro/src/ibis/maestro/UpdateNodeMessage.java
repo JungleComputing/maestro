@@ -8,20 +8,20 @@ package ibis.maestro;
  * 
  */
 final class UpdateNodeMessage extends Message {
-	/** Contractual obligation. */
-	private static final long serialVersionUID = 1L;
+    /** Contractual obligation. */
+    private static final long serialVersionUID = 1L;
 
-	final NodePerformanceInfo update;
+    final NodePerformanceInfo update;
 
-	/**
-	 * Constructs a new work request message.
-	 * 
-	 * @param identifier
-	 *            The identifier to use.
-	 * @param masterHasWork
-	 */
-	UpdateNodeMessage(NodePerformanceInfo update) {
-		this.update = update;
-	}
+    /**
+     * Constructs a new work request message.
+     * 
+     * @param identifier
+     *            The identifier to use.
+     * @param masterHasWork
+     */
+    UpdateNodeMessage(NodePerformanceInfo update) {
+        this.update = update;
+    }
 
 }

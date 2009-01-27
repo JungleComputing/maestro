@@ -7,21 +7,23 @@ package ibis.maestro;
  * 
  */
 final class JobResultMessage extends Message {
-	private static final long serialVersionUID = 5158569253342276404L;
-	final JobInstanceIdentifier job;
-	final Object result;
+    private static final long serialVersionUID = 5158569253342276404L;
 
-	/**
-	 * Constructs a new result message.
-	 * 
-	 * @param job
-	 *            The identifier of the job this is a result for.
-	 * @param result
-	 *            The result value.
-	 */
-	public JobResultMessage(JobInstanceIdentifier job, Object result) {
-		this.job = job;
-		this.result = result;
-	}
+    final JobInstanceIdentifier job;
+
+    final Object result;
+
+    /**
+     * Constructs a new result message.
+     * 
+     * @param job
+     *            The identifier of the job this is a result for.
+     * @param result
+     *            The result value.
+     */
+    public JobResultMessage(JobInstanceIdentifier job, Object result) {
+        this.job = job;
+        this.result = result;
+    }
 
 }

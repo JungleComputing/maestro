@@ -10,86 +10,88 @@ import java.util.ArrayList;
  * @author Kees van Reeuwijk
  */
 public class AntTypeRoutingTable {
-	final TaskType type;
-	final ArrayList<NodeInfo> nodes = new ArrayList<NodeInfo>();
-	private long updateTimeStamp = -1;
+    final TaskType type;
 
-	AntTypeRoutingTable(TaskType type) {
-		this.type = type;
-	}
+    final ArrayList<NodeInfo> nodes = new ArrayList<NodeInfo>();
 
-	void addNode(NodeInfo node) {
-		nodes.add(0, node);
-	}
+    private long updateTimeStamp = -1;
 
-	private int findIbis(IbisIdentifier ibis) {
-		for (int ix = 0; ix < nodes.size(); ix++) {
-			final NodeInfo info = nodes.get(ix);
+    AntTypeRoutingTable(TaskType type) {
+        this.type = type;
+    }
 
-			if (info.ibis.equals(ibis)) {
-				return ix;
-			}
-		}
-		return -1;
-	}
+    void addNode(NodeInfo node) {
+        nodes.add(0, node);
+    }
 
-	/**
-	 * Register, using the given timestamp, that the given ibis is the best
-	 * route.
-	 * 
-	 * @param ibis
-	 *            The ibis to use.
-	 * @param timestamp
-	 *            The time the ibis was used.
-	 */
-	synchronized void update(IbisIdentifier ibis, long timestamp) {
-		if (timestamp > updateTimeStamp) {
-			updateTimeStamp = timestamp;
+    private int findIbis(IbisIdentifier ibis) {
+        for (int ix = 0; ix < nodes.size(); ix++) {
+            final NodeInfo info = nodes.get(ix);
 
-			final int ix = findIbis(ibis);
-			// FIXME: handle ix<0 case.
-			if (ix == 0) {
-				// Already at the start, don't bother.
-				return;
-			}
-			if (ix > 0) {
-				// Put this node in front.
-				final NodeInfo info = nodes.remove(ix);
-				nodes.add(0, info);
-			}
-		}
-	}
+            if (info.ibis.equals(ibis)) {
+                return ix;
+            }
+        }
+        return -1;
+    }
 
-	synchronized NodeInfo getBestReadyWorker() {
-		if (Settings.traceAntRouting) {
-			Globals.log.reportProgress("Ant router: get best ready worker for "
-					+ type);
-		}
-		// Simply pick the first available node. The ant trails
-		// are supposed to put the most successful one first
-		// (or at least do so for most of the time.)
-		for (int ix = 0; ix < nodes.size(); ix++) {
-			final NodeInfo node = nodes.get(ix);
-			// FIXME: ensure that ant routing also honours
-			// worker queue limitations.
-			if ( true ) {
-				if (Settings.traceAntRouting) {
-					Globals.log.reportProgress("Worker " + node
-							+ " is best available");
-				}
-				return node;
-			}
-			if (Settings.traceAntRouting) {
-				Globals.log.reportProgress("Worker " + node + " is busy");
-			}
-		}
-		return null;
-	}
+    /**
+     * Register, using the given timestamp, that the given ibis is the best
+     * route.
+     * 
+     * @param ibis
+     *            The ibis to use.
+     * @param timestamp
+     *            The time the ibis was used.
+     */
+    synchronized void update(IbisIdentifier ibis, long timestamp) {
+        if (timestamp > updateTimeStamp) {
+            updateTimeStamp = timestamp;
 
-	synchronized void removeNode(IbisIdentifier theIbis) {
-		final int ix = findIbis(theIbis);
-		if( ix>=0 ){
-			nodes.remove(ix);
-		}
-	}
+            final int ix = findIbis(ibis);
+            // FIXME: handle ix<0 case.
+            if (ix == 0) {
+                // Already at the start, don't bother.
+                return;
+            }
+            if (ix > 0) {
+                // Put this node in front.
+                final NodeInfo info = nodes.remove(ix);
+                nodes.add(0, info);
+            }
+        }
+    }
+
+    synchronized NodeInfo getBestReadyWorker() {
+        if (Settings.traceAntRouting) {
+            Globals.log.reportProgress("Ant router: get best ready worker for "
+                    + type);
+        }
+        // Simply pick the first available node. The ant trails
+        // are supposed to put the most successful one first
+        // (or at least do so for most of the time.)
+        for (int ix = 0; ix < nodes.size(); ix++) {
+            final NodeInfo node = nodes.get(ix);
+            // FIXME: ensure that ant routing also honours
+            // worker queue limitations.
+            if (true) {
+                if (Settings.traceAntRouting) {
+                    Globals.log.reportProgress("Worker " + node
+                            + " is best available");
+                }
+                return node;
+            }
+            if (Settings.traceAntRouting) {
+                Globals.log.reportProgress("Worker " + node + " is busy");
+            }
+        }
+        return null;
+    }
+
+    synchronized void removeNode(IbisIdentifier theIbis) {
+        final int ix = findIbis(theIbis);
+        if (ix >= 0) {
+            nodes.remove(ix);
+        }
+    }
 }

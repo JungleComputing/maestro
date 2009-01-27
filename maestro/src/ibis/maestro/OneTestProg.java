@@ -9,141 +9,143 @@ import java.io.Serializable;
  * 
  */
 class OneTestProg {
-	private static final int ITERATIONS = 8000; // The number of times we should
-	// do the addition.
-	private static final int ARRAY_SIZE = 100000;
+    private static final int ITERATIONS = 8000; // The number of times we should
 
-	private static class Listener implements JobCompletionListener {
-		int tasksCompleted = 0;
-		private final int taskCount;
+    // do the addition.
+    private static final int ARRAY_SIZE = 100000;
 
-		Listener(int taskCount) {
-			this.taskCount = taskCount;
-		}
+    private static class Listener implements JobCompletionListener {
+        int tasksCompleted = 0;
 
-		/**
-		 * Handle the completion of task 'j': the result is 'result'.
-		 * 
-		 * @param id
-		 *            The task that was completed.
-		 * @param result
-		 *            The result of the task.
-		 */
-		@Override
-		public void jobCompleted(Node node, Object id, Object result) {
-			// System.out.println( "result is " + result );
-			tasksCompleted++;
-			// System.out.println( "I now have " + tasksCompleted + "/" +
-			// taskCount + " tasks" );
-			if (tasksCompleted >= taskCount) {
-				System.out
-						.println("I got all task results back; stopping test program");
-				node.setStopped();
-			}
-		}
-	}
+        private final int taskCount;
 
-	private static final class Empty implements Serializable {
-		private static final long serialVersionUID = 1L;
-	}
+        Listener(int taskCount) {
+            this.taskCount = taskCount;
+        }
 
-	private static class CreateArrayTask implements AtomicTask {
-		private static final long serialVersionUID = 2347248108353357517L;
+        /**
+         * Handle the completion of task 'j': the result is 'result'.
+         * 
+         * @param id
+         *            The task that was completed.
+         * @param result
+         *            The result of the task.
+         */
+        @Override
+        public void jobCompleted(Node node, Object id, Object result) {
+            // System.out.println( "result is " + result );
+            tasksCompleted++;
+            // System.out.println( "I now have " + tasksCompleted + "/" +
+            // taskCount + " tasks" );
+            if (tasksCompleted >= taskCount) {
+                System.out
+                        .println("I got all task results back; stopping test program");
+                node.setStopped();
+            }
+        }
+    }
 
-		/**
-		 * Returns the name of this task.
-		 * 
-		 * @return The name.
-		 */
-		@Override
-		public String getName() {
-			return "Create array";
-		}
+    private static final class Empty implements Serializable {
+        private static final long serialVersionUID = 1L;
+    }
 
-		/**
-		 * Runs this task.
-		 * 
-		 * @param obj
-		 *            The input parameter of this task.
-		 * @param node
-		 *            The node the task is running on.
-		 * @return The result value of this task.
-		 */
-		@Override
-		@SuppressWarnings("synthetic-access")
-		public Object run(Object obj, Node node) {
-			int val = (Integer) obj;
-			double a[] = new double[ARRAY_SIZE];
-			for (int n = 0; n < ITERATIONS; n++) {
-				for (int i = 0; i < ARRAY_SIZE; i++) {
-					a[i] = i + val;
-				}
-			}
-			return new Empty();
-		}
+    private static class CreateArrayTask implements AtomicTask {
+        private static final long serialVersionUID = 2347248108353357517L;
 
-		/**
-		 * Returns true iff this task is supported in this context.
-		 * 
-		 * @return True iff this task is supported.
-		 */
-		@Override
-		public boolean isSupported() {
-			return true;
-		}
-	}
+        /**
+         * Returns the name of this task.
+         * 
+         * @return The name.
+         */
+        @Override
+        public String getName() {
+            return "Create array";
+        }
 
-	@SuppressWarnings("synthetic-access")
-	private void run(int taskCount, boolean goForMaestro) throws Exception {
-		Listener listener = new Listener(taskCount);
-		JobList jobs = new JobList();
+        /**
+         * Runs this task.
+         * 
+         * @param obj
+         *            The input parameter of this task.
+         * @param node
+         *            The node the task is running on.
+         * @return The result value of this task.
+         */
+        @Override
+        @SuppressWarnings("synthetic-access")
+        public Object run(Object obj, Node node) {
+            int val = (Integer) obj;
+            double a[] = new double[ARRAY_SIZE];
+            for (int n = 0; n < ITERATIONS; n++) {
+                for (int i = 0; i < ARRAY_SIZE; i++) {
+                    a[i] = i + val;
+                }
+            }
+            return new Empty();
+        }
 
-		Job job = jobs.createJob("testprog", new CreateArrayTask());
-		Node node = Node.createNode(jobs, goForMaestro);
-		System.out.println("Node created");
-		long startTime = System.nanoTime();
-		if (node.isMaestro()) {
-			System.out.println("I am maestro; submitting " + taskCount
-					+ " tasks");
-			for (int i = 0; i < taskCount; i++) {
-				Integer length = 12 * i;
-				node.submit(length, i, true, listener, job);
-			}
-		}
-		node.waitToTerminate();
-		long stopTime = System.nanoTime();
-		System.out.println("Duration of this run: "
-				+ Utils.formatNanoseconds(stopTime - startTime));
-	}
+        /**
+         * Returns true iff this task is supported in this context.
+         * 
+         * @return True iff this task is supported.
+         */
+        @Override
+        public boolean isSupported() {
+            return true;
+        }
+    }
 
-	/**
-	 * The command-line interface of this program.
-	 * 
-	 * @param args
-	 *            The list of command-line parameters.
-	 */
-	public static void main(String args[]) {
-		boolean goForMaestro = true;
-		int taskCount = 0;
+    @SuppressWarnings("synthetic-access")
+    private void run(int taskCount, boolean goForMaestro) throws Exception {
+        Listener listener = new Listener(taskCount);
+        JobList jobs = new JobList();
 
-		if (args.length == 0) {
-			System.err
-					.println("Missing parameter: I need a task count, or 'worker'");
-			System.exit(1);
-		}
-		String arg = args[0];
-		if (arg.equalsIgnoreCase("worker")) {
-			goForMaestro = false;
-		} else {
-			taskCount = Integer.parseInt(arg);
-		}
-		System.out.println("Running on platform " + Utils.getPlatformVersion()
-				+ " args.length=" + args.length + " goForMaestro="
-				+ goForMaestro + "; taskCount=" + taskCount);
-		try {
-			new OneTestProg().run(taskCount, goForMaestro);
-		} catch (Exception e) {
-			e.printStackTrace(System.err);
-		}
-	}
+        Job job = jobs.createJob("testprog", new CreateArrayTask());
+        Node node = Node.createNode(jobs, goForMaestro);
+        System.out.println("Node created");
+        long startTime = System.nanoTime();
+        if (node.isMaestro()) {
+            System.out.println("I am maestro; submitting " + taskCount
+                    + " tasks");
+            for (int i = 0; i < taskCount; i++) {
+                Integer length = 12 * i;
+                node.submit(length, i, true, listener, job);
+            }
+        }
+        node.waitToTerminate();
+        long stopTime = System.nanoTime();
+        System.out.println("Duration of this run: "
+                + Utils.formatNanoseconds(stopTime - startTime));
+    }
+
+    /**
+     * The command-line interface of this program.
+     * 
+     * @param args
+     *            The list of command-line parameters.
+     */
+    public static void main(String args[]) {
+        boolean goForMaestro = true;
+        int taskCount = 0;
+
+        if (args.length == 0) {
+            System.err
+                    .println("Missing parameter: I need a task count, or 'worker'");
+            System.exit(1);
+        }
+        String arg = args[0];
+        if (arg.equalsIgnoreCase("worker")) {
+            goForMaestro = false;
+        } else {
+            taskCount = Integer.parseInt(arg);
+        }
+        System.out.println("Running on platform " + Utils.getPlatformVersion()
+                + " args.length=" + args.length + " goForMaestro="
+                + goForMaestro + "; taskCount=" + taskCount);
+        try {
+            new OneTestProg().run(taskCount, goForMaestro);
+        } catch (Exception e) {
+            e.printStackTrace(System.err);
+        }
+    }
 }

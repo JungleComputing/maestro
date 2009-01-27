@@ -14,38 +14,42 @@ import java.io.Serializable;
  * 
  */
 public class AntPoint implements Serializable {
-	private static final long serialVersionUID = 1L;
-	final IbisIdentifier masterIbis;
-	final IbisIdentifier workerIbis;
-	final long timestamp;
-	final int typeIndex;
+    private static final long serialVersionUID = 1L;
 
-	/**
-	 * @param masterIbis
-	 *            The master of this task submission.
-	 * @param workerIbis
-	 *            The worker of this task submission.
-	 * @param timestamp
-	 *            The timestamp of the task submission.
-	 * @param typeIndex
-	 *            The type of task.
-	 */
-	AntPoint(final IbisIdentifier masterIbis, final IbisIdentifier workerIbis,
-			final long timestamp, final int typeIndex) {
-		this.masterIbis = masterIbis;
-		this.workerIbis = workerIbis;
-		this.timestamp = timestamp;
-		this.typeIndex = typeIndex;
-	}
+    final IbisIdentifier masterIbis;
 
-	/**
-	 * Returns a string representation of this ant routing.
-	 * 
-	 * @return The string representation.
-	 */
-	@Override
-	public String toString() {
-		return "ant routing for type " + Globals.allTaskTypes[typeIndex] + " @"
-				+ timestamp + ": " + masterIbis + "->" + workerIbis;
-	}
+    final IbisIdentifier workerIbis;
+
+    final long timestamp;
+
+    final int typeIndex;
+
+    /**
+     * @param masterIbis
+     *            The master of this task submission.
+     * @param workerIbis
+     *            The worker of this task submission.
+     * @param timestamp
+     *            The timestamp of the task submission.
+     * @param typeIndex
+     *            The type of task.
+     */
+    AntPoint(final IbisIdentifier masterIbis, final IbisIdentifier workerIbis,
+            final long timestamp, final int typeIndex) {
+        this.masterIbis = masterIbis;
+        this.workerIbis = workerIbis;
+        this.timestamp = timestamp;
+        this.typeIndex = typeIndex;
+    }
+
+    /**
+     * Returns a string representation of this ant routing.
+     * 
+     * @return The string representation.
+     */
+    @Override
+    public String toString() {
+        return "ant routing for type " + Globals.allTaskTypes[typeIndex] + " @"
+                + timestamp + ": " + masterIbis + "->" + workerIbis;
+    }
 }

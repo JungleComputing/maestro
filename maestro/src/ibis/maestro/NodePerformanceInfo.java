@@ -105,8 +105,10 @@ class NodePerformanceInfo implements Serializable {
             return Long.MAX_VALUE;
         }
         final int currentTasks = localNodeInfo.getCurrentTasks(type);
-        final int maximalQueueLength = type.unpredictable ? 0 : Settings.MAXIMAL_QUEUE_FOR_PREDICTABLE;
-        if (ignoreBusyProcessors && currentTasks >= (numberOfProcessors + maximalQueueLength) ) {
+        final int maximalQueueLength = type.unpredictable ? 0
+                : Settings.MAXIMAL_QUEUE_FOR_PREDICTABLE;
+        if (ignoreBusyProcessors
+                && currentTasks >= (numberOfProcessors + maximalQueueLength)) {
             // Don't submit jobs, there are no idle processors.
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportError("Node " + source
@@ -142,7 +144,8 @@ class NodePerformanceInfo implements Serializable {
      * @param nextIx
      *            The index of the next type to the one we're interested in, so
      *            that we can get the (already calculated) completion time from
-     *            that one. A value <code>-1</code> means there is no next type.
+     *            that one. A value <code>-1</code> means there is no next
+     *            type.
      */
     long getCompletionOnWorker(int ix, int nextIx) {
         final WorkerQueueInfo info = workerQueueInfo[ix];
