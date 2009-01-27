@@ -302,6 +302,11 @@ class Gossiper extends Thread {
         gossip.registerWorkerQueueInfo(update);
     }
 
+    /**
+     * Returns performance info about the local node. Used for rapid
+     * updates for nodes we're directly communicating with.
+     * @return The local node performance info.
+     */
     NodePerformanceInfo getLocalUpdate() {
         return gossip.getLocalUpdate();
     }

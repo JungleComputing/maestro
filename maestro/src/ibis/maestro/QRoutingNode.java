@@ -214,8 +214,8 @@ public class QRoutingNode extends Node {
             Globals.log.reportProgress("Received node update message " + m);
         }
         boolean isnew = gossiper.registerGossip(m.update, m.update.source);
-        isnew |= handleNodeUpdateInfo(m.update);
         if (isnew) {
+            // TODO: can this be moved to the gossiper?
             recomputeCompletionTimes.set();
         }
     }
@@ -223,8 +223,6 @@ public class QRoutingNode extends Node {
     @Override
     protected void updateRecentMasters() {
         final NodePerformanceInfo update = gossiper.getLocalUpdate();
-        handleNodeUpdateInfo(update); // Treat the local node as a honorary
-        // recent master.
         final UpdateNodeMessage msg = new UpdateNodeMessage(update);
         for (final IbisIdentifier ibis : recentMasterList.getArray()) {
             if (Settings.traceUpdateMessages) {

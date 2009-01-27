@@ -550,25 +550,6 @@ public abstract class Node extends Thread implements PacketReceiveListener {
     protected abstract void updateRecentMasters();
 
     /**
-     * A worker has sent us a message with its current status, handle it.
-     * 
-     * @param m
-     *            The update message.
-     * @param nw
-     *            <code>true</code> iff this update was new.
-     */
-    protected boolean handleNodeUpdateInfo(NodePerformanceInfo m) {
-        if (Settings.traceNodeProgress) {
-            Globals.log.reportProgress("Received node update message " + m);
-        }
-        final NodeInfo nodeInfo = nodes.get(m.source); // The get will create
-                                                        // an
-        // entry if necessary.
-        boolean changed = nodeInfo.registerAsCommunicating();
-        return changed;
-    }
-
-    /**
      * Handle a message containing a new task to run.
      * 
      * @param msg
@@ -674,6 +655,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
     protected void handleGossipMessage(GossipMessage m) {
         boolean changed = false;
 
+        // FIXME: move this method to the gossiper.
         if (Settings.traceNodeProgress || Settings.traceRegistration
                 || Settings.traceGossip) {
             Globals.log.reportProgress("Received gossip message from "
@@ -681,7 +663,6 @@ public abstract class Node extends Thread implements PacketReceiveListener {
         }
         for (final NodePerformanceInfo i : m.gossip) {
             changed |= gossiper.registerGossip(i, m.source);
-            changed |= handleNodeUpdateInfo(i);
         }
         if (m.needsReply) {
             if (!m.source.equals(Globals.localIbis.identifier())) {

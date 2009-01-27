@@ -194,14 +194,12 @@ public class AntRoutingNode extends Node {
             Globals.log.reportProgress("Received node update message " + m);
         }
         gossiper.registerGossip(m.update, m.update.source);
-        handleNodeUpdateInfo(m.update);
+        // FIXME: move to gossiper.
     }
 
     @Override
     protected void updateRecentMasters() {
         final NodePerformanceInfo update = gossiper.getLocalUpdate();
-        handleNodeUpdateInfo(update); // Treat the local node as a honorary
-        // recent master.
         final UpdateNodeMessage msg = new UpdateNodeMessage(update);
         for (final IbisIdentifier ibis : recentMasterList.getArray()) {
             if (Settings.traceUpdateMessages) {
