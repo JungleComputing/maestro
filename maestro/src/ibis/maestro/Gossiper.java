@@ -206,7 +206,7 @@ class Gossiper extends Thread {
     void removeNode(IbisIdentifier ibis) {
         deadNodes.add(ibis);
         nodes.remove(ibis);
-        gossip.removeInfoForNode(ibis);
+        gossip.removeNode(ibis);
         synchronized (this) {
             this.notifyAll();
         }
@@ -272,7 +272,7 @@ class Gossiper extends Thread {
      * @param source
      *            The node to send the gossip to.
      */
-    void queueGossipReply(IbisIdentifier source) {
+    private void queueGossipReply(IbisIdentifier source) {
         if (Settings.traceGossip) {
             Globals.log.reportProgress("Gossiper: send a reply to " + source);
         }
@@ -389,6 +389,30 @@ class Gossiper extends Thread {
     void setQueueLength(TaskType type, int queueLength) {
         gossip.setQueueLength(type, queueLength);
         addQuotum();
+    }
+
+    /**
+     * Register the contents of the given gossip message.
+     * @param m The gossip message to register.
+     * @return True iff this message change the gossip info.
+     */
+    boolean registerGossipMessage(GossipMessage m) {
+        boolean changed = false;
+    
+        if (Settings.traceNodeProgress || Settings.traceRegistration
+                || Settings.traceGossip) {
+            Globals.log.reportProgress("Received gossip message from "
+                    + m.source + " with " + m.gossip.length + " items");
+        }
+        for (final NodePerformanceInfo i : m.gossip) {
+            changed |= registerGossip(i, m.source);
+        }
+        if (m.needsReply) {
+            if (!m.source.equals(Globals.localIbis.identifier())) {
+                queueGossipReply(m.source);
+            }
+        }
+        return changed;
     }
 
 }

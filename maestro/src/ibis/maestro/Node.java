@@ -653,22 +653,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
      *            The gossip message.
      */
     protected void handleGossipMessage(GossipMessage m) {
-        boolean changed = false;
-
-        // FIXME: move this method to the gossiper.
-        if (Settings.traceNodeProgress || Settings.traceRegistration
-                || Settings.traceGossip) {
-            Globals.log.reportProgress("Received gossip message from "
-                    + m.source + " with " + m.gossip.length + " items");
-        }
-        for (final NodePerformanceInfo i : m.gossip) {
-            changed |= gossiper.registerGossip(i, m.source);
-        }
-        if (m.needsReply) {
-            if (!m.source.equals(Globals.localIbis.identifier())) {
-                gossiper.queueGossipReply(m.source);
-            }
-        }
+        boolean changed = gossiper.registerGossipMessage(m);
         if (changed) {
             registerNewGossipHasArrived();
             synchronized (this) {

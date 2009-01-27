@@ -175,7 +175,7 @@ class Gossip {
         return true;
     }
 
-    synchronized void removeInfoForNode(IbisIdentifier ibis) {
+    synchronized void removeNode(IbisIdentifier ibis) {
         if (false) {
             // FIXME: enable again or remove method.
             final int ix = searchInfo(ibis);
