@@ -1,7 +1,7 @@
 package ibis.maestro;
 
 /**
- * Local information about the nodes.
+ * Local information about a node.
  * 
  * @author Kees van Reeuwijk.
  */
@@ -9,16 +9,16 @@ class LocalNodeInfo {
     final boolean suspect;
 
     /** The number of currently running tasks of each type. */
-    final int currentTasks[];
+    private final int currentTasks[];
 
     /** The transmission time to the node for each type. */
-    final long transmissionTime[];
+    private final long transmissionTime[];
 
     /**
      * The predicted turnaround time to the master for each type of task. Used
      * for scheduling deadlines.
      */
-    final long predictedDuration[];
+    private final long predictedDuration[];
 
     LocalNodeInfo(boolean suspect, int[] currentTasks, long[] transmissionTime,
             long predictedDuration[]) {
