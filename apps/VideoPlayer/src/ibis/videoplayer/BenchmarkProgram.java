@@ -7,6 +7,7 @@ import ibis.maestro.JobList;
 import ibis.maestro.LabelTracker;
 import ibis.maestro.Node;
 import ibis.maestro.TaskExecutionTimeEstimator;
+import ibis.maestro.Utils;
 import ibis.maestro.LabelTracker.Label;
 
 import java.io.File;
@@ -177,10 +178,10 @@ class BenchmarkProgram {
 		 * @return The estimated time in ns to execute this task.
 		 */
 		@Override
-		public long estimateTaskExecutionTime() {
-			final long startTime = System.nanoTime();
+		public double estimateTaskExecutionTime() {
+			final double startTime = Utils.getPreciseTime();
 			run(0, null);
-			return System.nanoTime() - startTime;
+			return Utils.getPreciseTime() - startTime;
 		}
 	}
 
@@ -231,10 +232,10 @@ class BenchmarkProgram {
 		 * @return The estimated time in ns to execute this task.
 		 */
 		@Override
-		public long estimateTaskExecutionTime() {
-			final long startTime = System.nanoTime();
+		public double estimateTaskExecutionTime() {
+			final double startTime = Utils.getPreciseTime();
 			generateFrame(0);
-			return System.nanoTime() - startTime;
+			return Utils.getPreciseTime() - startTime;
 		}
 	}
 
@@ -308,14 +309,14 @@ class BenchmarkProgram {
 		 */
 		@SuppressWarnings("synthetic-access")
 		@Override
-		public long estimateTaskExecutionTime() {
+		public double estimateTaskExecutionTime() {
 			if( !allowed ){
-				return Long.MAX_VALUE;
+				return Double.POSITIVE_INFINITY;
 			}
 			final Object frame = GenerateFrameTask.generateFrame(0);
-			final long startTime = System.nanoTime();
+			final double startTime = Utils.getPreciseTime();
 			run( frame, null );
-			return System.nanoTime() - startTime;
+			return Utils.getPreciseTime() - startTime;
 		}
 	}
 
@@ -387,14 +388,14 @@ class BenchmarkProgram {
 		 */
 		@SuppressWarnings("synthetic-access")
 		@Override
-		public long estimateTaskExecutionTime() {
+		public double estimateTaskExecutionTime() {
 			if( !allowed ){
-				return Long.MAX_VALUE;
+				return Double.POSITIVE_INFINITY;
 			}
 			final Object frame = GenerateFrameTask.generateFrame(0);
-			final long startTime = System.nanoTime();
+			final double startTime = Utils.getPreciseTime();
 			run( frame, null );
-			return 4*(System.nanoTime() - startTime);
+			return 4*(Utils.getPreciseTime() - startTime);
 		}
 	}
 
@@ -507,12 +508,12 @@ class BenchmarkProgram {
 		 * @return The estimated time on ns to execute this task.
 		 */
 		@Override
-		public long estimateTaskExecutionTime() {
+		public double estimateTaskExecutionTime() {
 			// Saving a file may take some time, but otherwise the estimate
 			// should be zero.
 			if (saveDir != null) {
-				// TODO: better estimate
-				return 10000000; // 10 ms
+				// TODO: better estimate for save step.
+				return 10e-3; // 10 ms
 			}
 			return 0;
 		}
