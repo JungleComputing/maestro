@@ -12,11 +12,11 @@ class PreciseDecayingTimeEstimate {
 
     private long samples[] = new long[BUFFER_SIZE];
 
-    private long sampleTimes[] = new long[BUFFER_SIZE];
+    private double sampleTimes[] = new double[BUFFER_SIZE];
 
     private int nextSampleIndex = 0;
 
-    private long decayInterval = Long.MAX_VALUE;
+    private double decayInterval = Double.POSITIVE_INFINITY;
 
     private int firstSample = 0;
 
@@ -31,7 +31,7 @@ class PreciseDecayingTimeEstimate {
      */
     @Override
     public String toString() {
-        return "average=" + Utils.formatNanoseconds(getAverage())
+        return "average=" + Utils.formatSeconds(getAverage())
                 + " (based on " + sampleCount + " samples)";
     }
 
@@ -41,12 +41,12 @@ class PreciseDecayingTimeEstimate {
      * @return The average time.
      */
     long getAverage() {
-        long now = System.nanoTime();
+        double now = Utils.getPreciseTime();
         double sum = 0L;
         double weight = 1;
         int ix = nextSampleIndex;
         double totalWeight = 0;
-        long interval = decayInterval;
+        double interval = decayInterval;
 
         do {
             ix--;
@@ -76,7 +76,7 @@ class PreciseDecayingTimeEstimate {
      *            The new sample average to add.
      */
     void addSample(long val) {
-        long now = System.nanoTime();
+        double now = Utils.getPreciseTime();
 
         samples[nextSampleIndex] = val;
         sampleTimes[nextSampleIndex] = now;

@@ -194,7 +194,7 @@ final class NodeList {
     /**
      * Check the deadlines of the nodes.
      */
-    synchronized void checkDeadlines(long now) {
+    synchronized void checkDeadlines(double now) {
         for (final Map.Entry<IbisIdentifier, NodeInfo> entry : ibisToNodeMap
                 .entrySet()) {
             final NodeInfo nodeInfo = entry.getValue();

@@ -13,14 +13,14 @@ class Submission {
 
     final IbisIdentifier worker;
 
-    final long predictedDuration;
+    final double predictedDuration;
 
     /**
      * @param task
      * @param worker
      * @param predictedDuration
      */
-    Submission(TaskInstance task, IbisIdentifier worker, long predictedDuration) {
+    Submission(TaskInstance task, IbisIdentifier worker, double predictedDuration) {
         this.task = task;
         this.worker = worker;
         this.predictedDuration = predictedDuration;

@@ -25,11 +25,11 @@ class Gossip {
         final int numberOfProcessors = Runtime.getRuntime()
                 .availableProcessors();
         final int sz = Globals.allTaskTypes.length;
-        final long completionInfo[] = new long[sz];
+        final double completionInfo[] = new double[sz];
         final WorkerQueueInfo queueInfo[] = new WorkerQueueInfo[sz];
-        final long taskTimes[] = jobs.getInitialTaskTimes();
+        final double taskTimes[] = jobs.getInitialTaskTimes();
         for (int i = 0; i < sz; i++) {
-            queueInfo[i] = new WorkerQueueInfo(0, 0, 0L, taskTimes[i]);
+            queueInfo[i] = new WorkerQueueInfo(0, 0, 0.0, taskTimes[i]);
         }
         localPerformanceInfo = new NodePerformanceInfo(completionInfo,
                 queueInfo, Globals.localIbis.identifier(), numberOfProcessors,
@@ -87,17 +87,17 @@ class Gossip {
      *            nodes.
      * @return The best average completion time of our workers.
      */
-    private long getBestCompletionTimeAfterMasterQueue(int ix, int nextIx,
+    private double getBestCompletionTimeAfterMasterQueue(int ix, int nextIx,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
-        long res = Long.MAX_VALUE;
+        double res = Double.POSITIVE_INFINITY;
 
         for (final NodePerformanceInfo node : gossipList) {
             final LocalNodeInfo info = localNodeInfoMap.get(node.source);
 
             if (info != null) {
-                final long xmitTime = info.getTransmissionTime(ix);
-                final long val = Utils.safeAdd(xmitTime, node
-                        .getCompletionOnWorker(ix, nextIx));
+                final double xmitTime = info.getTransmissionTime(ix);
+                final double val = xmitTime + node
+                        .getCompletionOnWorker(ix, nextIx);
 
                 if (val < res) {
                     res = val;
@@ -119,7 +119,7 @@ class Gossip {
      *            in the master queue.
      * @param localNodeInfoMap
      */
-    synchronized void recomputeCompletionTimes(long masterQueueIntervals[],
+    synchronized void recomputeCompletionTimes(double masterQueueIntervals[],
             JobList jobs,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
         final int indexLists[][] = jobs.getIndexLists();
@@ -128,12 +128,12 @@ class Gossip {
             int nextIndex = -1;
 
             for (final int typeIndex : indexList) {
-                final long masterQueueInterval = masterQueueIntervals == null ? 0L
+                final double masterQueueInterval = masterQueueIntervals == null ? 0.0
                         : masterQueueIntervals[typeIndex];
-                final long bestCompletionTimeAfterMasterQueue = getBestCompletionTimeAfterMasterQueue(
+                final double bestCompletionTimeAfterMasterQueue = getBestCompletionTimeAfterMasterQueue(
                         typeIndex, nextIndex, localNodeInfoMap);
-                final long t = Utils.safeAdd(masterQueueInterval,
-                        bestCompletionTimeAfterMasterQueue);
+                final double t = masterQueueInterval +
+                        bestCompletionTimeAfterMasterQueue;
                 localPerformanceInfo.completionInfo[typeIndex] = t;
                 nextIndex = typeIndex;
             }
@@ -258,16 +258,16 @@ class Gossip {
      *            Local knowledge about the different nodes.
      * @return The estimated completion time for the best worker.
      */
-    long computeCompletionTime(TaskType type, boolean submitIfBusy,
+    double computeCompletionTime(TaskType type, boolean submitIfBusy,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
-        long bestTime = Long.MAX_VALUE;
+        double bestTime = Double.POSITIVE_INFINITY;
 
         for (final NodePerformanceInfo info : gossipList) {
             final LocalNodeInfo localNodeInfo = localNodeInfoMap
                     .get(info.source);
 
             if (localNodeInfo != null) {
-                final long t = info.estimateJobCompletion(localNodeInfo, type,
+                final double t = info.estimateJobCompletion(localNodeInfo, type,
                         !submitIfBusy);
                 if (t < bestTime) {
                     bestTime = t;
@@ -285,11 +285,11 @@ class Gossip {
         localPerformanceInfo.failTask(type);
     }
 
-    void setLocalComputeTime(TaskType type, long t) {
+    void setLocalComputeTime(TaskType type, double t) {
         localPerformanceInfo.setComputeTime(type, t);
     }
 
-    void setWorkerQueueTimePerTask(TaskType type, long queueTimePerTask,
+    void setWorkerQueueTimePerTask(TaskType type, double queueTimePerTask,
             int queueLength) {
         localPerformanceInfo.setWorkerQueueTimePerTask(type, queueTimePerTask,
                 queueLength);

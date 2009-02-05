@@ -14,19 +14,19 @@ class ActiveTask {
     final NodeTaskInfo nodeTaskInfo;
 
     /** The time this task was sent to the worker. */
-    final long startTime;
+    final double startTime;
 
     /** The predicted duration of the task. */
-    final long predictedDuration;
+    final double predictedDuration;
 
-    private long allowanceDeadline;
+    private double allowanceDeadline;
 
     /** The moment this task should be completed. */
-    final long rescheduleDeadline;
+    final double rescheduleDeadline;
 
-    ActiveTask(TaskInstance task, long id, long startTime,
-            NodeTaskInfo workerTaskInfo, long predictedDuration,
-            long allowanceDeadline, long rescheduleDeadline) {
+    ActiveTask(TaskInstance task, long id, double startTime,
+            NodeTaskInfo workerTaskInfo, double predictedDuration,
+            double allowanceDeadline, double rescheduleDeadline) {
         this.task = task;
         this.id = id;
         this.nodeTaskInfo = workerTaskInfo;
@@ -41,7 +41,7 @@ class ActiveTask {
      * 
      * @return allowanceDeadline.
      */
-    long getAllowanceDeadline() {
+    double getAllowanceDeadline() {
         return allowanceDeadline;
     }
 
@@ -51,7 +51,7 @@ class ActiveTask {
      * @param allowanceDeadline
      *            The new value for allowanceDeadline.
      */
-    void setAllowanceDeadline(long allowanceDeadline) {
+    void setAllowanceDeadline(double allowanceDeadline) {
         this.allowanceDeadline = allowanceDeadline;
     }
 
@@ -60,7 +60,7 @@ class ActiveTask {
      * 
      * @return rescheduleDeadline.
      */
-    long getRescheduleDeadline() {
+    double getRescheduleDeadline() {
         return rescheduleDeadline;
     }
 
@@ -72,7 +72,7 @@ class ActiveTask {
     @Override
     public String toString() {
         return "(ActiveTask id=" + id + ", task=" + task + ", start time "
-                + Utils.formatNanoseconds(startTime) + ')';
+                + Utils.formatSeconds(startTime) + ')';
     }
 
 }

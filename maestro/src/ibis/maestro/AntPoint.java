@@ -20,7 +20,7 @@ public class AntPoint implements Serializable {
 
     final IbisIdentifier workerIbis;
 
-    final long timestamp;
+    final double timestamp;
 
     final int typeIndex;
 
@@ -35,7 +35,7 @@ public class AntPoint implements Serializable {
      *            The type of task.
      */
     AntPoint(final IbisIdentifier masterIbis, final IbisIdentifier workerIbis,
-            final long timestamp, final int typeIndex) {
+            final double timestamp, final int typeIndex) {
         this.masterIbis = masterIbis;
         this.workerIbis = workerIbis;
         this.timestamp = timestamp;

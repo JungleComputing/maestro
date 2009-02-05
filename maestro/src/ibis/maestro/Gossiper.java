@@ -39,9 +39,9 @@ class Gossiper extends Thread {
 
     private final PacketSendPort sendPort;
 
-    private long adminTime = 0;
+    private double adminTime = 0;
 
-    private long sendTime = 0;
+    private double sendTime = 0;
 
     private long sentBytes = 0;
 
@@ -60,7 +60,7 @@ class Gossiper extends Thread {
 
     private void sendGossip(IbisIdentifier target, boolean needsReply) {
         final GossipMessage msg = gossip.constructMessage(target, needsReply);
-        final long startTime = System.nanoTime();
+        final double startTime = Utils.getPreciseTime();
         msg.sendMoment = startTime;
         if (Settings.traceGossip) {
             Globals.log.reportProgress("Gossiper: sending message to " + target
@@ -82,7 +82,7 @@ class Gossiper extends Thread {
      * @param startTime
      *            The supposed start time of the transmission.
      */
-    private void retrySendGossipMessage(GossipMessage msg, long startTime) {
+    private void retrySendGossipMessage(GossipMessage msg, double startTime) {
         SendPort port = null;
         try {
             long len;
@@ -90,20 +90,20 @@ class Gossiper extends Thread {
             port = Globals.localIbis.createSendPort(PacketSendPort.portType);
             port.connect(theIbis, Globals.receivePortName,
                     Settings.OPTIONAL_COMMUNICATION_TIMEOUT, false);
-            final long setupTime = System.nanoTime();
+            final double setupTime = Utils.getPreciseTime();
             final WriteMessage writeMessage = port.newMessage();
             try {
                 writeMessage.writeObject(msg);
             } finally {
                 len = writeMessage.finish();
             }
-            final long stopTime = System.nanoTime();
+            final double stopTime = Utils.getPreciseTime();
             if (Settings.traceSends || Settings.traceGossip) {
                 Globals.log.reportProgress("Gossiper: sent message of " + len
                         + " bytes in "
-                        + Utils.formatNanoseconds(stopTime - setupTime)
+                        + Utils.formatSeconds(stopTime - setupTime)
                         + "; setup time "
-                        + Utils.formatNanoseconds(setupTime - startTime) + ": "
+                        + Utils.formatSeconds(setupTime - startTime) + ": "
                         + msg);
             }
             synchronized (this) {
@@ -242,7 +242,7 @@ class Gossiper extends Thread {
         return isnew;
     }
 
-    void recomputeCompletionTimes(long masterQueueIntervals[], JobList jobs,
+    void recomputeCompletionTimes(double masterQueueIntervals[], JobList jobs,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
         gossip.recomputeCompletionTimes(masterQueueIntervals, jobs,
                 localNodeInfoMap);
@@ -261,8 +261,8 @@ class Gossiper extends Thread {
                 + gossipItemCount.get() + " gossip items, "
                 + newGossipItemCount.get() + " new");
         s.println("Sent " + Utils.formatByteCount(sentBytes) + " in "
-                + Utils.formatNanoseconds(sendTime) + ", administration time "
-                + Utils.formatNanoseconds(adminTime));
+                + Utils.formatSeconds(sendTime) + ", administration time "
+                + Utils.formatSeconds(adminTime));
         gossip.print(s);
     }
 
@@ -348,7 +348,7 @@ class Gossiper extends Thread {
      *            Local knowledge about the different nodes.
      * @return
      */
-    private long computeCompletionTime(TaskType type, boolean submitIfBusy,
+    private double computeCompletionTime(TaskType type, boolean submitIfBusy,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
         return gossip.computeCompletionTime(type, submitIfBusy,
                 localNodeInfoMap);
@@ -357,10 +357,10 @@ class Gossiper extends Thread {
     int selectFastestTask(TaskType[] types, boolean submitIfBusy,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
         int bestIx = -1;
-        long bestTime = Long.MAX_VALUE;
+        double bestTime = Double.POSITIVE_INFINITY;
         for (int ix = 0; ix < types.length; ix++) {
             final TaskType type = types[ix];
-            final long t = computeCompletionTime(type, submitIfBusy,
+            final double t = computeCompletionTime(type, submitIfBusy,
                     localNodeInfoMap);
             if (t < bestTime) {
                 bestTime = t;
@@ -375,12 +375,12 @@ class Gossiper extends Thread {
         addQuotum();
     }
 
-    void setComputeTime(TaskType type, long t) {
+    void setComputeTime(TaskType type, double t) {
         gossip.setLocalComputeTime(type, t);
         addQuotum();
     }
 
-    void setWorkerQueueTimePerTask(TaskType type, long queueTimePerTask,
+    void setWorkerQueueTimePerTask(TaskType type, double queueTimePerTask,
             int queueLength) {
         gossip.setWorkerQueueTimePerTask(type, queueTimePerTask, queueLength);
         addQuotum();

@@ -18,19 +18,21 @@ import java.lang.management.ThreadMXBean;
  * @author Kees van Reeuwijk.
  */
 public class Utils {
-    static final long MICROSECOND_IN_NANOSECONDS = 1000L;
+    static final double NANOSECOND = 1e-9;
+    
+    static final double MICROSECOND = 1e-6;
 
-    static final long MILLISECOND_IN_NANOSECONDS = 1000 * MICROSECOND_IN_NANOSECONDS;
+    static final double MILLISECOND = 1e-3;
 
-    static final long SECOND_IN_NANOSECONDS = 1000 * MILLISECOND_IN_NANOSECONDS;
+    static final double SECOND = 1.0;
 
-    static final long MINUTE_IN_NANOSECONDS = 60 * SECOND_IN_NANOSECONDS;
+    static final double MINUTE = 60 * SECOND;
 
-    static final long HOUR_IN_NANOSECONDS = 60 * MINUTE_IN_NANOSECONDS;
+    static final double HOUR = 60 * MINUTE;
 
-    static final long DAY_IN_NANOSECONDS = 24 * HOUR_IN_NANOSECONDS;
+    static final double DAY = 24 * HOUR;
 
-    static final long WEEK_IN_NANOSECONDS = 7 * DAY_IN_NANOSECONDS;
+    static final double WEEK = 7 * DAY;
 
     static boolean areInSameCluster(IbisIdentifier a, IbisIdentifier b) {
         Location la = a.location();
@@ -83,29 +85,29 @@ public class Utils {
     }
 
     /**
-     * Given a time in nanoseconds, return a neat format string for it.
+     * Given a time in seconds, return a neat format string for it.
      * 
      * @param t
      *            The time to format.
      * @return The formatted string.
      */
-    public static String formatNanoseconds(final long t) {
-        if (t == Long.MAX_VALUE) {
+    public static String formatSeconds(final double t) {
+        if (t == Double.POSITIVE_INFINITY) {
             return "infinite";
         }
-        if (t == 0) {
+        if (t == 0.0) {
             return "0 s";
         }
-        if (t < 1000L && t > -1000L) {
-            return String.format("%d ns", t);
+        if (t < MICROSECOND && t > -MICROSECOND) {
+            return String.format("%d ns", 1e9*t);
         }
         if (t < 1000000L && t > -1000000L) {
-            return String.format("%4.1f us", t / 1000.0);
+            return String.format("%4.1f us", 1e6*t );
         }
         if (t < 1000000000L && t > -1000000000L) {
-            return String.format("%4.1f ms", t / 1000000.0);
+            return String.format("%4.1f ms", 1e3*t );
         }
-        return String.format("%4.1f s", t / 1000000000.0);
+        return String.format("%4.1f s", t );
     }
 
     /**
@@ -138,20 +140,9 @@ public class Utils {
         return (val + (divisor - 1)) / divisor;
     }
 
-    /**
-     * Given a time in nanoseconds, return a time in milliseconds. We always
-     * round up, and make absolutely sure we don't return 0, so that it can be
-     * used as parameter for a wait method or other delay specification.
-     * 
-     * @param nanoTime
-     *            The time in nanoseconds.
-     * @return The time in milliseconds.
-     */
-    public static long nanosecondsToMilliseconds(long nanoTime) {
-        if (nanoTime < MILLISECOND_IN_NANOSECONDS) {
-            return 1;
-        }
-        return divideRoundUp(nanoTime, MILLISECOND_IN_NANOSECONDS);
+    public static long secondsToMilliseconds( double t )
+    {
+        return (long) (1+t*MILLISECOND);
     }
 
     /**
@@ -216,69 +207,6 @@ public class Utils {
         return 0;
     }
 
-    /**
-     * Adds two longs, but return <code>Long.MAX_VALUE</code> if one of the
-     * two has that value.
-     * 
-     * @param a
-     *            One value to add.
-     * @param b
-     *            The other value to add.
-     * @return The sum of the two values, or <code>Long.MAX_VALUE</code> if
-     *         one of the inputs has that value.
-     */
-    public static long safeAdd(long a, long b) {
-        if (a == Long.MAX_VALUE || b == Long.MAX_VALUE) {
-            return Long.MAX_VALUE;
-        }
-        return a + b;
-    }
-
-    /**
-     * Adds three longs, but return </code>Long.MAX_VALUE <code> if one of the
-     * three has that value.
-     * 
-     * @param a
-     *            One value to add.
-     * @param b
-     *            An other value to add.
-     * @param c
-     *            A third value to add.
-     * @return The sum of the three values, or <code>Long.MAX_VALUE</code> if
-     *         one of the inputs has that value.
-     */
-    public static long safeAdd(long a, long b, long c) {
-        if (a == Long.MAX_VALUE || b == Long.MAX_VALUE || c == Long.MAX_VALUE) {
-            return Long.MAX_VALUE;
-        }
-        return a + b + c;
-    }
-
-    /**
-     * Adds five longs, but return </code>Long.MAX_VALUE <code> if one of the
-     * five has that value.
-     * 
-     * @param a
-     *            One value to add.
-     * @param b
-     *            An other value to add.
-     * @param c
-     *            A third value to add.
-     * @param d
-     *            A fourth value to add.
-     * @param e
-     *            A fifth value to add.
-     * @return The sum of the three values, or <code>Long.MAX_VALUE</code> if
-     *         one of the inputs has that value.
-     */
-    public static long safeAdd(long a, long b, long c, long d, long e) {
-        if (a == Long.MAX_VALUE || b == Long.MAX_VALUE || c == Long.MAX_VALUE
-                || d == Long.MAX_VALUE || e == Long.MAX_VALUE) {
-            return Long.MAX_VALUE;
-        }
-        return a + b + c + d + e;
-    }
-
     static void printThreadStats(PrintStream s) {
         ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
@@ -294,5 +222,12 @@ public class Utils {
                 }
             }
         }
+    }
+
+    /**
+     * @return Return the precise current time in seconds.
+     */
+    static double getPreciseTime() {
+        return NANOSECOND*System.nanoTime();
     }
 }

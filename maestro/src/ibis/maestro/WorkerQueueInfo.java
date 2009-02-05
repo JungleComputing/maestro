@@ -14,9 +14,9 @@ class WorkerQueueInfo implements Serializable {
 
     private int queueLengthSequenceNumber;
 
-    private long dequeueTimePerTask;
+    private double dequeueTimePerTask;
 
-    private long executionTime;
+    private double executionTime;
 
     /**
      * @param queueLength
@@ -32,7 +32,7 @@ class WorkerQueueInfo implements Serializable {
      *            The execution time of a task.
      */
     WorkerQueueInfo(int queueLength, int queueLengthSequenceNumber,
-            long dequeueTimePerTask, long executionTime) {
+            double dequeueTimePerTask, double executionTime) {
         this.queueLength = queueLength;
         this.queueLengthSequenceNumber = queueLengthSequenceNumber;
         this.dequeueTimePerTask = dequeueTimePerTask;
@@ -48,15 +48,15 @@ class WorkerQueueInfo implements Serializable {
     @Override
     public String toString() {
         return "(ql=" + getQueueLength() + ",dq/t="
-                + Utils.formatNanoseconds(getDequeueTimePerTask())
-                + ",compute=" + Utils.formatNanoseconds(getExecutionTime())
+                + Utils.formatSeconds(getDequeueTimePerTask())
+                + ",compute=" + Utils.formatSeconds(getExecutionTime())
                 + ")";
     }
 
     String format() {
         return String.format("%3d %9s %9s", getQueueLength(), Utils
-                .formatNanoseconds(getDequeueTimePerTask()), Utils
-                .formatNanoseconds(getExecutionTime()));
+                .formatSeconds(getDequeueTimePerTask()), Utils
+                .formatSeconds(getExecutionTime()));
     }
 
     static String topLabel() {
@@ -72,14 +72,14 @@ class WorkerQueueInfo implements Serializable {
     }
 
     synchronized void failTask() {
-        this.executionTime = Long.MAX_VALUE;
+        this.executionTime = Double.POSITIVE_INFINITY;
     }
 
-    synchronized void setExecutionTime(long t) {
+    synchronized void setExecutionTime(double t) {
         this.executionTime = t;
     }
 
-    synchronized void setQueueTimePerTask(long queueTimePerTask,
+    synchronized void setQueueTimePerTask(double queueTimePerTask,
             int newQueueLength) {
         this.dequeueTimePerTask = queueTimePerTask;
         if (this.queueLength != newQueueLength) {
@@ -95,7 +95,7 @@ class WorkerQueueInfo implements Serializable {
         }
     }
 
-    synchronized long getExecutionTime() {
+    synchronized double getExecutionTime() {
         return executionTime;
     }
 
@@ -103,7 +103,7 @@ class WorkerQueueInfo implements Serializable {
         return queueLength;
     }
 
-    synchronized long getDequeueTimePerTask() {
+    synchronized double getDequeueTimePerTask() {
         if (Settings.IGNORE_QUEUE_TIME) {
             return 0L;
         }

@@ -99,7 +99,7 @@ class Settings {
      * Deadlines below this value in nanoseconds are meaningless because they
      * are too short to be measured with reasonable accuracy.
      */
-    static final long MINIMAL_DEADLINE = 100 * Utils.MICROSECOND_IN_NANOSECONDS;
+    static final double MINIMAL_DEADLINE = 100 * Utils.MICROSECOND;
 
     /**
      * Multiplier of the estimated completion time to get an allowance deadline
@@ -169,7 +169,7 @@ class Settings {
      * The minimal duration in ns of a running job before we consider submitting
      * it again.
      */
-    static final long LATE_JOB_DURATION = 100 * Utils.MILLISECOND_IN_NANOSECONDS;
+    static final double LATE_JOB_DURATION = 100 * Utils.MILLISECOND;
 
     static final int MAXIMAL_QUEUE_FOR_PREDICTABLE = 1;
 }

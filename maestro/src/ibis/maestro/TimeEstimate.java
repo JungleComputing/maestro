@@ -6,7 +6,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk.
  */
 class TimeEstimate {
-    private long average;
+    private double average;
 
     private boolean initial = true;
 
@@ -16,7 +16,7 @@ class TimeEstimate {
      * @param initial
      *            The initial value of the time estimate.
      */
-    TimeEstimate(long initial) {
+    TimeEstimate(double initial) {
         setInitialEstimate(initial);
     }
 
@@ -25,7 +25,7 @@ class TimeEstimate {
      */
     @Override
     public String toString() {
-        return Utils.formatNanoseconds(average);
+        return Utils.formatSeconds(average);
     }
 
     /**
@@ -33,7 +33,7 @@ class TimeEstimate {
      * 
      * @return The average time.
      */
-    long getAverage() {
+    double getAverage() {
         return average;
     }
 
@@ -43,7 +43,7 @@ class TimeEstimate {
      * @param val
      *            The new sample average to add.
      */
-    void addSample(long val) {
+    void addSample(double val) {
         if (initial) {
             average = val;
             initial = false;
@@ -58,7 +58,7 @@ class TimeEstimate {
      * @param v
      *            The new initial time estimate.
      */
-    public void setInitialEstimate(long v) {
+    public void setInitialEstimate(double v) {
         if (initial) {
             average = v / 2; // This estimate is also inaccurate, so
                                 // underestimate a bit.

@@ -14,7 +14,7 @@ public class AntTypeRoutingTable {
 
     final ArrayList<NodeInfo> nodes = new ArrayList<NodeInfo>();
 
-    private long updateTimeStamp = -1;
+    private double updateTimeStamp = -1;
 
     AntTypeRoutingTable(TaskType type) {
         this.type = type;
@@ -44,7 +44,7 @@ public class AntTypeRoutingTable {
      * @param timestamp
      *            The time the ibis was used.
      */
-    synchronized void update(IbisIdentifier ibis, long timestamp) {
+    synchronized void update(IbisIdentifier ibis, double timestamp) {
         if (timestamp > updateTimeStamp) {
             updateTimeStamp = timestamp;
 

@@ -29,9 +29,9 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 
     private final PacketUpcallReceivePort receivePort;
 
-    protected final long startTime;
+    protected final double startTime;
 
-    private long stopTime = 0;
+    private double stopTime = 0;
 
     private static final String MAESTRO_ELECTION_NAME = "maestro-election";
 
@@ -229,7 +229,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
                 Globals.receivePortName, this);
         traceStats = System.getProperty("ibis.maestro.traceWorkerStatistics") != null;
         gossiper = new Gossiper(sendPort, isMaestro(), jobs);
-        startTime = System.nanoTime();
+        startTime = Utils.getPreciseTime();
     }
 
     protected void startThreads() {
@@ -329,7 +329,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 
         stopped.waitUntilSet();
         synchronized (this) {
-            stopTime = System.nanoTime();
+            stopTime = Utils.getPreciseTime();
         }
         if (Settings.traceNodes) {
             Globals.log.reportProgress("Node has terminated");
@@ -451,14 +451,14 @@ public abstract class Node extends Thread implements PacketReceiveListener {
         drainOutgoingMessageQueue();
         restartLateJobs();
         drainMasterQueue();
-        nodes.checkDeadlines(System.nanoTime());
+        nodes.checkDeadlines(Utils.getPreciseTime());
     }
 
     /** Print some statistics about the entire worker run. */
     synchronized void printStatistics(PrintStream s) {
         if (stopTime < startTime) {
             Globals.log.reportError("printStatistics(): Node didn't stop yet");
-            stopTime = System.nanoTime();
+            stopTime = Utils.getPreciseTime();
         }
         s.printf("# work threads  = %5d\n", workThreads.length);
         nodes.printStatistics(s);
@@ -477,15 +477,15 @@ public abstract class Node extends Thread implements PacketReceiveListener {
             terminator.printStatistics(s);
         }
         sendPort.printStatistics(s, "send port");
-        final long activeTime = workerQueue.getActiveTime(startTime);
-        final long workInterval = stopTime - activeTime;
+        final double activeTime = workerQueue.getActiveTime(startTime);
+        final double workInterval = stopTime - activeTime;
         workerQueue.printStatistics(s, workInterval);
-        s.println("run time        = " + Utils.formatNanoseconds(workInterval));
+        s.println("run time        = " + Utils.formatSeconds(workInterval));
         s.println("activated after = "
-                + Utils.formatNanoseconds(activeTime - startTime));
-        final double overheadPercentage = 100.0 * ((double) overheadDuration / (double) workInterval);
+                + Utils.formatSeconds(activeTime - startTime));
+        final double overheadPercentage = 100.0 * ((double) overheadDuration / workInterval);
         s.println("Total overhead time = "
-                + Utils.formatNanoseconds(overheadDuration)
+                + Utils.formatSeconds(overheadDuration)
                 + String.format(" (%.1f%%)", overheadPercentage));
         masterQueue.printStatistics(s);
         Utils.printThreadStats(s);
@@ -760,10 +760,10 @@ public abstract class Node extends Thread implements PacketReceiveListener {
     }
 
     abstract void handleTaskResult(RunTaskMessage message, Object result,
-            long runMoment);
+            double runMoment);
 
     private void executeTask(RunTaskMessage message, Task task, Object input,
-            long runMoment) {
+            double runMoment) {
         if (task instanceof AtomicTask) {
             final AtomicTask at = (AtomicTask) task;
             try {
@@ -812,7 +812,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 
     /** Run a work thread. Only return when we want to shut down the node. */
     void runWorkThread() {
-        long overheadStart = System.nanoTime();
+        double overheadStart = Utils.getPreciseTime();
         long threadOverhead = 0L;
         try {
             while (keepRunning()) {
@@ -839,14 +839,14 @@ public abstract class Node extends Thread implements PacketReceiveListener {
                             }
                         }
                         synchronized (this) {
-                            final long overhead = System.nanoTime()
+                            final double overhead = Utils.getPreciseTime()
                                     - overheadStart;
                             // Measure the time we spend in this wait,
                             // and add to idle time.
                             if (keepRunning()) {
                                 this.wait(sleepTime);
                             }
-                            overheadStart = System.nanoTime();
+                            overheadStart = Utils.getPreciseTime();
                             threadOverhead += overhead;
                         }
                     } catch (final InterruptedException e) {
@@ -855,25 +855,25 @@ public abstract class Node extends Thread implements PacketReceiveListener {
                     idleProcessors.down();
                 } else {
                     // We have a task to execute.
-                    final long runMoment = System.nanoTime();
+                    final double runMoment = Utils.getPreciseTime();
                     final TaskType type = message.taskInstance.type;
                     final Task task = jobs.getTask(type);
 
                     runningTasks.up();
                     if (Settings.traceNodeProgress) {
-                        final long queueInterval = runMoment
+                        final double queueInterval = runMoment
                                 - message.arrivalMoment;
                         Globals.log.reportProgress("Worker: handed out task "
                                 + message + " of type " + type
                                 + "; it was queued for "
-                                + Utils.formatNanoseconds(queueInterval)
+                                + Utils.formatSeconds(queueInterval)
                                 + "; there are now " + runningTasks
                                 + " running tasks");
                     }
                     final Object input = message.taskInstance.input;
-                    threadOverhead += System.nanoTime() - overheadStart;
+                    threadOverhead += Utils.getPreciseTime() - overheadStart;
                     executeTask(message, task, input, runMoment);
-                    overheadStart = System.nanoTime();
+                    overheadStart = Utils.getPreciseTime();
                     if (Settings.traceNodeProgress) {
                         Globals.log.reportProgress("Work thread: completed "
                                 + message);

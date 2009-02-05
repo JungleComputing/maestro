@@ -41,11 +41,11 @@ final class MasterQueue {
         /** Maximal ever number of elements in the queue. */
         private int maxElements = 0;
 
-        private long frontChangedTime = 0;
+        private double frontChangedTime = 0;
 
         /** The estimated time interval between tasks being dequeued. */
         private final TimeEstimate dequeueInterval = new TimeEstimate(
-                1 * Utils.MILLISECOND_IN_NANOSECONDS);
+                1 * Utils.MILLISECOND);
 
         TypeInfo(final TaskType type) {
             this.type = type;
@@ -62,21 +62,21 @@ final class MasterQueue {
             if (elements > maxElements) {
                 maxElements = elements;
             }
-            if (frontChangedTime == 0) {
+            if (frontChangedTime == 0.0) {
                 // This entry is the front of the queue,
                 // record the time it became this.
-                frontChangedTime = System.nanoTime();
+                frontChangedTime = Utils.getPreciseTime();
             }
             taskCount++;
             return elements;
         }
 
         void registerRemove() {
-            final long now = System.nanoTime();
+            final double now = Utils.getPreciseTime();
             synchronized (this) {
                 if (frontChangedTime != 0) {
                     // We know when this entry became the front of the queue.
-                    final long i = now - frontChangedTime;
+                    final double i = now - frontChangedTime;
                     dequeueInterval.addSample(i);
                 }
                 elements--;
@@ -93,15 +93,15 @@ final class MasterQueue {
         /**
          * Estimate the time a new task will spend in the queue.
          * 
-         * @return The estimated time in nanoseconds a new task will spend in
+         * @return The estimated time in seconds a new task will spend in
          *         the queue.
          */
-        synchronized long estimateQueueTime() {
-            final long timePerEntry = dequeueInterval.getAverage();
+        synchronized double estimateQueueTime() {
+            final double timePerEntry = dequeueInterval.getAverage();
             // Since at least one processor isn't working on a task (or we
             // wouldn't be here), we are only impressed if there is more
             // than one idle processor.
-            final long res = timePerEntry * (1 + elements);
+            final double res = timePerEntry * (1 + elements);
             return res;
         }
 
@@ -242,12 +242,12 @@ final class MasterQueue {
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
             NodePerformanceInfo tables[], TaskInstance task) {
         NodePerformanceInfo best = null;
-        long bestInterval = Long.MAX_VALUE;
+        double bestInterval = Double.POSITIVE_INFINITY;
 
         for (final NodePerformanceInfo info : tables) {
             final LocalNodeInfo localNodeInfo = localNodeInfoMap
                     .get(info.source);
-            final long val = info.estimateJobCompletion(localNodeInfo,
+            final double val = info.estimateJobCompletion(localNodeInfo,
                     task.type, Settings.HARD_ALLOWANCES);
 
             if (val < bestInterval) {
@@ -264,10 +264,10 @@ final class MasterQueue {
             for (final NodePerformanceInfo info : tables) {
                 final LocalNodeInfo localNodeInfo = localNodeInfoMap
                         .get(info.source);
-                final long val = info.estimateJobCompletion(localNodeInfo,
+                final double val = info.estimateJobCompletion(localNodeInfo,
                         task.type, true);
-                s.print(Utils.formatNanoseconds(val));
-                if (val == bestInterval && val != Long.MAX_VALUE) {
+                s.print(Utils.formatSeconds(val));
+                if (val == bestInterval && val != Double.POSITIVE_INFINITY) {
                     s.print('$');
                 }
                 s.print(' ');
@@ -286,7 +286,7 @@ final class MasterQueue {
                     + " for task of type " + task.type);
         }
         final LocalNodeInfo localNodeInfo = localNodeInfoMap.get(best.source);
-        final long predictedDuration = localNodeInfo
+        final double predictedDuration = localNodeInfo
                 .getPredictedDuration(task.type);
         return new Submission(task, best.source, predictedDuration);
     }
@@ -320,7 +320,7 @@ final class MasterQueue {
         }
         final LocalNodeInfo localNodeInfo = localNodeInfoMap
                 .get(candidate.ibis);
-        final long predictedDuration = localNodeInfo
+        final double predictedDuration = localNodeInfo
                 .getPredictedDuration(task.type);
         return new Submission(task, candidate.ibis, predictedDuration);
     }
@@ -429,8 +429,8 @@ final class MasterQueue {
         return !queue.isEmpty();
     }
 
-    long[] getQueueIntervals() {
-        final long res[] = new long[queueTypes.length];
+    double[] getQueueIntervals() {
+        final double res[] = new double[queueTypes.length];
 
         for (int ix = 0; ix < queueTypes.length; ix++) {
             res[ix] = queueTypes[ix].estimateQueueTime();

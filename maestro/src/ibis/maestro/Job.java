@@ -200,7 +200,7 @@ public final class Job {
         return null;
     }
 
-    void registerJobTime(long jobInterval) {
+    void registerJobTime(double jobInterval) {
         // Changes are not interesting, since this is part of a big change
         // anyway.
         jobTime.addSample(jobInterval);

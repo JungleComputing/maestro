@@ -7,7 +7,7 @@ class JobInstanceInfo {
 
     final JobCompletionListener listener;
 
-    long startTime = System.nanoTime();
+    double startTime = Utils.getPreciseTime();
 
     final TaskInstance taskInstance;
 

@@ -12,16 +12,16 @@ class LocalNodeInfo {
     private final int currentTasks[];
 
     /** The transmission time to the node for each type. */
-    private final long transmissionTime[];
+    private final double transmissionTime[];
 
     /**
      * The predicted turnaround time to the master for each type of task. Used
      * for scheduling deadlines.
      */
-    private final long predictedDuration[];
+    private final double predictedDuration[];
 
-    LocalNodeInfo(boolean suspect, int[] currentTasks, long[] transmissionTime,
-            long predictedDuration[]) {
+    LocalNodeInfo(boolean suspect, int[] currentTasks, double[] transmissionTime,
+            double predictedDuration[]) {
         this.suspect = suspect;
         this.currentTasks = currentTasks;
         this.transmissionTime = transmissionTime;
@@ -32,11 +32,11 @@ class LocalNodeInfo {
         return currentTasks[type.index];
     }
 
-    long getTransmissionTime(TaskType type) {
+    double getTransmissionTime(TaskType type) {
         return transmissionTime[type.index];
     }
 
-    long getTransmissionTime(int ix) {
+    double getTransmissionTime(int ix) {
         return transmissionTime[ix];
     }
 
@@ -46,9 +46,9 @@ class LocalNodeInfo {
      * 
      * @param type
      *            The type of task we want the prediction for.
-     * @return The predicted duration of the task in nanoseconds.
+     * @return The predicted duration of the task in seconds.
      */
-    long getPredictedDuration(TaskType type) {
+    double getPredictedDuration(TaskType type) {
         return predictedDuration[type.index];
     }
 }

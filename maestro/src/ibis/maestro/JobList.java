@@ -178,14 +178,14 @@ public final class JobList {
         return res;
     }
 
-    long[] getInitialTaskTimes() {
-        final long res[] = new long[allTaskTypes.size()];
+    double[] getInitialTaskTimes() {
+        final double res[] = new double[allTaskTypes.size()];
         int i = 0;
         for (final TaskType t : allTaskTypes) {
             final Task task = getTask(t);
             if (!task.isSupported()) {
                 // Not supported by this node.
-                res[i++] = Long.MAX_VALUE;
+                res[i++] = Double.POSITIVE_INFINITY;
             } else if (task instanceof TaskExecutionTimeEstimator) {
                 final TaskExecutionTimeEstimator estimator = (TaskExecutionTimeEstimator) task;
                 res[i++] = estimator.estimateTaskExecutionTime();

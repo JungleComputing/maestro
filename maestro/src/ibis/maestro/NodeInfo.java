@@ -47,11 +47,10 @@ final class NodeInfo {
         // For non-local nodes, start with a very pessimistic ping time.
         // This means that only if we really need another node, we use it.
         // long pessimisticPingTime = local?0L:Utils.HOUR_IN_NANOSECONDS;
-        long estimatedPingTime = 0L;
+        double estimatedPingTime = 0.0;
         if (!local) {
-            estimatedPingTime = Utils.MILLISECOND_IN_NANOSECONDS
-                    + Globals.rng
-                            .nextInt((int) Utils.MILLISECOND_IN_NANOSECONDS);
+            estimatedPingTime = Utils.MILLISECOND
+                    + Utils.MILLISECOND*Globals.rng.nextDouble();
             if (!Utils.areInSameCluster(Globals.localIbis.identifier(), ibis)) {
                 // Be more pessimistic if the nodes are not in the same cluster.
                 // TODO: simply look at the number of differing levels.
@@ -196,7 +195,7 @@ final class NodeInfo {
             // redundantly executed.
             return null;
         }
-        final long roundtripTime = result.arrivalMoment - task.startTime;
+        final double roundtripTime = result.arrivalMoment - task.startTime;
         final NodeTaskInfo nodeTaskInfo = task.nodeTaskInfo;
         final TaskType type = task.task.type;
         if (task.getAllowanceDeadline() < result.arrivalMoment) {
@@ -206,11 +205,11 @@ final class NodeInfo {
                         + type
                         + " task: "
                         + " predictedDuration="
-                        + Utils.formatNanoseconds(task.predictedDuration)
+                        + Utils.formatSeconds(task.predictedDuration)
                         + " allowanceDuration="
-                        + Utils.formatNanoseconds(task.getAllowanceDeadline()
+                        + Utils.formatSeconds(task.getAllowanceDeadline()
                                 - task.startTime) + " realDuration="
-                        + Utils.formatNanoseconds(roundtripTime));
+                        + Utils.formatSeconds(roundtripTime));
             }
         }
         if (task.rescheduleDeadline < result.arrivalMoment) {
@@ -219,11 +218,11 @@ final class NodeInfo {
                         + type
                         + " task: "
                         + " predictedDuration="
-                        + Utils.formatNanoseconds(task.predictedDuration)
+                        + Utils.formatSeconds(task.predictedDuration)
                         + " rescheduleDuration="
-                        + Utils.formatNanoseconds(task.rescheduleDeadline
+                        + Utils.formatSeconds(task.rescheduleDeadline
                                 - task.startTime) + " realDuration="
-                        + Utils.formatNanoseconds(roundtripTime));
+                        + Utils.formatSeconds(roundtripTime));
             }
             nodeTaskInfo.registerMissedRescheduleDeadline();
         }
@@ -231,7 +230,7 @@ final class NodeInfo {
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Master: retired task " + task
                     + " roundtripTime="
-                    + Utils.formatNanoseconds(roundtripTime));
+                    + Utils.formatSeconds(roundtripTime));
         }
         if (task.task.isOrphan()) {
             return task.task;
@@ -260,7 +259,7 @@ final class NodeInfo {
             }
             task = activeTasks.get(ix);
         }
-        final long transmissionTime = result.arrivalMoment - task.startTime;
+        final double transmissionTime = result.arrivalMoment - task.startTime;
         final NodeTaskInfo nodeTaskInfo = task.nodeTaskInfo;
         if (!local) {
             // If this is not the local node, this is interesting info.
@@ -270,7 +269,7 @@ final class NodeInfo {
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Master: retired task " + task
                     + " transmissionTime="
-                    + Utils.formatNanoseconds(transmissionTime));
+                    + Utils.formatSeconds(transmissionTime));
         }
     }
 
@@ -282,9 +281,9 @@ final class NodeInfo {
      * @param id
      *            The id given to the task.
      * @param predictedDuration
-     *            The predicted duration in nanoseconds of the task.
+     *            The predicted duration in seconds of the task.
      */
-    void registerTaskStart(TaskInstance task, long id, long predictedDuration) {
+    void registerTaskStart(TaskInstance task, long id, double predictedDuration) {
         final TaskType type = task.type;
         final NodeTaskInfo workerTaskInfo = nodeTaskInfoList[type.index];
         if (workerTaskInfo == null) {
@@ -294,14 +293,14 @@ final class NodeInfo {
         } else {
             workerTaskInfo.incrementOutstandingTasks();
         }
-        final long now = System.nanoTime();
-        final long deadlineInterval = predictedDuration
+        final double now = Utils.getPreciseTime();
+        final double deadlineInterval = predictedDuration
                 * Settings.ALLOWANCE_DEADLINE_MARGIN;
         // Don't try to enforce a deadline interval below a certain reasonable
         // minimum.
-        final long allowanceDeadline = now
+        final double allowanceDeadline = now
                 + Math.max(deadlineInterval, Settings.MINIMAL_DEADLINE);
-        final long rescheduleDeadline = now + deadlineInterval
+        final double rescheduleDeadline = now + deadlineInterval
                 * Settings.RESCHEDULE_DEADLINE_MULTIPLIER;
         final ActiveTask j = new ActiveTask(task, id, now, workerTaskInfo,
                 predictedDuration, allowanceDeadline, rescheduleDeadline);
@@ -355,7 +354,7 @@ final class NodeInfo {
         return dead;
     }
 
-    boolean checkDeadlines(long now) {
+    boolean checkDeadlines(double now) {
         final boolean changed = false;
 
         if (false) {
@@ -364,7 +363,7 @@ final class NodeInfo {
                 for (final ActiveTask task : activeTasks) {
                     if (task.getAllowanceDeadline() < now) {
                         // Worker missed an allowance deadline.
-                        final long t = now - task.startTime
+                        final double t = now - task.startTime
                                 + task.predictedDuration;
                         final NodeTaskInfo workerTaskInfo = task.nodeTaskInfo;
                         if (workerTaskInfo != null) {
@@ -380,15 +379,15 @@ final class NodeInfo {
 
     synchronized LocalNodeInfo getLocalInfo() {
         final int currentTasks[] = new int[nodeTaskInfoList.length];
-        final long transmissionTime[] = new long[nodeTaskInfoList.length];
-        final long predictedDuration[] = new long[nodeTaskInfoList.length];
+        final double transmissionTime[] = new double[nodeTaskInfoList.length];
+        final double predictedDuration[] = new double[nodeTaskInfoList.length];
 
         for (int i = 0; i < nodeTaskInfoList.length; i++) {
             final NodeTaskInfo nodeTaskInfo = nodeTaskInfoList[i];
             if (nodeTaskInfo == null) {
                 currentTasks[i] = 0;
                 transmissionTime[i] = 0;
-                predictedDuration[i] = Long.MAX_VALUE;
+                predictedDuration[i] = Double.POSITIVE_INFINITY;
             } else {
                 currentTasks[i] = nodeTaskInfo.getCurrentTasks();
                 transmissionTime[i] = nodeTaskInfo.getTransmissionTime();

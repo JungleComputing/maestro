@@ -28,13 +28,13 @@ class PacketSendPort {
 
     private long sentBytes = 0;
 
-    private long sendTime = 0;
+    private double sendTime = 0;
 
     private int sentCount = 0;
 
     private long nonEssentialSentBytes = 0;
 
-    private long nonEssentialSendTime = 0;
+    private double nonEssentialSendTime = 0;
 
     private int nonEssentialSentCount = 0;
 
@@ -171,7 +171,7 @@ class PacketSendPort {
         if (info.local) {
             // This is the local destination. Use the back door to get
             // the info to the destination.
-            message.arrivalMoment = System.nanoTime();
+            message.arrivalMoment = Utils.getPreciseTime();
             node.messageReceived(message);
             len = 0; // We're not going to compute a size just for the
             // statistics.
@@ -180,9 +180,9 @@ class PacketSendPort {
                 Globals.log.reportProgress("Sent local message " + message);
             }
         } else {
-            long t;
+            double t;
 
-            final long startTime = System.nanoTime();
+            final double startTime = Utils.getPreciseTime();
             len = connectionCache.sendMessage(theIbis, message);
             if (len < 0) {
                 ok = false;
@@ -191,13 +191,13 @@ class PacketSendPort {
             synchronized (this) {
                 sentBytes += len;
                 sentCount++;
-                t = System.nanoTime() - startTime;
+                t = Utils.getPreciseTime() - startTime;
                 sendTime += t;
             }
             info.addSentBytes(len);
             if (Settings.traceSends) {
                 Globals.log.reportProgress("Sent " + len + " bytes in "
-                        + Utils.formatNanoseconds(t) + ": " + message);
+                        + Utils.formatSeconds(t) + ": " + message);
             }
         }
         return ok;
@@ -225,7 +225,7 @@ class PacketSendPort {
         if (info.local) {
             // This is the local destination. Use the back door to get
             // the info to the destination.
-            message.arrivalMoment = System.nanoTime();
+            message.arrivalMoment = Utils.getPreciseTime();
             node.messageReceived(message);
             localSentCount.add();
             if (Settings.traceSends) {
@@ -233,9 +233,9 @@ class PacketSendPort {
             }
             return true;
         }
-        long t;
+        double t;
 
-        final long startTime = System.nanoTime();
+        final double startTime = Utils.getPreciseTime();
         long len = connectionCache.sendNonEssentialMessage(target, message);
         if (len < 0) {
             len = 0;
@@ -244,13 +244,13 @@ class PacketSendPort {
         synchronized (this) {
             nonEssentialSentBytes += len;
             nonEssentialSentCount++;
-            t = System.nanoTime() - startTime;
+            t = Utils.getPreciseTime() - startTime;
             nonEssentialSendTime += t;
         }
         info.addSentBytes(len);
         if (Settings.traceSends) {
             Globals.log.reportProgress("Sent " + len + " bytes in "
-                    + Utils.formatNanoseconds(t) + ": " + message);
+                    + Utils.formatSeconds(t) + ": " + message);
         }
         return true;
     }
@@ -268,8 +268,8 @@ class PacketSendPort {
                 + localSentCount.get() + " local sends");
         if (sentCount > 0) {
             s.println(portname + ": total send time  "
-                    + Utils.formatNanoseconds(sendTime) + "; "
-                    + Utils.formatNanoseconds(sendTime / sentCount)
+                    + Utils.formatSeconds(sendTime) + "; "
+                    + Utils.formatSeconds(sendTime / sentCount)
                     + " per message");
         }
         if (nonEssentialSentCount > 0) {

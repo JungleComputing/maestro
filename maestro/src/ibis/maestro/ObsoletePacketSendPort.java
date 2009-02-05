@@ -231,7 +231,7 @@ class ObsoletePacketSendPort {
     private CacheInfo getAndReserveCacheInfo(DestinationInfo newDestination,
             int timeout) {
         CacheInfo cacheInfo;
-        long tStart;
+        double tStart;
 
         synchronized (this) {
             // We need a lock as long as we don't have a cache slot with
@@ -242,7 +242,7 @@ class ObsoletePacketSendPort {
                 cacheInfo.useCount++;
                 return cacheInfo;
             }
-            tStart = System.nanoTime();
+            tStart = Utils.getPreciseTime();
             int ix = searchEmptyCacheSlot();
 
             cacheInfo = cache[ix];
@@ -277,7 +277,7 @@ class ObsoletePacketSendPort {
             }
             return null;
         }
-        long tEnd = System.nanoTime();
+        double tEnd = Utils.getPreciseTime();
         synchronized (this) {
             adminTime += (tEnd - tStart);
         }
@@ -318,7 +318,7 @@ class ObsoletePacketSendPort {
         if (info.local) {
             // This is the local destination. Use the back door to get
             // the info to the destination.
-            message.arrivalMoment = System.nanoTime();
+            message.arrivalMoment = Utils.getPreciseTime();
             node.messageReceived(message);
             len = 0; // We're not going to compute a size just for the
             // statistics.
@@ -327,7 +327,7 @@ class ObsoletePacketSendPort {
                 System.out.println("Sent local message " + message);
             }
         } else {
-            long t;
+            double t;
 
             try {
                 final CacheInfo cacheInfo = getAndReserveCacheInfo(info,
@@ -337,7 +337,7 @@ class ObsoletePacketSendPort {
                     return false;
                 }
                 SendPort port = cacheInfo.port;
-                long startTime = System.nanoTime();
+                double startTime = Utils.getPreciseTime();
                 WriteMessage msg = port.newMessage();
                 msg.writeObject(message);
                 len = msg.finish();
@@ -349,7 +349,7 @@ class ObsoletePacketSendPort {
                     cacheInfo.useCount--;
                     sentBytes += len;
                     sentCount++;
-                    t = System.nanoTime() - startTime;
+                    t = Utils.getPreciseTime() - startTime;
                     sendTime += t;
                 }
             } catch (IOException x) {
@@ -359,7 +359,7 @@ class ObsoletePacketSendPort {
             info.addSentBytes(len);
             if (Settings.traceSends) {
                 System.out.println("Sent " + len + " bytes in "
-                        + Utils.formatNanoseconds(t) + ": " + message);
+                        + Utils.formatSeconds(t) + ": " + message);
             }
         }
         return ok;
@@ -379,12 +379,12 @@ class ObsoletePacketSendPort {
                 + " evictions");
         if (sentCount > 0) {
             s.println(portname + ": total send time  "
-                    + Utils.formatNanoseconds(sendTime) + "; "
-                    + Utils.formatNanoseconds(sendTime / sentCount)
+                    + Utils.formatSeconds(sendTime) + "; "
+                    + Utils.formatSeconds(sendTime / sentCount)
                     + " per message");
             s.println(portname + ": total setup time "
-                    + Utils.formatNanoseconds(adminTime) + "; "
-                    + Utils.formatNanoseconds(adminTime / sentCount)
+                    + Utils.formatSeconds(adminTime) + "; "
+                    + Utils.formatSeconds(adminTime / sentCount)
                     + " per message");
         }
         DestinationInfo l[] = new DestinationInfo[destinations.size()];

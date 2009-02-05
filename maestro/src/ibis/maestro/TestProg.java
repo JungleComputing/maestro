@@ -256,7 +256,7 @@ class TestProg {
         final Node node = Node.createNode(jobs, goForMaestro);
         final Listener listener = new Listener(node, taskCount);
         System.out.println("Node created");
-        final long startTime = System.nanoTime();
+        final double startTime = Utils.getPreciseTime();
         if (node.isMaestro()) {
             System.out.println("I am maestro; submitting " + taskCount
                     + " tasks");
@@ -266,7 +266,7 @@ class TestProg {
             }
         }
         node.waitToTerminate();
-        final long stopTime = System.nanoTime();
+        final double stopTime = Utils.getPreciseTime();
         System.out.println("DURATION " + (stopTime - startTime));
     }
 

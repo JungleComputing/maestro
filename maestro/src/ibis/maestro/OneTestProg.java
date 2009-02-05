@@ -103,7 +103,7 @@ class OneTestProg {
         Job job = jobs.createJob("testprog", new CreateArrayTask());
         Node node = Node.createNode(jobs, goForMaestro);
         System.out.println("Node created");
-        long startTime = System.nanoTime();
+        double startTime = Utils.getPreciseTime();
         if (node.isMaestro()) {
             System.out.println("I am maestro; submitting " + taskCount
                     + " tasks");
@@ -113,9 +113,9 @@ class OneTestProg {
             }
         }
         node.waitToTerminate();
-        long stopTime = System.nanoTime();
+        double stopTime = Utils.getPreciseTime();
         System.out.println("Duration of this run: "
-                + Utils.formatNanoseconds(stopTime - startTime));
+                + Utils.formatSeconds(stopTime - startTime));
     }
 
     /**

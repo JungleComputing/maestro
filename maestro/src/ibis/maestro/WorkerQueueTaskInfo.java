@@ -29,25 +29,25 @@ final class WorkerQueueTaskInfo {
     /** Maximal ever number of elements in the queue. */
     private int maxElements = 0;
 
-    /** The last moment in ns that the front of the queue changed. */
-    private long frontChangedTime = 0;
+    /** The last moment in s that the front of the queue changed. */
+    private double frontChangedTime = 0;
 
     private boolean failed = false;
 
     /** The estimated time interval between tasks being dequeued. */
     private final TimeEstimate dequeueInterval = new TimeEstimate(
-            1 * Utils.MILLISECOND_IN_NANOSECONDS);
+            1 * Utils.MILLISECOND);
 
     private long totalWorkTime = 0;
 
     private final TimeEstimate averageComputeTime = new TimeEstimate(
-            Utils.MILLISECOND_IN_NANOSECONDS);
+            Utils.MILLISECOND);
 
     WorkerQueueTaskInfo(TaskType type) {
         this.type = type;
     }
 
-    synchronized void printStatistics(PrintStream s, long workTime) {
+    synchronized void printStatistics(PrintStream s, double workTime) {
         s.println("worker queue for " + type + ": " + incomingTaskCount
                 + " tasks; dequeue interval: " + dequeueInterval
                 + "; maximal queue size: " + maxElements);
@@ -57,14 +57,14 @@ final class WorkerQueueTaskInfo {
             out.println("Worker: " + type + ":");
             out.printf("    # tasks          = %5d\n", outGoingTaskCount);
             out.println("    total work time      = "
-                    + Utils.formatNanoseconds(totalWorkTime)
+                    + Utils.formatSeconds(totalWorkTime)
                     + String.format(" (%.1f%%)", workPercentage));
             out.println("    work time/task       = "
                     + Utils
-                            .formatNanoseconds(totalWorkTime
+                            .formatSeconds(totalWorkTime
                                     / outGoingTaskCount));
             out.println("    av. dequeue interval = "
-                    + Utils.formatNanoseconds(dequeueInterval.getAverage()));
+                    + Utils.formatSeconds(dequeueInterval.getAverage()));
         } else {
             out.println("Worker: " + type + " is unused");
         }
@@ -78,7 +78,7 @@ final class WorkerQueueTaskInfo {
         if (frontChangedTime == 0) {
             // This entry is the front of the queue,
             // record the time it became this.
-            frontChangedTime = System.nanoTime();
+            frontChangedTime = Utils.getPreciseTime();
         }
         incomingTaskCount++;
         sequenceNumber++;
@@ -86,10 +86,10 @@ final class WorkerQueueTaskInfo {
     }
 
     int registerRemove() {
-        final long now = System.nanoTime();
+        final double now = Utils.getPreciseTime();
         if (frontChangedTime != 0) {
             // We know when this entry became the front of the queue.
-            final long i = now - frontChangedTime;
+            final double i = now - frontChangedTime;
             dequeueInterval.addSample(i);
         }
         elements--;
@@ -109,7 +109,7 @@ final class WorkerQueueTaskInfo {
         return elements;
     }
 
-    long getDequeueInterval() {
+    double getDequeueInterval() {
         return dequeueInterval.getAverage();
     }
 
@@ -117,12 +117,10 @@ final class WorkerQueueTaskInfo {
      * Registers the completion of a task of this particular type, with the
      * given queue interval and the given work interval.
      * 
-     * @param queueTime
-     *            The time this task spent in the queue.
      * @param workTime
      *            The time it took to execute this task.
      */
-    synchronized long countTask(long workTime, boolean unpredictable) {
+    synchronized double countTask(double workTime, boolean unpredictable) {
         outGoingTaskCount++;
         totalWorkTime += workTime;
         if (!unpredictable) {
@@ -148,7 +146,7 @@ final class WorkerQueueTaskInfo {
      * @param estimate
      *            The initial estimate.
      */
-    void setInitialComputeTimeEstimate(long estimate) {
+    void setInitialComputeTimeEstimate(double estimate) {
         averageComputeTime.setInitialEstimate(estimate);
     }
 

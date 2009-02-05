@@ -12,5 +12,5 @@ public interface TaskExecutionTimeEstimator {
      * 
      * @return The estimated compute time of this task in nanoseconds.
      */
-    long estimateTaskExecutionTime();
+    double estimateTaskExecutionTime();
 }

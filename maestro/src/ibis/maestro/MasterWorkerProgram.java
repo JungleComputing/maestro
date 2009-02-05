@@ -192,10 +192,10 @@ class MasterWorkerProgram {
             return convolution3x3(-1, -1, -1, -1, 9, -1, -1, -1, -1, 1);
         }
 
-        private long runBenchmark() {
-            long startTime = System.nanoTime();
+        private double runBenchmark() {
+            double startTime = Utils.getPreciseTime();
             sharpen();
-            return System.nanoTime() - startTime;
+            return Utils.getPreciseTime() - startTime;
         }
 
         /**
@@ -208,8 +208,8 @@ class MasterWorkerProgram {
          * @return The estimated execution time of a task.
          */
         @Override
-        public long estimateTaskExecutionTime() {
-            long benchmarkTime = runBenchmark();
+        public double estimateTaskExecutionTime() {
+            double benchmarkTime = runBenchmark();
             return MINIMAL_SHARPENS * benchmarkTime;
         }
 
@@ -263,20 +263,13 @@ class MasterWorkerProgram {
         Node node = Node.createNode(jobs, goForMaestro);
         Listener listener = new Listener(node, taskCount);
         System.out.println("Node created");
-        long startTime = System.nanoTime();
+        double startTime = Utils.getPreciseTime();
         if (node.isMaestro()) {
             boolean goodToSubmit = true;
             if (waitNodes > 0) {
                 System.out.println("Waiting for " + waitNodes + " ready nodes");
-                int n = node.waitForReadyNodes(waitNodes, 3 * 60 * 1000); // Wait
-                // for
-                // maximally
-                // 3
-                // minutes
-                // for
-                // this
-                // many
-                // nodes.
+                int n = node.waitForReadyNodes(waitNodes, 3 * 60 * 1000);
+                // Wait for maximally 3 minutes for this many nodes.
                 System.out.println("There are now " + n + " nodes available");
                 if (n * 3 < waitNodes) {
                     System.out
@@ -296,9 +289,9 @@ class MasterWorkerProgram {
             }
         }
         node.waitToTerminate();
-        long stopTime = System.nanoTime();
+        double stopTime = Utils.getPreciseTime();
         System.out.println("Duration of this run: "
-                + Utils.formatNanoseconds(stopTime - startTime));
+                + Utils.formatSeconds(stopTime - startTime));
     }
 
     private static void usage(PrintStream printStream) {

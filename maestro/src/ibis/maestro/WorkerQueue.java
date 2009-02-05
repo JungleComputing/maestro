@@ -18,7 +18,7 @@ final class WorkerQueue {
 
     private final WorkerQueueTaskInfo queueTypes[];
 
-    private long activeTime = 0L;
+    private double activeTime = 0.0;
 
     /**
      * Given a list of supported types, constructs a new WorkerQueue.
@@ -108,7 +108,7 @@ final class WorkerQueue {
         final WorkerQueueTaskInfo info = queueTypes[type.index];
         final int pos;
         synchronized (this) {
-            if (activeTime == 0L) {
+            if (activeTime == 0.0) {
                 activeTime = msg.arrivalMoment;
             }
             length = info.registerAdd();
@@ -147,7 +147,7 @@ final class WorkerQueue {
                     + "; " + length + " of type " + res.taskInstance.type);
         }
         if (gossiper != null) {
-            final long queueTimePerTask = info.getDequeueInterval();
+            final double queueTimePerTask = info.getDequeueInterval();
             gossiper.setWorkerQueueTimePerTask(res.taskInstance.type,
                     queueTimePerTask, length);
         }
@@ -169,12 +169,12 @@ final class WorkerQueue {
         return true; // All task types have failed.
     }
 
-    long countTask(TaskType type, long computeInterval) {
+    double countTask(TaskType type, double computeInterval) {
         final WorkerQueueTaskInfo info = queueTypes[type.index];
         return info.countTask(computeInterval, type.unpredictable);
     }
 
-    synchronized long getActiveTime(long startTime) {
+    synchronized double getActiveTime(double startTime) {
         if (activeTime < startTime) {
             Globals.log.reportProgress("Worker was not used");
             return startTime;
@@ -182,7 +182,7 @@ final class WorkerQueue {
         return activeTime;
     }
 
-    synchronized void printStatistics(PrintStream s, long workInterval) {
+    synchronized void printStatistics(PrintStream s, double workInterval) {
         for (final WorkerQueueTaskInfo t : queueTypes) {
             if (t != null) {
                 t.printStatistics(s, workInterval);

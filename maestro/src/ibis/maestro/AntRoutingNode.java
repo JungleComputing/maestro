@@ -166,7 +166,7 @@ public class AntRoutingNode extends Node {
             }
             final ArrayList<AntPoint> antTrail = task.antTrail;
             final AntPoint point = new AntPoint(Globals.localIbis.identifier(),
-                    null, System.nanoTime(), task.type.index);
+                    null, Utils.getPreciseTime(), task.type.index);
             antTrail.add(point);
             final RunTaskMessage msg = new RunTaskMessage(node, task, taskId,
                     antTrail);
@@ -244,8 +244,8 @@ public class AntRoutingNode extends Node {
      */
     @SuppressWarnings("unchecked")
     @Override
-    void handleTaskResult(RunTaskMessage message, Object result, long runMoment) {
-        final long taskCompletionMoment = System.nanoTime();
+    void handleTaskResult(RunTaskMessage message, Object result, double runMoment) {
+        final double taskCompletionMoment = Utils.getPreciseTime();
 
         final TaskType type = message.taskInstance.type;
         taskResultMessageCount.add();
@@ -279,24 +279,24 @@ public class AntRoutingNode extends Node {
         }
 
         // Update statistics.
-        final long computeInterval = taskCompletionMoment - runMoment;
-        final long averageComputeTime = workerQueue.countTask(type,
+        final double computeInterval = taskCompletionMoment - runMoment;
+        final double averageComputeTime = workerQueue.countTask(type,
                 computeInterval);
         gossiper.setComputeTime(type, averageComputeTime);
         runningTasks.down();
         if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
-            final long queueInterval = runMoment - message.arrivalMoment;
+            final double queueInterval = runMoment - message.arrivalMoment;
             Globals.log.reportProgress("Completed " + message.taskInstance
                     + "; queueInterval="
-                    + Utils.formatNanoseconds(queueInterval)
+                    + Utils.formatSeconds(queueInterval)
                     + "; runningTasks=" + runningTasks);
         }
-        final long workerDwellTime = taskCompletionMoment
+        final double workerDwellTime = taskCompletionMoment
                 - message.arrivalMoment;
         if (traceStats) {
-            final double now = 1e-9 * (System.nanoTime() - startTime);
+            final double now = Utils.getPreciseTime() - startTime;
             System.out.println("TRACE:workerDwellTime " + type + " " + now
-                    + " " + 1e-9 * workerDwellTime);
+                    + " " + workerDwellTime);
         }
         if (!deadNodes.contains(message.source)) {
             final Message msg = new TaskCompletedMessage(message.taskId,

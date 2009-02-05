@@ -37,7 +37,7 @@ final class NodeTaskInfo {
      * @param pingTime
      *            The ping time of this worker.
      */
-    NodeTaskInfo(WorkerQueueTaskInfo taskInfo, NodeInfo worker, long pingTime) {
+    NodeTaskInfo(WorkerQueueTaskInfo taskInfo, NodeInfo worker, double pingTime) {
         this.taskInfo = taskInfo;
         this.nodeInfo = worker;
 
@@ -67,7 +67,7 @@ final class NodeTaskInfo {
      * @param roundtripTime
      *            The total roundtrip time of this task.
      */
-    synchronized void registerTaskCompleted(long roundtripTime) {
+    synchronized void registerTaskCompleted(double roundtripTime) {
         executedTasks++;
         outstandingTasks--;
         roundtripTimeEstimate.addSample(roundtripTime);
@@ -84,7 +84,7 @@ final class NodeTaskInfo {
      * @param transmissionTime
      *            The transmission time of this task.
      */
-    synchronized void registerTaskReceived(long transmissionTime) {
+    synchronized void registerTaskReceived(double transmissionTime) {
         transmissionTimeEstimate.addSample(transmissionTime);
         if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
             final String label = "task=" + taskInfo + " worker=" + nodeInfo;
@@ -112,7 +112,7 @@ final class NodeTaskInfo {
      * @param t
      *            The new estimate of the roundtrip time.
      */
-    synchronized void updateRoundtripTimeEstimate(long t) {
+    synchronized void updateRoundtripTimeEstimate(double t) {
         roundtripTimeEstimate.addSample(t);
     }
 
@@ -128,9 +128,9 @@ final class NodeTaskInfo {
         return (executedTasks != 0) || (outstandingTasks != 0);
     }
 
-    synchronized long estimateRoundtripTime() {
+    synchronized double estimateRoundtripTime() {
         if (failed) {
-            return Long.MAX_VALUE;
+            return Double.POSITIVE_INFINITY;
         }
         return roundtripTimeEstimate.getAverage();
     }
@@ -154,7 +154,7 @@ final class NodeTaskInfo {
         return outstandingTasks;
     }
 
-    synchronized long getTransmissionTime() {
+    synchronized double getTransmissionTime() {
         return transmissionTimeEstimate.getAverage();
     }
 

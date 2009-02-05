@@ -22,7 +22,7 @@ public class MapReduceHandler extends Thread implements JobCompletionListener {
 
     final RunTaskMessage message;
 
-    final long runMoment;
+    final double runMoment;
 
     /**
      * @param localNode
@@ -31,7 +31,7 @@ public class MapReduceHandler extends Thread implements JobCompletionListener {
      *            The reducer to run on each result we're waiting for.
      */
     MapReduceHandler(Node localNode, MapReduceTask reducer,
-            RunTaskMessage message, long runMoment) {
+            RunTaskMessage message, double runMoment) {
         this.localNode = localNode;
         this.reducer = reducer;
         this.message = message;

@@ -20,7 +20,7 @@ public class AntRoutingTable {
         }
     }
 
-    private void update(int i, IbisIdentifier ibis, long timestamp) {
+    private void update(int i, IbisIdentifier ibis, double timestamp) {
         antTypeRoutingTable[i].update(ibis, timestamp);
     }
 
