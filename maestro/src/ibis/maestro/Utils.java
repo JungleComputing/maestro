@@ -140,11 +140,6 @@ public class Utils {
         return (val + (divisor - 1)) / divisor;
     }
 
-    public static long secondsToMilliseconds( double t )
-    {
-        return (long) (1+t*MILLISECOND);
-    }
-
     /**
      * Given a byte count, return a human-readable representation of it.
      * 
@@ -227,7 +222,7 @@ public class Utils {
     /**
      * @return Return the precise current time in seconds.
      */
-    static double getPreciseTime() {
+    public static double getPreciseTime() {
         return NANOSECOND*System.nanoTime();
     }
 }
