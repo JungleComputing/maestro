@@ -216,7 +216,7 @@ class NodePerformanceInfo implements Serializable {
         }
     }
 
-    void setQueueTimePerTask(TaskType type, long queueTimePerTask,
+    void setWorkerQueueTimePerTask(TaskType type, long queueTimePerTask,
             int queueLength) {
         final WorkerQueueInfo info = workerQueueInfo[type.index];
         if (info != null) {
@@ -225,7 +225,7 @@ class NodePerformanceInfo implements Serializable {
         }
     }
 
-    void setQueueLength(TaskType type, int newQueueLength) {
+    void setWorkerQueueLength(TaskType type, int newQueueLength) {
         final WorkerQueueInfo info = workerQueueInfo[type.index];
         if (info != null) {
             info.setQueueLength(newQueueLength);

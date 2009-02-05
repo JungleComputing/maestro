@@ -354,7 +354,7 @@ public class QRoutingNode extends Node {
         postTaskReceivedMessage(source, msg.taskId);
         final int length = workerQueue.add(msg);
         if (gossiper != null) {
-            gossiper.setQueueLength(msg.taskInstance.type, length);
+            gossiper.setWorkerQueueLength(msg.taskInstance.type, length);
         }
     }
 

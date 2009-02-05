@@ -148,7 +148,7 @@ final class WorkerQueue {
         }
         if (gossiper != null) {
             final long queueTimePerTask = info.getDequeueInterval();
-            gossiper.setQueueTimePerTask(res.taskInstance.type,
+            gossiper.setWorkerQueueTimePerTask(res.taskInstance.type,
                     queueTimePerTask, length);
         }
         return res;
