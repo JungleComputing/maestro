@@ -48,5 +48,11 @@ public class CalculationVertexTest extends TestCase {
         assertEquals( 8, scd.getValue(), eps);
         assertEquals( 9, max.getValue(), eps);
         assertEquals( 8, min.getValue(), eps);
+        
+        e.setValue( 20 );
+        assertEquals( 9, sab.getValue(), eps);
+        assertEquals( 8, scd.getValue(), eps);
+        assertEquals( 9, max.getValue(), eps);
+        assertEquals( 8, min.getValue(), eps);
     }
 }
