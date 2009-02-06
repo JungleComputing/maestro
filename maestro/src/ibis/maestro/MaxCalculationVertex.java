@@ -3,8 +3,8 @@
  */
 package ibis.maestro;
 
-import java.util.LinkedList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Kees van Reeuwijk
@@ -12,7 +12,7 @@ import java.util.List;
  */
 class MaxCalculationVertex extends CalculationVertex implements CalculationUpdateListener {
     private double value;
-    protected List<CalculationVertex> elements = new LinkedList<CalculationVertex>();
+    protected List<CalculationVertex> elements = new CopyOnWriteArrayList<CalculationVertex>();
 
     MaxCalculationVertex( CalculationVertex... calculationNodes)
     {
@@ -28,12 +28,12 @@ class MaxCalculationVertex extends CalculationVertex implements CalculationUpdat
      * of this node.
      */
     public void handleValueChange() {
-        double nval = Double.NEGATIVE_INFINITY;
+        double nval = Double.NaN;
 
         for( CalculationVertex n: elements ) {
             double v = n.getValue();
 
-            if( v>nval ) {
+            if( Double.isNaN( nval ) || v>nval ) {
                 nval = v;
             }
         }

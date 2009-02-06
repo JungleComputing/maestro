@@ -8,32 +8,36 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * @author Kees van Reeuwijk
- * 
+ *
  */
-class SumCalculationVertex extends CalculationVertex implements
-        CalculationUpdateListener {
+class MinCalculationVertex extends CalculationVertex implements CalculationUpdateListener {
     private double value;
-
     protected List<CalculationVertex> elements = new CopyOnWriteArrayList<CalculationVertex>();
 
-    SumCalculationVertex(CalculationVertex... calculationNodes) {
-        for (CalculationVertex e : calculationNodes) {
+    MinCalculationVertex( CalculationVertex... calculationNodes)
+    {
+        for( CalculationVertex e: calculationNodes) {
             elements.add(e);
-            e.addListener(this);
+            e.addListener( this );
         }
         handleValueChange();
     }
-
+    
     /**
-     * One of the input nodes has changed, update the value of this node.
+     * One of the input nodes has changed, update the value
+     * of this node.
      */
     public void handleValueChange() {
-        double nval = 0.0;
+        double nval = Double.NaN;
 
-        for (CalculationVertex n : elements) {
-            nval += n.getValue();
+        for( CalculationVertex n: elements ) {
+            double v = n.getValue();
+
+            if( Double.isNaN( nval ) || v<nval ) {
+                nval = v;
+            }
         }
-        if (nval != value) {
+        if( nval != value ) {
             value = nval;
             notifyListeners();
         }
@@ -45,13 +49,13 @@ class SumCalculationVertex extends CalculationVertex implements
     }
 
     void add(CalculationVertex... nl) {
-        for (CalculationVertex e : nl) {
+        for( CalculationVertex e: nl ) {
             elements.add(e);
         }
     }
 
     @Override
     public void withdrawVertex(CalculationVertex v) {
-        elements.remove(v);
+        elements.remove( v );
     }
 }
