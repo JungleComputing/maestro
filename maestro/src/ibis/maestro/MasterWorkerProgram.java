@@ -226,13 +226,11 @@ class MasterWorkerProgram {
         /**
          * @param obj
          *            The input parameter of the task.
-         * @param node
-         *            The node the task is running on.
          * @return The result of the task.
          */
         @SuppressWarnings("synthetic-access")
         @Override
-        public Object run(Object obj, Node node) {
+        public Object run(Object obj) {
             int n = MINIMAL_SHARPENS
                     + rng.nextInt(MAXIMAL_SHARPENS - MINIMAL_SHARPENS);
             long sum = 0;

@@ -101,7 +101,7 @@ class TestProg {
          */
         @Override
         @SuppressWarnings("synthetic-access")
-        public AdditionData run(Object obj, Node node) {
+        public AdditionData run(Object obj) {
             final Integer val = (Integer) obj;
             final double a[] = new double[ARRAY_SIZE];
             for (int i = 0; i < ARRAY_SIZE; i++) {
@@ -137,12 +137,10 @@ class TestProg {
         /**
          * @param obj
          *            The input parameter of the task.
-         * @param node
-         *            The node the task is running on.
          * @return The result of the task.
          */
         @Override
-        public AdditionData run(Object obj, Node node) {
+        public AdditionData run(Object obj) {
             final AdditionData data = (AdditionData) obj;
             double sum = 0.0;
             for (int i = 0; i < ITERATIONS; i++) {

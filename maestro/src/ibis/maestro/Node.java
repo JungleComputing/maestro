@@ -767,7 +767,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
         if (task instanceof AtomicTask) {
             final AtomicTask at = (AtomicTask) task;
             try {
-                final Object result = at.run(input, this);
+                final Object result = at.run(input);
                 handleTaskResult(message, result, runMoment);
             } catch (final TaskFailedException x) {
                 failNode(message, x);

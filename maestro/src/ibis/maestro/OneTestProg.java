@@ -67,13 +67,11 @@ class OneTestProg {
          * 
          * @param obj
          *            The input parameter of this task.
-         * @param node
-         *            The node the task is running on.
          * @return The result value of this task.
          */
         @Override
         @SuppressWarnings("synthetic-access")
-        public Object run(Object obj, Node node) {
+        public Object run(Object obj) {
             int val = (Integer) obj;
             double a[] = new double[ARRAY_SIZE];
             for (int n = 0; n < ITERATIONS; n++) {
