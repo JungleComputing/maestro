@@ -38,7 +38,7 @@ class ConvertFramesProgram {
          * @return The fetched image.
          */
 
-        public Object run(Object in, Node node) {
+        public Object run(Object in) {
             File f = (File) in;
             try {
                 return Image.load(f, 0);
@@ -94,12 +94,10 @@ class ConvertFramesProgram {
          * 
          * @param in
          *            The input of the conversion.
-         * @param node
-         *            The node this process runs on.
          * @return THe converted image.
          */
         @Override
-        public Object run(Object in, Node node) {
+        public Object run(Object in) {
             UncompressedImage img = (UncompressedImage) in;
 
             return img.colourCorrect(rr, rg, rb, gr, gg, gb, br, bg, bb);
@@ -132,12 +130,10 @@ class ConvertFramesProgram {
          * 
          * @param in
          *            The input of this task.
-         * @param node
-         *            The node this job runs on.
          * @return The result of the task.
          */
         @Override
-        public Object run(Object in, Node node) {
+        public Object run(Object in) {
             UncompressedImage img = (UncompressedImage) in;
 
             try {

@@ -1,8 +1,6 @@
 package ibis.videoplayer;
 
 import ibis.maestro.AtomicTask;
-import ibis.maestro.Node;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -93,13 +91,11 @@ class CompareImageTask implements AtomicTask {
      * 
      * @param input
      *            The image to compare with its found matches.
-     * @param node
-     *            The node this computation runs on.
      * @return The image and its matches, augmented with any matches on this
      *         site.
      */
     @Override
-    public Object run(Object input, Node node) {
+    public Object run(Object input) {
         ImageMatches img = (ImageMatches) input;
 
         matchImages(imageDirectory, img);

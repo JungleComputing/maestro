@@ -1,7 +1,6 @@
 package ibis.videoplayer;
 
 import ibis.maestro.AtomicTask;
-import ibis.maestro.Node;
 
 /**
  * A task to decompress a frame. We fake decompressing a video frame by simply
@@ -35,7 +34,7 @@ public class DecompressFrameTask implements AtomicTask {
      * @return The decompressed frame.
      */
     @Override
-    public Object run(Object obj, Node node) {
+    public Object run(Object obj) {
         RGB48Image frame = (RGB48Image) obj;
         short in[] = frame.data;
         short data[] = new short[in.length * REPEAT * REPEAT];

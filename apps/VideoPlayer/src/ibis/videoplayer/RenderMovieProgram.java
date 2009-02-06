@@ -69,12 +69,10 @@ public class RenderMovieProgram implements JobCompletionListener {
          * 
          * @param in
          *            The input of the conversion.
-         * @param node
-         *            The node this process runs on.
          * @return THe converted image.
          */
         @Override
-        public Object run(Object in, Node node) {
+        public Object run(Object in) {
             UncompressedImage img = (UncompressedImage) in;
 
             System.out.println("Colour-correcting " + img);
@@ -113,7 +111,7 @@ public class RenderMovieProgram implements JobCompletionListener {
          * @return THe converted image.
          */
         @Override
-        public Object run(Object in, Node node) {
+        public Object run(Object in) {
             UncompressedImage img = (UncompressedImage) in;
 
             System.out.println("Downsampling " + img);
@@ -147,12 +145,10 @@ public class RenderMovieProgram implements JobCompletionListener {
          * 
          * @param in
          *            The input of this job.
-         * @param node
-         *            The node this job runs on.
          * @return The result of the job.
          */
         @Override
-        public Object run(Object in, Node node) {
+        public Object run(Object in) {
             UncompressedImage img = (UncompressedImage) in;
 
             try {

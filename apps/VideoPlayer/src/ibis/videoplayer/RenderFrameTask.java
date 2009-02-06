@@ -1,7 +1,6 @@
 package ibis.videoplayer;
 
 import ibis.maestro.AtomicTask;
-import ibis.maestro.Node;
 import ibis.util.RunProcess;
 
 import java.io.BufferedReader;
@@ -188,7 +187,7 @@ public class RenderFrameTask implements AtomicTask {
      * @return The rendered frame.
      */
     @Override
-    public Object run(Object obj, Node node) {
+    public Object run(Object obj) {
         RenderInfo info = (RenderInfo) obj;
         return renderImage(info.width, info.height, info.startRow, info.endRow,
                 info.startColumn, info.endColumn, info.frameno, info.scene);

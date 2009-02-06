@@ -1,7 +1,6 @@
 package ibis.videoplayer;
 
 import ibis.maestro.AtomicTask;
-import ibis.maestro.Node;
 
 import java.io.File;
 import java.io.IOException;
@@ -31,14 +30,14 @@ public class FetchFrameTask implements AtomicTask {
      * @return The frame we have fetched.
      */
     @Override
-    public Object run(Object obj, Node node) {
+    public Object run(Object obj) {
         Integer frameno = (Integer) obj;
         File frameFile = new File(String.format("frame-%04d.ppm"));
         Image frame;
         try {
             frame = Image.load(frameFile, frameno);
         } catch (IOException e) {
-            node.reportError("Can not load frame '" + frameFile + "'");
+            System.err.println("Can not load frame '" + frameFile + "'");
             e.printStackTrace();
             frame = null;
         }

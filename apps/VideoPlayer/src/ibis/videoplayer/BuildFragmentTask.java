@@ -3,19 +3,21 @@
  */
 package ibis.videoplayer;
 
-import ibis.maestro.AtomicTask;
 import ibis.maestro.Job;
 import ibis.maestro.JobList;
-import ibis.maestro.JobWaiter;
-import ibis.maestro.Node;
+import ibis.maestro.MapReduceHandler;
+import ibis.maestro.MapReduceTask;
 
 /**
  * @author Kees van Reeuwijk
  * 
  */
-public final class BuildFragmentTask implements AtomicTask {
+public final class BuildFragmentTask implements MapReduceTask {
     private static final long serialVersionUID = 6769001575637882594L;
     private Job fetchJob;
+    int startFrame;
+    int endFrame;
+    RGB48Image frames[];
 
     BuildFragmentTask(Job fetchJob) {
         this.fetchJob = fetchJob;
@@ -31,46 +33,36 @@ public final class BuildFragmentTask implements AtomicTask {
         return "Build fragment";
     }
 
+    static Job createGetFrameJob(JobList jobs) {
+        return jobs.createJob("getFrame", new FetchFrameTask(),
+                new DecompressFrameTask(), new ColourCorrectTask(),
+                new ScaleFrameTask(2));
+    }
+
     /**
-     * Runs this fragment building job.
-     * 
-     * @param obj
-     *            The input to this task.
-     * @param node
-     *            The node this job is running on.
+     * @return True, because this job can run anywhere.
      */
     @Override
-    public Object run(Object obj, Node node) {
-        JobWaiter waiter = new JobWaiter();
+    public boolean isSupported() {
+        return true;
+    }
 
-        FrameNumberRange range = (FrameNumberRange) obj;
-        int startFrame = range.startFrameNumber;
-        int endFrame = range.endFrameNumber;
-
-        if (Settings.traceFragmentBuilder) {
-            System.out.println("Collecting frames for fragment " + range);
-        }
-        for (int frame = startFrame; frame <= endFrame; frame++) {
-            Integer frameno = new Integer(frame);
-            waiter.submit(node, fetchJob, frameno);
-        }
-        // FIXME: run another tread during the sync.
-        Object res[] = waiter.sync();
-        if (Settings.traceFragmentBuilder) {
-            System.out.println("Building fragment [" + startFrame + "..."
-                    + endFrame + "]");
-        }
+    /* (non-Javadoc)
+     * @see ibis.maestro.MapReduceTask#getResult()
+     */
+    public Object getResult() {
         int sz = 0;
-        for (int i = 0; i < res.length; i++) {
-            RGB48Image frame = (RGB48Image) res[i];
+
+        for (int i = 0; i < frames.length; i++) {
+            RGB48Image frame = (RGB48Image) frames[i];
             if (frame != null) {
                 sz += frame.data.length;
             }
         }
         short data[] = new short[sz];
         int ix = 0;
-        for (int i = 0; i < res.length; i++) {
-            RGB48Image frame = (RGB48Image) res[i];
+        for (int i = 0; i < frames.length; i++) {
+            RGB48Image frame = frames[i];
             if (frame != null) {
                 System.arraycopy(frame.data, 0, data, ix, frame.data.length);
                 ix += frame.data.length;
@@ -84,18 +76,29 @@ public final class BuildFragmentTask implements AtomicTask {
         return value;
     }
 
-    static Job createGetFrameJob(JobList jobs) {
-        return jobs.createJob("getFrame", new FetchFrameTask(),
-                new DecompressFrameTask(), new ColourCorrectTask(),
-                new ScaleFrameTask(2));
+    /* (non-Javadoc)
+     * @see ibis.maestro.MapReduceTask#map(java.lang.Object, ibis.maestro.MapReduceHandler)
+     */
+    public void map(Object input, MapReduceHandler handler) {
+        FrameNumberRange range = (FrameNumberRange) input;
+        if (Settings.traceFragmentBuilder) {
+            System.out.println("Collecting frames for fragment " + range);
+        }
+        startFrame = range.startFrameNumber;
+        endFrame = range.endFrameNumber;
+        frames = new RGB48Image[1+endFrame-startFrame];
+        for (int frame = startFrame; frame <= endFrame; frame++) {
+            Integer frameno = new Integer(frame);
+            handler.submit(frameno, frameno, true, fetchJob);
+        }
     }
 
-    /**
-     * @return True, because this job can run anywhere.
+    /* (non-Javadoc)
+     * @see ibis.maestro.MapReduceTask#reduce(java.lang.Object, java.lang.Object)
      */
-    @Override
-    public boolean isSupported() {
-        return true;
+    public void reduce(Object id, Object result) {
+        // TODO Auto-generated method stub
+        
     }
 
 }

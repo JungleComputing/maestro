@@ -1,7 +1,6 @@
 package ibis.videoplayer;
 
 import ibis.maestro.AtomicTask;
-import ibis.maestro.Node;
 
 /**
  * A task to scale down a frame.
@@ -38,7 +37,7 @@ class ScaleFrameTask implements AtomicTask {
      * @return The scaled image.
      */
     @Override
-    public Object run(Object obj, Node node) {
+    public Object run(Object obj) {
         Image frame = (Image) obj;
         System.out.println("Scaling " + frame);
         return frame.scaleDown(factor);
