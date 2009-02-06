@@ -51,7 +51,7 @@ final class WorkerQueueTaskInfo {
         s.println("worker queue for " + type + ": " + incomingTaskCount
                 + " tasks; dequeue interval: " + dequeueInterval
                 + "; maximal queue size: " + maxElements);
-        final double workPercentage = 100.0 * ((double) totalWorkTime / workTime);
+        final double workPercentage = 100.0 * (totalWorkTime / workTime);
         final PrintStream out = s;
         if (outGoingTaskCount > 0) {
             out.println("Worker: " + type + ":");

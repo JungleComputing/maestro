@@ -18,7 +18,7 @@ public class AllTests {
     public static Test suite() {
         TestSuite suite = new TestSuite("Test for ibis.maestro");
         // $JUnit-BEGIN$
-        suite.addTestSuite(WorkerQueueTest.class);
+        suite.addTestSuite(CalculationVertexTest.class);
         suite.addTestSuite(MasterQueueTest.class);
         // $JUnit-END$
         return suite;

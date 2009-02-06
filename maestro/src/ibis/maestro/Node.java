@@ -483,7 +483,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
         s.println("run time        = " + Utils.formatSeconds(workInterval));
         s.println("activated after = "
                 + Utils.formatSeconds(activeTime - startTime));
-        final double overheadPercentage = 100.0 * ((double) overheadDuration / workInterval);
+        final double overheadPercentage = 100.0 * (overheadDuration / workInterval);
         s.println("Total overhead time = "
                 + Utils.formatSeconds(overheadDuration)
                 + String.format(" (%.1f%%)", overheadPercentage));
