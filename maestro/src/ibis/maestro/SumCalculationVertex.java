@@ -24,13 +24,18 @@ class SumCalculationVertex extends CalculationVertex implements
      * One of the input nodes has changed, update the value of this node.
      */
     public void handleValueChange() {
-        double nval = 0.0;
+        boolean changed;
+        
+        synchronized( this ){
+            double nval = 0.0;
 
-        for (CalculationVertex n : elements) {
-            nval += n.getValue();
-        }
-        if (nval != value) {
+            for (CalculationVertex n : elements) {
+                nval += n.getValue();
+            }
+            changed = nval != value;
             value = nval;
+        }
+        if( changed ){
             notifyListeners();
         }
     }

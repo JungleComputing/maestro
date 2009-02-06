@@ -24,23 +24,27 @@ class MinCalculationVertex extends CalculationVertex implements CalculationUpdat
      * of this node.
      */
     public void handleValueChange() {
-        double nval = Double.NaN;
+        boolean changed;
 
-        for( CalculationVertex n: elements ) {
-            double v = n.getValue();
+        synchronized( this ){
+            double nval = Double.NaN;
+            for( CalculationVertex n: elements ) {
+                double v = n.getValue();
 
-            if( Double.isNaN( nval ) || v<nval ) {
-                nval = v;
+                if( Double.isNaN( nval ) || v<nval ) {
+                    nval = v;
+                }
             }
-        }
-        if( nval != value ) {
+            changed = nval != value;
             value = nval;
+        }
+        if( changed ) {
             notifyListeners();
         }
     }
 
     @Override
-    double getValue() {
+    synchronized double getValue() {
         return value;
     }
 
