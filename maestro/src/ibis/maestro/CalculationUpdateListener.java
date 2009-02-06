@@ -9,4 +9,6 @@ package ibis.maestro;
  */
 interface CalculationUpdateListener {
     void handleValueChange();
+
+    void withdrawVertex(CalculationVertex calculationVertex);
 }

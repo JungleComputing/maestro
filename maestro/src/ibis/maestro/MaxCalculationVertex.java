@@ -53,4 +53,9 @@ class MaxCalculationVertex extends CalculationVertex implements CalculationUpdat
             elements.add(e);
         }
     }
+
+    @Override
+    public void withdrawVertex(CalculationVertex v) {
+        elements.remove( v );
+    }
 }
