@@ -17,11 +17,7 @@ class SumCalculationVertex extends CalculationVertex implements
     protected List<CalculationVertex> elements = new CopyOnWriteArrayList<CalculationVertex>();
 
     SumCalculationVertex(CalculationVertex... calculationNodes) {
-        for (CalculationVertex e : calculationNodes) {
-            elements.add(e);
-            e.addListener(this);
-        }
-        handleValueChange();
+        add( calculationNodes );
     }
 
     /**
@@ -47,11 +43,15 @@ class SumCalculationVertex extends CalculationVertex implements
     void add(CalculationVertex... nl) {
         for (CalculationVertex e : nl) {
             elements.add(e);
+            e.addListener( this );
         }
+        handleValueChange();
     }
 
     @Override
     public void withdrawVertex(CalculationVertex v) {
         elements.remove(v);
+        v.removeListener( this );
+        handleValueChange();
     }
 }

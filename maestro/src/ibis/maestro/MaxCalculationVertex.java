@@ -16,11 +16,7 @@ class MaxCalculationVertex extends CalculationVertex implements CalculationUpdat
 
     MaxCalculationVertex( CalculationVertex... calculationNodes)
     {
-        for( CalculationVertex e: calculationNodes) {
-            elements.add(e);
-            e.addListener( this );
-        }
-        handleValueChange();
+        add( calculationNodes );
     }
     
     /**
@@ -51,11 +47,15 @@ class MaxCalculationVertex extends CalculationVertex implements CalculationUpdat
     void add(CalculationVertex... nl) {
         for( CalculationVertex e: nl ) {
             elements.add(e);
+            e.addListener( this );
         }
+        handleValueChange();
     }
 
     @Override
     public void withdrawVertex(CalculationVertex v) {
         elements.remove( v );
+        v.removeListener( this );
+        handleValueChange();
     }
 }
