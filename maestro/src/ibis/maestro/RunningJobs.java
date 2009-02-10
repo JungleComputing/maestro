@@ -28,7 +28,7 @@ class RunningJobs {
     }
 
     /** Returns the earliest late job. */
-    synchronized TaskInstance getLateJob() {
+    synchronized JobInstance getLateJob() {
         JobInstanceInfo earliest = null;
         for (int i = 0; i < runningJobs.size(); i++) {
             final JobInstanceInfo job = runningJobs.get(i);

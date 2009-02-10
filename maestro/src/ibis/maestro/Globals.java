@@ -20,9 +20,9 @@ class Globals {
     /** A random-number generator. */
     static final Random rng = new Random();
 
-    static TaskType[] supportedTaskTypes = null;
+    static JobType[] supportedTaskTypes = null;
 
     static Ibis localIbis;
 
-    static TaskType[] allTaskTypes = null;
+    static JobType[] allTaskTypes = null;
 }

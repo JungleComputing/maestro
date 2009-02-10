@@ -71,7 +71,7 @@ class NodePerformanceInfo implements Serializable {
         return "Update @" + timeStamp + " " + workerQueue + " " + completion;
     }
 
-    double estimateJobCompletion(LocalNodeInfo localNodeInfo, TaskType type,
+    double estimateJobCompletion(LocalNodeInfo localNodeInfo, JobType type,
             boolean ignoreBusyProcessors) {
         if (localNodeInfo == null) {
             if (Settings.traceRemainingJobTime) {
@@ -182,17 +182,17 @@ class NodePerformanceInfo implements Serializable {
     }
 
     static void printTopLabel(PrintStream s) {
-        for (final TaskType t : Globals.allTaskTypes) {
+        for (final JobType t : Globals.allTaskTypes) {
             s.print(WorkerQueueInfo.topLabelType(t));
             s.print(' ');
         }
         s.print(" | ");
-        for (final TaskType t : Globals.allTaskTypes) {
+        for (final JobType t : Globals.allTaskTypes) {
             s.printf("%8s ", t);
         }
         s.println();
         for (@SuppressWarnings("unused")
-        final TaskType t : Globals.allTaskTypes) {
+        final JobType t : Globals.allTaskTypes) {
             s.print(WorkerQueueInfo.topLabel());
             s.print(' ');
         }
@@ -200,7 +200,7 @@ class NodePerformanceInfo implements Serializable {
         s.println();
     }
 
-    void failTask(TaskType type) {
+    void failTask(JobType type) {
         final WorkerQueueInfo info = workerQueueInfo[type.index];
         if (info != null) {
             info.failTask();
@@ -208,7 +208,7 @@ class NodePerformanceInfo implements Serializable {
         }
     }
 
-    void setComputeTime(TaskType type, double t) {
+    void setComputeTime(JobType type, double t) {
         final WorkerQueueInfo info = workerQueueInfo[type.index];
         if (info != null) {
             info.setExecutionTime(t);
@@ -216,7 +216,7 @@ class NodePerformanceInfo implements Serializable {
         }
     }
 
-    void setWorkerQueueTimePerTask(TaskType type, double queueTimePerTask,
+    void setWorkerQueueTimePerTask(JobType type, double queueTimePerTask,
             int queueLength) {
         final WorkerQueueInfo info = workerQueueInfo[type.index];
         if (info != null) {
@@ -225,7 +225,7 @@ class NodePerformanceInfo implements Serializable {
         }
     }
 
-    void setWorkerQueueLength(TaskType type, int newQueueLength) {
+    void setWorkerQueueLength(JobType type, int newQueueLength) {
         final WorkerQueueInfo info = workerQueueInfo[type.index];
         if (info != null) {
             info.setQueueLength(newQueueLength);

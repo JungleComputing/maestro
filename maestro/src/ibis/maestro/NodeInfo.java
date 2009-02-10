@@ -14,7 +14,7 @@ import java.util.List;
  */
 final class NodeInfo {
     /** The active tasks of this worker. */
-    private final List<ActiveTask> activeTasks = new ArrayList<ActiveTask>();
+    private final List<ActiveJob> activeTasks = new ArrayList<ActiveJob>();
 
     /** Info about the tasks for this particular node. */
     private final NodeTaskInfo nodeTaskInfoList[];
@@ -69,7 +69,7 @@ final class NodeInfo {
         return ibis.toString();
     }
 
-    NodeTaskInfo get(TaskType t) {
+    NodeTaskInfo get(JobType t) {
         return nodeTaskInfoList[t.index];
     }
 
@@ -87,7 +87,7 @@ final class NodeInfo {
         // the given id. Reasonable because we hand out the ids ourselves,
         // and we never make mistakes...
         for (int ix = 0; ix < activeTasks.size(); ix++) {
-            final ActiveTask e = activeTasks.get(ix);
+            final ActiveJob e = activeTasks.get(ix);
             if (e.id == id) {
                 return ix;
             }
@@ -101,13 +101,13 @@ final class NodeInfo {
      * 
      * @return The list of task instances that were outstanding on this worker.
      */
-    ArrayList<TaskInstance> setDead() {
-        final ArrayList<TaskInstance> orphans = new ArrayList<TaskInstance>();
+    ArrayList<JobInstance> setDead() {
+        final ArrayList<JobInstance> orphans = new ArrayList<JobInstance>();
         synchronized (this) {
             suspect = true;
             dead = true;
-            for (final ActiveTask t : activeTasks) {
-                orphans.add(t.task);
+            for (final ActiveJob t : activeTasks) {
+                orphans.add(t.job);
             }
             activeTasks.clear(); // Don't let those orphans take up memory.
         }
@@ -143,7 +143,7 @@ final class NodeInfo {
         }
     }
 
-    private synchronized ActiveTask extractActiveTask(long id) {
+    private synchronized ActiveJob extractActiveTask(long id) {
         final int ix = searchActiveTask(id);
         if (ix < 0) {
             return null;
@@ -165,15 +165,15 @@ final class NodeInfo {
         extractActiveTask(taskId);
     }
 
-    TaskInstance registerTaskFailed(long id) {
-        final ActiveTask task = extractActiveTask(id);
+    JobInstance registerTaskFailed(long id) {
+        final ActiveJob task = extractActiveTask(id);
         if (task == null) {
             Globals.log.reportError("Task with unknown id " + id
                     + " seems to have failed");
             return null;
         }
         task.nodeTaskInfo.registerTaskFailed();
-        return task.task;
+        return task.job;
     }
 
     /**
@@ -184,11 +184,11 @@ final class NodeInfo {
      * @return The task instance that was completed if it may have duplicates,
      *         or <code>null</code>
      */
-    TaskInstance registerTaskCompleted(TaskCompletedMessage result) {
+    JobInstance registerTaskCompleted(TaskCompletedMessage result) {
         final long id = result.taskId; // The identifier of the task, as handed
         // out by us.
 
-        final ActiveTask task = extractActiveTask(id);
+        final ActiveJob task = extractActiveTask(id);
 
         if (task == null) {
             // Not in the list of active tasks, presumably because it was
@@ -197,7 +197,7 @@ final class NodeInfo {
         }
         final double roundtripTime = result.arrivalMoment - task.startTime;
         final NodeTaskInfo nodeTaskInfo = task.nodeTaskInfo;
-        final TaskType type = task.task.type;
+        final JobType type = task.job.type;
         if (task.getAllowanceDeadline() < result.arrivalMoment) {
             nodeTaskInfo.registerMissedAllowanceDeadline();
             if (Settings.traceMissedDeadlines) {
@@ -232,8 +232,8 @@ final class NodeInfo {
                     + " roundtripTime="
                     + Utils.formatSeconds(roundtripTime));
         }
-        if (task.task.isOrphan()) {
-            return task.task;
+        if (task.job.isOrphan()) {
+            return task.job;
         }
         return null;
     }
@@ -245,7 +245,7 @@ final class NodeInfo {
      *            The task received message that tells about this task.
      */
     void registerTaskReceived(TaskReceivedMessage result) {
-        final ActiveTask task;
+        final ActiveJob task;
 
         // The identifier of the task, as handed out by us.
         final long id = result.taskId;
@@ -283,8 +283,8 @@ final class NodeInfo {
      * @param predictedDuration
      *            The predicted duration in seconds of the task.
      */
-    void registerTaskStart(TaskInstance task, long id, double predictedDuration) {
-        final TaskType type = task.type;
+    void registerTaskStart(JobInstance task, long id, double predictedDuration) {
+        final JobType type = task.type;
         final NodeTaskInfo workerTaskInfo = nodeTaskInfoList[type.index];
         if (workerTaskInfo == null) {
             Globals.log
@@ -302,7 +302,7 @@ final class NodeInfo {
                 + Math.max(deadlineInterval, Settings.MINIMAL_DEADLINE);
         final double rescheduleDeadline = now + deadlineInterval
                 * Settings.RESCHEDULE_DEADLINE_MULTIPLIER;
-        final ActiveTask j = new ActiveTask(task, id, now, workerTaskInfo,
+        final ActiveJob j = new ActiveJob(task, id, now, workerTaskInfo,
                 predictedDuration, allowanceDeadline, rescheduleDeadline);
         synchronized (this) {
             activeTasks.add(j);
@@ -360,7 +360,7 @@ final class NodeInfo {
         if (false) {
             // TODO: enable this again when it is sane to do.
             synchronized (this) {
-                for (final ActiveTask task : activeTasks) {
+                for (final ActiveJob task : activeTasks) {
                     if (task.getAllowanceDeadline() < now) {
                         // Worker missed an allowance deadline.
                         final double t = now - task.startTime

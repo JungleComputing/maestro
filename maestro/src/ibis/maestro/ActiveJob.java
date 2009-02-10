@@ -1,13 +1,13 @@
 package ibis.maestro;
 
 /**
- * An entry in the list of outstanding tasks of a master.
+ * An entry in the list of outstanding jobs of a master.
  * 
  * @author Kees van Reeuwijk
  * 
  */
-class ActiveTask {
-    final TaskInstance task;
+class ActiveJob {
+    final JobInstance job;
 
     final long id;
 
@@ -24,10 +24,10 @@ class ActiveTask {
     /** The moment this task should be completed. */
     final double rescheduleDeadline;
 
-    ActiveTask(TaskInstance task, long id, double startTime,
+    ActiveJob(JobInstance job, long id, double startTime,
             NodeTaskInfo workerTaskInfo, double predictedDuration,
             double allowanceDeadline, double rescheduleDeadline) {
-        this.task = task;
+        this.job = job;
         this.id = id;
         this.nodeTaskInfo = workerTaskInfo;
         this.startTime = startTime;
@@ -71,7 +71,7 @@ class ActiveTask {
      */
     @Override
     public String toString() {
-        return "(ActiveTask id=" + id + ", task=" + task + ", start time "
+        return "(ActiveTask id=" + id + ", task=" + job + ", start time "
                 + Utils.formatSeconds(startTime) + ')';
     }
 

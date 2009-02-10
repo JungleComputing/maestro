@@ -5,13 +5,13 @@ package ibis.maestro;
  * 
  * @author Kees van Reeuwijk.
  */
-public class TaskFailedException extends MaestroException {
+public class JobFailedException extends MaestroException {
     private static final long serialVersionUID = 1L;
 
     /**
      * Constructs a new MaestroException.
      */
-    public TaskFailedException() {
+    public JobFailedException() {
         super();
     }
 
@@ -21,7 +21,7 @@ public class TaskFailedException extends MaestroException {
      * @param msg
      *            The error message.
      */
-    public TaskFailedException(String msg) {
+    public JobFailedException(String msg) {
         super(msg);
     }
 

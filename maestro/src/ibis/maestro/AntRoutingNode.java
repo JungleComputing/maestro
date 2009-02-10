@@ -98,7 +98,7 @@ public class AntRoutingNode extends Node {
     @Override
     public boolean submit(Object input, Serializable userId,
             boolean submitIfBusy, JobCompletionListener listener,
-            Job... choices) {
+            JobSequence... choices) {
         int choice;
 
         if (choices.length == 0) {
@@ -108,10 +108,10 @@ public class AntRoutingNode extends Node {
         if (choices.length == 1 && submitIfBusy) {
             choice = 0;
         } else {
-            final TaskType types[] = new TaskType[choices.length];
+            final JobType types[] = new JobType[choices.length];
 
             for (int ix = 0; ix < choices.length; ix++) {
-                final Job job = choices[ix];
+                final JobSequence job = choices[ix];
 
                 types[ix] = job.getFirstTaskType();
             }
@@ -122,7 +122,7 @@ public class AntRoutingNode extends Node {
                 return false;
             }
         }
-        final Job job = choices[choice];
+        final JobSequence job = choices[choice];
         job.submit(this, input, userId, listener, new ArrayList<AntPoint>());
         return true;
     }
@@ -142,7 +142,7 @@ public class AntRoutingNode extends Node {
             NodeInfo worker;
             long taskId;
             IbisIdentifier node;
-            TaskInstance task;
+            JobInstance task;
 
             synchronized (antRoutingTable) {
                 final HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap = nodes
@@ -247,10 +247,10 @@ public class AntRoutingNode extends Node {
     void handleTaskResult(RunTaskMessage message, Object result, double runMoment) {
         final double taskCompletionMoment = Utils.getPreciseTime();
 
-        final TaskType type = message.taskInstance.type;
+        final JobType type = message.taskInstance.type;
         taskResultMessageCount.add();
 
-        final TaskType nextTaskType = jobs.getNextTaskType(type);
+        final JobType nextTaskType = jobs.getNextTaskType(type);
         final ArrayList<AntPoint> oldAntTrail = message.taskInstance.antTrail;
         if (nextTaskType == null) {
             // This was the final step. Report back the result.
@@ -272,7 +272,7 @@ public class AntRoutingNode extends Node {
             // There is a next step to take.
             final ArrayList<AntPoint> antTrail = (ArrayList<AntPoint>) oldAntTrail
                     .clone();
-            final TaskInstance nextTask = new TaskInstance(
+            final JobInstance nextTask = new JobInstance(
                     message.taskInstance.jobInstance, nextTaskType, result,
                     antTrail);
             submit(nextTask);

@@ -10,13 +10,13 @@ import java.util.ArrayList;
  * @author Kees van Reeuwijk
  */
 public class AntTypeRoutingTable {
-    final TaskType type;
+    final JobType type;
 
     final ArrayList<NodeInfo> nodes = new ArrayList<NodeInfo>();
 
     private double updateTimeStamp = -1;
 
-    AntTypeRoutingTable(TaskType type) {
+    AntTypeRoutingTable(JobType type) {
         this.type = type;
     }
 

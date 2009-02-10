@@ -39,7 +39,7 @@ public class JobWaiter implements JobCompletionListener {
      *            Input for the (first task of the) job.
      */
     @SuppressWarnings("synthetic-access")
-    public void submit(Node node, Job job, Object input) {
+    public void submit(Node node, JobSequence job, Object input) {
         Serializable id;
         synchronized (this) {
             id = new WaiterJobIdentifier(taskNo++);

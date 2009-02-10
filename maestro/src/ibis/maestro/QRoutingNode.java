@@ -98,7 +98,7 @@ public class QRoutingNode extends Node {
     @Override
     public boolean submit(Object input, Serializable userId,
             boolean submitIfBusy, JobCompletionListener listener,
-            Job... choices) {
+            JobSequence... choices) {
         int choice;
 
         if (choices.length == 0) {
@@ -109,11 +109,11 @@ public class QRoutingNode extends Node {
             waitForRoom();
             choice = 0;
         } else {
-            final TaskType types[] = new TaskType[choices.length];
+            final JobType types[] = new JobType[choices.length];
 
             waitForRoom();
             for (int ix = 0; ix < choices.length; ix++) {
-                final Job job = choices[ix];
+                final JobSequence job = choices[ix];
 
                 types[ix] = job.getFirstTaskType();
             }
@@ -126,7 +126,7 @@ public class QRoutingNode extends Node {
                 return false;
             }
         }
-        final Job job = choices[choice];
+        final JobSequence job = choices[choice];
         job.submit(this, input, userId, listener, null);
         return true;
     }
@@ -155,7 +155,7 @@ public class QRoutingNode extends Node {
             NodeInfo worker;
             long taskId;
             IbisIdentifier node;
-            TaskInstance task;
+            JobInstance task;
 
             synchronized (drainLock) {
                 // The entire operation
@@ -268,10 +268,10 @@ public class QRoutingNode extends Node {
     void handleTaskResult(RunTaskMessage message, Object result, double runMoment) {
         final double taskCompletionMoment = Utils.getPreciseTime();
 
-        final TaskType type = message.taskInstance.type;
+        final JobType type = message.taskInstance.type;
         taskResultMessageCount.add();
 
-        final TaskType nextTaskType = jobs.getNextTaskType(type);
+        final JobType nextTaskType = jobs.getNextTaskType(type);
         if (nextTaskType == null) {
             // This was the final step. Report back the result.
             final JobInstanceIdentifier identifier = message.taskInstance.jobInstance;
@@ -289,7 +289,7 @@ public class QRoutingNode extends Node {
             }
         } else {
             // There is a next step to take.
-            final TaskInstance nextTask = new TaskInstance(
+            final JobInstance nextTask = new JobInstance(
                     message.taskInstance.jobInstance, nextTaskType, result,
                     null);
             submit(nextTask);

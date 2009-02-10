@@ -67,7 +67,7 @@ class WorkerQueueInfo implements Serializable {
         return String.format("%23s", "---");
     }
 
-    static Object topLabelType(TaskType type) {
+    static Object topLabelType(JobType type) {
         return String.format("%23s", type.toString());
     }
 

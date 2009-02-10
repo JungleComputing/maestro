@@ -13,10 +13,10 @@ import java.util.Arrays;
  * @author Kees van Reeuwijk
  * 
  */
-public class MapReduceHandler extends Thread implements JobCompletionListener {
+public class ParallelJobHandler extends Thread implements JobCompletionListener {
     final Node localNode;
 
-    final MapReduceTask reducer;
+    final ParallelJob reducer;
 
     final LabelTracker labeler = new LabelTracker();
 
@@ -30,7 +30,7 @@ public class MapReduceHandler extends Thread implements JobCompletionListener {
      * @param reducer
      *            The reducer to run on each result we're waiting for.
      */
-    MapReduceHandler(Node localNode, MapReduceTask reducer,
+    ParallelJobHandler(Node localNode, ParallelJob reducer,
             RunTaskMessage message, double runMoment) {
         this.localNode = localNode;
         this.reducer = reducer;
@@ -79,7 +79,7 @@ public class MapReduceHandler extends Thread implements JobCompletionListener {
      */
     @SuppressWarnings("synthetic-access")
     public synchronized boolean submit(Object input, Object userId,
-            boolean submitIfBusy, Job... jobChoices) {
+            boolean submitIfBusy, JobSequence... jobChoices) {
         Label label = labeler.nextLabel();
         Serializable id = new Id(userId, label);
         if (Settings.traceMapReduce) {

@@ -9,12 +9,12 @@ import java.util.ArrayList;
  * @author Kees van Reeuwijk
  * 
  */
-class TaskInstance implements Serializable {
+class JobInstance implements Serializable {
     private static final long serialVersionUID = -5669565112253289488L;
 
     final JobInstanceIdentifier jobInstance;
 
-    final TaskType type;
+    final JobType type;
 
     final Object input;
 
@@ -30,7 +30,7 @@ class TaskInstance implements Serializable {
      * @param input
      *            The input for this task.
      */
-    TaskInstance(JobInstanceIdentifier tii, TaskType type, Object input,
+    JobInstance(JobInstanceIdentifier tii, JobType type, Object input,
             ArrayList<AntPoint> antTrail) {
         jobInstance = tii;
         this.type = type;
@@ -95,7 +95,7 @@ class TaskInstance implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        final TaskInstance other = (TaskInstance) obj;
+        final JobInstance other = (JobInstance) obj;
         if (jobInstance == null) {
             if (other.jobInstance != null)
                 return false;

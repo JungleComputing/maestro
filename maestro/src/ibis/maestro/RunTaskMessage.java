@@ -16,7 +16,7 @@ final class RunTaskMessage extends Message {
 
     final IbisIdentifier workerIdentifier;
 
-    final TaskInstance taskInstance;
+    final JobInstance taskInstance;
 
     final long taskId;
 
@@ -34,7 +34,7 @@ final class RunTaskMessage extends Message {
      * @param taskId
      *            The identifier of the task.
      */
-    RunTaskMessage(IbisIdentifier workerIdentifier, TaskInstance task,
+    RunTaskMessage(IbisIdentifier workerIdentifier, JobInstance task,
             long taskId, ArrayList<AntPoint> antTrail) {
         this.source = Globals.localIbis.identifier();
         this.workerIdentifier = workerIdentifier;

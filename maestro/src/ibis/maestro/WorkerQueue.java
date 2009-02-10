@@ -27,12 +27,12 @@ final class WorkerQueue {
      *            The list of job types we support.
      */
     WorkerQueue(JobList jobs) {
-        final TaskType[] taskTypes = Globals.allTaskTypes;
+        final JobType[] taskTypes = Globals.allTaskTypes;
         queueTypes = new WorkerQueueTaskInfo[taskTypes.length];
-        for (final TaskType t : taskTypes) {
+        for (final JobType t : taskTypes) {
             final WorkerQueueTaskInfo queueTypeInfo = new WorkerQueueTaskInfo(t);
             queueTypes[t.index] = queueTypeInfo;
-            final Task task = jobs.getTask(t);
+            final Job task = jobs.getTask(t);
             if (task instanceof TaskExecutionTimeEstimator) {
                 final TaskExecutionTimeEstimator estimator = (TaskExecutionTimeEstimator) task;
                 queueTypeInfo.setInitialComputeTimeEstimate(estimator
@@ -104,7 +104,7 @@ final class WorkerQueue {
      */
     int add(RunTaskMessage msg) {
         final int length;
-        final TaskType type = msg.taskInstance.type;
+        final JobType type = msg.taskInstance.type;
         final WorkerQueueTaskInfo info = queueTypes[type.index];
         final int pos;
         synchronized (this) {
@@ -154,7 +154,7 @@ final class WorkerQueue {
         return res;
     }
 
-    boolean failTask(TaskType type) {
+    boolean failTask(JobType type) {
         final WorkerQueueTaskInfo info = queueTypes[type.index];
         info.failTask();
 
@@ -169,7 +169,7 @@ final class WorkerQueue {
         return true; // All task types have failed.
     }
 
-    double countTask(TaskType type, double computeInterval) {
+    double countTask(JobType type, double computeInterval) {
         final WorkerQueueTaskInfo info = queueTypes[type.index];
         return info.countTask(computeInterval, type.unpredictable);
     }
@@ -190,7 +190,7 @@ final class WorkerQueue {
         }
     }
 
-    WorkerQueueTaskInfo getTaskInfo(TaskType type) {
+    WorkerQueueTaskInfo getTaskInfo(JobType type) {
         return queueTypes[type.index];
     }
 

@@ -12,7 +12,7 @@ public class AntRoutingTable {
     AntTypeRoutingTable antTypeRoutingTable[];
 
     AntRoutingTable() {
-        TaskType[] allTaskTypes = Globals.allTaskTypes;
+        JobType[] allTaskTypes = Globals.allTaskTypes;
         antTypeRoutingTable = new AntTypeRoutingTable[allTaskTypes.length];
 
         for (int i = 0; i < allTaskTypes.length; i++) {
@@ -24,7 +24,7 @@ public class AntRoutingTable {
         antTypeRoutingTable[i].update(ibis, timestamp);
     }
 
-    NodeInfo getBestReadyWorker(TaskType type) {
+    NodeInfo getBestReadyWorker(JobType type) {
         return antTypeRoutingTable[type.index].getBestReadyWorker();
     }
 

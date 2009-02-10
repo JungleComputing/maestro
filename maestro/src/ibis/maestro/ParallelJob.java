@@ -1,12 +1,12 @@
 package ibis.maestro;
 
 /**
- * The interface of a map/reduce task in the Maestro workflow system.
+ * The interface of a parallel job in the Maestro workflow system.
  * 
  * @author Kees van Reeuwijk
  * 
  */
-public interface MapReduceTask extends Task {
+public interface ParallelJob extends Job {
     /**
      * Given an input, submits a number of tasks to the given handler.
      * 
@@ -15,7 +15,7 @@ public interface MapReduceTask extends Task {
      * @param handler
      *            The handler.
      */
-    void map(Object input, MapReduceHandler handler);
+    void map(Object input, ParallelJobHandler handler);
 
     /**
      * Reports back a result.

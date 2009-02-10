@@ -348,18 +348,18 @@ class Gossiper extends Thread {
      *            Local knowledge about the different nodes.
      * @return
      */
-    private double computeCompletionTime(TaskType type, boolean submitIfBusy,
+    private double computeCompletionTime(JobType type, boolean submitIfBusy,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
         return gossip.computeCompletionTime(type, submitIfBusy,
                 localNodeInfoMap);
     }
 
-    int selectFastestTask(TaskType[] types, boolean submitIfBusy,
+    int selectFastestTask(JobType[] types, boolean submitIfBusy,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
         int bestIx = -1;
         double bestTime = Double.POSITIVE_INFINITY;
         for (int ix = 0; ix < types.length; ix++) {
-            final TaskType type = types[ix];
+            final JobType type = types[ix];
             final double t = computeCompletionTime(type, submitIfBusy,
                     localNodeInfoMap);
             if (t < bestTime) {
@@ -370,23 +370,23 @@ class Gossiper extends Thread {
         return bestIx;
     }
 
-    void failTask(TaskType type) {
+    void failTask(JobType type) {
         gossip.localNodeFailTask(type);
         addQuotum();
     }
 
-    void setComputeTime(TaskType type, double t) {
+    void setComputeTime(JobType type, double t) {
         gossip.setLocalComputeTime(type, t);
         addQuotum();
     }
 
-    void setWorkerQueueTimePerTask(TaskType type, double queueTimePerTask,
+    void setWorkerQueueTimePerTask(JobType type, double queueTimePerTask,
             int queueLength) {
         gossip.setWorkerQueueTimePerTask(type, queueTimePerTask, queueLength);
         addQuotum();
     }
 
-    void setWorkerQueueLength(TaskType type, int queueLength) {
+    void setWorkerQueueLength(JobType type, int queueLength) {
         gossip.setWorkerQueueLength(type, queueLength);
         addQuotum();
     }

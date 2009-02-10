@@ -3,13 +3,13 @@ package ibis.maestro;
 class JobInstanceInfo {
     final JobInstanceIdentifier identifier;
 
-    final Job job;
+    final JobSequence job;
 
     final JobCompletionListener listener;
 
     double startTime = Utils.getPreciseTime();
 
-    final TaskInstance taskInstance;
+    final JobInstance taskInstance;
 
     /**
      * Constructs an information class for the given job identifier.
@@ -22,7 +22,7 @@ class JobInstanceInfo {
      *            The completion listener associated with the job.
      */
     JobInstanceInfo(final JobInstanceIdentifier identifier,
-            TaskInstance taskInstance, Job job,
+            JobInstance taskInstance, JobSequence job,
             final JobCompletionListener listener) {
         this.identifier = identifier;
         this.taskInstance = taskInstance;

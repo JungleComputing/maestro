@@ -77,7 +77,7 @@ class TestProg {
 
     }
 
-    private static class CreateArrayTask implements AtomicTask {
+    private static class CreateArrayTask implements AtomicJob {
         private static final long serialVersionUID = 2347248108353357517L;
 
         /**
@@ -121,7 +121,7 @@ class TestProg {
         }
     }
 
-    private static class AdditionTask implements AtomicTask {
+    private static class AdditionTask implements AtomicJob {
         private static final long serialVersionUID = 7652370809998864296L;
 
         /**
@@ -162,16 +162,16 @@ class TestProg {
         }
     }
 
-    private class AssembleArrayTask implements MapReduceTask {
+    private class AssembleArrayTask implements ParallelJob {
         private static final long serialVersionUID = 1L;
 
-        private final Job createJob;
+        private final JobSequence createJob;
 
         private static final int SIZE = 4;
 
         Object res[] = new Object[SIZE];
 
-        AssembleArrayTask(Job job) {
+        AssembleArrayTask(JobSequence job) {
             this.createJob = job;
         }
 
@@ -196,7 +196,7 @@ class TestProg {
          *            The handler for this map/reduce task
          */
         @Override
-        public void map(Object input, MapReduceHandler handler) {
+        public void map(Object input, ParallelJobHandler handler) {
             for (int n = 0; n < SIZE; n++) {
                 final Integer userId = n;
                 handler.submit(input, userId, true, createJob);
@@ -247,7 +247,7 @@ class TestProg {
 
         // Job createJob = jobs.createJob("createarray", new CreateArrayTask()
         // );
-        final Job job = jobs.createJob("testprog",
+        final JobSequence job = jobs.createJob("testprog",
                 // new AssembleArrayTask( createJob ),
                 new CreateArrayTask(), new AdditionTask(), new AdditionTask(),
                 new AdditionTask(), new AdditionTask());

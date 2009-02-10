@@ -21,7 +21,7 @@ final class MasterQueue {
 
     private final TypeInfo queueTypes[];
 
-    private final ArrayList<TaskInstance> queue = new ArrayList<TaskInstance>();
+    private final ArrayList<JobInstance> queue = new ArrayList<JobInstance>();
 
     /**
      * Statistics per type for the different task types in the queue.
@@ -30,7 +30,7 @@ final class MasterQueue {
      */
     private static final class TypeInfo {
         /** The type these statistics are about. */
-        private final TaskType type;
+        private final JobType type;
 
         /** The total number of tasks of this type that entered the queue. */
         private long taskCount = 0;
@@ -47,7 +47,7 @@ final class MasterQueue {
         private final TimeEstimate dequeueInterval = new TimeEstimate(
                 1 * Utils.MILLISECOND);
 
-        TypeInfo(final TaskType type) {
+        TypeInfo(final JobType type) {
             this.type = type;
         }
 
@@ -113,15 +113,15 @@ final class MasterQueue {
      * @param taskTypes
      *            The supported types.
      */
-    MasterQueue(TaskType allTypes[]) {
+    MasterQueue(JobType allTypes[]) {
         queueTypes = new TypeInfo[allTypes.length];
-        for (final TaskType type : allTypes) {
+        for (final JobType type : allTypes) {
             queueTypes[type.index] = new TypeInfo(type);
         }
     }
 
-    private static int findInsertionPoint(ArrayList<TaskInstance> queue,
-            TaskInstance e) {
+    private static int findInsertionPoint(ArrayList<JobInstance> queue,
+            JobInstance e) {
         // Good old binary search.
         int start = 0;
         int end = queue.size();
@@ -165,7 +165,7 @@ final class MasterQueue {
     }
 
     private void dumpQueue(PrintStream s) {
-        for (final TaskInstance e : queue) {
+        for (final JobInstance e : queue) {
             s.print(e.shortLabel());
             s.print(' ');
         }
@@ -180,12 +180,12 @@ final class MasterQueue {
      *            The task to submit.
      */
     @SuppressWarnings("synthetic-access")
-    protected synchronized void add(TaskInstance task) {
+    protected synchronized void add(JobInstance task) {
         taskCount++;
         final int pos = findInsertionPoint(queue, task);
         queue.add(pos, task);
 
-        final TaskType type = task.type;
+        final JobType type = task.type;
         final TypeInfo info = queueTypes[type.index];
         final int length = info.registerAdd();
         if (Settings.traceQueuing) {
@@ -206,15 +206,15 @@ final class MasterQueue {
      * @param l
      *            The list of task instances to add.
      */
-    void add(ArrayList<TaskInstance> l) {
+    void add(ArrayList<JobInstance> l) {
         if (l != null) {
-            for (final TaskInstance task : l) {
+            for (final JobInstance task : l) {
                 add(task);
             }
         }
     }
 
-    synchronized TaskInstance remove() {
+    synchronized JobInstance remove() {
         return queue.remove(0);
     }
 
@@ -240,7 +240,7 @@ final class MasterQueue {
      */
     private Submission selectBestWorker(
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
-            NodePerformanceInfo tables[], TaskInstance task) {
+            NodePerformanceInfo tables[], JobInstance task) {
         NodePerformanceInfo best = null;
         double bestInterval = Double.POSITIVE_INFINITY;
 
@@ -303,7 +303,7 @@ final class MasterQueue {
      */
     private Submission selectBestWorker(
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
-            AntRoutingTable table, TaskInstance task) {
+            AntRoutingTable table, JobInstance task) {
         final NodePerformanceInfo best = null;
 
         final NodeInfo candidate = table.getBestReadyWorker(task.type);
@@ -341,8 +341,8 @@ final class MasterQueue {
         // workers are busy.
         int ix = 0;
         while (ix < queue.size()) {
-            final TaskInstance task = queue.get(ix);
-            final TaskType type = task.type;
+            final JobInstance task = queue.get(ix);
+            final JobType type = task.type;
             if (type.index == busyTypeIndex) {
                 if (Settings.traceMasterQueue || Settings.traceQueuing) {
                     Globals.log.reportProgress("Type " + type
@@ -388,8 +388,8 @@ final class MasterQueue {
         int busyTypeIndex = -1; // No workers for this type.
 
         while (ix < queue.size()) {
-            final TaskInstance task = queue.get(ix);
-            final TaskType type = task.type;
+            final JobInstance task = queue.get(ix);
+            final JobType type = task.type;
 
             if (type.index == busyTypeIndex) {
                 if (Settings.traceMasterQueue || Settings.traceQueuing) {
@@ -453,7 +453,7 @@ final class MasterQueue {
      * @param task
      *            The task to remove.
      */
-    synchronized void removeDuplicates(TaskInstance task) {
+    synchronized void removeDuplicates(JobInstance task) {
         while (queue.remove(task)) {
             // Nothing.
         }

@@ -6,10 +6,10 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  * 
  */
-public class AlternativesTask implements Task {
-    private final Task alternatives[];
+public class AlternativesJob implements Job {
+    private final Job alternatives[];
 
-    AlternativesTask(Task... l) {
+    AlternativesJob(Job... l) {
         alternatives = l;
     }
 
@@ -31,7 +31,7 @@ public class AlternativesTask implements Task {
     @Override
     public boolean isSupported() {
         // Supported if at least one alternative is supported.
-        for (final Task t : alternatives) {
+        for (final Job t : alternatives) {
             if (t.isSupported()) {
                 return true;
             }

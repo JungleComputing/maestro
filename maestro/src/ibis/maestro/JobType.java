@@ -1,6 +1,6 @@
 package ibis.maestro;
 
-import ibis.maestro.Job.JobIdentifier;
+import ibis.maestro.JobSequence.JobSequenceIdentifier;
 
 import java.io.Serializable;
 
@@ -9,7 +9,7 @@ import java.io.Serializable;
  * 
  * @author Kees van Reeuwijk
  */
-final class TaskType implements Serializable {
+final class JobType implements Serializable {
     /** Contractual obligation. */
     private static final long serialVersionUID = 13451L;
 
@@ -19,7 +19,7 @@ final class TaskType implements Serializable {
 
     final int index;
 
-    final JobIdentifier job;
+    final JobSequenceIdentifier job;
 
     final boolean unpredictable;
 
@@ -33,7 +33,7 @@ final class TaskType implements Serializable {
      * @param remainingTasks
      *            The number of tasks after this one in the job.
      */
-    TaskType(JobIdentifier id, int taskNo, int remainingTasks,
+    JobType(JobSequenceIdentifier id, int taskNo, int remainingTasks,
             boolean unpredictable, int index) {
         this.job = id;
         this.taskNo = taskNo;
@@ -78,7 +78,7 @@ final class TaskType implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        final TaskType other = (TaskType) obj;
+        final JobType other = (JobType) obj;
         if (taskNo != other.taskNo)
             return false;
         if (job == null) {
@@ -99,7 +99,7 @@ final class TaskType implements Serializable {
      *            The other task type to compare.
      * @return The comparison result.
      */
-    static int comparePriorities(TaskType a, TaskType b) {
+    static int comparePriorities(JobType a, JobType b) {
         if (a.taskNo > b.taskNo) {
             return -1;
         }

@@ -188,8 +188,8 @@ public abstract class Node extends Thread implements PacketReceiveListener {
         final Properties ibisProperties = new Properties();
 
         this.jobs = jobs;
-        final TaskType supportedTypes[] = jobs.getSupportedTaskTypes();
-        final TaskType[] allTypes = jobs.getAllTypes();
+        final JobType supportedTypes[] = jobs.getSupportedTaskTypes();
+        final JobType[] allTypes = jobs.getAllTypes();
         Globals.allTaskTypes = allTypes;
         Globals.supportedTaskTypes = supportedTypes;
         masterQueue = new MasterQueue(allTypes);
@@ -367,7 +367,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
             terminator.removeNode(theIbis);
         }
         deadNodes.add(theIbis);
-        final ArrayList<TaskInstance> orphans = nodes.removeNode(theIbis);
+        final ArrayList<JobInstance> orphans = nodes.removeNode(theIbis);
         if (maestro != null && theIbis.equals(maestro)) {
             Globals.log.reportProgress("The maestro has left; stopping..");
             setStopped();
@@ -378,7 +378,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
             setStopped();
         }
         if (!stopped.isSet()) {
-            for (final TaskInstance ti : orphans) {
+            for (final JobInstance ti : orphans) {
                 ti.setOrphan();
             }
             masterQueue.add(orphans);
@@ -400,8 +400,8 @@ public abstract class Node extends Thread implements PacketReceiveListener {
         }
     }
 
-    void addRunningJob(JobInstanceIdentifier id, TaskInstance taskInstance,
-            Job job, JobCompletionListener listener) {
+    void addRunningJob(JobInstanceIdentifier id, JobInstance taskInstance,
+            JobSequence job, JobCompletionListener listener) {
         runningJobs.add(new JobInstanceInfo(id, taskInstance, job, listener));
     }
 
@@ -577,7 +577,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
                     .reportProgress("Received a worker task completed message "
                             + result);
         }
-        final TaskInstance task = nodes.registerTaskCompleted(result);
+        final JobInstance task = nodes.registerTaskCompleted(result);
         if (task != null) {
             masterQueue.removeDuplicates(task);
         }
@@ -608,7 +608,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
             Globals.log.reportProgress("Received a worker task failed message "
                     + msg);
         }
-        final TaskInstance failedTask = nodes.registerTaskFailed(msg.source,
+        final JobInstance failedTask = nodes.registerTaskFailed(msg.source,
                 msg.id);
         Globals.log.reportError("Node " + msg.source
                 + " failed to execute task with id " + msg.id
@@ -710,7 +710,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
 
     private void restartLateJobs() {
         if (masterQueue.isEmpty() && workerQueue.isEmpty() && !stopped.isSet()) {
-            final TaskInstance job = runningJobs.getLateJob();
+            final JobInstance job = runningJobs.getLateJob();
             if (job != null) {
                 Globals.log.reportProgress("Resubmitted late job " + job);
                 masterQueue.add(job);
@@ -722,7 +722,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
     /** On a locked queue, try to send out as many task as we can. */
     protected abstract void drainMasterQueue();
 
-    void submit(TaskInstance task) {
+    void submit(JobInstance task) {
         masterQueue.add(task);
     }
 
@@ -747,7 +747,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
      */
     public abstract boolean submit(Object input, Serializable userId,
             boolean submitIfBusy, JobCompletionListener listener,
-            Job... choices);
+            JobSequence... choices);
 
     private boolean keepRunning() {
         if (!stopped.isSet()) {
@@ -762,23 +762,25 @@ public abstract class Node extends Thread implements PacketReceiveListener {
     abstract void handleTaskResult(RunTaskMessage message, Object result,
             double runMoment);
 
-    private void executeTask(RunTaskMessage message, Task task, Object input,
+    private void executeTask(RunTaskMessage message, Job task, Object input,
             double runMoment) {
-        if (task instanceof AtomicTask) {
-            final AtomicTask at = (AtomicTask) task;
+        if (task instanceof AtomicJob) {
+            final AtomicJob at = (AtomicJob) task;
             try {
                 final Object result = at.run(input);
                 handleTaskResult(message, result, runMoment);
-            } catch (final TaskFailedException x) {
+            } catch (final JobFailedException x) {
                 failNode(message, x);
             }
-        } else if (task instanceof MapReduceTask) {
-            final MapReduceTask mrt = (MapReduceTask) task;
-            final MapReduceHandler handler = new MapReduceHandler(this, mrt,
+        } else if (task instanceof ParallelJob) {
+            final ParallelJob mrt = (ParallelJob) task;
+            final ParallelJobHandler handler = new ParallelJobHandler(this, mrt,
                     message, runMoment);
             mrt.map(input, handler);
             handler.start();
-        } else if (task instanceof AlternativesTask) {
+        } else if (task instanceof JobSequence ) {
+            Globals.log.reportInternalError( "JobSequence should be handled" );
+        } else if (task instanceof AlternativesJob) {
             Globals.log
                     .reportInternalError("AlternativesTask should have been selected by the master "
                             + task);
@@ -856,8 +858,8 @@ public abstract class Node extends Thread implements PacketReceiveListener {
                 } else {
                     // We have a task to execute.
                     final double runMoment = Utils.getPreciseTime();
-                    final TaskType type = message.taskInstance.type;
-                    final Task task = jobs.getTask(type);
+                    final JobType type = message.taskInstance.type;
+                    final Job task = jobs.getTask(type);
 
                     runningTasks.up();
                     if (Settings.traceNodeProgress) {
@@ -893,7 +895,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
     }
 
     protected void failNode(RunTaskMessage message, Throwable t) {
-        final TaskType type = message.taskInstance.type;
+        final JobType type = message.taskInstance.type;
         Globals.log.reportError("Node fails for type " + type);
         t.printStackTrace(Globals.log.getPrintStream());
         final boolean allFailed = workerQueue.failTask(type);

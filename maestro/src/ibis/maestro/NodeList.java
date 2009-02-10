@@ -28,11 +28,11 @@ final class NodeList {
      * @param theIbis
      *            The ibis that was gone.
      */
-    ArrayList<TaskInstance> removeNode(IbisIdentifier theIbis) {
+    ArrayList<JobInstance> removeNode(IbisIdentifier theIbis) {
         if (Settings.traceWorkerList) {
             Globals.log.reportProgress("remove node " + theIbis);
         }
-        ArrayList<TaskInstance> orphans = null;
+        ArrayList<JobInstance> orphans = null;
         final NodeInfo node;
         synchronized (this) {
             node = ibisToNodeMap.get(theIbis);
@@ -72,7 +72,7 @@ final class NodeList {
      * @return The task instance that was completed if it may have duplicates,
      *         or <code>null</code>
      */
-    TaskInstance registerTaskCompleted(TaskCompletedMessage result) {
+    JobInstance registerTaskCompleted(TaskCompletedMessage result) {
         final NodeInfo node;
         synchronized (this) {
             node = ibisToNodeMap.get(result.source);
@@ -82,7 +82,7 @@ final class NodeList {
                     + result.source);
             return null;
         }
-        final TaskInstance task = node.registerTaskCompleted(result);
+        final JobInstance task = node.registerTaskCompleted(result);
         node.registerAsCommunicating();
         return task;
     }
@@ -117,7 +117,7 @@ final class NodeList {
      *            The id of the failed task.
      * @return The task instance that was executed.
      */
-    TaskInstance registerTaskFailed(IbisIdentifier ibis, long taskId) {
+    JobInstance registerTaskFailed(IbisIdentifier ibis, long taskId) {
         final NodeInfo node;
         synchronized (this) {
             node = ibisToNodeMap.get(ibis);

@@ -11,7 +11,7 @@ import java.util.List;
  */
 final class WorkerQueueTaskInfo {
     /** The type these statistics are about. */
-    final TaskType type;
+    final JobType type;
 
     /** The workers that are willing to execute this task. */
     private final List<NodeTaskInfo> workers = new LinkedList<NodeTaskInfo>();
@@ -43,7 +43,7 @@ final class WorkerQueueTaskInfo {
     private final TimeEstimate averageComputeTime = new TimeEstimate(
             Utils.MILLISECOND);
 
-    WorkerQueueTaskInfo(TaskType type) {
+    WorkerQueueTaskInfo(JobType type) {
         this.type = type;
     }
 

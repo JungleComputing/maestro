@@ -28,11 +28,11 @@ class LocalNodeInfo {
         this.predictedDuration = predictedDuration;
     }
 
-    int getCurrentTasks(TaskType type) {
+    int getCurrentTasks(JobType type) {
         return currentTasks[type.index];
     }
 
-    double getTransmissionTime(TaskType type) {
+    double getTransmissionTime(JobType type) {
         return transmissionTime[type.index];
     }
 
@@ -48,7 +48,7 @@ class LocalNodeInfo {
      *            The type of task we want the prediction for.
      * @return The predicted duration of the task in seconds.
      */
-    double getPredictedDuration(TaskType type) {
+    double getPredictedDuration(JobType type) {
         return predictedDuration[type.index];
     }
 }

@@ -258,7 +258,7 @@ class Gossip {
      *            Local knowledge about the different nodes.
      * @return The estimated completion time for the best worker.
      */
-    double computeCompletionTime(TaskType type, boolean submitIfBusy,
+    double computeCompletionTime(JobType type, boolean submitIfBusy,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
         double bestTime = Double.POSITIVE_INFINITY;
 
@@ -281,21 +281,21 @@ class Gossip {
         return localPerformanceInfo.timeStamp;
     }
 
-    void localNodeFailTask(TaskType type) {
+    void localNodeFailTask(JobType type) {
         localPerformanceInfo.failTask(type);
     }
 
-    void setLocalComputeTime(TaskType type, double t) {
+    void setLocalComputeTime(JobType type, double t) {
         localPerformanceInfo.setComputeTime(type, t);
     }
 
-    void setWorkerQueueTimePerTask(TaskType type, double queueTimePerTask,
+    void setWorkerQueueTimePerTask(JobType type, double queueTimePerTask,
             int queueLength) {
         localPerformanceInfo.setWorkerQueueTimePerTask(type, queueTimePerTask,
                 queueLength);
     }
 
-    void setWorkerQueueLength(TaskType type, int queueLength) {
+    void setWorkerQueueLength(JobType type, int queueLength) {
         localPerformanceInfo.setWorkerQueueLength(type, queueLength);
     }
 

@@ -49,7 +49,7 @@ class OneTestProg {
         private static final long serialVersionUID = 1L;
     }
 
-    private static class CreateArrayTask implements AtomicTask {
+    private static class CreateArrayTask implements AtomicJob {
         private static final long serialVersionUID = 2347248108353357517L;
 
         /**
@@ -98,7 +98,7 @@ class OneTestProg {
         Listener listener = new Listener(taskCount);
         JobList jobs = new JobList();
 
-        Job job = jobs.createJob("testprog", new CreateArrayTask());
+        JobSequence job = jobs.createJob("testprog", new CreateArrayTask());
         Node node = Node.createNode(jobs, goForMaestro);
         System.out.println("Node created");
         double startTime = Utils.getPreciseTime();
