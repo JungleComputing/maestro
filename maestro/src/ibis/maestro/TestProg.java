@@ -81,16 +81,6 @@ class TestProg {
         private static final long serialVersionUID = 2347248108353357517L;
 
         /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Create array";
-        }
-
-        /**
          * Runs this task.
          * 
          * @param obj
@@ -123,16 +113,6 @@ class TestProg {
 
     private static class AdditionTask implements AtomicJob {
         private static final long serialVersionUID = 7652370809998864296L;
-
-        /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Addition";
-        }
 
         /**
          * @param obj
@@ -217,16 +197,6 @@ class TestProg {
             final Integer ix = (Integer) id;
 
             res[ix] = result;
-        }
-
-        /**
-         * Returns the name of this task. (Overrides method in superclass.)
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Assemble array";
         }
 
         /**

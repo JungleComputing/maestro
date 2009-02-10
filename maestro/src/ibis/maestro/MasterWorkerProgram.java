@@ -214,16 +214,6 @@ class MasterWorkerProgram {
         }
 
         /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Sharpen";
-        }
-
-        /**
          * @param obj
          *            The input parameter of the task.
          * @return The result of the task.

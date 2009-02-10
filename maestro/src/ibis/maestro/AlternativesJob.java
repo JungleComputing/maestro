@@ -14,16 +14,6 @@ public class AlternativesJob implements Job {
     }
 
     /**
-     * Returns the name of these alternatives.
-     * 
-     * @return The name, composed of the names of the alternatives.
-     */
-    @Override
-    public String getName() {
-        return "alternatives" + java.util.Arrays.deepToString(alternatives);
-    }
-
-    /**
      * Returns true iff one of the alternatives is supported.
      * 
      * @return True iff one of the alternatives is supported.

@@ -169,16 +169,6 @@ public final class JobSequence implements Job {
     }
     
     /**
-     * Returns the name of this job.
-     * @return The name.
-     */
-    @Override
-    public String getName()
-    {
-        return toString();
-    }
-
-    /**
      * Given a task type, return the previous one in the task sequence of this
      * job, or <code>null</code> if there isn't one.
      * 
