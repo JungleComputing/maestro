@@ -1,6 +1,6 @@
 package ibis.videoplayer;
 
-import ibis.maestro.AtomicTask;
+import ibis.maestro.AtomicJob;
 
 /**
  * An action to color-correct a frame. We fake this by a video frame by simply
@@ -9,7 +9,7 @@ import ibis.maestro.AtomicTask;
  * @author Kees van Reeuwijk
  * 
  */
-public class ColourCorrectTask implements AtomicTask {
+public class ColourCorrectTask implements AtomicJob {
     private static final long serialVersionUID = -3938044583266505212L;
 
     /**

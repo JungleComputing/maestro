@@ -1,9 +1,9 @@
 package ibis.videoplayer;
 
-import ibis.maestro.AtomicTask;
-import ibis.maestro.Job;
+import ibis.maestro.AtomicJob;
 import ibis.maestro.JobCompletionListener;
 import ibis.maestro.JobList;
+import ibis.maestro.JobSequence;
 import ibis.maestro.LabelTracker;
 import ibis.maestro.Node;
 import ibis.maestro.TaskExecutionTimeEstimator;
@@ -92,7 +92,7 @@ class BenchmarkProgram {
     }
 
     // Do all the image processing steps in one go. Used as baseline.
-    private static final class ProcessFrameTask implements AtomicTask, TaskExecutionTimeEstimator {
+    private static final class ProcessFrameTask implements AtomicJob, TaskExecutionTimeEstimator {
         private static final long serialVersionUID = -7976035811697720295L;
         final boolean slowScale;
         final boolean slowSharpen;
@@ -185,7 +185,7 @@ class BenchmarkProgram {
         }
     }
 
-    private static final class GenerateFrameTask implements AtomicTask,
+    private static final class GenerateFrameTask implements AtomicJob,
     TaskExecutionTimeEstimator {
         private static final long serialVersionUID = -7976035811697720295L;
 
@@ -237,7 +237,7 @@ class BenchmarkProgram {
         }
     }
 
-    private static final class ScaleUpFrameTask implements AtomicTask,
+    private static final class ScaleUpFrameTask implements AtomicJob,
     TaskExecutionTimeEstimator {
         private static final long serialVersionUID = 5452987225377415308L;
         private final int factor;
@@ -318,7 +318,7 @@ class BenchmarkProgram {
         }
     }
 
-    private static final class SharpenFrameTask implements AtomicTask, TaskExecutionTimeEstimator {
+    private static final class SharpenFrameTask implements AtomicJob, TaskExecutionTimeEstimator {
         private static final long serialVersionUID = 54529872253774153L;
         private final boolean slow;
         private final boolean allowed;
@@ -397,7 +397,7 @@ class BenchmarkProgram {
         }
     }
 
-    private static final class CompressFrameTask implements AtomicTask {
+    private static final class CompressFrameTask implements AtomicJob {
         private static final long serialVersionUID = 5452987225377415310L;
 
         /**
@@ -442,7 +442,7 @@ class BenchmarkProgram {
         }
     }
 
-    private static final class SaveFrameTask implements AtomicTask,
+    private static final class SaveFrameTask implements AtomicJob,
     TaskExecutionTimeEstimator {
         private static final long serialVersionUID = 54529872253774153L;
         private final File saveDir;
@@ -651,7 +651,7 @@ class BenchmarkProgram {
                 + " saveFrames=" + saveFrames + " oneTask=" + oneTask
                 + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale);
         final JobList jobs = new JobList();
-        Job convertJob;
+        JobSequence convertJob;
         final Listener listener = new Listener();
         final File dir = saveFrames ? outputDir : null;
         if (oneTask) {

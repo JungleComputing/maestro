@@ -1,6 +1,6 @@
 package ibis.videoplayer;
 
-import ibis.maestro.AtomicTask;
+import ibis.maestro.AtomicJob;
 
 /**
  * A task to decompress a frame. We fake decompressing a video frame by simply
@@ -9,7 +9,7 @@ import ibis.maestro.AtomicTask;
  * @author Kees van Reeuwijk
  * 
  */
-public class DecompressFrameTask implements AtomicTask {
+public class DecompressFrameTask implements AtomicJob {
     private static final long serialVersionUID = -3938044583266505212L;
 
     /**

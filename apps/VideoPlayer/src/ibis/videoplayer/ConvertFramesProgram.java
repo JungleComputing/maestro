@@ -1,8 +1,8 @@
 package ibis.videoplayer;
 
-import ibis.maestro.AtomicTask;
-import ibis.maestro.Job;
+import ibis.maestro.AtomicJob;
 import ibis.maestro.JobList;
+import ibis.maestro.JobSequence;
 import ibis.maestro.JobWaiter;
 import ibis.maestro.Node;
 
@@ -16,7 +16,7 @@ import java.io.IOException;
  * 
  */
 class ConvertFramesProgram {
-    private final class FetchImageTask implements AtomicTask {
+    private final class FetchImageTask implements AtomicJob {
         private static final long serialVersionUID = -7976035811697720295L;
 
         /**
@@ -58,7 +58,7 @@ class ConvertFramesProgram {
         }
     }
 
-    private final class ColorCorrectTask implements AtomicTask {
+    private final class ColorCorrectTask implements AtomicJob {
         private static final long serialVersionUID = 5452987225377415308L;
         final double rr, rg, rb;
         final double gr, gg, gb;
@@ -112,7 +112,7 @@ class ConvertFramesProgram {
         }
     }
 
-    private final class CompressFrameTask implements AtomicTask {
+    private final class CompressFrameTask implements AtomicJob {
         private static final long serialVersionUID = 5452987225377415310L;
 
         /**
@@ -159,7 +159,7 @@ class ConvertFramesProgram {
     private void run(File framesDirectory) throws Exception {
         JobList tasks = new JobList();
         JobWaiter waiter = new JobWaiter();
-        Job convertTask = tasks.createJob("converter", new FetchImageTask(),
+        JobSequence convertTask = tasks.createJob("converter", new FetchImageTask(),
                 new ColorCorrectTask(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
                         1.0), new ScaleFrameTask(2), new CompressFrameTask());
 

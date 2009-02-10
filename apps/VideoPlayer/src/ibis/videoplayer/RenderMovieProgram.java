@@ -1,9 +1,9 @@
 package ibis.videoplayer;
 
-import ibis.maestro.AtomicTask;
+import ibis.maestro.AtomicJob;
 import ibis.maestro.JobCompletionListener;
-import ibis.maestro.Job;
 import ibis.maestro.JobList;
+import ibis.maestro.JobSequence;
 import ibis.maestro.Node;
 
 import java.io.File;
@@ -33,7 +33,7 @@ public class RenderMovieProgram implements JobCompletionListener {
         this.outputDir = outputDir;
     }
 
-    private final class ColorCorrectTask implements AtomicTask {
+    private final class ColorCorrectTask implements AtomicJob {
         private static final long serialVersionUID = 5452987225377415308L;
         final double rr, rg, rb;
         final double gr, gg, gb;
@@ -88,7 +88,7 @@ public class RenderMovieProgram implements JobCompletionListener {
         }
     }
 
-    private final class DownsampleTask implements AtomicTask {
+    private final class DownsampleTask implements AtomicJob {
         private static final long serialVersionUID = 5452987225377415308L;
 
         /**
@@ -127,7 +127,7 @@ public class RenderMovieProgram implements JobCompletionListener {
         }
     }
 
-    private final class CompressFrameTask implements AtomicTask {
+    private final class CompressFrameTask implements AtomicJob {
         private static final long serialVersionUID = 5452987225377415310L;
 
         /**
@@ -174,7 +174,7 @@ public class RenderMovieProgram implements JobCompletionListener {
     @SuppressWarnings("synthetic-access")
     private void run(File sourceDirectory, File iniFile) throws Exception {
         JobList jobList = new JobList();
-        Job convertTask = jobList.createJob("converter", new RenderFrameTask(),
+        JobSequence convertTask = jobList.createJob("converter", new RenderFrameTask(),
                 new ColorCorrectTask(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
                         1.0),
                 // new ScaleFrameJob( 2 ),

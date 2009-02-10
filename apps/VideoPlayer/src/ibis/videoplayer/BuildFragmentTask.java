@@ -3,23 +3,23 @@
  */
 package ibis.videoplayer;
 
-import ibis.maestro.Job;
 import ibis.maestro.JobList;
-import ibis.maestro.MapReduceHandler;
-import ibis.maestro.MapReduceTask;
+import ibis.maestro.JobSequence;
+import ibis.maestro.ParallelJob;
+import ibis.maestro.ParallelJobHandler;
 
 /**
  * @author Kees van Reeuwijk
  * 
  */
-public final class BuildFragmentTask implements MapReduceTask {
+public final class BuildFragmentTask implements ParallelJob {
     private static final long serialVersionUID = 6769001575637882594L;
-    private Job fetchJob;
+    private JobSequence fetchJob;
     int startFrame;
     int endFrame;
     RGB48Image frames[];
 
-    BuildFragmentTask(Job fetchJob) {
+    BuildFragmentTask(JobSequence fetchJob) {
         this.fetchJob = fetchJob;
     }
 
@@ -33,7 +33,7 @@ public final class BuildFragmentTask implements MapReduceTask {
         return "Build fragment";
     }
 
-    static Job createGetFrameJob(JobList jobs) {
+    static JobSequence createGetFrameJob(JobList jobs) {
         return jobs.createJob("getFrame", new FetchFrameTask(),
                 new DecompressFrameTask(), new ColourCorrectTask(),
                 new ScaleFrameTask(2));
@@ -47,14 +47,15 @@ public final class BuildFragmentTask implements MapReduceTask {
         return true;
     }
 
-    /* (non-Javadoc)
-     * @see ibis.maestro.MapReduceTask#getResult()
+    /**
+     * Returns the result of the reduction.
+     * @return The result.
      */
     public Object getResult() {
         int sz = 0;
 
         for (int i = 0; i < frames.length; i++) {
-            RGB48Image frame = (RGB48Image) frames[i];
+            RGB48Image frame = frames[i];
             if (frame != null) {
                 sz += frame.data.length;
             }
@@ -76,10 +77,11 @@ public final class BuildFragmentTask implements MapReduceTask {
         return value;
     }
 
-    /* (non-Javadoc)
-     * @see ibis.maestro.MapReduceTask#map(java.lang.Object, ibis.maestro.MapReduceHandler)
+    /**
+     * @param input The input for the computation.
+     * @param handler The map/reduce handler assigned to this computation.
      */
-    public void map(Object input, MapReduceHandler handler) {
+    public void map(Object input, ParallelJobHandler handler) {
         FrameNumberRange range = (FrameNumberRange) input;
         if (Settings.traceFragmentBuilder) {
             System.out.println("Collecting frames for fragment " + range);
@@ -93,12 +95,13 @@ public final class BuildFragmentTask implements MapReduceTask {
         }
     }
 
-    /* (non-Javadoc)
-     * @see ibis.maestro.MapReduceTask#reduce(java.lang.Object, java.lang.Object)
+    /**
+     * Handle results as they arrive.
+     * @param id The id of the result.
+     * @param result The result.
      */
     public void reduce(Object id, Object result) {
-        // TODO Auto-generated method stub
-        
+        int ix = (Integer) id;
+        frames[ix] = (RGB48Image) result;
     }
-
 }

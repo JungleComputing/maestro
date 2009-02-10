@@ -1,6 +1,6 @@
 package ibis.videoplayer;
 
-import ibis.maestro.AtomicTask;
+import ibis.maestro.AtomicJob;
 import ibis.util.RunProcess;
 
 import java.io.BufferedReader;
@@ -17,10 +17,10 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  * 
  */
-public class RenderFrameTask implements AtomicTask {
+public class RenderFrameTask implements AtomicJob {
     private static final long serialVersionUID = -3938044583266505212L;
-    private static final File tmpDir = new File("/tmp"); // FIXME: be more
-                                                         // paranoid than this.
+    // FIXME: be more paranoid than this in the selection of tmp dir.
+    private static final File tmpDir = new File("/tmp");
 
     /**
      * Returns the name of this task.

@@ -1,8 +1,8 @@
 package ibis.videoplayer;
 
-import ibis.maestro.Job;
 import ibis.maestro.JobCompletionListener;
 import ibis.maestro.JobList;
+import ibis.maestro.JobSequence;
 import ibis.maestro.Node;
 
 /**
@@ -65,8 +65,8 @@ public class BuildVideoProgram {
         final int fragmentCount = (frameCount + Settings.FRAME_FRAGMENT_COUNT - 1)
                 / Settings.FRAME_FRAGMENT_COUNT;
         final Listener listener = new Listener(fragmentCount);
-        final Job getFrameTask = BuildFragmentTask.createGetFrameJob(jobList);
-        final Job playJob = jobList.createJob("videoplayer",
+        final JobSequence getFrameTask = BuildFragmentTask.createGetFrameJob(jobList);
+        final JobSequence playJob = jobList.createJob("videoplayer",
                 new BuildFragmentTask(getFrameTask));
 
         final Node node = Node.createNode(jobList, goForMaestro);

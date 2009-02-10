@@ -1,6 +1,6 @@
 package ibis.videoplayer;
 
-import ibis.maestro.AtomicTask;
+import ibis.maestro.AtomicJob;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * @author Kees van Reeuwijk
  * 
  */
-class CompareImageTask implements AtomicTask {
+class CompareImageTask implements AtomicJob {
     private static final long serialVersionUID = -4202576028676660015L;
     final File imageDirectory;
 
