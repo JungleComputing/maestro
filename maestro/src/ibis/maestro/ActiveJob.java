@@ -11,7 +11,7 @@ class ActiveJob {
 
     final long id;
 
-    final NodeTaskInfo nodeTaskInfo;
+    final NodeTaskInfo nodeJobInfo;
 
     /** The time this task was sent to the worker. */
     final double startTime;
@@ -21,15 +21,15 @@ class ActiveJob {
 
     private double allowanceDeadline;
 
-    /** The moment this task should be completed. */
+    /** The moment this job should be completed. */
     final double rescheduleDeadline;
 
     ActiveJob(JobInstance job, long id, double startTime,
-            NodeTaskInfo workerTaskInfo, double predictedDuration,
+            NodeTaskInfo nodeJobInfo, double predictedDuration,
             double allowanceDeadline, double rescheduleDeadline) {
         this.job = job;
         this.id = id;
-        this.nodeTaskInfo = workerTaskInfo;
+        this.nodeJobInfo = nodeJobInfo;
         this.startTime = startTime;
         this.predictedDuration = predictedDuration;
         this.allowanceDeadline = allowanceDeadline;

@@ -8,7 +8,7 @@ import ibis.ipl.IbisIdentifier;
  * 
  * @author Kees van Reeuwijk
  */
-final class TaskCompletedMessage extends Message {
+final class JobCompletedMessage extends Message {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
@@ -31,7 +31,7 @@ final class TaskCompletedMessage extends Message {
      * @param workerDwellTime
      * The time in seconds this task spent on the worker.
      */
-    TaskCompletedMessage(long taskId, double workerDwellTime) {
+    JobCompletedMessage(long taskId, double workerDwellTime) {
         source = Globals.localIbis.identifier();
         this.taskId = taskId;
         this.workerDwellTime = workerDwellTime;

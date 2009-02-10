@@ -14,10 +14,10 @@ import java.util.List;
  */
 final class NodeInfo {
     /** The active tasks of this worker. */
-    private final List<ActiveJob> activeTasks = new ArrayList<ActiveJob>();
+    private final List<ActiveJob> activeJobs = new ArrayList<ActiveJob>();
 
     /** Info about the tasks for this particular node. */
-    private final NodeTaskInfo nodeTaskInfoList[];
+    private final NodeTaskInfo nodeJobInfoList[];
 
     private boolean suspect = false;
 
@@ -43,7 +43,7 @@ final class NodeInfo {
             boolean local) {
         this.ibis = ibis;
         this.local = local;
-        nodeTaskInfoList = new NodeTaskInfo[Globals.allTaskTypes.length];
+        nodeJobInfoList = new NodeTaskInfo[Globals.allTaskTypes.length];
         // For non-local nodes, start with a very pessimistic ping time.
         // This means that only if we really need another node, we use it.
         // long pessimisticPingTime = local?0L:Utils.HOUR_IN_NANOSECONDS;
@@ -59,7 +59,7 @@ final class NodeInfo {
         }
         for (int ix = 0; ix < Globals.allTaskTypes.length; ix++) {
             final WorkerQueueTaskInfo taskInfo = workerQueue.getTaskInfo(ix);
-            nodeTaskInfoList[ix] = new NodeTaskInfo(taskInfo, this,
+            nodeJobInfoList[ix] = new NodeTaskInfo(taskInfo, this,
                     estimatedPingTime);
         }
     }
@@ -70,7 +70,7 @@ final class NodeInfo {
     }
 
     NodeTaskInfo get(JobType t) {
-        return nodeTaskInfoList[t.index];
+        return nodeJobInfoList[t.index];
     }
 
     /**
@@ -82,12 +82,12 @@ final class NodeInfo {
      * @return The index of the ActiveTask with this id, or -1 if there isn't
      *         one.
      */
-    private int searchActiveTask(long id) {
+    private int searchActiveJob(long id) {
         // Note that we blindly assume that there is only one entry with
         // the given id. Reasonable because we hand out the ids ourselves,
         // and we never make mistakes...
-        for (int ix = 0; ix < activeTasks.size(); ix++) {
-            final ActiveJob e = activeTasks.get(ix);
+        for (int ix = 0; ix < activeJobs.size(); ix++) {
+            final ActiveJob e = activeJobs.get(ix);
             if (e.id == id) {
                 return ix;
             }
@@ -106,10 +106,10 @@ final class NodeInfo {
         synchronized (this) {
             suspect = true;
             dead = true;
-            for (final ActiveJob t : activeTasks) {
+            for (final ActiveJob t : activeJobs) {
                 orphans.add(t.job);
             }
-            activeTasks.clear(); // Don't let those orphans take up memory.
+            activeJobs.clear(); // Don't let those orphans take up memory.
         }
         if (!orphans.isEmpty()) {
             Globals.log.reportProgress("Rescued " + orphans.size()
@@ -144,11 +144,11 @@ final class NodeInfo {
     }
 
     private synchronized ActiveJob extractActiveTask(long id) {
-        final int ix = searchActiveTask(id);
+        final int ix = searchActiveJob(id);
         if (ix < 0) {
             return null;
         }
-        return activeTasks.remove(ix);
+        return activeJobs.remove(ix);
     }
 
     /**
@@ -172,7 +172,7 @@ final class NodeInfo {
                     + " seems to have failed");
             return null;
         }
-        task.nodeTaskInfo.registerTaskFailed();
+        task.nodeJobInfo.registerTaskFailed();
         return task.job;
     }
 
@@ -184,7 +184,7 @@ final class NodeInfo {
      * @return The task instance that was completed if it may have duplicates,
      *         or <code>null</code>
      */
-    JobInstance registerTaskCompleted(TaskCompletedMessage result) {
+    JobInstance registerTaskCompleted(JobCompletedMessage result) {
         final long id = result.taskId; // The identifier of the task, as handed
         // out by us.
 
@@ -196,7 +196,7 @@ final class NodeInfo {
             return null;
         }
         final double roundtripTime = result.arrivalMoment - task.startTime;
-        final NodeTaskInfo nodeTaskInfo = task.nodeTaskInfo;
+        final NodeTaskInfo nodeTaskInfo = task.nodeJobInfo;
         final JobType type = task.job.type;
         if (task.getAllowanceDeadline() < result.arrivalMoment) {
             nodeTaskInfo.registerMissedAllowanceDeadline();
@@ -244,23 +244,23 @@ final class NodeInfo {
      * @param result
      *            The task received message that tells about this task.
      */
-    void registerTaskReceived(TaskReceivedMessage result) {
+    void registerTaskReceived(JobReceivedMessage result) {
         final ActiveJob task;
 
         // The identifier of the task, as handed out by us.
         final long id = result.taskId;
         synchronized (this) {
-            final int ix = searchActiveTask(id);
+            final int ix = searchActiveJob(id);
 
             if (ix < 0) {
                 // Not in the list of active tasks, presumably because it was
                 // redundantly executed.
                 return;
             }
-            task = activeTasks.get(ix);
+            task = activeJobs.get(ix);
         }
         final double transmissionTime = result.arrivalMoment - task.startTime;
-        final NodeTaskInfo nodeTaskInfo = task.nodeTaskInfo;
+        final NodeTaskInfo nodeTaskInfo = task.nodeJobInfo;
         if (!local) {
             // If this is not the local node, this is interesting info.
             // If it is local, we know better: transmission time is 0.
@@ -285,7 +285,7 @@ final class NodeInfo {
      */
     void registerTaskStart(JobInstance task, long id, double predictedDuration) {
         final JobType type = task.type;
-        final NodeTaskInfo workerTaskInfo = nodeTaskInfoList[type.index];
+        final NodeTaskInfo workerTaskInfo = nodeJobInfoList[type.index];
         if (workerTaskInfo == null) {
             Globals.log
                     .reportInternalError("No worker task info for task type "
@@ -305,7 +305,7 @@ final class NodeInfo {
         final ActiveJob j = new ActiveJob(task, id, now, workerTaskInfo,
                 predictedDuration, allowanceDeadline, rescheduleDeadline);
         synchronized (this) {
-            activeTasks.add(j);
+            activeJobs.add(j);
         }
     }
 
@@ -318,7 +318,7 @@ final class NodeInfo {
     synchronized void printStatistics(PrintStream s) {
         s.println("Node " + ibis + (local ? " (local)" : ""));
 
-        for (final NodeTaskInfo info : nodeTaskInfoList) {
+        for (final NodeTaskInfo info : nodeJobInfoList) {
             if (info != null) {
                 info.printStatistics(s);
             }
@@ -360,12 +360,12 @@ final class NodeInfo {
         if (false) {
             // TODO: enable this again when it is sane to do.
             synchronized (this) {
-                for (final ActiveJob task : activeTasks) {
+                for (final ActiveJob task : activeJobs) {
                     if (task.getAllowanceDeadline() < now) {
                         // Worker missed an allowance deadline.
                         final double t = now - task.startTime
                                 + task.predictedDuration;
-                        final NodeTaskInfo workerTaskInfo = task.nodeTaskInfo;
+                        final NodeTaskInfo workerTaskInfo = task.nodeJobInfo;
                         if (workerTaskInfo != null) {
                             workerTaskInfo.updateRoundtripTimeEstimate(t);
                         }
@@ -378,12 +378,12 @@ final class NodeInfo {
     }
 
     synchronized LocalNodeInfo getLocalInfo() {
-        final int currentTasks[] = new int[nodeTaskInfoList.length];
-        final double transmissionTime[] = new double[nodeTaskInfoList.length];
-        final double predictedDuration[] = new double[nodeTaskInfoList.length];
+        final int currentTasks[] = new int[nodeJobInfoList.length];
+        final double transmissionTime[] = new double[nodeJobInfoList.length];
+        final double predictedDuration[] = new double[nodeJobInfoList.length];
 
-        for (int i = 0; i < nodeTaskInfoList.length; i++) {
-            final NodeTaskInfo nodeTaskInfo = nodeTaskInfoList[i];
+        for (int i = 0; i < nodeJobInfoList.length; i++) {
+            final NodeTaskInfo nodeTaskInfo = nodeJobInfoList[i];
             if (nodeTaskInfo == null) {
                 currentTasks[i] = 0;
                 transmissionTime[i] = 0;

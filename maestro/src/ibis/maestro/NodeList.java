@@ -72,7 +72,7 @@ final class NodeList {
      * @return The task instance that was completed if it may have duplicates,
      *         or <code>null</code>
      */
-    JobInstance registerTaskCompleted(TaskCompletedMessage result) {
+    JobInstance registerTaskCompleted(JobCompletedMessage result) {
         final NodeInfo node;
         synchronized (this) {
             node = ibisToNodeMap.get(result.source);
@@ -93,7 +93,7 @@ final class NodeList {
      * @param msg
      *            The message.
      */
-    void registerTaskReceived(TaskReceivedMessage msg) {
+    void registerTaskReceived(JobReceivedMessage msg) {
         final NodeInfo node;
         synchronized (this) {
             node = ibisToNodeMap.get(msg.source);

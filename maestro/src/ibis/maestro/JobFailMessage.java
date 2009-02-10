@@ -10,7 +10,7 @@ import ibis.ipl.IbisIdentifier;
  * @author Kees van Reeuwijk
  * 
  */
-final class TaskFailMessage extends Message {
+final class JobFailMessage extends Message {
     private static final long serialVersionUID = 5158569253342276404L;
 
     final IbisIdentifier source;
@@ -25,7 +25,7 @@ final class TaskFailMessage extends Message {
      * @param update
      *            Information about the new state of the node.
      */
-    public TaskFailMessage(long id) {
+    public JobFailMessage(long id) {
         this.source = Globals.localIbis.identifier();
         this.id = id;
     }

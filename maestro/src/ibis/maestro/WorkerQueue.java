@@ -33,8 +33,8 @@ final class WorkerQueue {
             final WorkerQueueTaskInfo queueTypeInfo = new WorkerQueueTaskInfo(t);
             queueTypes[t.index] = queueTypeInfo;
             final Job task = jobs.getTask(t);
-            if (task instanceof TaskExecutionTimeEstimator) {
-                final TaskExecutionTimeEstimator estimator = (TaskExecutionTimeEstimator) task;
+            if (task instanceof JobExecutionTimeEstimator) {
+                final JobExecutionTimeEstimator estimator = (JobExecutionTimeEstimator) task;
                 queueTypeInfo.setInitialComputeTimeEstimate(estimator
                         .estimateTaskExecutionTime());
             }

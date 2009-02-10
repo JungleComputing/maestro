@@ -316,7 +316,7 @@ public class QRoutingNode extends Node {
                     + " " + workerDwellTime);
         }
         if (!deadNodes.contains(message.source)) {
-            final Message msg = new TaskCompletedMessage(message.taskId,
+            final Message msg = new JobCompletedMessage(message.taskId,
                     workerDwellTime);
             boolean ok = sendPort.send(message.source, msg);
 
@@ -392,7 +392,7 @@ public class QRoutingNode extends Node {
      *            The message.
      */
     @Override
-    protected void handleTaskCompletedMessage(TaskCompletedMessage result) {
+    protected void handleTaskCompletedMessage(JobCompletedMessage result) {
         super.handleTaskCompletedMessage(result);
         doUpdateRecentMasters.set();
     }

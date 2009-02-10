@@ -6,7 +6,7 @@ package ibis.maestro;
  * 
  * @author Kees van Reeuwijk.
  */
-public interface TaskExecutionTimeEstimator {
+public interface JobExecutionTimeEstimator {
     /**
      * Returns an estimate in nanoseconds of the compute time of this task.
      * 

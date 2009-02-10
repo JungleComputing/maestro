@@ -523,7 +523,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
      *            The result to send.
      */
     protected void postTaskReceivedMessage(IbisIdentifier master, long id) {
-        final Message msg = new TaskReceivedMessage(id);
+        final Message msg = new JobReceivedMessage(id);
         taskReceivedMessageCount.add();
         synchronized (outgoingMessageQueue) {
             outgoingMessageQueue.add(master, msg);
@@ -542,7 +542,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
         if (deadNodes.contains(ibis)) {
             return false;
         }
-        final Message msg = new TaskFailMessage(taskId);
+        final Message msg = new JobFailMessage(taskId);
         taskFailMessageCount.add();
         return sendPort.send(ibis, msg);
     }
@@ -571,7 +571,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
      * @param result
      *            The message.
      */
-    protected void handleTaskCompletedMessage(TaskCompletedMessage result) {
+    protected void handleTaskCompletedMessage(JobCompletedMessage result) {
         if (Settings.traceNodeProgress) {
             Globals.log
                     .reportProgress("Received a worker task completed message "
@@ -589,7 +589,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
      * @param result
      *            The message.
      */
-    private void handleTaskReceivedMessage(TaskReceivedMessage result) {
+    private void handleTaskReceivedMessage(JobReceivedMessage result) {
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Received a task received message "
                     + result);
@@ -603,7 +603,7 @@ public abstract class Node extends Thread implements PacketReceiveListener {
      * @param msg
      *            The status message.
      */
-    private void handleTaskFailMessage(TaskFailMessage msg) {
+    private void handleTaskFailMessage(JobFailMessage msg) {
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Received a worker task failed message "
                     + msg);
@@ -671,16 +671,16 @@ public abstract class Node extends Thread implements PacketReceiveListener {
             handleNodeUpdateMessage((UpdateNodeMessage) msg);
         } else if (msg instanceof GossipMessage) {
             handleGossipMessage((GossipMessage) msg);
-        } else if (msg instanceof TaskCompletedMessage) {
-            handleTaskCompletedMessage((TaskCompletedMessage) msg);
-        } else if (msg instanceof TaskReceivedMessage) {
-            handleTaskReceivedMessage((TaskReceivedMessage) msg);
+        } else if (msg instanceof JobCompletedMessage) {
+            handleTaskCompletedMessage((JobCompletedMessage) msg);
+        } else if (msg instanceof JobReceivedMessage) {
+            handleTaskReceivedMessage((JobReceivedMessage) msg);
         } else if (msg instanceof JobResultMessage) {
             handleJobResultMessage((JobResultMessage) msg);
         } else if (msg instanceof RunTaskMessage) {
             handleRunTaskMessage((RunTaskMessage) msg);
-        } else if (msg instanceof TaskFailMessage) {
-            handleTaskFailMessage((TaskFailMessage) msg);
+        } else if (msg instanceof JobFailMessage) {
+            handleTaskFailMessage((JobFailMessage) msg);
         } else if (msg instanceof StopNodeMessage) {
             handleStopNodeMessage((StopNodeMessage) msg);
         } else if (msg instanceof AntInfoMessage) {

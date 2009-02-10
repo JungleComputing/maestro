@@ -9,11 +9,11 @@ import ibis.ipl.IbisIdentifier;
  * @author Kees van Reeuwijk
  * 
  */
-final class TaskReceivedMessage extends Message {
+final class JobReceivedMessage extends Message {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1L;
 
-    /** The identifier of the task. */
+    /** The identifier of the job. */
     final long taskId;
 
     final IbisIdentifier source;
@@ -21,12 +21,12 @@ final class TaskReceivedMessage extends Message {
     /**
      * Constructs a task-completed message for the master of a task.
      * 
-     * @param taskId
-     *            The identifier of the task, as handed out by the master.
+     * @param jobId
+     *            The identifier of the job, as handed out by the master.
      */
-    TaskReceivedMessage(long taskId) {
+    JobReceivedMessage(long jobId) {
         source = Globals.localIbis.identifier();
-        this.taskId = taskId;
+        this.taskId = jobId;
     }
 
     /**

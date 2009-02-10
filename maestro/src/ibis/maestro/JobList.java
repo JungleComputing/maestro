@@ -186,8 +186,8 @@ public final class JobList {
             if (!task.isSupported()) {
                 // Not supported by this node.
                 res[i++] = Double.POSITIVE_INFINITY;
-            } else if (task instanceof TaskExecutionTimeEstimator) {
-                final TaskExecutionTimeEstimator estimator = (TaskExecutionTimeEstimator) task;
+            } else if (task instanceof JobExecutionTimeEstimator) {
+                final JobExecutionTimeEstimator estimator = (JobExecutionTimeEstimator) task;
                 res[i++] = estimator.estimateTaskExecutionTime();
             } else {
                 res[i++] = 0l;
