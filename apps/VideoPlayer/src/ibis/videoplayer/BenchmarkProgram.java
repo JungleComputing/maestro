@@ -32,12 +32,13 @@ class BenchmarkProgram {
         private boolean sentFinal = false;
 
         /**
-         * Handle the completion of task 'j': the result is 'result'.
+         * Handle the completion of the job with id 'id':
+         * the result is 'result'.
          * 
          * @param id
-         *            The task that was completed.
+         *            The job that was completed.
          * @param result
-         *            The result of the task.
+         *            The result of the job.
          */
         @Override
         public void jobCompleted(Node node, Object id, Object result) {
@@ -106,23 +107,13 @@ class BenchmarkProgram {
         }
 
         /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Proces frame";
-        }
-
-        /**
          * 
          * @param in
          *            The input of this job.
          * @param node
          *            The node we're running on.
          * @return <code>null</code> since we entirely process the image within
-         *         this task.
+         *         this job.
          */
         @Override
         public Object run(Object in) {
@@ -171,11 +162,11 @@ class BenchmarkProgram {
 
 
         /**
-         * Estimates the time to execute this task. (Overrides method in
+         * Estimates the time to execute this job. (Overrides method in
          * superclass.) We simply time the actual execution of frame generation,
          * so this is as accurate as it gets.
          * 
-         * @return The estimated time in ns to execute this task.
+         * @return The estimated time in ns to execute this job.
          */
         @Override
         public double estimateTaskExecutionTime() {
@@ -188,16 +179,6 @@ class BenchmarkProgram {
     private static final class GenerateFrameTask implements AtomicJob,
     TaskExecutionTimeEstimator {
         private static final long serialVersionUID = -7976035811697720295L;
-
-        /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Generate frame";
-        }
 
         /**
          * @param in
@@ -223,11 +204,11 @@ class BenchmarkProgram {
         }
 
         /**
-         * Estimates the time to execute this task. (Overrides method in
+         * Estimates the time to execute this job. (Overrides method in
          * superclass.) We simply time the actual execution of frame generation,
          * so this is as accurate as it gets.
          * 
-         * @return The estimated time in ns to execute this task.
+         * @return The estimated time in ns to execute this job.
          */
         @Override
         public double estimateTaskExecutionTime() {
@@ -256,16 +237,6 @@ class BenchmarkProgram {
             } else {
                 System.out.println("Upscaling not allowed");
             }
-        }
-
-        /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Scale up frame";
         }
 
         /**
@@ -299,11 +270,11 @@ class BenchmarkProgram {
         }
 
         /**
-         * Estimates the time to execute this task. (Overrides method in
+         * Estimates the time to execute this job. (Overrides method in
          * superclass.) We simply time the actual execution of frame generation,
          * so this is as accurate as it gets.
          * 
-         * @return The estimated time in ns to execute this task.
+         * @return The estimated time in ns to execute this job.
          */
         @SuppressWarnings("synthetic-access")
         @Override
@@ -336,16 +307,6 @@ class BenchmarkProgram {
         }
 
         /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Sharpen frame";
-        }
-
-        /**
          * Sharpen one frame in a Maestro flow.
          * 
          * @param in
@@ -359,7 +320,7 @@ class BenchmarkProgram {
             UncompressedImage img = (UncompressedImage) in;
 
             if( !allowed ){
-                System.err.println( "Sharpen task invoked, although not allowed" );
+                System.err.println( "Sharpen job invoked, although not allowed" );
             }
             if( slow ) {
                 img = img.sharpen();
@@ -378,11 +339,11 @@ class BenchmarkProgram {
         }
 
         /**
-         * Estimates the time to execute this task. (Overrides method in
+         * Estimates the time to execute this job. (Overrides method in
          * superclass.) We simply time the actual execution of frame generation,
          * so this is as accurate as it gets.
          * 
-         * @return The estimated time in ns to execute this task.
+         * @return The estimated time in s to execute this job.
          */
         @SuppressWarnings("synthetic-access")
         @Override
@@ -399,16 +360,6 @@ class BenchmarkProgram {
 
     private static final class CompressFrameTask implements AtomicJob {
         private static final long serialVersionUID = 5452987225377415310L;
-
-        /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Compress frame";
-        }
 
         /**
          * Run a Jpeg conversion Maestro job.
@@ -446,16 +397,6 @@ class BenchmarkProgram {
     TaskExecutionTimeEstimator {
         private static final long serialVersionUID = 54529872253774153L;
         private final File saveDir;
-
-        /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Save frame";
-        }
 
         SaveFrameTask(File saveDir) {
             this.saveDir = saveDir;
@@ -500,10 +441,10 @@ class BenchmarkProgram {
         }
 
         /**
-         * Estimates the execution time of this task. (Overrides method in
+         * Estimates the execution time of this job. (Overrides method in
          * superclass.)
          * 
-         * @return The estimated time on ns to execute this task.
+         * @return The estimated time on ns to execute this job.
          */
         @Override
         public double estimateTaskExecutionTime() {
@@ -524,7 +465,7 @@ class BenchmarkProgram {
     private boolean slowScale = false;
     private boolean allowSharpen = true;
     private boolean allowScale = true;
-    private boolean oneTask = false;
+    private boolean oneJob = false;
 
     private static void printUsage() {
 
@@ -549,8 +490,8 @@ class BenchmarkProgram {
             }
             if (arg.equalsIgnoreCase("-save")) {
                 saveFrames = true;
-            } else if (arg.equalsIgnoreCase("-onetask")) {
-                oneTask = true;
+            } else if (arg.equalsIgnoreCase("-onejob")) {
+                oneJob = true;
             } else if (arg.equalsIgnoreCase("-nosharpen")) {
                 allowSharpen = true;
             } else if (arg.equalsIgnoreCase("-oddnosharpen")) {
@@ -648,19 +589,19 @@ class BenchmarkProgram {
             System.exit(1);
         }
         System.out.println("frames=" + frames + " goForMaestro=" + goForMaestro
-                + " saveFrames=" + saveFrames + " oneTask=" + oneTask
+                + " saveFrames=" + saveFrames + " oneJob=" + oneJob
                 + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale);
         final JobList jobs = new JobList();
         JobSequence convertJob;
         final Listener listener = new Listener();
         final File dir = saveFrames ? outputDir : null;
-        if (oneTask) {
+        if (oneJob) {
             if (!allowScale || !allowSharpen) {
                 System.err
-                .println("Disabling steps is meaningless in a one-task benchmark");
+                .println("Disabling steps is meaningless in a one-job benchmark");
                 System.exit(1);
             }
-            System.out.println("One-task benchmark");
+            System.out.println("One-job benchmark");
             convertJob = jobs.createJob("benchmark", new ProcessFrameTask(
                     slowScale, slowSharpen, dir));
         } else {

@@ -33,13 +33,13 @@ public class RenderMovieProgram implements JobCompletionListener {
         this.outputDir = outputDir;
     }
 
-    private final class ColorCorrectTask implements AtomicJob {
+    private final class ColorCorrectJob implements AtomicJob {
         private static final long serialVersionUID = 5452987225377415308L;
         final double rr, rg, rb;
         final double gr, gg, gb;
         final double br, bg, bb;
 
-        ColorCorrectTask(final double rr, final double rg, final double rb,
+        ColorCorrectJob(final double rr, final double rg, final double rb,
                 final double gr, final double gg, final double gb,
                 final double br, final double bg, final double bb) {
             super();
@@ -52,16 +52,6 @@ public class RenderMovieProgram implements JobCompletionListener {
             this.br = br;
             this.bg = bg;
             this.bb = bb;
-        }
-
-        /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Colour-correct frame";
         }
 
         /**
@@ -88,27 +78,15 @@ public class RenderMovieProgram implements JobCompletionListener {
         }
     }
 
-    private final class DownsampleTask implements AtomicJob {
+    private final class DownsampleJob implements AtomicJob {
         private static final long serialVersionUID = 5452987225377415308L;
-
-        /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Downsample frame";
-        }
 
         /**
          * Downsample one image in a Maestro flow.
          * 
          * @param in
          *            The input of the conversion.
-         * @param node
-         *            The node this process runs on.
-         * @return THe converted image.
+         * @return The converted image.
          */
         @Override
         public Object run(Object in) {
@@ -127,18 +105,8 @@ public class RenderMovieProgram implements JobCompletionListener {
         }
     }
 
-    private final class CompressFrameTask implements AtomicJob {
+    private final class CompressFrameJob implements AtomicJob {
         private static final long serialVersionUID = 5452987225377415310L;
-
-        /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Compress frame";
-        }
 
         /**
          * Run a Jpeg conversion Maestro job.
@@ -174,11 +142,11 @@ public class RenderMovieProgram implements JobCompletionListener {
     @SuppressWarnings("synthetic-access")
     private void run(File sourceDirectory, File iniFile) throws Exception {
         JobList jobList = new JobList();
-        JobSequence convertTask = jobList.createJob("converter", new RenderFrameTask(),
-                new ColorCorrectTask(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+        JobSequence convertJob = jobList.createJob("converter", new RenderFrameTask(),
+                new ColorCorrectJob(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
                         1.0),
-                // new ScaleFrameJob( 2 ),
-                new DownsampleTask(), new CompressFrameTask());
+                // new ScaleFrameTask( 2 ),
+                new DownsampleJob(), new CompressFrameJob());
 
         int frameno = 0;
         Node node = Node.createNode(jobList, sourceDirectory != null);
@@ -204,7 +172,7 @@ public class RenderMovieProgram implements JobCompletionListener {
                                     WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, n, init
                                             + scene);
                             node.submit(info, new Integer(n), true, this,
-                                    convertTask);
+                                    convertJob);
                             System.out.println("Submitted frame " + n);
                             outstandingJobs++;
                         }

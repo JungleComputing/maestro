@@ -17,23 +17,11 @@ class ScaleFrameTask implements AtomicJob {
     }
 
     /**
-     * Returns the name of this task.
-     * 
-     * @return The name.
-     */
-    @Override
-    public String getName() {
-        return "Scale frame";
-    }
-
-    /**
      * Scales the given input, an image, and returns a scaled version of the
      * image.
      * 
      * @param obj
      *            The input of this function.
-     * @param node
-     *            Some info of the node we're running this on.
      * @return The scaled image.
      */
     @Override

@@ -22,16 +22,6 @@ public class RenderFrameTask implements AtomicJob {
     // FIXME: be more paranoid than this in the selection of tmp dir.
     private static final File tmpDir = new File("/tmp");
 
-    /**
-     * Returns the name of this task.
-     * 
-     * @return The name.
-     */
-    @Override
-    public String getName() {
-        return "Render frame";
-    }
-
     static class RenderInfo implements Serializable {
         private static final long serialVersionUID = 1899219003828691971L;
         final int width;

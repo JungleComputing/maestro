@@ -1,13 +1,17 @@
 package ibis.videoplayer;
 
 import ibis.maestro.AtomicJob;
+import ibis.maestro.JobCompletionListener;
 import ibis.maestro.JobList;
 import ibis.maestro.JobSequence;
-import ibis.maestro.JobWaiter;
+import ibis.maestro.LabelTracker;
 import ibis.maestro.Node;
+import ibis.maestro.LabelTracker.Label;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * Run some conversions on a directory full of images.
@@ -16,18 +20,68 @@ import java.io.IOException;
  * 
  */
 class ConvertFramesProgram {
-    private final class FetchImageTask implements AtomicJob {
-        private static final long serialVersionUID = -7976035811697720295L;
+    private static class Listener implements JobCompletionListener {
+        private final LabelTracker labelTracker = new LabelTracker();
+        private boolean sentFinal = false;
 
         /**
-         * Returns the name of this task.
+         * Handle the completion of the job with id 'id':
+         * the result is 'result'.
          * 
-         * @return The name.
+         * @param id
+         *            The job that was completed.
+         * @param result
+         *            The result of the job.
          */
         @Override
-        public String getName() {
-            return "Fetch frame";
+        public void jobCompleted(Node node, Object id, Object result) {
+            if (!(id instanceof LabelTracker.Label)) {
+                System.err
+                .println("Internal error: Object id is not a tracker label: "
+                        + id);
+                System.exit(1);
+            }
+            labelTracker.returnLabel((LabelTracker.Label) id);
+            boolean finished;
+            synchronized( this ){
+                finished = sentFinal && labelTracker.allAreReturned();
+            }
+            if (finished) {
+                System.out
+                .println("I got all job results back; stopping test program");
+                node.setStopped();
+            }
+            final long returned = labelTracker.getReturnedLabels();
+            final long issued = labelTracker.getIssuedLabels();
+            if( (returned%500) == 0 ){
+                System.out.println( "Now " + returned + " of " + issued + " frames returned" );
+            }
+            if( (issued-returned)<20 ){
+                final Label[] l = labelTracker.listOutstandingLabels();
+                System.out.println( "Waiting for " + Arrays.deepToString(l) );
+            }
         }
+
+        Serializable getLabel() {
+            return labelTracker.nextLabel();
+        }
+
+        void setFinished(Node node) {
+            boolean finished;
+            synchronized( this ){
+                sentFinal = true;
+                finished = labelTracker.allAreReturned();
+            }
+            if( finished ){
+                System.out
+                .println("I got all job results back; stopping test program");
+                node.setStopped();
+            }
+        }
+    }
+
+    private final class FetchImageJob implements AtomicJob {
+        private static final long serialVersionUID = -7976035811697720295L;
 
         /**
          * 
@@ -58,13 +112,13 @@ class ConvertFramesProgram {
         }
     }
 
-    private final class ColorCorrectTask implements AtomicJob {
+    private final class ColorCorrectJob implements AtomicJob {
         private static final long serialVersionUID = 5452987225377415308L;
         final double rr, rg, rb;
         final double gr, gg, gb;
         final double br, bg, bb;
 
-        ColorCorrectTask(final double rr, final double rg, final double rb,
+        ColorCorrectJob(final double rr, final double rg, final double rb,
                 final double gr, final double gg, final double gb,
                 final double br, final double bg, final double bb) {
             super();
@@ -77,16 +131,6 @@ class ConvertFramesProgram {
             this.br = br;
             this.bg = bg;
             this.bb = bb;
-        }
-
-        /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Colour-correct frame";
         }
 
         /**
@@ -112,18 +156,8 @@ class ConvertFramesProgram {
         }
     }
 
-    private final class CompressFrameTask implements AtomicJob {
+    private final class CompressFrameJob implements AtomicJob {
         private static final long serialVersionUID = 5452987225377415310L;
-
-        /**
-         * Returns the name of this task.
-         * 
-         * @return The name.
-         */
-        @Override
-        public String getName() {
-            return "Compress frame";
-        }
 
         /**
          * Run a Jpeg conversion Maestro task.
@@ -158,10 +192,10 @@ class ConvertFramesProgram {
     @SuppressWarnings("synthetic-access")
     private void run(File framesDirectory) throws Exception {
         JobList tasks = new JobList();
-        JobWaiter waiter = new JobWaiter();
-        JobSequence convertTask = tasks.createJob("converter", new FetchImageTask(),
-                new ColorCorrectTask(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
-                        1.0), new ScaleFrameTask(2), new CompressFrameTask());
+        Listener listener = new Listener();
+        JobSequence convertJob = tasks.createJob("converter", new FetchImageJob(),
+                new ColorCorrectJob(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
+                        1.0), new ScaleFrameTask(2), new CompressFrameJob());
 
         Node node = Node.createNode(tasks, framesDirectory != null);
         System.out.println("Node created");
@@ -170,9 +204,10 @@ class ConvertFramesProgram {
             System.out.println("I am maestro; converting " + files.length
                     + " images");
             for (File f : files) {
-                waiter.submit(node, convertTask, f);
+                final Serializable label = listener.getLabel();
+                node.submit(f,label,true,listener,convertJob);
             }
-            node.setStopped();
+            listener.setFinished( node );
         }
         node.waitToTerminate();
     }

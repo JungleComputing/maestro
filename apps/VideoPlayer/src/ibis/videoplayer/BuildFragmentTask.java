@@ -23,16 +23,6 @@ public final class BuildFragmentTask implements ParallelJob {
         this.fetchJob = fetchJob;
     }
 
-    /**
-     * Returns the name of this task.
-     * 
-     * @return The name.
-     */
-    @Override
-    public String getName() {
-        return "Build fragment";
-    }
-
     static JobSequence createGetFrameJob(JobList jobs) {
         return jobs.createJob("getFrame", new FetchFrameTask(),
                 new DecompressFrameTask(), new ColourCorrectTask(),

@@ -13,16 +13,6 @@ public class ColourCorrectTask implements AtomicJob {
     private static final long serialVersionUID = -3938044583266505212L;
 
     /**
-     * Returns the name of this task.
-     * 
-     * @return The name.
-     */
-    @Override
-    public String getName() {
-        return "Colour-correct frame";
-    }
-
-    /**
      * Runs this task.
      * 
      * @return The decompressed frame.

@@ -20,16 +20,6 @@ class CompareImageTask implements AtomicJob {
         this.imageDirectory = dir;
     }
 
-    /**
-     * Returns the name of this task.
-     * 
-     * @return The name.
-     */
-    @Override
-    public String getName() {
-        return "Compare images";
-    }
-
     static class ImageMatches implements Serializable {
         private static final long serialVersionUID = -6824625393338177074L;
         final UncompressedImage img;
