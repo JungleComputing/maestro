@@ -110,8 +110,6 @@ class BenchmarkProgram {
          * 
          * @param in
          *            The input of this job.
-         * @param node
-         *            The node we're running on.
          * @return <code>null</code> since we entirely process the image within
          *         this job.
          */
@@ -244,8 +242,6 @@ class BenchmarkProgram {
          * 
          * @param in
          *            The input of the conversion.
-         * @param node
-         *            The node this process runs on.
          * @return The scaled frame.
          */
         @Override
@@ -311,8 +307,6 @@ class BenchmarkProgram {
          * 
          * @param in
          *            The input of the conversion.
-         * @param node
-         *            The node this process runs on.
          * @return The scaled frame.
          */
         @Override
@@ -366,8 +360,6 @@ class BenchmarkProgram {
          * 
          * @param in
          *            The input of this job.
-         * @param node
-         *            The node this job runs on.
          * @return The result of the job.
          */
         @Override
@@ -409,8 +401,6 @@ class BenchmarkProgram {
          * 
          * @param in
          *            The input of the conversion.
-         * @param node
-         *            The node this process runs on.
          * @return The scaled frame.
          */
         @Override

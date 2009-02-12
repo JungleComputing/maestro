@@ -142,7 +142,7 @@ public class RenderMovieProgram implements JobCompletionListener {
     @SuppressWarnings("synthetic-access")
     private void run(File sourceDirectory, File iniFile) throws Exception {
         JobList jobList = new JobList();
-        JobSequence convertJob = jobList.createJob("converter", new RenderFrameTask(),
+        JobSequence convertJob = jobList.createJob("converter", new RenderFrameJob(),
                 new ColorCorrectJob(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
                         1.0),
                 // new ScaleFrameTask( 2 ),
@@ -152,7 +152,7 @@ public class RenderMovieProgram implements JobCompletionListener {
         Node node = Node.createNode(jobList, sourceDirectory != null);
         System.out.println("Node created");
         if (sourceDirectory != null && node.isMaestro()) {
-            String init = RenderFrameTask.readFile(iniFile);
+            String init = RenderFrameJob.readFile(iniFile);
             if (init == null) {
                 System.err.println("Cannot read file " + iniFile);
                 return;
@@ -163,12 +163,12 @@ public class RenderMovieProgram implements JobCompletionListener {
             for (int iter = 0; iter < REPEATS; iter++) {
                 for (File f : files) {
                     if (!f.getName().equals(".svn")) {
-                        String scene = RenderFrameTask.readFile(f);
+                        String scene = RenderFrameJob.readFile(f);
                         if (scene == null) {
                             System.err.println("Cannot read scene file " + f);
                         } else {
                             int n = frameno++;
-                            RenderFrameTask.RenderInfo info = new RenderFrameTask.RenderInfo(
+                            RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo(
                                     WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, n, init
                                             + scene);
                             node.submit(info, new Integer(n), true, this,

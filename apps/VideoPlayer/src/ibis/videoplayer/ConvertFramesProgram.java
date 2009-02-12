@@ -87,8 +87,6 @@ class ConvertFramesProgram {
          * 
          * @param in
          *            The input of this job.
-         * @param node
-         *            The node we're running on.
          * @return The fetched image.
          */
 
@@ -195,7 +193,7 @@ class ConvertFramesProgram {
         Listener listener = new Listener();
         JobSequence convertJob = tasks.createJob("converter", new FetchImageJob(),
                 new ColorCorrectJob(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
-                        1.0), new ScaleFrameTask(2), new CompressFrameJob());
+                        1.0), new ScaleFrameJob(2), new CompressFrameJob());
 
         Node node = Node.createNode(tasks, framesDirectory != null);
         System.out.println("Node created");

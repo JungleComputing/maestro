@@ -9,7 +9,7 @@ import ibis.maestro.AtomicJob;
  * @author Kees van Reeuwijk
  * 
  */
-public class ColourCorrectTask implements AtomicJob {
+public class ColourCorrectJob implements AtomicJob {
     private static final long serialVersionUID = -3938044583266505212L;
 
     /**

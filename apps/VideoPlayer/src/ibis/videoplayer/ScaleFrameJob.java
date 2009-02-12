@@ -3,16 +3,16 @@ package ibis.videoplayer;
 import ibis.maestro.AtomicJob;
 
 /**
- * A task to scale down a frame.
+ * A job to scale down a frame.
  * 
  * @author Kees van Reeuwijk
  * 
  */
-class ScaleFrameTask implements AtomicJob {
+class ScaleFrameJob implements AtomicJob {
     private static final long serialVersionUID = -3938044583266505212L;
     private final int factor;
 
-    ScaleFrameTask(int factor) {
+    ScaleFrameJob(int factor) {
         this.factor = factor;
     }
 

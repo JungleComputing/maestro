@@ -17,7 +17,7 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  * 
  */
-public class RenderFrameTask implements AtomicJob {
+public class RenderFrameJob implements AtomicJob {
     private static final long serialVersionUID = -3938044583266505212L;
     // FIXME: be more paranoid than this in the selection of tmp dir.
     private static final File tmpDir = new File("/tmp");

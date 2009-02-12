@@ -3,13 +3,13 @@ package ibis.videoplayer;
 import ibis.maestro.AtomicJob;
 
 /**
- * A task to decompress a frame. We fake decompressing a video frame by simply
+ * A job to decompress a frame. We fake decompressing a video frame by simply
  * doubling the frame and repeating the content. FIXME: implement this properly.
  * 
  * @author Kees van Reeuwijk
  * 
  */
-public class DecompressFrameTask implements AtomicJob {
+public class DecompressFrameJob implements AtomicJob {
     private static final long serialVersionUID = -3938044583266505212L;
 
     /**
