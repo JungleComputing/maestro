@@ -2,11 +2,11 @@ package ibis.videoplayer;
 
 import ibis.maestro.AtomicJob;
 import ibis.maestro.JobCompletionListener;
+import ibis.maestro.JobExecutionTimeEstimator;
 import ibis.maestro.JobList;
 import ibis.maestro.JobSequence;
 import ibis.maestro.LabelTracker;
 import ibis.maestro.Node;
-import ibis.maestro.TaskExecutionTimeEstimator;
 import ibis.maestro.Utils;
 import ibis.maestro.LabelTracker.Label;
 
@@ -93,7 +93,7 @@ class BenchmarkProgram {
     }
 
     // Do all the image processing steps in one go. Used as baseline.
-    private static final class ProcessFrameTask implements AtomicJob, TaskExecutionTimeEstimator {
+    private static final class ProcessFrameTask implements AtomicJob, JobExecutionTimeEstimator {
         private static final long serialVersionUID = -7976035811697720295L;
         final boolean slowScale;
         final boolean slowSharpen;
@@ -177,7 +177,7 @@ class BenchmarkProgram {
     }
 
     private static final class GenerateFrameTask implements AtomicJob,
-    TaskExecutionTimeEstimator {
+    JobExecutionTimeEstimator {
         private static final long serialVersionUID = -7976035811697720295L;
 
         /**
@@ -219,7 +219,7 @@ class BenchmarkProgram {
     }
 
     private static final class ScaleUpFrameTask implements AtomicJob,
-    TaskExecutionTimeEstimator {
+    JobExecutionTimeEstimator {
         private static final long serialVersionUID = 5452987225377415308L;
         private final int factor;
         private final boolean slow;
@@ -289,7 +289,7 @@ class BenchmarkProgram {
         }
     }
 
-    private static final class SharpenFrameTask implements AtomicJob, TaskExecutionTimeEstimator {
+    private static final class SharpenFrameTask implements AtomicJob, JobExecutionTimeEstimator {
         private static final long serialVersionUID = 54529872253774153L;
         private final boolean slow;
         private final boolean allowed;
@@ -394,7 +394,7 @@ class BenchmarkProgram {
     }
 
     private static final class SaveFrameTask implements AtomicJob,
-    TaskExecutionTimeEstimator {
+    JobExecutionTimeEstimator {
         private static final long serialVersionUID = 54529872253774153L;
         private final File saveDir;
 

@@ -65,9 +65,9 @@ public class BuildVideoProgram {
         final int fragmentCount = (frameCount + Settings.FRAME_FRAGMENT_COUNT - 1)
                 / Settings.FRAME_FRAGMENT_COUNT;
         final Listener listener = new Listener(fragmentCount);
-        final JobSequence getFrameTask = BuildFragmentTask.createGetFrameJob(jobList);
+        final JobSequence getFrameTask = BuildFragmentJob.createGetFrameJob(jobList);
         final JobSequence playJob = jobList.createJob("videoplayer",
-                new BuildFragmentTask(getFrameTask));
+                new BuildFragmentJob(getFrameTask));
 
         final Node node = Node.createNode(jobList, goForMaestro);
         System.out.println("Node created");

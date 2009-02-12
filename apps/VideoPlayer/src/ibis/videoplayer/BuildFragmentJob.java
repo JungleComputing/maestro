@@ -12,14 +12,14 @@ import ibis.maestro.ParallelJobHandler;
  * @author Kees van Reeuwijk
  * 
  */
-public final class BuildFragmentTask implements ParallelJob {
+final class BuildFragmentJob implements ParallelJob {
     private static final long serialVersionUID = 6769001575637882594L;
     private JobSequence fetchJob;
     int startFrame;
     int endFrame;
     RGB48Image frames[];
 
-    BuildFragmentTask(JobSequence fetchJob) {
+    BuildFragmentJob(JobSequence fetchJob) {
         this.fetchJob = fetchJob;
     }
 
