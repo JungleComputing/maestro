@@ -22,7 +22,7 @@ public class FetchFrameTask implements AtomicJob {
     @Override
     public Object run(Object obj) {
         Integer frameno = (Integer) obj;
-        File frameFile = new File(String.format("frame-%04d.ppm"));
+        File frameFile = new File(String.format("frame-%04d.ppm",frameno));
         Image frame;
         try {
             frame = Image.load(frameFile, frameno);

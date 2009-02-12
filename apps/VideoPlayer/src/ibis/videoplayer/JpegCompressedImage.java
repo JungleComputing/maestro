@@ -103,6 +103,7 @@ class JpegCompressedImage extends CompressedImage {
             System.err.println("File '" + f
                     + "' is too large to fit in an array (it is " + length
                     + ") bytes");
+            is.close();
             return null;
         }
 
@@ -116,15 +117,16 @@ class JpegCompressedImage extends CompressedImage {
                 && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
             offset += numRead;
         }
-
+ 
+        // Close the input stream and return bytes
+        is.close();
+ 
         // Ensure all the bytes have been read in
         if (offset < bytes.length) {
             throw new IOException("Could not completely read file "
                     + f.getName());
         }
 
-        // Close the input stream and return bytes
-        is.close();
         return new JpegCompressedImage(width, height, frameno, bytes);
     }
 
