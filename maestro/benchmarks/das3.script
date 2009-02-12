@@ -27,6 +27,6 @@ fi
 source ./settag*.sh
 LOGSDIR=$TAG-`hostname -s`.logs
 mkdir $LOGSDIR
-echo $PRUN $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $LOGSDIR/out $JAVA $ARGS
-$PRUN $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $LOGSDIR/out $JAVA $ARGS
-sleep 3
+echo $PRUN -v $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $LOGSDIR/out $JAVA $ARGS
+$PRUN -v $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $LOGSDIR/out $JAVA $ARGS
+sleep 1

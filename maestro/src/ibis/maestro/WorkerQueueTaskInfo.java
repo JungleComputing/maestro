@@ -38,7 +38,7 @@ final class WorkerQueueTaskInfo {
     private final TimeEstimate dequeueInterval = new TimeEstimate(
             1 * Utils.MILLISECOND);
 
-    private long totalWorkTime = 0;
+    private double totalWorkTime = 0.0;
 
     private final TimeEstimate averageComputeTime = new TimeEstimate(
             Utils.MILLISECOND);

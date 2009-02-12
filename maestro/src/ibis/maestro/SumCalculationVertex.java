@@ -32,7 +32,7 @@ class SumCalculationVertex extends CalculationVertex implements
             for (CalculationVertex n : elements) {
                 nval += n.getValue();
             }
-            changed = nval != value;
+            changed = (nval != value);
             value = nval;
         }
         if( changed ){

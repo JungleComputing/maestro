@@ -11,7 +11,6 @@ import java.io.Serializable;
 class TestProg {
     private static final int ITERATIONS = 200; // The number of times we should
 
-    // do the addition.
     private static final int ARRAY_SIZE = 5000;
 
     static final int LEVELS = 4;

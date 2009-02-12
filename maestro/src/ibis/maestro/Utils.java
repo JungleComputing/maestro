@@ -99,12 +99,12 @@ public class Utils {
             return "0 s";
         }
         if (t < MICROSECOND && t > -MICROSECOND) {
-            return String.format("%d ns", 1e9*t);
+            return String.format("%4.1f ns", 1e9*t);
         }
-        if (t < 1000000L && t > -1000000L) {
+        if (t < MILLISECOND && t > -MILLISECOND) {
             return String.format("%4.1f us", 1e6*t );
         }
-        if (t < 1000000000L && t > -1000000000L) {
+        if (t < SECOND && t > -SECOND) {
             return String.format("%4.1f ms", 1e3*t );
         }
         return String.format("%4.1f s", t );

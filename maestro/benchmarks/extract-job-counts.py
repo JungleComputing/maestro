@@ -21,28 +21,28 @@ def computeVariation( l ):
         diff += math.fabs( float( e )-average )
     return diff
 
-def extractTaskLabel( s ):
+def extractJobLabel( s ):
     s = s[len(workerString):].strip()
     s = s[5:-2]
     return int( s )
 
-def extractTaskCount( s ):
+def extractJobCount( s ):
     s = s.strip()
     el = s.split()
     return int( el[3] )
 
-def getTaskCounts( fnm ):
+def getJobCounts( fnm ):
     fh = open( fnm )
     res = [0]*5
-    taskLabel = None
+    jobLabel = None
     for line in fh.readlines():
-        if taskLabel != None:
-            count = extractTaskCount( line )
-            res[taskLabel] = count
+        if jobLabel != None:
+            count = extractJobCount( line )
+            res[jobLabel] = count
         if startsWith( line, workerString ) and line[-2] == ':':
-            taskLabel = extractTaskLabel( line )
+            jobLabel = extractJobLabel( line )
         else:
-            taskLabel = None
+            jobLabel = None
     fh.close()
     return res
 
@@ -66,7 +66,7 @@ count = 0
 files = sys.argv[3:]
 l = []
 for fnm in files:
-    counts = getTaskCounts( fnm )
+    counts = getJobCounts( fnm )
     l.append( counts )
 
 l = sorted( l, variation_cmp )

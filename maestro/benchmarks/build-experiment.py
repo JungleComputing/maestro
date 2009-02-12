@@ -31,10 +31,10 @@ jobs = `p*jobsPerProcessor`
 # Translation table from measurement type to command-line arguments
 args = {
     'plain':[jobs],
-    'onetask':['-onetask',jobs],
+    'onejob':['-onejob',jobs],
     'no':['-oddnoscale','-evennosharpen',jobs],
     'slow':['-oddslowscale','-evenslowsharpen',jobs],
-    'oneslow':['-onetask','-oddslowscale','-evenslowsharpen',jobs],
+    'oneslow':['-onejob','-oddslowscale','-evenslowsharpen',jobs],
 }
 
 if not elements[0] in args.keys():

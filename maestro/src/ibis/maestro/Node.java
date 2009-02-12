@@ -244,6 +244,11 @@ public final class Node extends Thread implements PacketReceiveListener {
         traceStats = System.getProperty("ibis.maestro.traceWorkerStatistics") != null;
         gossiper = new Gossiper(sendPort, isMaestro(), jobs);
         startTime = Utils.getPreciseTime();
+        recentMasterList.register(localIbis.identifier());
+        startThreads();
+        if( Settings.traceNodes ){
+            Globals.log.log("Started a Maestro node");
+        }
     }
 
     protected void startThreads() {
