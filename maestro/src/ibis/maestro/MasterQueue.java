@@ -292,40 +292,6 @@ final class MasterQueue {
     }
 
     /**
-     * Given a task type, select the best worker from the list that has a free
-     * slot. In this context 'best' is simply the worker with the shortest
-     * overall completion time.
-     * 
-     * @param type
-     *            The type of task we want to execute.
-     * @return The info of the best worker for this task, or <code>null</code>
-     *         if there currently aren't any workers for this task type.
-     */
-    private Submission selectBestWorker(
-            HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
-            AntRoutingTable table, JobInstance task) {
-        final NodePerformanceInfo best = null;
-
-        final NodeInfo candidate = table.getBestReadyWorker(task.type);
-        if (candidate == null) {
-            if (Settings.traceMasterQueue) {
-                Globals.log.reportProgress("No workers for task of type "
-                        + task.type);
-            }
-            return null;
-        }
-        if (Settings.traceMasterQueue) {
-            Globals.log.reportProgress("Selected worker " + best.source
-                    + " for task of type " + task.type);
-        }
-        final LocalNodeInfo localNodeInfo = localNodeInfoMap
-                .get(candidate.ibis);
-        final double predictedDuration = localNodeInfo
-                .getPredictedDuration(task.type);
-        return new Submission(task, candidate.ibis, predictedDuration);
-    }
-
-    /**
      * Get a job submission from the queue. The entries are tried from front to
      * back, and the first one for which a worker can be found is returned.
      * 
@@ -351,54 +317,6 @@ final class MasterQueue {
             } else {
                 final Submission sub = selectBestWorker(localNodeInfoMap,
                         tables, task);
-                if (sub == null) {
-                    busyTypeIndex = type.index;
-                } else {
-                    queue.remove(ix);
-                    final TypeInfo queueTypeInfo = queueTypes[type.index];
-                    queueTypeInfo.registerRemove();
-                    if (Settings.traceMasterQueue || Settings.traceQueuing) {
-                        final int length = queueTypeInfo.elements;
-                        Globals.log.reportProgress("Removing "
-                                + task.formatJobAndType()
-                                + " from master queue; length is now "
-                                + queue.size() + "; " + length + " of type "
-                                + type);
-                    }
-                    return sub;
-                }
-                if (Settings.traceMasterQueue) {
-                    Globals.log.reportProgress("No ready worker for task type "
-                            + type);
-                }
-            }
-            ix++;
-        }
-        return null;
-    }
-
-    /**
-     * @param antRoutingTable
-     * @return A task to submit.
-     */
-    synchronized Submission getAntSubmission(
-            HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
-            AntRoutingTable antRoutingTable) {
-        int ix = 0;
-        int busyTypeIndex = -1; // No workers for this type.
-
-        while (ix < queue.size()) {
-            final JobInstance task = queue.get(ix);
-            final JobType type = task.type;
-
-            if (type.index == busyTypeIndex) {
-                if (Settings.traceMasterQueue || Settings.traceQueuing) {
-                    Globals.log.reportProgress("Type " + type
-                            + " has no ready workers, don't bother");
-                }
-            } else {
-                final Submission sub = selectBestWorker(localNodeInfoMap,
-                        antRoutingTable, task);
                 if (sub == null) {
                     busyTypeIndex = type.index;
                 } else {

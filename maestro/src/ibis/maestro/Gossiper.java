@@ -354,7 +354,7 @@ class Gossiper extends Thread {
                 localNodeInfoMap);
     }
 
-    int selectFastestTask(JobType[] types, boolean submitIfBusy,
+    int selectFastestJob(JobType[] types, boolean submitIfBusy,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
         int bestIx = -1;
         double bestTime = Double.POSITIVE_INFINITY;
@@ -370,7 +370,7 @@ class Gossiper extends Thread {
         return bestIx;
     }
 
-    void failTask(JobType type) {
+    void failJob(JobType type) {
         gossip.localNodeFailTask(type);
         addQuotum();
     }

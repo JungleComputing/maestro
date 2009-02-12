@@ -43,7 +43,7 @@ final class NodeInfo {
             boolean local) {
         this.ibis = ibis;
         this.local = local;
-        nodeJobInfoList = new NodeTaskInfo[Globals.allTaskTypes.length];
+        nodeJobInfoList = new NodeTaskInfo[Globals.allJobTypes.length];
         // For non-local nodes, start with a very pessimistic ping time.
         // This means that only if we really need another node, we use it.
         // long pessimisticPingTime = local?0L:Utils.HOUR_IN_NANOSECONDS;
@@ -57,7 +57,7 @@ final class NodeInfo {
                 estimatedPingTime *= 3;
             }
         }
-        for (int ix = 0; ix < Globals.allTaskTypes.length; ix++) {
+        for (int ix = 0; ix < Globals.allJobTypes.length; ix++) {
             final WorkerQueueTaskInfo taskInfo = workerQueue.getTaskInfo(ix);
             nodeJobInfoList[ix] = new NodeTaskInfo(taskInfo, this,
                     estimatedPingTime);
@@ -158,7 +158,7 @@ final class NodeInfo {
      * @param taskId
      *            The task to retract.
      */
-    void retractTask(long taskId) {
+    void retractJob(long taskId) {
         // We ignore the result of the extract: it doesn't really matter if the
         // task was
         // in our list of not.
@@ -283,7 +283,7 @@ final class NodeInfo {
      * @param predictedDuration
      *            The predicted duration in seconds of the task.
      */
-    void registerTaskStart(JobInstance task, long id, double predictedDuration) {
+    void registerJobStart(JobInstance task, long id, double predictedDuration) {
         final JobType type = task.type;
         final NodeTaskInfo workerTaskInfo = nodeJobInfoList[type.index];
         if (workerTaskInfo == null) {

@@ -77,17 +77,15 @@ class TestProg {
 
     }
 
-    private static class CreateArrayTask implements AtomicJob {
+    private static class CreateArrayJob implements AtomicJob {
         private static final long serialVersionUID = 2347248108353357517L;
 
         /**
-         * Runs this task.
+         * Runs this job.
          * 
          * @param obj
-         *            The input parameter of this task.
-         * @param node
-         *            The node the task is running on.
-         * @return The result value of this task.
+         *            The input parameter of this job.
+         * @return The result value of this job.
          */
         @Override
         @SuppressWarnings("synthetic-access")
@@ -111,7 +109,7 @@ class TestProg {
         }
     }
 
-    private static class AdditionTask implements AtomicJob {
+    private static class AdditionJob implements AtomicJob {
         private static final long serialVersionUID = 7652370809998864296L;
 
         /**
@@ -142,7 +140,7 @@ class TestProg {
         }
     }
 
-    private class AssembleArrayTask implements ParallelJob {
+    private class AssembleArrayJob implements ParallelJob {
         private static final long serialVersionUID = 1L;
 
         private final JobSequence createJob;
@@ -151,7 +149,7 @@ class TestProg {
 
         Object res[] = new Object[SIZE];
 
-        AssembleArrayTask(JobSequence job) {
+        AssembleArrayJob(JobSequence job) {
             this.createJob = job;
         }
 
@@ -219,8 +217,8 @@ class TestProg {
         // );
         final JobSequence job = jobs.createJob("testprog",
                 // new AssembleArrayTask( createJob ),
-                new CreateArrayTask(), new AdditionTask(), new AdditionTask(),
-                new AdditionTask(), new AdditionTask());
+                new CreateArrayJob(), new AdditionJob(), new AdditionJob(),
+                new AdditionJob(), new AdditionJob());
         final Node node = Node.createNode(jobs, goForMaestro);
         final Listener listener = new Listener(node, taskCount);
         System.out.println("Node created");

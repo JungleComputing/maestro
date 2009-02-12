@@ -14,7 +14,7 @@ import java.util.ArrayList;
  * 
  */
 final class WorkerQueue {
-    private final ArrayList<RunTaskMessage> queue = new ArrayList<RunTaskMessage>();
+    private final ArrayList<RunJobMessage> queue = new ArrayList<RunJobMessage>();
 
     private final WorkerQueueTaskInfo queueTypes[];
 
@@ -27,12 +27,12 @@ final class WorkerQueue {
      *            The list of job types we support.
      */
     WorkerQueue(JobList jobs) {
-        final JobType[] taskTypes = Globals.allTaskTypes;
+        final JobType[] taskTypes = Globals.allJobTypes;
         queueTypes = new WorkerQueueTaskInfo[taskTypes.length];
         for (final JobType t : taskTypes) {
             final WorkerQueueTaskInfo queueTypeInfo = new WorkerQueueTaskInfo(t);
             queueTypes[t.index] = queueTypeInfo;
-            final Job task = jobs.getTask(t);
+            final Job task = jobs.getJob(t);
             if (task instanceof JobExecutionTimeEstimator) {
                 final JobExecutionTimeEstimator estimator = (JobExecutionTimeEstimator) task;
                 queueTypeInfo.setInitialComputeTimeEstimate(estimator
@@ -51,8 +51,8 @@ final class WorkerQueue {
         return queue.isEmpty();
     }
 
-    private static int findInsertionPoint(ArrayList<RunTaskMessage> queue,
-            RunTaskMessage msg) {
+    private static int findInsertionPoint(ArrayList<RunJobMessage> queue,
+            RunJobMessage msg) {
         // Good old binary search.
         int start = 0;
         int end = queue.size();
@@ -62,13 +62,13 @@ final class WorkerQueue {
             // it separately.
             return 0;
         }
-        final long id = msg.taskInstance.jobInstance.id;
+        final long id = msg.jobInstance.jobInstance.id;
         while (true) {
             final int mid = (start + end) / 2;
             if (mid == start) {
                 break;
             }
-            final long midId = queue.get(mid).taskInstance.jobInstance.id;
+            final long midId = queue.get(mid).jobInstance.jobInstance.id;
             if (midId < id) {
                 // Mid should come before us.
                 start = mid;
@@ -79,7 +79,7 @@ final class WorkerQueue {
         }
         // This comparison is probably rarely necessary, but corner cases
         // are a pain, so I'm safe rather than sorry.
-        final long startId = queue.get(start).taskInstance.jobInstance.id;
+        final long startId = queue.get(start).jobInstance.jobInstance.id;
         if (startId < id) {
             return end;
         }
@@ -89,7 +89,7 @@ final class WorkerQueue {
     private void dumpQueue() {
         Globals.log.reportProgress("Worker queue: ");
         final PrintStream s = Globals.log.getPrintStream();
-        for (final RunTaskMessage m : queue) {
+        for (final RunJobMessage m : queue) {
             s.print(m.label());
             s.print(' ');
         }
@@ -102,9 +102,9 @@ final class WorkerQueue {
      * @param msg
      *            The task to add to the queue
      */
-    int add(RunTaskMessage msg) {
+    int add(RunJobMessage msg) {
         final int length;
-        final JobType type = msg.taskInstance.type;
+        final JobType type = msg.jobInstance.type;
         final WorkerQueueTaskInfo info = queueTypes[type.index];
         final int pos;
         synchronized (this) {
@@ -117,7 +117,7 @@ final class WorkerQueue {
         }
         if (Settings.traceQueuing) {
             Globals.log.reportProgress("Adding "
-                    + msg.taskInstance.formatJobAndType() + " at position "
+                    + msg.jobInstance.formatJobAndType() + " at position "
                     + pos + " of worker queue; length is now " + queue.size()
                     + "; " + length + " of type " + type);
         }
@@ -127,8 +127,8 @@ final class WorkerQueue {
         return length;
     }
 
-    RunTaskMessage remove(Gossiper gossiper) {
-        final RunTaskMessage res;
+    RunJobMessage remove(Gossiper gossiper) {
+        final RunJobMessage res;
         final int length;
         final WorkerQueueTaskInfo info;
 
@@ -137,24 +137,24 @@ final class WorkerQueue {
                 return null;
             }
             res = queue.remove(0);
-            info = queueTypes[res.taskInstance.type.index];
+            info = queueTypes[res.jobInstance.type.index];
             length = info.registerRemove();
         }
         if (Settings.traceQueuing) {
             Globals.log.reportProgress("Removing "
-                    + res.taskInstance.formatJobAndType()
+                    + res.jobInstance.formatJobAndType()
                     + " from worker queue; length is now " + queue.size()
-                    + "; " + length + " of type " + res.taskInstance.type);
+                    + "; " + length + " of type " + res.jobInstance.type);
         }
         if (gossiper != null) {
             final double queueTimePerTask = info.getDequeueInterval();
-            gossiper.setWorkerQueueTimePerTask(res.taskInstance.type,
+            gossiper.setWorkerQueueTimePerTask(res.jobInstance.type,
                     queueTimePerTask, length);
         }
         return res;
     }
 
-    boolean failTask(JobType type) {
+    boolean failJob(JobType type) {
         final WorkerQueueTaskInfo info = queueTypes[type.index];
         info.failTask();
 

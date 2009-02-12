@@ -50,7 +50,7 @@ class MasterWorkerProgram {
         }
     }
 
-    private static class SharpenTask implements UnpredictableAtomicTask {
+    private static class SharpenTask implements UnpredictableAtomicJob {
         private static final long serialVersionUID = 7652370809998864296L;
 
         private static final int BANDS = 3;

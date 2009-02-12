@@ -20,7 +20,7 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
 
     final LabelTracker labeler = new LabelTracker();
 
-    final RunTaskMessage message;
+    final RunJobMessage message;
 
     final double runMoment;
 
@@ -31,7 +31,7 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
      *            The reducer to run on each result we're waiting for.
      */
     ParallelJobHandler(Node localNode, ParallelJob reducer,
-            RunTaskMessage message, double runMoment) {
+            RunJobMessage message, double runMoment) {
         this.localNode = localNode;
         this.reducer = reducer;
         this.message = message;
@@ -135,7 +135,7 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
             // Nothing we can do.
         }
         Object result = reducer.getResult();
-        localNode.handleTaskResult(message, result, runMoment);
+        localNode.handleJobResult(message, result, runMoment);
     }
 
 }

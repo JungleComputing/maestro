@@ -182,17 +182,17 @@ class NodePerformanceInfo implements Serializable {
     }
 
     static void printTopLabel(PrintStream s) {
-        for (final JobType t : Globals.allTaskTypes) {
+        for (final JobType t : Globals.allJobTypes) {
             s.print(WorkerQueueInfo.topLabelType(t));
             s.print(' ');
         }
         s.print(" | ");
-        for (final JobType t : Globals.allTaskTypes) {
+        for (final JobType t : Globals.allJobTypes) {
             s.printf("%8s ", t);
         }
         s.println();
         for (@SuppressWarnings("unused")
-        final JobType t : Globals.allTaskTypes) {
+        final JobType t : Globals.allJobTypes) {
             s.print(WorkerQueueInfo.topLabel());
             s.print(' ');
         }

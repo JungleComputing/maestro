@@ -146,10 +146,6 @@ class Settings {
     /** The default sleep time in ms between node terminations. */
     static final long DEFAULT_TERMINATOR_SLEEP = 100;
 
-    /** Should Maestro use ant routing? */
-    static final boolean USE_ANT_ROUTING = System
-            .getProperty("ibis.maestro.useAntRouting") != null;
-
     /** Don't take the time tasks spend the queues into account. */
     static final boolean IGNORE_QUEUE_TIME = false;
 

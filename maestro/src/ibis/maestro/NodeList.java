@@ -72,7 +72,7 @@ final class NodeList {
      * @return The task instance that was completed if it may have duplicates,
      *         or <code>null</code>
      */
-    JobInstance registerTaskCompleted(JobCompletedMessage result) {
+    JobInstance registerJobCompleted(JobCompletedMessage result) {
         final NodeInfo node;
         synchronized (this) {
             node = ibisToNodeMap.get(result.source);
@@ -93,7 +93,7 @@ final class NodeList {
      * @param msg
      *            The message.
      */
-    void registerTaskReceived(JobReceivedMessage msg) {
+    void registerJobReceived(JobReceivedMessage msg) {
         final NodeInfo node;
         synchronized (this) {
             node = ibisToNodeMap.get(msg.source);
@@ -117,7 +117,7 @@ final class NodeList {
      *            The id of the failed task.
      * @return The task instance that was executed.
      */
-    JobInstance registerTaskFailed(IbisIdentifier ibis, long taskId) {
+    JobInstance registerJobFailed(IbisIdentifier ibis, long taskId) {
         final NodeInfo node;
         synchronized (this) {
             node = ibisToNodeMap.get(ibis);

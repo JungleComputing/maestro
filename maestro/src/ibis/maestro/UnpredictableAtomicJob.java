@@ -7,7 +7,7 @@ package ibis.maestro;
  * @author Kees van Reeuwijk
  * 
  */
-public interface UnpredictableAtomicTask extends AtomicJob,
+public interface UnpredictableAtomicJob extends AtomicJob,
         JobExecutionTimeEstimator {
     // Just a marker interface.
 }

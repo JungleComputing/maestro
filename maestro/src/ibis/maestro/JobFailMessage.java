@@ -22,8 +22,6 @@ final class JobFailMessage extends Message {
      * 
      * @param id
      *            The identifier of the job this is a result for.
-     * @param update
-     *            Information about the new state of the node.
      */
     public JobFailMessage(long id) {
         this.source = Globals.localIbis.identifier();

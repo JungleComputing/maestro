@@ -2,7 +2,6 @@ package ibis.maestro;
 
 import java.io.PrintStream;
 import java.io.Serializable;
-import java.util.ArrayList;
 
 /**
  * A job sequence.
@@ -108,7 +107,7 @@ public final class JobSequence implements Job {
         int updateIndex = 0;
         while (i > 0) {
             i--;
-            if (tasks[i] instanceof UnpredictableAtomicTask) {
+            if (tasks[i] instanceof UnpredictableAtomicJob) {
                 unpredictable = true;
             }
             final int newIndex = index + i;
@@ -145,17 +144,14 @@ public final class JobSequence implements Job {
      * @param listener
      *            The listener that should be informed when this job is
      *            completed.
-     * @param antTrail
-     *            The initial ant trail to use for this job.
      */
     void submit(Node node, Object value, Serializable userId,
-            JobCompletionListener listener, ArrayList<AntPoint> antTrail) {
+            JobCompletionListener listener) {
         final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
         final JobType type = jobTypes[0];
-        final JobInstance taskInstance = new JobInstance(tii, type, value,
-                antTrail);
-        node.addRunningJob(tii, taskInstance, this, listener);
-        node.submit(taskInstance);
+        final JobInstance jobInstance = new JobInstance(tii, type, value);
+        node.addRunningJob(tii, jobInstance, this, listener);
+        node.submit(jobInstance);
     }
 
     /**
@@ -234,7 +230,7 @@ public final class JobSequence implements Job {
      * 
      * @return The first task type.
      */
-    JobType getFirstTaskType() {
+    JobType getFirstJobType() {
         return jobTypes[0];
     }
 }

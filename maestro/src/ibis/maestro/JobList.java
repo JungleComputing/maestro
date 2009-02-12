@@ -115,7 +115,7 @@ public final class JobList {
      * 
      * @return A list of all supported task types.
      */
-    JobType[] getSupportedTaskTypes() {
+    JobType[] getSupportedJobTypes() {
         return supportedTaskTypes.toArray(new JobType[supportedTaskTypes
                 .size()]);
     }
@@ -124,13 +124,13 @@ public final class JobList {
         return jobs.get(type.job.id);
     }
 
-    Job getTask(JobType type) {
+    Job getJob(JobType type) {
         final JobSequence job = findJob(type);
         final Job task = job.tasks[type.taskNo];
         return task;
     }
 
-    JobType getNextTaskType(JobType type) {
+    JobType getNextJobType(JobType type) {
         final JobSequence job = findJob(type);
         return job.getNextTaskType(type);
     }
@@ -156,7 +156,7 @@ public final class JobList {
         if (type == null) {
             return -1;
         }
-        final JobType nextType = getNextTaskType(type);
+        final JobType nextType = getNextJobType(type);
         if (nextType == null) {
             return -1;
         }
@@ -182,7 +182,7 @@ public final class JobList {
         final double res[] = new double[allTaskTypes.size()];
         int i = 0;
         for (final JobType t : allTaskTypes) {
-            final Job task = getTask(t);
+            final Job task = getJob(t);
             if (!task.isSupported()) {
                 // Not supported by this node.
                 res[i++] = Double.POSITIVE_INFINITY;

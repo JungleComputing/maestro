@@ -48,8 +48,6 @@ class PacketUpcallReceivePort implements MessageUpcall {
      * @throws IOException
      *             Thrown if for some reason the given message could not be
      *             read.
-     * @throws ClassNotFoundException
-     *             Thrown if for some reason the
      */
     public void upcall(ReadMessage msg) throws IOException {
         Message data;

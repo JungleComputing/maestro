@@ -24,7 +24,7 @@ class Gossip {
     Gossip(JobList jobs) {
         final int numberOfProcessors = Runtime.getRuntime()
                 .availableProcessors();
-        final int sz = Globals.allTaskTypes.length;
+        final int sz = Globals.allJobTypes.length;
         final double completionInfo[] = new double[sz];
         final WorkerQueueInfo queueInfo[] = new WorkerQueueInfo[sz];
         final double taskTimes[] = jobs.getInitialTaskTimes();
