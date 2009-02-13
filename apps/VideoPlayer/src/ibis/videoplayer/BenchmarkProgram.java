@@ -609,7 +609,7 @@ class BenchmarkProgram {
         if (node.isMaestro()) {
             for (int frame = 0; frame < frames; frame++) {
                 final Serializable label = listener.getLabel();
-                node.submit(frame, label, true, listener, convertJob);
+                node.submit(frame, label, listener, convertJob);
             }
             listener.setFinished(node);
             System.out.println("Jobs submitted");

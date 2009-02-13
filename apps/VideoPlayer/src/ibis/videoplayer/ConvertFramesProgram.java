@@ -203,7 +203,7 @@ class ConvertFramesProgram {
                     + " images");
             for (File f : files) {
                 final Serializable label = listener.getLabel();
-                node.submit(f,label,true,listener,convertJob);
+                node.submit(f,label,listener,convertJob);
             }
             listener.setFinished( node );
         }

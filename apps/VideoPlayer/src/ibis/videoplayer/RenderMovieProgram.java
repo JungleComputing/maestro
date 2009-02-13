@@ -171,7 +171,7 @@ public class RenderMovieProgram implements JobCompletionListener {
                             RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo(
                                     WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, n, init
                                             + scene);
-                            node.submit(info, new Integer(n), true, this,
+                            node.submit(info, new Integer(n), this,
                                     convertJob);
                             System.out.println("Submitted frame " + n);
                             outstandingJobs++;

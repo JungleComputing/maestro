@@ -71,7 +71,7 @@ final class BuildFragmentJob implements ParallelJob {
      * @param input The input for the computation.
      * @param handler The map/reduce handler assigned to this computation.
      */
-    public void map(Object input, ParallelJobHandler handler) {
+    public void split(Object input, ParallelJobHandler handler) {
         FrameNumberRange range = (FrameNumberRange) input;
         if (Settings.traceFragmentBuilder) {
             System.out.println("Collecting frames for fragment " + range);
@@ -81,7 +81,7 @@ final class BuildFragmentJob implements ParallelJob {
         frames = new RGB48Image[1+endFrame-startFrame];
         for (int frame = startFrame; frame <= endFrame; frame++) {
             Integer frameno = new Integer(frame);
-            handler.submit(frameno, frameno, true, fetchJob);
+            handler.submit(frameno, frameno, fetchJob);
         }
     }
 
@@ -90,7 +90,7 @@ final class BuildFragmentJob implements ParallelJob {
      * @param id The id of the result.
      * @param result The result.
      */
-    public void reduce(Object id, Object result) {
+    public void merge(Object id, Object result) {
         int ix = (Integer) id;
         frames[ix] = (RGB48Image) result;
     }

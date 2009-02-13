@@ -79,7 +79,7 @@ public class BuildVideoProgram {
                 final FrameNumberRange range = new FrameNumberRange(frame,
                         endFrame);
                 listener.waitForRoom();
-                node.submit(range, range, true, listener, playJob);
+                node.submit(range, range, listener, playJob);
             }
         }
         node.waitToTerminate();
