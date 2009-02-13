@@ -35,8 +35,8 @@ termination-%-fs0.logs: termination-%.experiment run-experiment $(DEPLOYFILES) $
 termination-%.result: termination-%-fs0.logs average-termination-duration.py
 	python average-termination-duration.py $* $@ termination-$*-fs0.logs/out.*
 
-%.counts: %-fs0.logs extract-task-counts.py
-	python extract-task-counts.py $* $@ $*-fs0.logs/out.*
+%.counts: %-fs0.logs extract-job-counts.py
+	python extract-job-counts.py $* $@ $*-fs0.logs/out.*
 
 %.result: %-fs0.logs average-duration.py
 	python average-duration.py $* $@ $*-fs0.logs/out.*
@@ -104,11 +104,11 @@ tables: $(TABLES)
 x:
 	echo [$(LEARN_PLAIN_4_POINTS)] 
 
-plain5-20-2000.counts: plain5-20-2000-fs0.logs
-	python extract-task-counts.py plain5-20-2000 plain5-20-2000.counts plain5-20-2000-fs0.logs/out.* plain5-20-2000-fs1.logs/out.* plain5-20-2000-fs2.logs/out.* plain5-20-2000-fs3.logs/out.* plain5-20-2000-fs4.logs/out.*
+plain5-20-2000.counts: plain5-20-2000-fs0.logs extract-job-counts.py
+	python extract-job-counts.py plain5-20-2000 plain5-20-2000.counts plain5-20-2000-fs0.logs/out.* plain5-20-2000-fs1.logs/out.* plain5-20-2000-fs2.logs/out.* plain5-20-2000-fs3.logs/out.* plain5-20-2000-fs4.logs/out.*
 
-slow5-20-2000.counts: slow5-20-2000-fs0.logs
-	python extract-task-counts.py slow5-20-2000 slow5-20-2000.counts slow5-20-2000-fs0.logs/out.* slow5-20-2000-fs1.logs/out.* slow5-20-2000-fs2.logs/out.* slow5-20-2000-fs3.logs/out.* slow5-20-2000-fs4.logs/out.*
+slow5-20-2000.counts: slow5-20-2000-fs0.logs extract-job-counts.py
+	python extract-job-counts.py slow5-20-2000 slow5-20-2000.counts slow5-20-2000-fs0.logs/out.* slow5-20-2000-fs1.logs/out.* slow5-20-2000-fs2.logs/out.* slow5-20-2000-fs3.logs/out.* slow5-20-2000-fs4.logs/out.*
 
 learn-plain-4.table: $(LEARN_PLAIN_4_POINTS)
 	cat $(LEARN_PLAIN_4_POINTS) > $@

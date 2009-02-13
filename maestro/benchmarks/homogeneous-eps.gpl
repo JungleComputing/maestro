@@ -9,4 +9,4 @@ set ylabel "Execution time per frame"
 set yrange [0:*]
 plot \
  'plain-2000.table' using 1:4 title 'Homogeneous',  \
- 'onetask-2000.table' using 1:4 title 'Single task'
+ 'onejob-2000.table' using 1:4 title 'Single job'

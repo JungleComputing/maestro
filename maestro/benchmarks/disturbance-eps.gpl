@@ -9,8 +9,8 @@ set border 1+2
 set tics nomirror
 set yrange [0:*]
 plot \
- 'oneslow-2000.table' using 1:4 title 'Slow nodes, one task', \
+ 'oneslow-2000.table' using 1:4 title 'Slow nodes, one job', \
  'slow-2000.table' using 1:4 title 'Slow nodes', \
  'no-2000.table' using 1:4 title 'Disabled nodes',  \
  'plain-2000.table' using 1:4 title 'Homogeneous nodes',  \
- 'onetask-2000.table' using 1:4 title 'Homogeneous nodes, one task'
+ 'onejob-2000.table' using 1:4 title 'Homogeneous nodes, one job'
