@@ -24,7 +24,7 @@ public final class BuildFragmentTask implements ParallelJob {
     }
 
     static JobSequence createGetFrameJob(JobList jobs) {
-        return jobs.createJob("getFrame", new FetchFrameJob(),
+        return jobs.createJobSequence(new FetchFrameJob(),
                 new DecompressFrameJob(), new ColourCorrectJob(),
                 new ScaleFrameJob(2));
     }

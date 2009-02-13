@@ -142,7 +142,7 @@ public class RenderMovieProgram implements JobCompletionListener {
     @SuppressWarnings("synthetic-access")
     private void run(File sourceDirectory, File iniFile) throws Exception {
         JobList jobList = new JobList();
-        JobSequence convertJob = jobList.createJob("converter", new RenderFrameJob(),
+        JobSequence convertJob = jobList.createJobSequence(new RenderFrameJob(),
                 new ColorCorrectJob(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
                         1.0),
                 // new ScaleFrameTask( 2 ),

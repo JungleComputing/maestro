@@ -191,7 +191,7 @@ class ConvertFramesProgram {
     private void run(File framesDirectory) throws Exception {
         JobList tasks = new JobList();
         Listener listener = new Listener();
-        JobSequence convertJob = tasks.createJob("converter", new FetchImageJob(),
+        JobSequence convertJob = tasks.createJobSequence(new FetchImageJob(),
                 new ColorCorrectJob(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
                         1.0), new ScaleFrameJob(2), new CompressFrameJob());
 

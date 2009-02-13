@@ -592,10 +592,10 @@ class BenchmarkProgram {
                 System.exit(1);
             }
             System.out.println("One-job benchmark");
-            convertJob = jobs.createJob("benchmark", new ProcessFrameTask(
+            convertJob = jobs.createJobSequence( new ProcessFrameTask(
                     slowScale, slowSharpen, dir));
         } else {
-            convertJob = jobs.createJob("benchmark", new GenerateFrameTask(),
+            convertJob = jobs.createJobSequence( new GenerateFrameTask(),
                     new ScaleUpFrameTask(2, slowScale, allowScale),
                     new SharpenFrameTask(slowSharpen, allowSharpen),
                     new CompressFrameTask(), new SaveFrameTask(dir));
