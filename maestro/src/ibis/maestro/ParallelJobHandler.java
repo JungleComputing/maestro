@@ -60,8 +60,7 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
     }
 
     /**
-     * Submits a new job instance with the given input for the first task of the
-     * job.
+     * Submits a new job instance with the given input.
      * Internally we keep track of the number of submitted jobs so that we can
      * wait for all of them to complete.
      * 
@@ -74,15 +73,14 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
      */
     @SuppressWarnings("synthetic-access")
     public synchronized void submit(Object input, Object userId,
-            JobSequence job) {
+            Job job) {
         Label label = labeler.nextLabel();
         Serializable id = new Id(userId, label);
-        if (Settings.traceMapReduce) {
-            Globals.log.reportProgress("MapReduce: Submitting " + id + " to "
+        if (Settings.traceParallelJobs) {
+            Globals.log.reportProgress("ParallelJobHandler: Submitting " + id + " to "
                     + job);
         }
-        localNode.submit(input, id, this,
-                job);
+        localNode.submit(input, id, this,job);
     }
 
     /**
@@ -99,7 +97,7 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
     @Override
     public synchronized void jobCompleted(Node node, Object userId,
             Object result) {
-        if (Settings.traceMapReduce) {
+        if (Settings.traceParallelJobs) {
             Globals.log.reportProgress("MapReduce: got back " + userId);
         }
         if (!(userId instanceof Id)) {

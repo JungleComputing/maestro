@@ -63,7 +63,7 @@ class Settings {
     static final boolean traceWorkerSelection = false;
 
     /** Trace the adventures of the map/reduce handler. */
-    static final boolean traceMapReduce = false;
+    static final boolean traceParallelJobs = false;
 
     /** Trace registration of the nodes with each other. */
     static final boolean traceRegistration = false;

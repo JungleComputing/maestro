@@ -942,10 +942,15 @@ public final class Node extends Thread implements PacketReceiveListener {
      *            The job to execute.
      */
     public void submit(Object input, Serializable userId, JobCompletionListener listener,
-            JobSequence job) {
-
+            Job job) {
         waitForRoom();
-        job.submit(this, input, userId, listener);
+        if( job instanceof JobSequence ){
+            JobSequence jobSequence = (JobSequence) job;
+            jobSequence.submit(this, input, userId, listener);
+        }
+        else {
+            Globals.log.reportInternalError("Don't know (yet) how to submit to job of type" );
+        }
     }
 
     /**
