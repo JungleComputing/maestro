@@ -173,10 +173,10 @@ class TestProg {
          *            The handler for this map/reduce task
          */
         @Override
-        public void map(Object input, ParallelJobHandler handler) {
+        public void split(Object input, ParallelJobHandler handler) {
             for (int n = 0; n < SIZE; n++) {
                 final Integer userId = n;
-                handler.submit(input, userId, true, createJob);
+                handler.submit(input, userId, createJob);
             }
         }
 
@@ -190,7 +190,7 @@ class TestProg {
          *            The result.
          */
         @Override
-        public void reduce(Object id, Object result) {
+        public void merge(Object id, Object result) {
             final Integer ix = (Integer) id;
 
             res[ix] = result;
@@ -227,7 +227,7 @@ class TestProg {
                     + " tasks");
             for (int i = 0; i < taskCount; i++) {
                 final Integer length = 12 * i;
-                node.submit(length, i, true, listener, job);
+                node.submit(length, i, listener, job);
             }
         }
         node.waitToTerminate();

@@ -1,22 +1,23 @@
 package ibis.maestro;
 
 /**
- * The interface of an atomic (indivisible) task in the Maestro dataflow system.
+ * The interface of an atomic (indivisible) job in the Maestro dataflow system.
  * 
  * @author Kees van Reeuwijk
  * 
  */
 public interface AtomicJob extends Job {
     /**
-     * Runs the job.
+     * The method to actually run the job.
      * 
      * @param input
-     *            The input value of this task run.
-     * @return The result of the task run.
+     *            The input value of the job.
+     * @return The result of the job.
      * @throws JobFailedException
-     *             Thrown if the node failed to perform this task. The
-     *             administration will be updated to ensure no further tasks of
-     *             this type are sent to the node
+     *             Thrown if the node failed to perform this job. The
+     *             administration of all nodes will be updated to ensure no
+     *             further jobs of this type are sent to the node, although it
+     *             may take some time to propagate this information.
      */
     Object run(Object input) throws JobFailedException;
 }

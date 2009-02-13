@@ -3,7 +3,6 @@ package ibis.maestro;
 import ibis.maestro.LabelTracker.Label;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * Handles the execution of a split/merge job. In particular, it handles the
@@ -62,7 +61,7 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
 
     /**
      * Submits a new job instance with the given input for the first task of the
-     * job. Maestro is free to pick one of the given list of alternative jobs.
+     * job.
      * Internally we keep track of the number of submitted jobs so that we can
      * wait for all of them to complete.
      * 
@@ -70,29 +69,20 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
      *            Input for the job.
      * @param userId
      *            The identifier the user attaches to this job.
-     * @param submitIfBusy
-     *            If <code>true</code> the job is submitted even if all
-     *            workers are currently busy.
-     * @param jobChoices
-     *            The list of possible jobs to submit to.
-     * @return <code>true</code> iff the job instance was submitted.
+     * @param job
+     *            The job to submit to.
      */
     @SuppressWarnings("synthetic-access")
-    public synchronized boolean submit(Object input, Object userId,
-            boolean submitIfBusy, JobSequence... jobChoices) {
+    public synchronized void submit(Object input, Object userId,
+            JobSequence job) {
         Label label = labeler.nextLabel();
         Serializable id = new Id(userId, label);
         if (Settings.traceMapReduce) {
             Globals.log.reportProgress("MapReduce: Submitting " + id + " to "
-                    + Arrays.deepToString(jobChoices));
+                    + job);
         }
-        boolean submitted = localNode.submit(input, id, submitIfBusy, this,
-                jobChoices);
-        if (!submitted) {
-            // Not submitted, return this label to the administration.
-            labeler.returnLabel(label);
-        }
-        return submitted;
+        localNode.submit(input, id, this,
+                job);
     }
 
     /**

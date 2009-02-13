@@ -15,21 +15,24 @@ public interface ParallelJob extends Job {
      * @param handler
      *            The handler.
      */
-    void map(Object input, ParallelJobHandler handler);
+    void split(Object input, ParallelJobHandler handler);
 
     /**
-     * Reports back a result.
+     * Merges the result of one part of a split job into the final result.
+     * The method should be prepared to handle duplicate results.
      * 
      * @param id
      *            The identifier of the result.
      * @param result
      *            The result.
      */
-    void reduce(Object id, Object result);
+    void merge(Object id, Object result);
 
     /**
-     * Returns the final result of the reduction. This method is invoked after
-     * all jobs submitted by the map/reduce task have been reduced.
+     * Returns the final result of the parallel job. The system will only
+     * invoke this method after all jobs submitted in the split method
+     * have yielded a result, and the merge() method has been invoked
+     * for each of these partial results.
      * 
      * @return The result.
      */

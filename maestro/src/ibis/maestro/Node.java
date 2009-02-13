@@ -760,7 +760,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             final ParallelJob mrt = (ParallelJob) job;
             final ParallelJobHandler handler = new ParallelJobHandler(this, mrt,
                     message, runMoment);
-            mrt.map(input, handler);
+            mrt.split(input, handler);
             handler.start();
         } else if (job instanceof JobSequence ) {
             Globals.log.reportInternalError( "JobSequence should be handled" );
@@ -929,56 +929,24 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     /**
-     * Given an input and a list of possible jobs to execute, submit this input
-     * as a job with the best promised completion time. If
-     * <code>submitIfBusy</code> is set, also consider jobs where all workers
+     * Given an input and a job to execute, submit this input to the job.
+     * If <code>submitIfBusy</code> is set, also submit when all workers
      * are currently busy.
      * 
      * @param input
      *            The input of the job.
      *            @param userId The user-supplied id of the job.
-     * @param submitIfBusy
-     *            If set, also consider jobs for which all workers are currently
-     *            busy.
      * @param listener
      *            The completion listener for this job.
-     * @param choices
-     *            The list of job choices.
-     * @return <code>true</code> if the job could be submitted.
+     * @param job
+     *            The job to execute.
      */
-    public boolean submit(Object input, Serializable userId, boolean submitIfBusy, JobCompletionListener listener,
-            JobSequence... choices) {
-                int choice;
-            
-                if (choices.length == 0) {
-                    // No choices? Obviously we won't be able to submit this one.
-                    return false;
-                }
-                if (choices.length == 1 && submitIfBusy) {
-                    waitForRoom();
-                    choice = 0;
-                } else {
-                    final JobType types[] = new JobType[choices.length];
-            
-                    waitForRoom();
-                    for (int ix = 0; ix < choices.length; ix++) {
-                        final JobSequence job = choices[ix];
-            
-                        types[ix] = job.getFirstJobType();
-                    }
-                    final HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap = nodes
-                            .getLocalNodeInfo();
-                    choice = gossiper.selectFastestJob(types, submitIfBusy,
-                            localNodeInfoMap);
-                    if (choice < 0) {
-                        // Couldn't submit the job.
-                        return false;
-                    }
-                }
-                final JobSequence job = choices[choice];
-                job.submit(this, input, userId, listener);
-                return true;
-            }
+    public void submit(Object input, Serializable userId, JobCompletionListener listener,
+            JobSequence job) {
+
+        waitForRoom();
+        job.submit(this, input, userId, listener);
+    }
 
     /**
      * @param jobs

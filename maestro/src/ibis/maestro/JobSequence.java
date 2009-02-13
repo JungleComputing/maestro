@@ -41,11 +41,6 @@ public final class JobSequence implements Job {
             return id;
         }
 
-        /*
-         * (non-Javadoc)
-         * 
-         * @see java.lang.Object#equals(java.lang.Object)
-         */
         /**
          * Returns true iff the given object is a job identifier that is equal
          * to this one.
@@ -82,7 +77,7 @@ public final class JobSequence implements Job {
     
     /** Returns true iff this job type is supported.
      * Always returns true since job sequences are always supported.
-     * @return
+     * @return <code>true</code> since job sequences are always supported.
      */
     @Override
     public boolean isSupported()
