@@ -9,33 +9,34 @@ import java.util.ArrayList;
  * @author Kees van Reeuwijk.
  */
 public final class JobList {
-    private final ArrayList<JobSequence> jobs = new ArrayList<JobSequence>();
+    // FIXME: let the JobList store Jobs instead of JobSequences
+    private final ArrayList<JobSequence> jobSequences = new ArrayList<JobSequence>();
 
-    private final ArrayList<JobType> allTaskTypes = new ArrayList<JobType>();
+    private final ArrayList<JobType> allJobTypes = new ArrayList<JobType>();
 
-    private final ArrayList<JobType> supportedTaskTypes = new ArrayList<JobType>();
+    private final ArrayList<JobType> supportedJobTypes = new ArrayList<JobType>();
 
     private int jobCounter = 0;
 
     /**
-     * Add a new jobs to this list.
+     * Add a new job to this list.
      * 
-     * @param job
+     * @param job The job to add.
      */
     void add(JobSequence job) {
-        jobs.add(job);
+        jobSequences.add(job);
     }
 
     JobSequence get(int i) {
-        return jobs.get(i);
+        return jobSequences.get(i);
     }
 
     int size() {
-        return jobs.size();
+        return jobSequences.size();
     }
 
     private JobSequence searchJobID(JobSequence.JobSequenceIdentifier id) {
-        for (final JobSequence t : jobs) {
+        for (final JobSequence t : jobSequences) {
             if (t.id.equals(id)) {
                 return t;
             }
@@ -55,19 +56,19 @@ public final class JobList {
     }
 
     void printStatistics(PrintStream s) {
-        for (final JobSequence t : jobs) {
+        for (final JobSequence t : jobSequences) {
             t.printStatistics(s);
         }
     }
 
     /**
-     * Register a new job.
+     * Register a new job sequence.
      * 
      * @param job
      *            The job to register.
      */
     void registerJob(JobSequence job) {
-        final Job tasks[] = job.tasks;
+        final Job tasks[] = job.jobs;
 
         for (int i = 0; i < tasks.length; i++) {
             final Job t = tasks[i];
@@ -78,16 +79,16 @@ public final class JobList {
                     Globals.log.reportProgress("Node supports task type "
                             + taskType);
                 }
-                supportedTaskTypes.add(taskType);
+                supportedJobTypes.add(taskType);
             }
             final int ix = taskType.index;
-            while (allTaskTypes.size() <= ix) {
-                allTaskTypes.add(null);
+            while (allJobTypes.size() <= ix) {
+                allJobTypes.add(null);
             }
-            if (allTaskTypes.get(ix) != null) {
+            if (allJobTypes.get(ix) != null) {
                 Globals.log.reportInternalError("Duplicate type index " + ix);
             }
-            allTaskTypes.set(ix, taskType);
+            allJobTypes.set(ix, taskType);
         }
     }
 
@@ -95,17 +96,15 @@ public final class JobList {
      * Creates a job with the given name and the given sequence of tasks. The
      * jobs in the task will be executed in the given order.
      * 
-     * @param name
-     *            The name of the job.
-     * @param tasks
+     * @param jobs
      *            The list of tasks of the job.
      * @return A new job instance representing this job.
      */
-    public JobSequence createJob(String name, Job... tasks) {
+    public JobSequence createJobSequence(Job... jobs) {
         final int jobId = jobCounter++;
-        final JobSequence job = new JobSequence(jobId, name, tasks);
+        final JobSequence job = new JobSequence(jobId, jobs);
 
-        jobs.add(job);
+        jobSequences.add(job);
         registerJob(job);
         return job;
     }
@@ -116,17 +115,17 @@ public final class JobList {
      * @return A list of all supported task types.
      */
     JobType[] getSupportedJobTypes() {
-        return supportedTaskTypes.toArray(new JobType[supportedTaskTypes
+        return supportedJobTypes.toArray(new JobType[supportedJobTypes
                 .size()]);
     }
 
     JobSequence findJob(JobType type) {
-        return jobs.get(type.job.id);
+        return jobSequences.get(type.job.id);
     }
 
     Job getJob(JobType type) {
         final JobSequence job = findJob(type);
-        final Job task = job.tasks[type.taskNo];
+        final Job task = job.jobs[type.taskNo];
         return task;
     }
 
@@ -140,7 +139,7 @@ public final class JobList {
     }
 
     JobType[] getAllTypes() {
-        return allTaskTypes.toArray(new JobType[allTaskTypes.size()]);
+        return allJobTypes.toArray(new JobType[allJobTypes.size()]);
     }
 
     /**
@@ -152,7 +151,7 @@ public final class JobList {
      * @return The index of the next type.
      */
     int getNextIndex(int ix) {
-        final JobType type = allTaskTypes.get(ix);
+        final JobType type = allJobTypes.get(ix);
         if (type == null) {
             return -1;
         }
@@ -170,18 +169,18 @@ public final class JobList {
      * @return
      */
     int[][] getIndexLists() {
-        final int res[][] = new int[jobs.size()][];
+        final int res[][] = new int[jobSequences.size()][];
         int jobno = 0;
-        for (final JobSequence job : jobs) {
+        for (final JobSequence job : jobSequences) {
             res[jobno++] = job.updateIndices;
         }
         return res;
     }
 
     double[] getInitialTaskTimes() {
-        final double res[] = new double[allTaskTypes.size()];
+        final double res[] = new double[allJobTypes.size()];
         int i = 0;
-        for (final JobType t : allTaskTypes) {
+        for (final JobType t : allJobTypes) {
             final Job task = getJob(t);
             if (!task.isSupported()) {
                 // Not supported by this node.

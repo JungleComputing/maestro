@@ -9,7 +9,7 @@ import java.io.Serializable;
  * 
  */
 class TestProg {
-    private static final int ITERATIONS = 200; // The number of times we should
+    private static final int ITERATIONS = 200;
 
     private static final int ARRAY_SIZE = 5000;
 
@@ -214,7 +214,7 @@ class TestProg {
 
         // Job createJob = jobs.createJob("createarray", new CreateArrayTask()
         // );
-        final JobSequence job = jobs.createJob("testprog",
+        final JobSequence job = jobs.createJobSequence(
                 // new AssembleArrayTask( createJob ),
                 new CreateArrayJob(), new AdditionJob(), new AdditionJob(),
                 new AdditionJob(), new AdditionJob());

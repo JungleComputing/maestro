@@ -9,9 +9,8 @@ import java.io.Serializable;
  * 
  */
 class OneTestProg {
-    private static final int ITERATIONS = 8000; // The number of times we should
+    private static final int ITERATIONS = 8000;
 
-    // do the addition.
     private static final int ARRAY_SIZE = 100000;
 
     private static class Listener implements JobCompletionListener {
@@ -88,7 +87,7 @@ class OneTestProg {
         Listener listener = new Listener(taskCount);
         JobList jobs = new JobList();
 
-        JobSequence job = jobs.createJob("testprog", new CreateArrayTask());
+        JobSequence job = jobs.createJobSequence( new CreateArrayTask());
         Node node = Node.createNode(jobs, goForMaestro);
         System.out.println("Node created");
         double startTime = Utils.getPreciseTime();

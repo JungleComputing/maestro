@@ -12,15 +12,13 @@ import java.io.Serializable;
 public final class JobSequence implements Job {
     final JobSequenceIdentifier id;
 
-    final String name;
+    final Job jobs[];
 
-    final Job[] tasks;
-
-    final JobType[] jobTypes;
+    final JobType jobTypes[];
 
     final int updateIndices[];
 
-    final TimeEstimate jobTime = new TimeEstimate(0);
+    private final TimeEstimate jobTime = new TimeEstimate(0);
 
     private static int index = 0;
 
@@ -93,13 +91,12 @@ public final class JobSequence implements Job {
     }
 
     @SuppressWarnings("synthetic-access")
-    JobSequence(final int id, final String name, final Job[] tasks) {
+    JobSequence(final int id, final Job[] jobs) {
         this.id = new JobSequenceIdentifier(id);
-        this.name = name;
-        this.tasks = tasks;
-        jobTypes = new JobType[tasks.length];
-        updateIndices = new int[tasks.length];
-        int i = tasks.length;
+        this.jobs = jobs;
+        jobTypes = new JobType[jobs.length];
+        updateIndices = new int[jobs.length];
+        int i = jobs.length;
         boolean unpredictable = false;
         // Walk the list from back to front to allow
         // earlier tasks to be marked unpredictable if one
@@ -107,15 +104,15 @@ public final class JobSequence implements Job {
         int updateIndex = 0;
         while (i > 0) {
             i--;
-            if (tasks[i] instanceof UnpredictableAtomicJob) {
+            if (jobs[i] instanceof UnpredictableAtomicJob) {
                 unpredictable = true;
             }
             final int newIndex = index + i;
-            jobTypes[i] = new JobType(this.id, i, (tasks.length - 1) - i,
+            jobTypes[i] = new JobType(this.id, i, (jobs.length - 1) - i,
                     unpredictable, newIndex);
             updateIndices[updateIndex++] = newIndex;
         }
-        index += tasks.length;
+        index += jobs.length;
     }
 
     /**
@@ -161,7 +158,7 @@ public final class JobSequence implements Job {
      */
     @Override
     public String toString() {
-        return "(job " + name + " " + id + ")";
+        return "(job " + id + ")";
     }
     
     /**
@@ -199,7 +196,7 @@ public final class JobSequence implements Job {
                     + taskType.job);
             return null;
         }
-        if (taskType.taskNo < tasks.length - 1) {
+        if (taskType.taskNo < jobs.length - 1) {
             return jobTypes[taskType.taskNo + 1];
         }
         return null;
@@ -218,7 +215,7 @@ public final class JobSequence implements Job {
      *            The stream to print to.
      */
     public void printStatistics(PrintStream s) {
-        s.println("Job '" + name + "': " + jobTime.toString());
+        s.println("Job " + id + ": " + jobTime.toString());
     }
 
     static int getTaskCount() {
