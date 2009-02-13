@@ -847,12 +847,12 @@ public final class Node extends Thread implements PacketReceiveListener {
                     if (Settings.traceNodeProgress) {
                         final double queueInterval = runMoment
                                 - message.arrivalMoment;
-                        Globals.log.reportProgress("Worker: handed out task "
+                        Globals.log.reportProgress("Worker: handed out job "
                                 + message + " of type " + type
                                 + "; it was queued for "
                                 + Utils.formatSeconds(queueInterval)
                                 + "; there are now " + runningJobCount
-                                + " running tasks");
+                                + " running jobs");
                     }
                     final Object input = message.jobInstance.input;
                     threadOverhead += Utils.getPreciseTime() - overheadStart;
@@ -1048,7 +1048,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 // - register its start on the chosen worker
                 // must be atomic to avoid that multiple threads
                 // select the same worker for multiple instances of the
-                // same task type.
+                // same job type.
                 final NodePerformanceInfo[] tables = gossiper.getGossipCopy();
                 final HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap = nodes
                         .getLocalNodeInfo();
@@ -1058,7 +1058,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                     break;
                 }
                 node = submission.worker;
-                job = submission.task;
+                job = submission.job;
                 worker = nodes.get(node);
                 jobId = nextJobId++;
     
@@ -1146,14 +1146,14 @@ public final class Node extends Thread implements PacketReceiveListener {
             }
         } else {
             // There is a next step to take.
-            final JobInstance nextTask = new JobInstance(
+            final JobInstance nextJob = new JobInstance(
                     message.jobInstance.jobInstance, nextJobType, result);
-            submit(nextTask);
+            submit(nextJob);
         }
     
         // Update statistics.
         final double computeInterval = jobCompletionMoment - runMoment;
-        final double averageComputeTime = workerQueue.countTask(type,
+        final double averageComputeTime = workerQueue.countJob(type,
                 computeInterval);
         gossiper.setComputeTime(type, averageComputeTime);
         runningJobCount.down();
@@ -1162,7 +1162,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             Globals.log.reportProgress("Completed " + message.jobInstance
                     + "; queueInterval="
                     + Utils.formatSeconds(queueInterval)
-                    + "; runningTasks=" + runningJobCount);
+                    + "; runningJobs=" + runningJobCount);
         }
         final double workerDwellTime = jobCompletionMoment
                 - message.arrivalMoment;
@@ -1185,7 +1185,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                     // TODO: think up another way to recover from failed result
                     // report.
                     Globals.log
-                            .reportError("Failed to send task completed message to "
+                            .reportError("Failed to send job completed message to "
                                     + message.source);
                 }
             }
@@ -1194,7 +1194,7 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     /**
-     * Handle a message containing a new task to run.
+     * Handle a message containing a new job to run.
      * 
      * @param msg
      *            The message to handle.

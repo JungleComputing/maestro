@@ -9,7 +9,7 @@ import ibis.ipl.IbisIdentifier;
  * 
  */
 class Submission {
-    final JobInstance task;
+    final JobInstance job;
 
     final IbisIdentifier worker;
 
@@ -21,7 +21,7 @@ class Submission {
      * @param predictedDuration
      */
     Submission(JobInstance task, IbisIdentifier worker, double predictedDuration) {
-        this.task = task;
+        this.job = task;
         this.worker = worker;
         this.predictedDuration = predictedDuration;
     }

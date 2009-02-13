@@ -169,7 +169,7 @@ final class WorkerQueue {
         return true; // All task types have failed.
     }
 
-    double countTask(JobType type, double computeInterval) {
+    double countJob(JobType type, double computeInterval) {
         final WorkerQueueTaskInfo info = queueTypes[type.index];
         return info.countTask(computeInterval, type.unpredictable);
     }
