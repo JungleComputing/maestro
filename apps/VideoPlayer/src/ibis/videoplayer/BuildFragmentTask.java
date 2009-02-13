@@ -38,36 +38,6 @@ public final class BuildFragmentTask implements ParallelJob {
     }
 
     /**
-     * Returns the result of the reduction.
-     * @return The result.
-     */
-    public Object getResult() {
-        int sz = 0;
-
-        for (int i = 0; i < frames.length; i++) {
-            RGB48Image frame = frames[i];
-            if (frame != null) {
-                sz += frame.data.length;
-            }
-        }
-        short data[] = new short[sz];
-        int ix = 0;
-        for (int i = 0; i < frames.length; i++) {
-            RGB48Image frame = frames[i];
-            if (frame != null) {
-                System.arraycopy(frame.data, 0, data, ix, frame.data.length);
-                ix += frame.data.length;
-            }
-        }
-        VideoFragment value = new VideoFragment(startFrame, endFrame, data);
-        if (Settings.traceFragmentBuilder) {
-            System.out.println("Sending fragment [" + startFrame + "..."
-                    + endFrame + "]");
-        }
-        return value;
-    }
-
-    /**
      * @param input The input for the computation.
      * @param handler The map/reduce handler assigned to this computation.
      */
@@ -93,5 +63,35 @@ public final class BuildFragmentTask implements ParallelJob {
     public void merge(Object id, Object result) {
         int ix = (Integer) id;
         frames[ix] = (RGB48Image) result;
+    }
+
+    /**
+     * Returns the result of the reduction.
+     * @return The result.
+     */
+    public Object getResult() {
+        int sz = 0;
+    
+        for (int i = 0; i < frames.length; i++) {
+            RGB48Image frame = frames[i];
+            if (frame != null) {
+                sz += frame.data.length;
+            }
+        }
+        short data[] = new short[sz];
+        int ix = 0;
+        for (int i = 0; i < frames.length; i++) {
+            RGB48Image frame = frames[i];
+            if (frame != null) {
+                System.arraycopy(frame.data, 0, data, ix, frame.data.length);
+                ix += frame.data.length;
+            }
+        }
+        VideoFragment value = new VideoFragment(startFrame, endFrame, data);
+        if (Settings.traceFragmentBuilder) {
+            System.out.println("Sending fragment [" + startFrame + "..."
+                    + endFrame + "]");
+        }
+        return value;
     }
 }
