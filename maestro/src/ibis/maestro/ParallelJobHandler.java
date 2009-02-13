@@ -6,9 +6,9 @@ import java.io.Serializable;
 import java.util.Arrays;
 
 /**
- * Handles the execution of a map/reduce task. In particular, it handles the
- * submission of sub-tasks, waits for their completion, applies the reduction,
- * and handles the result.
+ * Handles the execution of a split/merge job. In particular, it handles the
+ * submission of sub-tasks, waits for their completion, merges the results, and
+ * retreives the result.
  * 
  * @author Kees van Reeuwijk
  * 
@@ -67,7 +67,7 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
      * wait for all of them to complete.
      * 
      * @param input
-     *            Input for the (first task of the) job.
+     *            Input for the job.
      * @param userId
      *            The identifier the user attaches to this job.
      * @param submitIfBusy
@@ -89,6 +89,7 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
         boolean submitted = localNode.submit(input, id, submitIfBusy, this,
                 jobChoices);
         if (!submitted) {
+            // Not submitted, return this label to the administration.
             labeler.returnLabel(label);
         }
         return submitted;
@@ -119,13 +120,13 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
         }
         Id id = (Id) userId;
         labeler.returnLabel(id.label);
-        reducer.reduce(id.userID, result);
+        reducer.merge(id.userID, result);
     }
 
     /**
-     * Runs this thread. We assume that the map phase has been completed, so all
-     * we have to do is wait for the return of all results. The user should not
-     * use this method.
+     * Runs this thread. We assume that the split phase has been completed, so
+     * all we have to do is wait for the return of all results. The user should
+     * not use this method.
      */
     @Override
     public void run() {
