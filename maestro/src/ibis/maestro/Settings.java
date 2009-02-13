@@ -89,9 +89,6 @@ class Settings {
     /** Trace the adventures of the terminator thread? */
     static final boolean traceTerminator = false;
 
-    /** Trace ant routing administration? */
-    static final boolean traceAntRouting = true;
-
     // --- Configuration (tuning) constants. ----
     // Unfortunately we still need some magic numbers.
 
