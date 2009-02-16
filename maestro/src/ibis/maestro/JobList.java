@@ -177,21 +177,63 @@ public final class JobList {
         return res;
     }
 
-    double[] getInitialTaskTimes() {
+    double[] getInitialJobTimes() {
         final double res[] = new double[allJobTypes.size()];
         int i = 0;
         for (final JobType t : allJobTypes) {
-            final Job task = getJob(t);
-            if (!task.isSupported()) {
-                // Not supported by this node.
-                res[i++] = Double.POSITIVE_INFINITY;
-            } else if (task instanceof JobExecutionTimeEstimator) {
-                final JobExecutionTimeEstimator estimator = (JobExecutionTimeEstimator) task;
-                res[i++] = estimator.estimateTaskExecutionTime();
-            } else {
-                res[i++] = 0l;
-            }
+            final Job job = getJob(t);
+            double time = initialEstimateJobTime(job);
+            res[i++] = time;
         }
         return res;
+    }
+
+    /**
+     * Given a a job, return the initial estimate for its execution time.
+     * @param job The job we want the initial estimate for.
+     * @return The initial estimate of the execution time of this job.
+     */
+    private double initialEstimateJobTime(final Job job) {
+        if (!job.isSupported()) {
+            // Not supported by this node.
+            return Double.POSITIVE_INFINITY;
+        }
+        if (job instanceof JobExecutionTimeEstimator) {
+            final JobExecutionTimeEstimator estimator = (JobExecutionTimeEstimator) job;
+            return estimator.estimateTaskExecutionTime();
+        }
+        if (job instanceof AlternativesJob){
+            // We estimate this will be the minimum of all alternatives.
+            AlternativesJob aj = (AlternativesJob) job;
+            double time = Double.POSITIVE_INFINITY;
+            
+            for( Job j: aj.alternatives){
+                double t1 = initialEstimateJobTime( j );
+                if( t1<time ){
+                    time = t1;
+                }
+            }
+            return time;
+        }
+        if( job instanceof JobSequence ){
+            JobSequence l = (JobSequence) job;
+            double time = 0.0;
+
+            for( Job j: l.jobs ){
+                double t1 = initialEstimateJobTime( j );
+                
+                if( t1 == Double.POSITIVE_INFINITY ){
+                    /* Yes, this looks weird, but infinity here
+                     * means we cannot execute the job locally. We
+                     * must assume that it can be executed remotely,
+                     * but we don't know the execution time there.
+                     */
+                    t1 = 0.0;
+                }
+                time += t1;
+            }
+            return time;
+        }
+        return 0.0;
     }
 }

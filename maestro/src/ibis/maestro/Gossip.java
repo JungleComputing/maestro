@@ -27,7 +27,7 @@ class Gossip {
         final int sz = Globals.allJobTypes.length;
         final double completionInfo[] = new double[sz];
         final WorkerQueueInfo queueInfo[] = new WorkerQueueInfo[sz];
-        final double taskTimes[] = jobs.getInitialTaskTimes();
+        final double taskTimes[] = jobs.getInitialJobTimes();
         for (int i = 0; i < sz; i++) {
             queueInfo[i] = new WorkerQueueInfo(0, 0, 0.0, taskTimes[i]);
         }

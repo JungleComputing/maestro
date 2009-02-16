@@ -1,13 +1,13 @@
 package ibis.maestro;
 
 /**
- * The interface of an alternatives task in the Maestro dataflow system.
+ * The interface of an alternatives job in the Maestro dataflow system.
  * 
  * @author Kees van Reeuwijk
  * 
  */
 public class AlternativesJob implements Job {
-    private final Job alternatives[];
+    final Job alternatives[];
 
     AlternativesJob(Job... l) {
         alternatives = l;
