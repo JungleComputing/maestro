@@ -3,7 +3,7 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 
 /**
- * A simple class to store a task, worker pair.
+ * A simple class to store a job, worker pair.
  * 
  * @author Kees van Reeuwijk
  * 
@@ -16,12 +16,12 @@ class Submission {
     final double predictedDuration;
 
     /**
-     * @param task
+     * @param job
      * @param worker
      * @param predictedDuration
      */
-    Submission(JobInstance task, IbisIdentifier worker, double predictedDuration) {
-        this.job = task;
+    Submission(JobInstance job, IbisIdentifier worker, double predictedDuration) {
+        this.job = job;
         this.worker = worker;
         this.predictedDuration = predictedDuration;
     }

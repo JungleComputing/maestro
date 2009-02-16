@@ -208,7 +208,7 @@ class MasterWorkerProgram {
          * @return The estimated execution time of a task.
          */
         @Override
-        public double estimateTaskExecutionTime() {
+        public double estimateJobExecutionTime() {
             double benchmarkTime = runBenchmark();
             return MINIMAL_SHARPENS * benchmarkTime;
         }

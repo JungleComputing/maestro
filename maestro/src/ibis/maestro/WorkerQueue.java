@@ -7,7 +7,7 @@ import java.util.ArrayList;
  * A class representing the master work queue.
  * 
  * This requires a special implementation because we want to enforce priorities
- * for the different task types, and we want to know which task types are
+ * for the different job types, and we want to know which job types are
  * currently present in the queue.
  * 
  * @author Kees van Reeuwijk
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 final class WorkerQueue {
     private final ArrayList<RunJobMessage> queue = new ArrayList<RunJobMessage>();
 
-    private final WorkerQueueTaskInfo queueTypes[];
+    private final WorkerQueueJobInfo queueTypes[];
 
     private double activeTime = 0.0;
 
@@ -27,16 +27,16 @@ final class WorkerQueue {
      *            The list of job types we support.
      */
     WorkerQueue(JobList jobs) {
-        final JobType[] taskTypes = Globals.allJobTypes;
-        queueTypes = new WorkerQueueTaskInfo[taskTypes.length];
-        for (final JobType t : taskTypes) {
-            final WorkerQueueTaskInfo queueTypeInfo = new WorkerQueueTaskInfo(t);
+        final JobType[] jobTypes = Globals.allJobTypes;
+        queueTypes = new WorkerQueueJobInfo[jobTypes.length];
+        for (final JobType t : jobTypes) {
+            final WorkerQueueJobInfo queueTypeInfo = new WorkerQueueJobInfo(t);
             queueTypes[t.index] = queueTypeInfo;
-            final Job task = jobs.getJob(t);
-            if (task instanceof JobExecutionTimeEstimator) {
-                final JobExecutionTimeEstimator estimator = (JobExecutionTimeEstimator) task;
+            final Job job = jobs.getJob(t);
+            if (job instanceof JobExecutionTimeEstimator) {
+                final JobExecutionTimeEstimator estimator = (JobExecutionTimeEstimator) job;
                 queueTypeInfo.setInitialComputeTimeEstimate(estimator
-                        .estimateTaskExecutionTime());
+                        .estimateJobExecutionTime());
             }
 
         }
@@ -97,15 +97,15 @@ final class WorkerQueue {
     }
 
     /**
-     * Add the given task to our queue.
+     * Add the given job to our queue.
      * 
      * @param msg
-     *            The task to add to the queue
+     *            The job to add to the queue
      */
     int add(RunJobMessage msg) {
         final int length;
         final JobType type = msg.jobInstance.type;
-        final WorkerQueueTaskInfo info = queueTypes[type.index];
+        final WorkerQueueJobInfo info = queueTypes[type.index];
         final int pos;
         synchronized (this) {
             if (activeTime == 0.0) {
@@ -130,7 +130,7 @@ final class WorkerQueue {
     RunJobMessage remove(Gossiper gossiper) {
         final RunJobMessage res;
         final int length;
-        final WorkerQueueTaskInfo info;
+        final WorkerQueueJobInfo info;
 
         synchronized (this) {
             if (queue.isEmpty()) {
@@ -147,31 +147,31 @@ final class WorkerQueue {
                     + "; " + length + " of type " + res.jobInstance.type);
         }
         if (gossiper != null) {
-            final double queueTimePerTask = info.getDequeueInterval();
-            gossiper.setWorkerQueueTimePerTask(res.jobInstance.type,
-                    queueTimePerTask, length);
+            final double queueTimePerJob = info.getDequeueInterval();
+            gossiper.setWorkerQueueTimePerJob(res.jobInstance.type,
+                    queueTimePerJob, length);
         }
         return res;
     }
 
     boolean failJob(JobType type) {
-        final WorkerQueueTaskInfo info = queueTypes[type.index];
-        info.failTask();
+        final WorkerQueueJobInfo info = queueTypes[type.index];
+        info.failJob();
 
         // TODO: synchronize this properly; due to race conditions the last two
-        // task types may be failed at the same time without either one
+        // job types may be failed at the same time without either one
         // returning false.
-        for (final WorkerQueueTaskInfo i : queueTypes) {
+        for (final WorkerQueueJobInfo i : queueTypes) {
             if (i != null && !i.hasFailed()) {
-                return false; // There still is a non-failed task type.
+                return false; // There still is a non-failed job type.
             }
         }
-        return true; // All task types have failed.
+        return true; // All job types have failed.
     }
 
     double countJob(JobType type, double computeInterval) {
-        final WorkerQueueTaskInfo info = queueTypes[type.index];
-        return info.countTask(computeInterval, type.unpredictable);
+        final WorkerQueueJobInfo info = queueTypes[type.index];
+        return info.countJob(computeInterval, type.unpredictable);
     }
 
     synchronized double getActiveTime(double startTime) {
@@ -183,26 +183,26 @@ final class WorkerQueue {
     }
 
     synchronized void printStatistics(PrintStream s, double workInterval) {
-        for (final WorkerQueueTaskInfo t : queueTypes) {
+        for (final WorkerQueueJobInfo t : queueTypes) {
             if (t != null) {
                 t.printStatistics(s, workInterval);
             }
         }
     }
 
-    WorkerQueueTaskInfo getTaskInfo(JobType type) {
+    WorkerQueueJobInfo getJobInfo(JobType type) {
         return queueTypes[type.index];
     }
 
     void registerNode(NodeInfo nodeInfo) {
-        for (final WorkerQueueTaskInfo info : queueTypes) {
+        for (final WorkerQueueJobInfo info : queueTypes) {
             if (info != null) {
                 info.registerNode(nodeInfo);
             }
         }
     }
 
-    WorkerQueueTaskInfo getTaskInfo(int ix) {
+    WorkerQueueJobInfo getJobInfo(int ix) {
         return queueTypes[ix];
     }
 

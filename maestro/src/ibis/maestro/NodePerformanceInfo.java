@@ -125,7 +125,7 @@ class NodePerformanceInfo implements Serializable {
                 (1 + queueInfo.getQueueLength() + currentTasks)
                         - numberOfProcessors);
         final double total = transmissionTime + waitingTasks
-                * queueInfo.getDequeueTimePerTask() + queueInfo
+                * queueInfo.getDequeueTimePerJob() + queueInfo
                 .getExecutionTime() + completionInterval + unpredictableOverhead;
         if (Settings.traceRemainingJobTime) {
             Globals.log.reportProgress("Estimated completion time for "
@@ -161,7 +161,7 @@ class NodePerformanceInfo implements Serializable {
             nextCompletionInterval = 0.0;
         }
         return (1 + info.getQueueLength())
-                * info.getDequeueTimePerTask() + info.getExecutionTime() +
+                * info.getDequeueTimePerJob() + info.getExecutionTime() +
                 nextCompletionInterval;
     }
 
@@ -203,7 +203,7 @@ class NodePerformanceInfo implements Serializable {
     void failTask(JobType type) {
         final WorkerQueueInfo info = workerQueueInfo[type.index];
         if (info != null) {
-            info.failTask();
+            info.failJob();
             timeStamp = System.nanoTime();
         }
     }
@@ -220,7 +220,7 @@ class NodePerformanceInfo implements Serializable {
             int queueLength) {
         final WorkerQueueInfo info = workerQueueInfo[type.index];
         if (info != null) {
-            info.setQueueTimePerTask(queueTimePerTask, queueLength);
+            info.setQueueTimePerJob(queueTimePerTask, queueLength);
             timeStamp = System.nanoTime();
         }
     }

@@ -14,7 +14,7 @@ class WorkerQueueInfo implements Serializable {
 
     private int queueLengthSequenceNumber;
 
-    private double dequeueTimePerTask;
+    private double dequeueTimePerJob;
 
     private double executionTime;
 
@@ -25,17 +25,17 @@ class WorkerQueueInfo implements Serializable {
      *            The sequence number of this queue length. Used to avoid
      *            multiple updates to the worker allowance on multiple
      *            transmissions of the same WoekrQueueInfo instance.
-     * @param dequeueTimePerTask
+     * @param dequeueTimePerJob
      *            The current wait time in the worker queue divided by the queue
      *            length.
      * @param executionTime
-     *            The execution time of a task.
+     *            The execution time of a job.
      */
     WorkerQueueInfo(int queueLength, int queueLengthSequenceNumber,
-            double dequeueTimePerTask, double executionTime) {
+            double dequeueTimePerJob, double executionTime) {
         this.queueLength = queueLength;
         this.queueLengthSequenceNumber = queueLengthSequenceNumber;
-        this.dequeueTimePerTask = dequeueTimePerTask;
+        this.dequeueTimePerJob = dequeueTimePerJob;
         this.executionTime = executionTime;
     }
 
@@ -48,14 +48,14 @@ class WorkerQueueInfo implements Serializable {
     @Override
     public String toString() {
         return "(ql=" + getQueueLength() + ",dq/t="
-                + Utils.formatSeconds(getDequeueTimePerTask())
+                + Utils.formatSeconds(getDequeueTimePerJob())
                 + ",compute=" + Utils.formatSeconds(getExecutionTime())
                 + ")";
     }
 
     String format() {
         return String.format("%3d %9s %9s", getQueueLength(), Utils
-                .formatSeconds(getDequeueTimePerTask()), Utils
+                .formatSeconds(getDequeueTimePerJob()), Utils
                 .formatSeconds(getExecutionTime()));
     }
 
@@ -71,7 +71,7 @@ class WorkerQueueInfo implements Serializable {
         return String.format("%23s", type.toString());
     }
 
-    synchronized void failTask() {
+    synchronized void failJob() {
         this.executionTime = Double.POSITIVE_INFINITY;
     }
 
@@ -79,9 +79,9 @@ class WorkerQueueInfo implements Serializable {
         this.executionTime = t;
     }
 
-    synchronized void setQueueTimePerTask(double queueTimePerTask,
+    synchronized void setQueueTimePerJob(double queueTimePerJob,
             int newQueueLength) {
-        this.dequeueTimePerTask = queueTimePerTask;
+        this.dequeueTimePerJob = queueTimePerJob;
         if (this.queueLength != newQueueLength) {
             this.queueLength = newQueueLength;
             queueLengthSequenceNumber++;
@@ -103,11 +103,11 @@ class WorkerQueueInfo implements Serializable {
         return queueLength;
     }
 
-    synchronized double getDequeueTimePerTask() {
+    synchronized double getDequeueTimePerJob() {
         if (Settings.IGNORE_QUEUE_TIME) {
             return 0L;
         }
-        return dequeueTimePerTask;
+        return dequeueTimePerJob;
     }
 
     synchronized int getQueueLengthSequenceNumber() {

@@ -380,7 +380,7 @@ class Gossiper extends Thread {
         addQuotum();
     }
 
-    void setWorkerQueueTimePerTask(JobType type, double queueTimePerTask,
+    void setWorkerQueueTimePerJob(JobType type, double queueTimePerTask,
             int queueLength) {
         gossip.setWorkerQueueTimePerTask(type, queueTimePerTask, queueLength);
         addQuotum();

@@ -17,7 +17,7 @@ final class NodeInfo {
     private final List<ActiveJob> activeJobs = new ArrayList<ActiveJob>();
 
     /** Info about the tasks for this particular node. */
-    private final NodeTaskInfo nodeJobInfoList[];
+    private final NodeJobInfo nodeJobInfoList[];
 
     private boolean suspect = false;
 
@@ -43,7 +43,7 @@ final class NodeInfo {
             boolean local) {
         this.ibis = ibis;
         this.local = local;
-        nodeJobInfoList = new NodeTaskInfo[Globals.allJobTypes.length];
+        nodeJobInfoList = new NodeJobInfo[Globals.allJobTypes.length];
         // For non-local nodes, start with a very pessimistic ping time.
         // This means that only if we really need another node, we use it.
         // long pessimisticPingTime = local?0L:Utils.HOUR_IN_NANOSECONDS;
@@ -58,8 +58,8 @@ final class NodeInfo {
             }
         }
         for (int ix = 0; ix < Globals.allJobTypes.length; ix++) {
-            final WorkerQueueTaskInfo taskInfo = workerQueue.getTaskInfo(ix);
-            nodeJobInfoList[ix] = new NodeTaskInfo(taskInfo, this,
+            final WorkerQueueJobInfo taskInfo = workerQueue.getJobInfo(ix);
+            nodeJobInfoList[ix] = new NodeJobInfo(taskInfo, this,
                     estimatedPingTime);
         }
     }
@@ -69,7 +69,7 @@ final class NodeInfo {
         return ibis.toString();
     }
 
-    NodeTaskInfo get(JobType t) {
+    NodeJobInfo get(JobType t) {
         return nodeJobInfoList[t.index];
     }
 
@@ -196,7 +196,7 @@ final class NodeInfo {
             return null;
         }
         final double roundtripTime = result.arrivalMoment - task.startTime;
-        final NodeTaskInfo nodeTaskInfo = task.nodeJobInfo;
+        final NodeJobInfo nodeTaskInfo = task.nodeJobInfo;
         final JobType type = task.job.type;
         if (task.getAllowanceDeadline() < result.arrivalMoment) {
             nodeTaskInfo.registerMissedAllowanceDeadline();
@@ -260,7 +260,7 @@ final class NodeInfo {
             task = activeJobs.get(ix);
         }
         final double transmissionTime = result.arrivalMoment - task.startTime;
-        final NodeTaskInfo nodeTaskInfo = task.nodeJobInfo;
+        final NodeJobInfo nodeTaskInfo = task.nodeJobInfo;
         if (!local) {
             // If this is not the local node, this is interesting info.
             // If it is local, we know better: transmission time is 0.
@@ -285,7 +285,7 @@ final class NodeInfo {
      */
     void registerJobStart(JobInstance task, long id, double predictedDuration) {
         final JobType type = task.type;
-        final NodeTaskInfo workerTaskInfo = nodeJobInfoList[type.index];
+        final NodeJobInfo workerTaskInfo = nodeJobInfoList[type.index];
         if (workerTaskInfo == null) {
             Globals.log
                     .reportInternalError("No worker task info for task type "
@@ -318,7 +318,7 @@ final class NodeInfo {
     synchronized void printStatistics(PrintStream s) {
         s.println("Node " + ibis + (local ? " (local)" : ""));
 
-        for (final NodeTaskInfo info : nodeJobInfoList) {
+        for (final NodeJobInfo info : nodeJobInfoList) {
             if (info != null) {
                 info.printStatistics(s);
             }
@@ -365,7 +365,7 @@ final class NodeInfo {
                         // Worker missed an allowance deadline.
                         final double t = now - task.startTime
                                 + task.predictedDuration;
-                        final NodeTaskInfo workerTaskInfo = task.nodeJobInfo;
+                        final NodeJobInfo workerTaskInfo = task.nodeJobInfo;
                         if (workerTaskInfo != null) {
                             workerTaskInfo.updateRoundtripTimeEstimate(t);
                         }
@@ -383,7 +383,7 @@ final class NodeInfo {
         final double predictedDuration[] = new double[nodeJobInfoList.length];
 
         for (int i = 0; i < nodeJobInfoList.length; i++) {
-            final NodeTaskInfo nodeTaskInfo = nodeJobInfoList[i];
+            final NodeJobInfo nodeTaskInfo = nodeJobInfoList[i];
             if (nodeTaskInfo == null) {
                 currentTasks[i] = 0;
                 transmissionTime[i] = 0;

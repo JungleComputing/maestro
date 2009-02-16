@@ -28,12 +28,12 @@ class TestProg {
         }
 
         /**
-         * Handle the completion of task 'j': the result is 'result'.
+         * Handle the completion of job 'j': the result is 'result'.
          * 
          * @param id
-         *            The task that was completed.
+         *            The job that was completed.
          * @param result
-         *            The result of the task.
+         *            The result of the job.
          */
         @Override
         public void jobCompleted(Node node, Object id, Object result) {
@@ -45,7 +45,7 @@ class TestProg {
             }
             if (jobsCompleted >= jobCount) {
                 System.out
-                        .println("I got all task results back; stopping test program");
+                        .println("I got all job results back; stopping test program");
                 node.setStopped();
             }
         }
@@ -61,7 +61,7 @@ class TestProg {
         }
 
         /**
-         * Returns a string representation of this multiply task.
+         * Returns a string representation of this multiply job.
          * 
          * @return The string representation.
          */
@@ -98,9 +98,9 @@ class TestProg {
         }
 
         /**
-         * Returns true iff this task is supported in this context.
+         * Returns true iff this job is supported in this context.
          * 
-         * @return True iff this task is supported.
+         * @return True iff this job is supported.
          */
         @Override
         public boolean isSupported() {
@@ -113,8 +113,8 @@ class TestProg {
 
         /**
          * @param obj
-         *            The input parameter of the task.
-         * @return The result of the task.
+         *            The input parameter of the job.
+         * @return The result of the job.
          */
         @Override
         public AdditionData run(Object obj) {
@@ -164,13 +164,13 @@ class TestProg {
         }
 
         /**
-         * Generate jobs to compute different components for this task.
+         * Generate jobs to compute different components for this job.
          * (Overrides method in superclass.)
          * 
          * @param input
          *            The input
          * @param handler
-         *            The handler for this map/reduce task
+         *            The handler for this map/reduce job
          */
         @Override
         public void split(Object input, ParallelJobHandler handler) {
@@ -197,9 +197,9 @@ class TestProg {
         }
 
         /**
-         * Is this task supported on this node?
+         * Is this job supported on this node?
          * 
-         * @return <true> since all nodes support this task.
+         * @return <code>true</code> since all nodes support this job.
          */
         @Override
         public boolean isSupported() {
@@ -209,23 +209,23 @@ class TestProg {
     }
 
     @SuppressWarnings("synthetic-access")
-    private void run(int taskCount, boolean goForMaestro) throws Exception {
+    private void run(int jobCount, boolean goForMaestro) throws Exception {
         final JobList jobs = new JobList();
 
-        // Job createJob = jobs.createJob("createarray", new CreateArrayTask()
+        // Job createJob = jobs.createJob("createarray", new CreateArrayJob()
         // );
         final JobSequence job = jobs.createJobSequence(
-                // new AssembleArrayTask( createJob ),
+                // new AssembleArrayJob( createJob ),
                 new CreateArrayJob(), new AdditionJob(), new AdditionJob(),
                 new AdditionJob(), new AdditionJob());
         final Node node = Node.createNode(jobs, goForMaestro);
-        final Listener listener = new Listener(node, taskCount);
+        final Listener listener = new Listener(node, jobCount);
         System.out.println("Node created");
         final double startTime = Utils.getPreciseTime();
         if (node.isMaestro()) {
-            System.out.println("I am maestro; submitting " + taskCount
-                    + " tasks");
-            for (int i = 0; i < taskCount; i++) {
+            System.out.println("I am maestro; submitting " + jobCount
+                    + " jobs");
+            for (int i = 0; i < jobCount; i++) {
                 final Integer length = 12 * i;
                 node.submit(length, i, listener, job);
             }
@@ -243,24 +243,24 @@ class TestProg {
      */
     public static void main(String args[]) {
         boolean goForMaestro = true;
-        int taskCount = 0;
+        int jobCount = 0;
 
         if (args.length == 0) {
             System.err
-                    .println("Missing parameter: I need a task count, or 'worker'");
+                    .println("Missing parameter: I need a job count, or 'worker'");
             System.exit(1);
         }
         final String arg = args[0];
         if (arg.equalsIgnoreCase("worker")) {
             goForMaestro = false;
         } else {
-            taskCount = Integer.parseInt(arg);
+            jobCount = Integer.parseInt(arg);
         }
         System.out.println("Running on platform " + Utils.getPlatformVersion()
                 + " args.length=" + args.length + " goForMaestro="
-                + goForMaestro + "; taskCount=" + taskCount);
+                + goForMaestro + "; jobCount=" + jobCount);
         try {
-            new TestProg().run(taskCount, goForMaestro);
+            new TestProg().run(jobCount, goForMaestro);
         } catch (final Exception e) {
             e.printStackTrace(System.err);
         }

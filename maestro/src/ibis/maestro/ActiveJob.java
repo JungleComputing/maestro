@@ -11,7 +11,7 @@ class ActiveJob {
 
     final long id;
 
-    final NodeTaskInfo nodeJobInfo;
+    final NodeJobInfo nodeJobInfo;
 
     /** The time this task was sent to the worker. */
     final double startTime;
@@ -25,7 +25,7 @@ class ActiveJob {
     final double rescheduleDeadline;
 
     ActiveJob(JobInstance job, long id, double startTime,
-            NodeTaskInfo nodeJobInfo, double predictedDuration,
+            NodeJobInfo nodeJobInfo, double predictedDuration,
             double allowanceDeadline, double rescheduleDeadline) {
         this.job = job;
         this.id = id;

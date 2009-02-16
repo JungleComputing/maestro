@@ -5,8 +5,8 @@ import java.io.PrintStream;
 /**
  * Information the node has about a particular task type on a particular node.
  */
-final class NodeTaskInfo {
-    final WorkerQueueTaskInfo taskInfo;
+final class NodeJobInfo {
+    final WorkerQueueJobInfo taskInfo;
 
     private final NodeInfo nodeInfo;
 
@@ -37,7 +37,7 @@ final class NodeTaskInfo {
      * @param pingTime
      *            The ping time of this worker.
      */
-    NodeTaskInfo(WorkerQueueTaskInfo taskInfo, NodeInfo worker, double pingTime) {
+    NodeJobInfo(WorkerQueueJobInfo taskInfo, NodeInfo worker, double pingTime) {
         this.taskInfo = taskInfo;
         this.nodeInfo = worker;
 

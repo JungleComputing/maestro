@@ -200,7 +200,7 @@ public final class JobList {
         }
         if (job instanceof JobExecutionTimeEstimator) {
             final JobExecutionTimeEstimator estimator = (JobExecutionTimeEstimator) job;
-            return estimator.estimateTaskExecutionTime();
+            return estimator.estimateJobExecutionTime();
         }
         if (job instanceof AlternativesJob){
             // We estimate this will be the minimum of all alternatives.

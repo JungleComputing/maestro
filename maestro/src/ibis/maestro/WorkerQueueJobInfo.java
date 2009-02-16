@@ -9,17 +9,17 @@ import java.util.List;
  * 
  * @author Kees van Reeuwijk
  */
-final class WorkerQueueTaskInfo {
+final class WorkerQueueJobInfo {
     /** The type these statistics are about. */
     final JobType type;
 
     /** The workers that are willing to execute this task. */
-    private final List<NodeTaskInfo> workers = new LinkedList<NodeTaskInfo>();
+    private final List<NodeJobInfo> workers = new LinkedList<NodeJobInfo>();
 
     /** The total number of tasks of this type that entered the queue. */
-    private long incomingTaskCount = 0;
+    private long incomingJobCount = 0;
 
-    private int outGoingTaskCount = 0;
+    private int outGoingJobCount = 0;
 
     /** Current number of elements of this type in the queue. */
     private int elements = 0;
@@ -34,7 +34,7 @@ final class WorkerQueueTaskInfo {
 
     private boolean failed = false;
 
-    /** The estimated time interval between tasks being dequeued. */
+    /** The estimated time interval between jobs being dequeued. */
     private final TimeEstimate dequeueInterval = new TimeEstimate(
             1 * Utils.MILLISECOND);
 
@@ -43,26 +43,26 @@ final class WorkerQueueTaskInfo {
     private final TimeEstimate averageComputeTime = new TimeEstimate(
             Utils.MILLISECOND);
 
-    WorkerQueueTaskInfo(JobType type) {
+    WorkerQueueJobInfo(JobType type) {
         this.type = type;
     }
 
     synchronized void printStatistics(PrintStream s, double workTime) {
-        s.println("worker queue for " + type + ": " + incomingTaskCount
-                + " tasks; dequeue interval: " + dequeueInterval
+        s.println("worker queue for " + type + ": " + incomingJobCount
+                + " jobs; dequeue interval: " + dequeueInterval
                 + "; maximal queue size: " + maxElements);
         final double workPercentage = 100.0 * (totalWorkTime / workTime);
         final PrintStream out = s;
-        if (outGoingTaskCount > 0) {
+        if (outGoingJobCount > 0) {
             out.println("Worker: " + type + ":");
-            out.printf("    # tasks          = %5d\n", outGoingTaskCount);
+            out.printf("    # jobs           = %5d\n", outGoingJobCount);
             out.println("    total work time      = "
                     + Utils.formatSeconds(totalWorkTime)
                     + String.format(" (%.1f%%)", workPercentage));
-            out.println("    work time/task       = "
+            out.println("    work time/job        = "
                     + Utils
                             .formatSeconds(totalWorkTime
-                                    / outGoingTaskCount));
+                                    / outGoingJobCount));
             out.println("    av. dequeue interval = "
                     + Utils.formatSeconds(dequeueInterval.getAverage()));
         } else {
@@ -80,7 +80,7 @@ final class WorkerQueueTaskInfo {
             // record the time it became this.
             frontChangedTime = Utils.getPreciseTime();
         }
-        incomingTaskCount++;
+        incomingJobCount++;
         sequenceNumber++;
         return elements;
     }
@@ -114,14 +114,14 @@ final class WorkerQueueTaskInfo {
     }
 
     /**
-     * Registers the completion of a task of this particular type, with the
+     * Registers the completion of a job of this particular type, with the
      * given queue interval and the given work interval.
      * 
      * @param workTime
-     *            The time it took to execute this task.
+     *            The time it took to execute this job.
      */
-    synchronized double countTask(double workTime, boolean unpredictable) {
-        outGoingTaskCount++;
+    synchronized double countJob(double workTime, boolean unpredictable) {
+        outGoingJobCount++;
         totalWorkTime += workTime;
         if (!unpredictable) {
             averageComputeTime.addSample(workTime);
@@ -130,9 +130,9 @@ final class WorkerQueueTaskInfo {
     }
 
     /**
-     * Registers that this node can no longer execute this type of task.
+     * Registers that this node can no longer execute this type of job.
      */
-    synchronized void failTask() {
+    synchronized void failJob() {
         failed = true;
     }
 
@@ -141,7 +141,7 @@ final class WorkerQueueTaskInfo {
     }
 
     /**
-     * Sets the initial compute time estimate of this task to the given value.
+     * Sets the initial compute time estimate of this job to the given value.
      * 
      * @param estimate
      *            The initial estimate.
@@ -151,10 +151,10 @@ final class WorkerQueueTaskInfo {
     }
 
     void registerNode(NodeInfo nodeInfo) {
-        final NodeTaskInfo nodeTaskInfo = nodeInfo.get(type);
+        final NodeJobInfo nodeJobInfo = nodeInfo.get(type);
         synchronized (this) {
-            if (nodeTaskInfo != null) {
-                workers.add(nodeTaskInfo);
+            if (nodeJobInfo != null) {
+                workers.add(nodeJobInfo);
             }
         }
     }
