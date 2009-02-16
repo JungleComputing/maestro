@@ -1,8 +1,7 @@
 package ibis.maestro;
 
 /**
- * The interface of a task for which the performance is unpredictable. Such a
- * task will only be submitted to nodes that have an idle processor.
+ * The interface of a job for which the performance is unpredictable.
  * 
  * @author Kees van Reeuwijk
  * 

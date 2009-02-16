@@ -6,7 +6,7 @@ import java.io.Serializable;
 
 /**
  * Handles the execution of a split/merge job. In particular, it handles the
- * submission of sub-tasks, waits for their completion, merges the results, and
+ * submission of sub-jobs, waits for their completion, merges the results, and
  * retreives the result.
  * 
  * @author Kees van Reeuwijk
@@ -84,7 +84,7 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
     }
 
     /**
-     * Handle the completion of a task. We do this by storing the result in a
+     * Handle the completion of a job. We do this by storing the result in a
      * local array.
      * 
      * @param node
@@ -102,7 +102,7 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
         }
         if (!(userId instanceof Id)) {
             Globals.log
-                    .reportInternalError("The identifier is not a MapReduceHandler.Id but a "
+                    .reportInternalError("The identifier is not a ParallelJobHandler.Id but a "
                             + userId.getClass());
             return;
         }
