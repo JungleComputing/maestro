@@ -76,7 +76,7 @@ public final class JobList {
             final JobType jobType = job.jobTypes[i];
             if (t.isSupported()) {
                 if (Settings.traceTypeHandling) {
-                    Globals.log.reportProgress("Node supports task type "
+                    Globals.log.reportProgress("Node supports job type "
                             + jobType);
                 }
                 supportedJobTypes.add(jobType);

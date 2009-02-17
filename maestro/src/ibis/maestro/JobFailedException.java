@@ -1,7 +1,7 @@
 package ibis.maestro;
 
 /**
- * Exception thrown by a task if it can no longer execute this task.
+ * Exception thrown by a job if it can no longer execute this job.
  * 
  * @author Kees van Reeuwijk.
  */

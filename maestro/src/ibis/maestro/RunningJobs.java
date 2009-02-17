@@ -44,7 +44,7 @@ class RunningJobs {
             return null;
         }
         earliest.startTime = now;
-        return earliest.taskInstance;
+        return earliest.jobInstance;
     }
 
     synchronized void clear() {

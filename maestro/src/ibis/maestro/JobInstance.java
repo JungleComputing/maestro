@@ -3,7 +3,7 @@ package ibis.maestro;
 import java.io.Serializable;
 
 /**
- * The representation of a task instance.
+ * The representation of a job instance.
  * 
  * @author Kees van Reeuwijk
  * 
@@ -21,11 +21,11 @@ class JobInstance implements Serializable {
 
     /**
      * @param tii
-     *            The job this task belongs to.
+     *            The job sequence this job belongs to.
      * @param type
-     *            The type of this task instance.
+     *            The type of this job instance.
      * @param input
-     *            The input for this task.
+     *            The input for this job.
      */
     JobInstance(JobInstanceIdentifier tii, JobType type, Object input) {
         jobInstance = tii;
@@ -38,13 +38,13 @@ class JobInstance implements Serializable {
     }
 
     /**
-     * Returns a string representation of this task instance.
+     * Returns a string representation of this job instance.
      * 
      * @return The string representation.
      */
     @Override
     public String toString() {
-        return "(task instance: job instance=" + jobInstance + " type=" + type
+        return "(job instance: job instance=" + jobInstance + " type=" + type
                 + " input=" + input + ")";
     }
 
@@ -61,26 +61,25 @@ class JobInstance implements Serializable {
     }
 
     /**
-     * Returns the hash code of this task instance.
+     * Returns the hash code of this job instance.
      * 
      * @return The hash code.
      */
     @Override
     public int hashCode() {
         final int prime = 31;
-        int result = 1;
-        result = prime * result
+        int result = prime 
                 + ((jobInstance == null) ? 0 : jobInstance.hashCode());
         result = prime * result + ((type == null) ? 0 : type.hashCode());
         return result;
     }
 
     /**
-     * Determines whether the given object equals this task instance.
+     * Determines whether the given object equals this job instance.
      * 
      * @param obj
      *            The object to compare with.
-     * @return True iff the given object equals this task instance.
+     * @return True iff the given object equals this job instance.
      */
     @Override
     public boolean equals(Object obj) {

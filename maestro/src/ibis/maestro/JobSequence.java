@@ -94,8 +94,8 @@ public final class JobSequence implements Job {
         int i = jobs.length;
         boolean unpredictable = false;
         // Walk the list from back to front to allow
-        // earlier tasks to be marked unpredictable if one
-        // it or one of the following tasks is unpredictable.
+        // earlier jobs to be marked unpredictable if one
+        // it or one of the following jobs is unpredictable.
         int updateIndex = 0;
         while (i > 0) {
             i--;
@@ -125,7 +125,7 @@ public final class JobSequence implements Job {
 
     /**
      * Submits a job by giving a user-defined identifier, and the input value to
-     * the first task of the job.
+     * the first job of the job sequence.
      * 
      * @param node
      *            The node this job should run on.
@@ -157,7 +157,7 @@ public final class JobSequence implements Job {
     }
     
     /**
-     * Given a task type, return the previous one in the task sequence of this
+     * Given a job type, return the previous one in the job sequence of this
      * job, or <code>null</code> if there isn't one.
      * 
      * @param jobType
@@ -167,7 +167,7 @@ public final class JobSequence implements Job {
     JobType getPreviousJobType(JobType jobType) {
         if (!id.equals(jobType.job)) {
             Globals.log
-                    .reportInternalError("getPreviousTaskType(): not my job: "
+                    .reportInternalError("getPreviousJobType(): not my job: "
                             + jobType.job);
             return null;
         }
@@ -178,21 +178,21 @@ public final class JobSequence implements Job {
     }
 
     /**
-     * Given a task type, return the next one in the task sequence of this job,
+     * Given a job type, return the next one in the job sequence of this job,
      * or <code>null</code> if there isn't one.
      * 
-     * @param taskType
-     *            The current task type.
-     * @return The next task type, or <code>null</code> if there isn't one.
+     * @param jobType
+     *            The current job type.
+     * @return The next job type, or <code>null</code> if there isn't one.
      */
-    JobType getNextJobType(JobType taskType) {
-        if (!id.equals(taskType.job)) {
-            Globals.log.reportInternalError("getNextTaskType(): not my job: "
-                    + taskType.job);
+    JobType getNextJobType(JobType jobType) {
+        if (!id.equals(jobType.job)) {
+            Globals.log.reportInternalError("getNextJobType(): not my job: "
+                    + jobType.job);
             return null;
         }
-        if (taskType.jobNo < jobs.length - 1) {
-            return jobTypes[taskType.jobNo + 1];
+        if (jobType.jobNo < jobs.length - 1) {
+            return jobTypes[jobType.jobNo + 1];
         }
         return null;
     }

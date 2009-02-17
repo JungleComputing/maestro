@@ -28,15 +28,15 @@ final class JobType implements Serializable {
      * 
      * @param id
      *            The job sequence this job belongs to.
-     * @param taskNo
+     * @param jobNo
      *            The sequence number within the job sequence.
      * @param remainingJobs
-     *            The number of tasks after this one in the job.
+     *            The number of jobs after this one in the job sequence.
      */
-    JobType(JobSequenceIdentifier id, int taskNo, int remainingJobs,
+    JobType(JobSequenceIdentifier id, int jobNo, int remainingJobs,
             boolean unpredictable, int index) {
         this.job = id;
-        this.jobNo = taskNo;
+        this.jobNo = jobNo;
         this.remainingJobs = remainingJobs;
         this.unpredictable = unpredictable;
         this.index = index;
@@ -96,7 +96,7 @@ final class JobType implements Serializable {
      * @param a
      *            One of the job types to compare.
      * @param b
-     *            The other tjob type to compare.
+     *            The other job type to compare.
      * @return The comparison result.
      */
     static int comparePriorities(JobType a, JobType b) {

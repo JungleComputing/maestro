@@ -19,7 +19,7 @@ final class JobReceivedMessage extends Message {
     final IbisIdentifier source;
 
     /**
-     * Constructs a task-completed message for the master of a task.
+     * Constructs a job-received message from the worker to the master of a job.
      * 
      * @param jobId
      *            The identifier of the job, as handed out by the master.

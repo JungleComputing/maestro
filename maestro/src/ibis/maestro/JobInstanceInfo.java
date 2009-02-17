@@ -9,7 +9,7 @@ class JobInstanceInfo {
 
     double startTime = Utils.getPreciseTime();
 
-    final JobInstance taskInstance;
+    final JobInstance jobInstance;
 
     /**
      * Constructs an information class for the given job identifier.
@@ -22,10 +22,10 @@ class JobInstanceInfo {
      *            The completion listener associated with the job.
      */
     JobInstanceInfo(final JobInstanceIdentifier identifier,
-            JobInstance taskInstance, JobSequence job,
+            JobInstance jobInstance, JobSequence job,
             final JobCompletionListener listener) {
         this.identifier = identifier;
-        this.taskInstance = taskInstance;
+        this.jobInstance = jobInstance;
         this.job = job;
         this.listener = listener;
     }
