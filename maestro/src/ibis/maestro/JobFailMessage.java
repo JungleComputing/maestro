@@ -23,7 +23,7 @@ final class JobFailMessage extends Message {
      * @param id
      *            The identifier of the job this is a result for.
      */
-    public JobFailMessage(long id) {
+    protected JobFailMessage(long id) {
         this.source = Globals.localIbis.identifier();
         this.id = id;
     }

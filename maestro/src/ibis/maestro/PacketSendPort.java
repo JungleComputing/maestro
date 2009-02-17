@@ -97,7 +97,7 @@ class PacketSendPort {
 
         private final IbisIdentifier ibisIdentifier;
 
-        boolean local;
+        final boolean local;
 
         /**
          * Create a new destination info entry.

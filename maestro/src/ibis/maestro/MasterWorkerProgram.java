@@ -17,7 +17,7 @@ class MasterWorkerProgram {
     private static final Random rng = new Random();
 
     private static class Listener implements JobCompletionListener {
-        int jobsCompleted = 0;
+        private int jobsCompleted = 0;
 
         private final int jobCount;
 

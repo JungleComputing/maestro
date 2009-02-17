@@ -18,7 +18,7 @@ class Terminator extends Thread {
     /** How many nodes should we stop? */
     private double terminationQuotum;
 
-    private double nodeQuotum;
+    private final double nodeQuotum;
 
     private final ArrayList<IbisIdentifier> victims = new ArrayList<IbisIdentifier>();
 

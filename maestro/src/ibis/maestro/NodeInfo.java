@@ -23,10 +23,10 @@ final class NodeInfo {
 
     private boolean dead = false; // This node is known to be dead.
 
-    final boolean local;
+    private final boolean local;
 
     /** The ibis this nodes lives on. */
-    final IbisIdentifier ibis;
+    private final IbisIdentifier ibis;
 
     /**
      * Constructs a new NodeInfo.
@@ -116,15 +116,6 @@ final class NodeInfo {
                     + " orphans from dead worker " + ibis);
         }
         return orphans;
-    }
-
-    /**
-     * Returns true iff this worker is suspect.
-     * 
-     * @return Is this worker suspect?
-     */
-    synchronized boolean isSuspect() {
-        return suspect;
     }
 
     /**
@@ -326,16 +317,6 @@ final class NodeInfo {
     }
 
     /**
-     * Returns true iff this worker is ready to do work. Specifically, if it is
-     * not marked as suspect, and if it is enabled.
-     * 
-     * @return Whether this worker is ready to do work.
-     */
-    synchronized boolean isReady() {
-        return !suspect;
-    }
-
-    /**
      * Register that this node is communicating with us. If we had it suspect,
      * remove that flag. Return true iff we thing this node is dead. (No we're
      * not resurrecting it.)
@@ -348,10 +329,6 @@ final class NodeInfo {
         }
         suspect = false;
         return false;
-    }
-
-    synchronized boolean isDead() {
-        return dead;
     }
 
     boolean checkDeadlines(double now) {

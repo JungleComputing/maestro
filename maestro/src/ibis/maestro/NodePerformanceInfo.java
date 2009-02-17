@@ -24,11 +24,11 @@ class NodePerformanceInfo implements Serializable {
     final double[] completionInfo;
 
     /** For each type of job we know, the queue length on this worker. */
-    WorkerQueueInfo[] workerQueueInfo;
+    final WorkerQueueInfo[] workerQueueInfo;
 
     long timeStamp;
 
-    final int numberOfProcessors;
+    private final int numberOfProcessors;
 
     NodePerformanceInfo(double[] completionInfo,
             WorkerQueueInfo[] workerQueueInfo, IbisIdentifier source,

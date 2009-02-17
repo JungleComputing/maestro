@@ -65,7 +65,7 @@ class PacketUpcallReceivePort implements MessageUpcall {
     }
 
     /** Enable this port. */
-    public void enable() {
+    protected void enable() {
         port.enableMessageUpcalls();
         port.enableConnections();
     }

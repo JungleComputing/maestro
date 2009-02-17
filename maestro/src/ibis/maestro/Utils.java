@@ -3,9 +3,6 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.Location;
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadInfo;
@@ -18,7 +15,7 @@ import java.lang.management.ThreadMXBean;
  * @author Kees van Reeuwijk.
  */
 public class Utils {
-    static final double NANOSECOND = 1e-9;
+    private static final double NANOSECOND = 1e-9;
     
     static final double MICROSECOND = 1e-6;
 
@@ -27,12 +24,6 @@ public class Utils {
     static final double SECOND = 1.0;
 
     static final double MINUTE = 60 * SECOND;
-
-    static final double HOUR = 60 * MINUTE;
-
-    static final double DAY = 24 * HOUR;
-
-    static final double WEEK = 7 * DAY;
 
     static boolean areInSameCluster(IbisIdentifier a, IbisIdentifier b) {
         Location la = a.location();
@@ -48,40 +39,13 @@ public class Utils {
      * 
      * @return The platform version.
      */
-    public static String getPlatformVersion() {
+    protected static String getPlatformVersion() {
         java.util.Properties p = System.getProperties();
 
         return "Java " + p.getProperty("java.version") + " ("
                 + p.getProperty("java.vendor") + ") on "
                 + p.getProperty("os.name") + ' ' + p.getProperty("os.version")
                 + " (" + p.getProperty("os.arch") + ')';
-    }
-
-    /**
-     * Given an input stream, reads the entire contents of that stream into a
-     * String.
-     * 
-     * @param s
-     *            The input stream to read.
-     * @return A string containing the entire stream.
-     * @throws IOException
-     *             Thrown when there is an I/O problem.
-     */
-    public static String read(InputStream s) throws IOException {
-        InputStreamReader r = new InputStreamReader(s);
-
-        StringBuffer res = new StringBuffer();
-        int sz = 1000;
-        char buffer[] = new char[sz];
-
-        for (;;) {
-            int n = r.read(buffer, 0, sz);
-            if (n < 0) {
-                break;
-            }
-            res.append(buffer, 0, n);
-        }
-        return new String(res);
     }
 
     /**
@@ -111,22 +75,6 @@ public class Utils {
     }
 
     /**
-     * Wait for the given thread to terminate.
-     * 
-     * @param thread
-     *            The tread to wait for.
-     */
-    static void waitToTerminate(Thread thread) {
-        while (thread.isAlive()) {
-            try {
-                thread.join();
-            } catch (InterruptedException x) {
-                // We don't care
-            }
-        }
-    }
-
-    /**
      * Divide <code>val</code> by <code>divisor</code>, rounding up to the
      * next integer.
      * 
@@ -136,7 +84,7 @@ public class Utils {
      *            The denominator of the division.
      * @return The result of the division.
      */
-    public static long divideRoundUp(long val, long divisor) {
+    private static long divideRoundUp(long val, long divisor) {
         return (val + (divisor - 1)) / divisor;
     }
 

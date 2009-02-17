@@ -56,15 +56,6 @@ class ActiveJob {
     }
 
     /**
-     * Returns rescheduleDeadline.
-     * 
-     * @return rescheduleDeadline.
-     */
-    double getRescheduleDeadline() {
-        return rescheduleDeadline;
-    }
-
-    /**
      * Returns a string representation of this job queue entry.
      * 
      * @return The string.

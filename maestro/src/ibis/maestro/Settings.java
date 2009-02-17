@@ -29,9 +29,6 @@ class Settings {
     /** Trace type handling? */
     static final boolean traceTypeHandling = false;
 
-    /** Trace the handling or result jobs? */
-    static final boolean traceResultJobs = false;
-
     /** Trace the progress of the worker lists of masters. */
     static final boolean traceWorkerList = false;
 
@@ -71,9 +68,6 @@ class Settings {
     /** Trace all sent update messages. */
     static final boolean traceUpdateMessages = false;
 
-    /** Trace changes to the allowances. */
-    static final boolean traceAllowance = false;
-
     /** Trace the adventures of the gossip engine? */
     static final boolean traceGossip = false;
 
@@ -109,9 +103,6 @@ class Settings {
      * job.
      */
     static final long RESCHEDULE_DEADLINE_MULTIPLIER = 2;
-
-    /** The maximal time in ms before the gossiper gets more quotum. */
-    static final long MAXIMUM_GOSSIPER_WAIT = 70;
 
     /** Time in ms when gossip goes stale for nodes in the same cluster. */
     static final long GOSSIP_EXPIRATION_IN_CLUSTER = 500;

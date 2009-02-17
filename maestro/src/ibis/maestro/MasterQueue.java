@@ -343,10 +343,6 @@ final class MasterQueue {
         return null;
     }
 
-    synchronized boolean hasWork() {
-        return !queue.isEmpty();
-    }
-
     double[] getQueueIntervals() {
         final double res[] = new double[queueTypes.length];
 

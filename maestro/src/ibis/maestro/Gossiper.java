@@ -61,7 +61,6 @@ class Gossiper extends Thread {
     private void sendGossip(IbisIdentifier target, boolean needsReply) {
         final GossipMessage msg = gossip.constructMessage(target, needsReply);
         final double startTime = Utils.getPreciseTime();
-        msg.sendMoment = startTime;
         if (Settings.traceGossip) {
             Globals.log.reportProgress("Gossiper: sending message to " + target
                     + "; needsReply=" + needsReply);
@@ -248,7 +247,7 @@ class Gossiper extends Thread {
                 localNodeInfoMap);
     }
 
-    void addQuotum() {
+    private void addQuotum() {
         gossipQuotum.up();
         synchronized (this) {
             notifyAll();
@@ -298,10 +297,6 @@ class Gossiper extends Thread {
         }
     }
 
-    void registerWorkerQueueInfo(WorkerQueueInfo[] update) {
-        gossip.registerWorkerQueueInfo(update);
-    }
-
     /**
      * Returns performance info about the local node. Used for rapid
      * updates for nodes we're directly communicating with.
@@ -334,40 +329,6 @@ class Gossiper extends Thread {
 
     private synchronized boolean isStopped() {
         return stopped;
-    }
-
-    /**
-     * Given a job type, return the estimated completion time of this job.
-     * 
-     * @param type
-     *            The job type for which we want to know the completion time.
-     * @param submitIfBusy
-     *            If set, take into consideration processors that are currently
-     *            fully occupied with jobs.
-     * @param localNodeInfoMap
-     *            Local knowledge about the different nodes.
-     * @return
-     */
-    private double computeCompletionTime(JobType type, boolean submitIfBusy,
-            HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
-        return gossip.computeCompletionTime(type, submitIfBusy,
-                localNodeInfoMap);
-    }
-
-    int selectFastestJob(JobType[] types, boolean submitIfBusy,
-            HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
-        int bestIx = -1;
-        double bestTime = Double.POSITIVE_INFINITY;
-        for (int ix = 0; ix < types.length; ix++) {
-            final JobType type = types[ix];
-            final double t = computeCompletionTime(type, submitIfBusy,
-                    localNodeInfoMap);
-            if (t < bestTime) {
-                bestTime = t;
-                bestIx = ix;
-            }
-        }
-        return bestIx;
     }
 
     void failJob(JobType type) {

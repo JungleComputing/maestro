@@ -21,31 +21,8 @@ public class MaestroException extends Exception {
      * @param msg
      *            The error message associated with the exception.
      */
-    public MaestroException(String msg) {
+    protected MaestroException(String msg) {
         super(msg);
-    }
-
-    /**
-     * Given a throwable, constructs a new MaestroException.
-     * 
-     * @param t
-     *            The throwable that caused the throwing of this exception.
-     */
-    public MaestroException(Throwable t) {
-        super(t);
-    }
-
-    /**
-     * Given an error message and a throwable, constructs a new
-     * MaestroException.
-     * 
-     * @param msg
-     *            The error message associated with the exception.
-     * @param t
-     *            The throwable associated with the exception.
-     */
-    public MaestroException(String msg, Throwable t) {
-        super(msg, t);
     }
 
 }

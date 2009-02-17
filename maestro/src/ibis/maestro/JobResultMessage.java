@@ -21,7 +21,7 @@ final class JobResultMessage extends Message {
      * @param result
      *            The result value.
      */
-    public JobResultMessage(JobInstanceIdentifier job, Object result) {
+    protected JobResultMessage(JobInstanceIdentifier job, Object result) {
         this.job = job;
         this.result = result;
     }

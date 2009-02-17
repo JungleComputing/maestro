@@ -39,9 +39,8 @@ public class MasterQueueTest extends TestCase {
     @Test
     public void testAdd() {
         JobSequenceIdentifier id = null;
-        JobType type = new JobType(id, 0, 1, false, 0);
+        JobType type = new JobType(id, 0, false, 0);
         JobType l[] = new JobType[] { type };
-        Globals.supportedJobTypes = l;
         Globals.allJobTypes = l;
         MasterQueue queue = new MasterQueue(l);
 

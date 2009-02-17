@@ -15,7 +15,7 @@ import java.util.Map;
 final class NodeList {
     private final HashMap<IbisIdentifier, NodeInfo> ibisToNodeMap = new HashMap<IbisIdentifier, NodeInfo>();
 
-    WorkerQueue workerQueue;
+    private final WorkerQueue workerQueue;
 
     NodeList(WorkerQueue jobInfoList) {
         this.workerQueue = jobInfoList;
@@ -219,9 +219,5 @@ final class NodeList {
             res.put(entry.getKey(), nodeInfo.getLocalInfo());
         }
         return res;
-    }
-
-    synchronized int size() {
-        return ibisToNodeMap.size();
     }
 }

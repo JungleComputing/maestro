@@ -1,7 +1,7 @@
 package ibis.maestro;
 
 class ValueVertex extends CalculationVertex {
-    double value;
+    private double value;
 
     ValueVertex( double v )
     {

@@ -14,7 +14,7 @@ class OneTestProg {
     private static final int ARRAY_SIZE = 100000;
 
     private static class Listener implements JobCompletionListener {
-        int jobsCompleted = 0;
+        private int jobsCompleted = 0;
 
         private final int jobCount;
 

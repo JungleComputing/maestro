@@ -12,7 +12,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
  */
 class MinCalculationVertex extends CalculationVertex implements CalculationUpdateListener {
     private double value;
-    protected List<CalculationVertex> elements = new CopyOnWriteArrayList<CalculationVertex>();
+    private final List<CalculationVertex> elements = new CopyOnWriteArrayList<CalculationVertex>();
 
     MinCalculationVertex( CalculationVertex... calculationNodes)
     {
@@ -48,7 +48,7 @@ class MinCalculationVertex extends CalculationVertex implements CalculationUpdat
         return value;
     }
 
-    void add(CalculationVertex... nl) {
+    private void add(CalculationVertex... nl) {
         for( CalculationVertex e: nl ) {
             elements.add(e);
             e.addListener( this );

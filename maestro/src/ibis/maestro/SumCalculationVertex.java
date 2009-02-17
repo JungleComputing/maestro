@@ -14,7 +14,7 @@ class SumCalculationVertex extends CalculationVertex implements
         CalculationUpdateListener {
     private double value;
 
-    protected List<CalculationVertex> elements = new CopyOnWriteArrayList<CalculationVertex>();
+    private final List<CalculationVertex> elements = new CopyOnWriteArrayList<CalculationVertex>();
 
     SumCalculationVertex(CalculationVertex... calculationNodes) {
         add( calculationNodes );

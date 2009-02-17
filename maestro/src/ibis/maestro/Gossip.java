@@ -186,18 +186,6 @@ class Gossip {
         }
     }
 
-    /**
-     * Overwrite the worker queue info of our local information with the new
-     * info.
-     * 
-     * @param update
-     *            The new information.
-     */
-    synchronized void registerWorkerQueueInfo(WorkerQueueInfo[] update) {
-        localPerformanceInfo.workerQueueInfo = update;
-        localPerformanceInfo.timeStamp = System.nanoTime();
-    }
-
     synchronized NodePerformanceInfo getLocalUpdate() {
         return localPerformanceInfo.getDeepCopy();
     }
@@ -209,7 +197,7 @@ class Gossip {
         }
     }
 
-    synchronized int size() {
+    private synchronized int size() {
         return gossipList.size();
     }
 
@@ -244,37 +232,6 @@ class Gossip {
                 }
             }
         }
-    }
-
-    /**
-     * Given a job type, return the estimated completion time of this job.
-     * 
-     * @param type
-     *            The job type for which we want to know the completion time.
-     * @param submitIfBusy
-     *            If set, take into consideration processors that are currently
-     *            fully occupied with jobs.
-     * @param localNodeInfoMap
-     *            Local knowledge about the different nodes.
-     * @return The estimated completion time for the best worker.
-     */
-    double computeCompletionTime(JobType type, boolean submitIfBusy,
-            HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
-        double bestTime = Double.POSITIVE_INFINITY;
-
-        for (final NodePerformanceInfo info : gossipList) {
-            final LocalNodeInfo localNodeInfo = localNodeInfoMap
-                    .get(info.source);
-
-            if (localNodeInfo != null) {
-                final double t = info.estimateJobCompletion(localNodeInfo, type,
-                        !submitIfBusy);
-                if (t < bestTime) {
-                    bestTime = t;
-                }
-            }
-        }
-        return bestTime;
     }
 
     long getLocalTimestamp() {

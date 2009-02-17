@@ -190,10 +190,6 @@ final class WorkerQueue {
         }
     }
 
-    WorkerQueueJobInfo getJobInfo(JobType type) {
-        return queueTypes[type.index];
-    }
-
     void registerNode(NodeInfo nodeInfo) {
         for (final WorkerQueueJobInfo info : queueTypes) {
             if (info != null) {

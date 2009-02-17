@@ -13,15 +13,15 @@ import java.io.Serializable;
  * 
  */
 public class ParallelJobHandler extends Thread implements JobCompletionListener {
-    final Node localNode;
+    private final Node localNode;
 
-    final ParallelJob reducer;
+    private final ParallelJob reducer;
 
-    final LabelTracker labeler = new LabelTracker();
+    private final LabelTracker labeler = new LabelTracker();
 
-    final RunJobMessage message;
+    private final RunJobMessage message;
 
-    final double runMoment;
+    private final double runMoment;
 
     /**
      * @param localNode

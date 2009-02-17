@@ -103,7 +103,7 @@ public final class JobSequence implements Job {
                 unpredictable = true;
             }
             final int newIndex = index + i;
-            jobTypes[i] = new JobType(this.id, i, (jobs.length - 1) - i,
+            jobTypes[i] = new JobType(this.id, i,
                     unpredictable, newIndex);
             updateIndices[updateIndex++] = newIndex;
         }
@@ -155,27 +155,6 @@ public final class JobSequence implements Job {
     public String toString() {
         return "(job " + id + ")";
     }
-    
-    /**
-     * Given a job type, return the previous one in the job sequence of this
-     * job, or <code>null</code> if there isn't one.
-     * 
-     * @param jobType
-     *            The current job type.
-     * @return The next job type, or <code>null</code> if there isn't one.
-     */
-    JobType getPreviousJobType(JobType jobType) {
-        if (!id.equals(jobType.job)) {
-            Globals.log
-                    .reportInternalError("getPreviousJobType(): not my job: "
-                            + jobType.job);
-            return null;
-        }
-        if (jobType.jobNo > 0) {
-            return jobTypes[jobType.jobNo - 1];
-        }
-        return null;
-    }
 
     /**
      * Given a job type, return the next one in the job sequence of this job,
@@ -209,11 +188,7 @@ public final class JobSequence implements Job {
      * @param s
      *            The stream to print to.
      */
-    public void printStatistics(PrintStream s) {
+    protected void printStatistics(PrintStream s) {
         s.println("Job " + id + ": " + jobTime.toString());
-    }
-
-    static int getJobCount() {
-        return index;
     }
 }

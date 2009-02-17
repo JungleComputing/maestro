@@ -24,7 +24,7 @@ class ConnectionCache {
         this.node = node;
     }
 
-    long cachedSendMessage(IbisIdentifier ibis, Message message) {
+    private long cachedSendMessage(IbisIdentifier ibis, Message message) {
         long len = -1;
         try {
             final SendPort port = cache.getSendPort(ibis);
@@ -96,7 +96,7 @@ class ConnectionCache {
      *            The ibis to send to.
      * @return The WriteMessage to fill.
      */
-    long uncachedSendMessage(IbisIdentifier ibis, Message message) {
+    private long uncachedSendMessage(IbisIdentifier ibis, Message message) {
         long len = -1;
         SendPort port = null;
         try {

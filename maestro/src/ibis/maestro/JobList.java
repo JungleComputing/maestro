@@ -18,43 +18,6 @@ public final class JobList {
 
     private int jobCounter = 0;
 
-    /**
-     * Add a new job to this list.
-     * 
-     * @param job The job to add.
-     */
-    void add(JobSequence job) {
-        jobSequences.add(job);
-    }
-
-    JobSequence get(int i) {
-        return jobSequences.get(i);
-    }
-
-    int size() {
-        return jobSequences.size();
-    }
-
-    private JobSequence searchJobID(JobSequence.JobSequenceIdentifier id) {
-        for (final JobSequence t : jobSequences) {
-            if (t.id.equals(id)) {
-                return t;
-            }
-        }
-        return null;
-    }
-
-    JobType getPreviousJobType(JobType t) {
-        final JobSequence job = searchJobID(t.job);
-        if (job == null) {
-            Globals.log
-                    .reportInternalError("getPreviousJobType(): job type with unknown job id: "
-                            + t);
-            return null;
-        }
-        return job.getPreviousJobType(t);
-    }
-
     void printStatistics(PrintStream s) {
         for (final JobSequence t : jobSequences) {
             t.printStatistics(s);
@@ -67,7 +30,7 @@ public final class JobList {
      * @param job
      *            The job to register.
      */
-    void registerJob(JobSequence job) {
+    private void registerJob(JobSequence job) {
         final Job jobs[] = job.jobs;
 
         for (int i = 0; i < jobs.length; i++) {
@@ -100,7 +63,7 @@ public final class JobList {
      *            The list of jobs of the job.
      * @return A new job instance representing this job.
      */
-    public JobSequence createJobSequence(Job... jobs) {
+    protected JobSequence createJobSequence(Job... jobs) {
         final int jobId = jobCounter++;
         final JobSequence job = new JobSequence(jobId, jobs);
 
@@ -119,7 +82,7 @@ public final class JobList {
                 .size()]);
     }
 
-    JobSequence findJob(JobType type) {
+    private JobSequence findJob(JobType type) {
         return jobSequences.get(type.job.id);
     }
 
@@ -133,32 +96,8 @@ public final class JobList {
         return job.getNextJobType(type);
     }
 
-    int getNumberOfJobTypes() {
-        return jobCounter;
-    }
-
     JobType[] getAllTypes() {
         return allJobTypes.toArray(new JobType[allJobTypes.size()]);
-    }
-
-    /**
-     * Given the index of a type, return the next one in the job, or -1 if there
-     * isn't one.
-     * 
-     * @param ix
-     *            The index of a type.
-     * @return The index of the next type.
-     */
-    int getNextIndex(int ix) {
-        final JobType type = allJobTypes.get(ix);
-        if (type == null) {
-            return -1;
-        }
-        final JobType nextType = getNextJobType(type);
-        if (nextType == null) {
-            return -1;
-        }
-        return nextType.index;
     }
 
     /**

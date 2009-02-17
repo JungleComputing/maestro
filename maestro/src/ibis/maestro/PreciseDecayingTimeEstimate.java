@@ -10,9 +10,9 @@ class PreciseDecayingTimeEstimate {
 
     private int sampleCount = 0;
 
-    private long samples[] = new long[BUFFER_SIZE];
+    private final long samples[] = new long[BUFFER_SIZE];
 
-    private double sampleTimes[] = new double[BUFFER_SIZE];
+    private final double sampleTimes[] = new double[BUFFER_SIZE];
 
     private int nextSampleIndex = 0;
 

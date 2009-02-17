@@ -20,8 +20,6 @@ class Globals {
     /** A random-number generator. */
     static final Random rng = new Random();
 
-    static JobType[] supportedJobTypes = null;
-
     static Ibis localIbis;
 
     static JobType[] allJobTypes = null;

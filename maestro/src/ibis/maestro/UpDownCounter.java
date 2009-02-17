@@ -27,7 +27,7 @@ class UpDownCounter {
         notifyAll();
     }
 
-    synchronized int get() {
+    private synchronized int get() {
         return value;
     }
 
@@ -50,10 +50,6 @@ class UpDownCounter {
         return Integer.toString(get());
     }
 
-    synchronized boolean isLessOrEqual(int v) {
-        return this.value <= v;
-    }
-
     /**
      * Wait until this counter has reached a value greater or equal to the given
      * value.
@@ -64,7 +60,7 @@ class UpDownCounter {
      *            The maximal time in ms to wait.
      * @return The actual value at the moment we stopped waiting.
      */
-    public int waitForGreaterOrEqual(int n, long duration) {
+    private int waitForGreaterOrEqual(int n, long duration) {
         final long deadline = System.currentTimeMillis() + duration;
         while (true) {
             final long waittime = deadline - System.currentTimeMillis();

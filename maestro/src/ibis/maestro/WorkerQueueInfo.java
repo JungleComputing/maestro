@@ -110,8 +110,4 @@ class WorkerQueueInfo implements Serializable {
         return dequeueTimePerJob;
     }
 
-    synchronized int getQueueLengthSequenceNumber() {
-        return queueLengthSequenceNumber;
-    }
-
 }

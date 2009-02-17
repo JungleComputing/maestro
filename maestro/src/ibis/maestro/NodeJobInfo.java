@@ -6,7 +6,7 @@ import java.io.PrintStream;
  * Information the node has about a particular job type on a particular node.
  */
 final class NodeJobInfo {
-    final WorkerQueueJobInfo jobInfo;
+    private final WorkerQueueJobInfo jobInfo;
 
     private final NodeInfo nodeInfo;
 

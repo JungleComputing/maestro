@@ -13,7 +13,7 @@ import java.util.PriorityQueue;
  */
 class GossipNodeList {
     @SuppressWarnings("synthetic-access")
-    PriorityQueue<GossipNode> nodes = new PriorityQueue<GossipNode>(4,
+    private final PriorityQueue<GossipNode> nodes = new PriorityQueue<GossipNode>(4,
             new GossipNodeComparator());
 
     private static final class GossipNode {
