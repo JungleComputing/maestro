@@ -21,7 +21,7 @@ final class RunJobMessage extends Message {
     final IbisIdentifier source;
 
     /**
-     * Given a job and its source, constructs a new RunTaskMessage.
+     * Given a job and its source, constructs a new RunJobMessage.
      * 
      * @param workIdentifier
      *            Who sent this job?
@@ -45,7 +45,7 @@ final class RunJobMessage extends Message {
      */
     @Override
     public String toString() {
-        return "Task message for task " + jobId + " of type "
+        return "Job message for task " + jobId + " of type "
                 + jobInstance.type;
     }
 

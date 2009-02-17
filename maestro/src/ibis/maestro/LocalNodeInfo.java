@@ -9,7 +9,7 @@ class LocalNodeInfo {
     final boolean suspect;
 
     /** The number of currently running tasks of each type. */
-    private final int currentTasks[];
+    private final int currentJobs[];
 
     /** The transmission time to the node for each type. */
     private final double transmissionTime[];
@@ -20,16 +20,16 @@ class LocalNodeInfo {
      */
     private final double predictedDuration[];
 
-    LocalNodeInfo(boolean suspect, int[] currentTasks, double[] transmissionTime,
+    LocalNodeInfo(boolean suspect, int[] currentJobs, double[] transmissionTime,
             double predictedDuration[]) {
         this.suspect = suspect;
-        this.currentTasks = currentTasks;
+        this.currentJobs = currentJobs;
         this.transmissionTime = transmissionTime;
         this.predictedDuration = predictedDuration;
     }
 
-    int getCurrentTasks(JobType type) {
-        return currentTasks[type.index];
+    int getCurrentJobs(JobType type) {
+        return currentJobs[type.index];
     }
 
     double getTransmissionTime(JobType type) {

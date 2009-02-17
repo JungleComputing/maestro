@@ -71,7 +71,7 @@ class ActiveJob {
      */
     @Override
     public String toString() {
-        return "(ActiveTask id=" + id + ", task=" + job + ", start time "
+        return "(ActiveJob id=" + id + ", task=" + job + ", start time "
                 + Utils.formatSeconds(startTime) + ')';
     }
 

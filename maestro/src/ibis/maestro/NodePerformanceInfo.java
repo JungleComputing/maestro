@@ -104,11 +104,11 @@ class NodePerformanceInfo implements Serializable {
             }
             return Double.POSITIVE_INFINITY;
         }
-        final int currentTasks = localNodeInfo.getCurrentTasks(type);
+        final int currentJobs = localNodeInfo.getCurrentJobs(type);
         final int maximalQueueLength = type.unpredictable ? 0
                 : Settings.MAXIMAL_QUEUE_FOR_PREDICTABLE;
         if (ignoreBusyProcessors
-                && currentTasks >= (numberOfProcessors + maximalQueueLength)) {
+                && currentJobs >= (numberOfProcessors + maximalQueueLength)) {
             // Don't submit jobs, there are no idle processors.
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportError("Node " + source
@@ -119,12 +119,12 @@ class NodePerformanceInfo implements Serializable {
         // Give nodes already running tasks some penalty to encourage
         // spreading the load over nodes.
         final double executionTime = queueInfo.getExecutionTime();
-        unpredictableOverhead = (currentTasks * executionTime) / 10;
+        unpredictableOverhead = (currentJobs * executionTime) / 10;
         final double transmissionTime = localNodeInfo.getTransmissionTime(type);
-        final int waitingTasks = Math.max(0,
-                (1 + queueInfo.getQueueLength() + currentTasks)
+        final int waitingJobs = Math.max(0,
+                (1 + queueInfo.getQueueLength() + currentJobs)
                         - numberOfProcessors);
-        final double total = transmissionTime + waitingTasks
+        final double total = transmissionTime + waitingJobs
                 * queueInfo.getDequeueTimePerJob() + queueInfo
                 .getExecutionTime() + completionInterval + unpredictableOverhead;
         if (Settings.traceRemainingJobTime) {
@@ -200,7 +200,7 @@ class NodePerformanceInfo implements Serializable {
         s.println();
     }
 
-    void failTask(JobType type) {
+    void failJob(JobType type) {
         final WorkerQueueInfo info = workerQueueInfo[type.index];
         if (info != null) {
             info.failJob();
@@ -216,11 +216,11 @@ class NodePerformanceInfo implements Serializable {
         }
     }
 
-    void setWorkerQueueTimePerTask(JobType type, double queueTimePerTask,
+    void setWorkerQueueTimePerJob(JobType type, double queueTimePerJob,
             int queueLength) {
         final WorkerQueueInfo info = workerQueueInfo[type.index];
         if (info != null) {
-            info.setQueueTimePerJob(queueTimePerTask, queueLength);
+            info.setQueueTimePerJob(queueTimePerJob, queueLength);
             timeStamp = System.nanoTime();
         }
     }

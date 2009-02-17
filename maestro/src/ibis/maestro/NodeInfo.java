@@ -34,7 +34,7 @@ final class NodeInfo {
      * @param ibis
      *            The ibis identifier of the node.
      * @param workerQueue
-     *            The worker queue, which contains a WorkerQueueTaskInfo class
+     *            The worker queue, which contains a WorkerQueueJobInfo class
      *            for each type.
      * @param local
      *            Is this the local node?
@@ -79,7 +79,7 @@ final class NodeInfo {
      * 
      * @param id
      *            The task identifier to search for.
-     * @return The index of the ActiveTask with this id, or -1 if there isn't
+     * @return The index of the ActiveJob with this id, or -1 if there isn't
      *         one.
      */
     private int searchActiveJob(long id) {
@@ -143,7 +143,7 @@ final class NodeInfo {
         }
     }
 
-    private synchronized ActiveJob extractActiveTask(long id) {
+    private synchronized ActiveJob extractActiveJob(long id) {
         final int ix = searchActiveJob(id);
         if (ix < 0) {
             return null;
@@ -162,17 +162,17 @@ final class NodeInfo {
         // We ignore the result of the extract: it doesn't really matter if the
         // task was
         // in our list of not.
-        extractActiveTask(taskId);
+        extractActiveJob(taskId);
     }
 
-    JobInstance registerTaskFailed(long id) {
-        final ActiveJob task = extractActiveTask(id);
+    JobInstance registerJobFailed(long id) {
+        final ActiveJob task = extractActiveJob(id);
         if (task == null) {
-            Globals.log.reportError("Task with unknown id " + id
+            Globals.log.reportError("Job with unknown id " + id
                     + " seems to have failed");
             return null;
         }
-        task.nodeJobInfo.registerTaskFailed();
+        task.nodeJobInfo.registerJobFailed();
         return task.job;
     }
 
@@ -184,11 +184,11 @@ final class NodeInfo {
      * @return The task instance that was completed if it may have duplicates,
      *         or <code>null</code>
      */
-    JobInstance registerTaskCompleted(JobCompletedMessage result) {
+    JobInstance registerJobCompleted(JobCompletedMessage result) {
         final long id = result.jobId; // The identifier of the task, as handed
         // out by us.
 
-        final ActiveJob task = extractActiveTask(id);
+        final ActiveJob task = extractActiveJob(id);
 
         if (task == null) {
             // Not in the list of active tasks, presumably because it was
@@ -196,10 +196,10 @@ final class NodeInfo {
             return null;
         }
         final double roundtripTime = result.arrivalMoment - task.startTime;
-        final NodeJobInfo nodeTaskInfo = task.nodeJobInfo;
+        final NodeJobInfo nodeJobInfo = task.nodeJobInfo;
         final JobType type = task.job.type;
         if (task.getAllowanceDeadline() < result.arrivalMoment) {
-            nodeTaskInfo.registerMissedAllowanceDeadline();
+            nodeJobInfo.registerMissedAllowanceDeadline();
             if (Settings.traceMissedDeadlines) {
                 Globals.log.reportProgress("Missed allowance deadline for "
                         + type
@@ -224,9 +224,9 @@ final class NodeInfo {
                                 - task.startTime) + " realDuration="
                         + Utils.formatSeconds(roundtripTime));
             }
-            nodeTaskInfo.registerMissedRescheduleDeadline();
+            nodeJobInfo.registerMissedRescheduleDeadline();
         }
-        nodeTaskInfo.registerTaskCompleted(roundtripTime);
+        nodeJobInfo.registerJobCompleted(roundtripTime);
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Master: retired task " + task
                     + " roundtripTime="
@@ -244,7 +244,7 @@ final class NodeInfo {
      * @param result
      *            The task received message that tells about this task.
      */
-    void registerTaskReceived(JobReceivedMessage result) {
+    void registerJobReceived(JobReceivedMessage result) {
         final ActiveJob task;
 
         // The identifier of the task, as handed out by us.
@@ -260,11 +260,11 @@ final class NodeInfo {
             task = activeJobs.get(ix);
         }
         final double transmissionTime = result.arrivalMoment - task.startTime;
-        final NodeJobInfo nodeTaskInfo = task.nodeJobInfo;
+        final NodeJobInfo nodeJobInfo = task.nodeJobInfo;
         if (!local) {
             // If this is not the local node, this is interesting info.
             // If it is local, we know better: transmission time is 0.
-            nodeTaskInfo.registerTaskReceived(transmissionTime);
+            nodeJobInfo.registerJobReceived(transmissionTime);
         }
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Master: retired task " + task
@@ -285,13 +285,13 @@ final class NodeInfo {
      */
     void registerJobStart(JobInstance task, long id, double predictedDuration) {
         final JobType type = task.type;
-        final NodeJobInfo workerTaskInfo = nodeJobInfoList[type.index];
-        if (workerTaskInfo == null) {
+        final NodeJobInfo workerJobInfo = nodeJobInfoList[type.index];
+        if (workerJobInfo == null) {
             Globals.log
                     .reportInternalError("No worker task info for task type "
                             + type);
         } else {
-            workerTaskInfo.incrementOutstandingTasks();
+            workerJobInfo.incrementOutstandingJobs();
         }
         final double now = Utils.getPreciseTime();
         final double deadlineInterval = predictedDuration
@@ -302,7 +302,7 @@ final class NodeInfo {
                 + Math.max(deadlineInterval, Settings.MINIMAL_DEADLINE);
         final double rescheduleDeadline = now + deadlineInterval
                 * Settings.RESCHEDULE_DEADLINE_MULTIPLIER;
-        final ActiveJob j = new ActiveJob(task, id, now, workerTaskInfo,
+        final ActiveJob j = new ActiveJob(task, id, now, workerJobInfo,
                 predictedDuration, allowanceDeadline, rescheduleDeadline);
         synchronized (this) {
             activeJobs.add(j);
@@ -365,9 +365,9 @@ final class NodeInfo {
                         // Worker missed an allowance deadline.
                         final double t = now - task.startTime
                                 + task.predictedDuration;
-                        final NodeJobInfo workerTaskInfo = task.nodeJobInfo;
-                        if (workerTaskInfo != null) {
-                            workerTaskInfo.updateRoundtripTimeEstimate(t);
+                        final NodeJobInfo workerJobInfo = task.nodeJobInfo;
+                        if (workerJobInfo != null) {
+                            workerJobInfo.updateRoundtripTimeEstimate(t);
                         }
                         task.setAllowanceDeadline(t);
                     }
@@ -378,23 +378,23 @@ final class NodeInfo {
     }
 
     synchronized LocalNodeInfo getLocalInfo() {
-        final int currentTasks[] = new int[nodeJobInfoList.length];
+        final int currentJobs[] = new int[nodeJobInfoList.length];
         final double transmissionTime[] = new double[nodeJobInfoList.length];
         final double predictedDuration[] = new double[nodeJobInfoList.length];
 
         for (int i = 0; i < nodeJobInfoList.length; i++) {
-            final NodeJobInfo nodeTaskInfo = nodeJobInfoList[i];
-            if (nodeTaskInfo == null) {
-                currentTasks[i] = 0;
+            final NodeJobInfo nodeJobInfo = nodeJobInfoList[i];
+            if (nodeJobInfo == null) {
+                currentJobs[i] = 0;
                 transmissionTime[i] = 0;
                 predictedDuration[i] = Double.POSITIVE_INFINITY;
             } else {
-                currentTasks[i] = nodeTaskInfo.getCurrentTasks();
-                transmissionTime[i] = nodeTaskInfo.getTransmissionTime();
-                predictedDuration[i] = nodeTaskInfo.estimateRoundtripTime();
+                currentJobs[i] = nodeJobInfo.getCurrentJobs();
+                transmissionTime[i] = nodeJobInfo.getTransmissionTime();
+                predictedDuration[i] = nodeJobInfo.estimateRoundtripTime();
             }
         }
-        return new LocalNodeInfo(suspect, currentTasks, transmissionTime,
+        return new LocalNodeInfo(suspect, currentJobs, transmissionTime,
                 predictedDuration);
     }
 }

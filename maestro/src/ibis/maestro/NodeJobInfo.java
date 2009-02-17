@@ -15,10 +15,10 @@ final class NodeJobInfo {
     private final TimeEstimate roundtripTimeEstimate;
 
     /** How many instances of this task does this worker currently have? */
-    private int outstandingTasks = 0;
+    private int outstandingJobs = 0;
 
     /** How many task instances has this worker executed until now? */
-    private int executedTasks = 0;
+    private int executedJobs = 0;
 
     private boolean failed = false;
 
@@ -46,7 +46,7 @@ final class NodeJobInfo {
         this.transmissionTimeEstimate = new TimeEstimate(pingTime);
         this.roundtripTimeEstimate = new TimeEstimate(2 * pingTime);
         if (Settings.traceWorkerList || Settings.traceRemainingJobTime) {
-            Globals.log.reportProgress("Created new WorkerTaskInfo "
+            Globals.log.reportProgress("Created new WorkerJobInfo "
                     + toString());
         }
     }
@@ -58,7 +58,7 @@ final class NodeJobInfo {
     public String toString() {
         return "[taskInfo=" + taskInfo + " worker=" + nodeInfo
                 + " transmissionTimeEstimate=" + transmissionTimeEstimate
-                + " outstandingTasks=" + outstandingTasks + "]";
+                + " outstandingJobs=" + outstandingJobs + "]";
     }
 
     /**
@@ -67,9 +67,9 @@ final class NodeJobInfo {
      * @param roundtripTime
      *            The total roundtrip time of this task.
      */
-    synchronized void registerTaskCompleted(double roundtripTime) {
-        executedTasks++;
-        outstandingTasks--;
+    synchronized void registerJobCompleted(double roundtripTime) {
+        executedJobs++;
+        outstandingJobs--;
         roundtripTimeEstimate.addSample(roundtripTime);
         if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
             final String label = "task=" + taskInfo + " worker=" + nodeInfo;
@@ -84,7 +84,7 @@ final class NodeJobInfo {
      * @param transmissionTime
      *            The transmission time of this task.
      */
-    synchronized void registerTaskReceived(double transmissionTime) {
+    synchronized void registerJobReceived(double transmissionTime) {
         transmissionTimeEstimate.addSample(transmissionTime);
         if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
             final String label = "task=" + taskInfo + " worker=" + nodeInfo;
@@ -93,7 +93,7 @@ final class NodeJobInfo {
         }
     }
 
-    synchronized void registerTaskFailed() {
+    synchronized void registerJobFailed() {
         failed = true;
     }
 
@@ -117,15 +117,15 @@ final class NodeJobInfo {
     }
 
     /** Register that there is a new outstanding task. */
-    synchronized void incrementOutstandingTasks() {
-        outstandingTasks++;
+    synchronized void incrementOutstandingJobs() {
+        outstandingJobs++;
     }
 
     /**
      * @return True iff this worker ever executed a task of this type.
      */
     private synchronized boolean didWork() {
-        return (executedTasks != 0) || (outstandingTasks != 0);
+        return (executedJobs != 0) || (outstandingJobs != 0);
     }
 
     synchronized double estimateRoundtripTime() {
@@ -137,7 +137,7 @@ final class NodeJobInfo {
 
     synchronized void printStatistics(PrintStream s) {
         if (didWork()) {
-            s.println("  " + taskInfo.type + ": executed " + executedTasks
+            s.println("  " + taskInfo.type + ": executed " + executedJobs
                     + " tasks, xmit time " + transmissionTimeEstimate
                     + (failed ? " FAILED" : ""));
             final int missedAllowance = missedAllowanceDeadlines.get();
@@ -150,8 +150,8 @@ final class NodeJobInfo {
         }
     }
 
-    synchronized int getCurrentTasks() {
-        return outstandingTasks;
+    synchronized int getCurrentJobs() {
+        return outstandingJobs;
     }
 
     synchronized double getTransmissionTime() {

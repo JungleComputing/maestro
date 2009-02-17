@@ -281,17 +281,17 @@ class Gossip {
         return localPerformanceInfo.timeStamp;
     }
 
-    void localNodeFailTask(JobType type) {
-        localPerformanceInfo.failTask(type);
+    void localNodeFailJob(JobType type) {
+        localPerformanceInfo.failJob(type);
     }
 
     void setLocalComputeTime(JobType type, double t) {
         localPerformanceInfo.setComputeTime(type, t);
     }
 
-    void setWorkerQueueTimePerTask(JobType type, double queueTimePerTask,
+    void setWorkerQueueTimePerJob(JobType type, double queueTimePerJob,
             int queueLength) {
-        localPerformanceInfo.setWorkerQueueTimePerTask(type, queueTimePerTask,
+        localPerformanceInfo.setWorkerQueueTimePerJob(type, queueTimePerJob,
                 queueLength);
     }
 

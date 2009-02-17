@@ -30,7 +30,7 @@ class Settings {
     static final boolean traceTypeHandling = false;
 
     /** Trace the handling or result tasks? */
-    static final boolean traceResultTasks = false;
+    static final boolean traceResultJobs = false;
 
     /** Trace the progress of the worker lists of masters. */
     static final boolean traceWorkerList = false;

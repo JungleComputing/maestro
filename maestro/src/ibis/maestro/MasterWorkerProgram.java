@@ -50,7 +50,7 @@ class MasterWorkerProgram {
         }
     }
 
-    private static class SharpenTask implements UnpredictableAtomicJob {
+    private static class SharpenJob implements UnpredictableAtomicJob {
         private static final long serialVersionUID = 7652370809998864296L;
 
         private static final int BANDS = 3;
@@ -247,7 +247,7 @@ class MasterWorkerProgram {
             throws Exception {
         JobList jobs = new JobList();
 
-        JobSequence job = jobs.createJobSequence( new SharpenTask());
+        JobSequence job = jobs.createJobSequence( new SharpenJob());
         Node node = Node.createNode(jobs, goForMaestro);
         Listener listener = new Listener(node, taskCount);
         System.out.println("Node created");

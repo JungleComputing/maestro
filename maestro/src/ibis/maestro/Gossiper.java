@@ -371,7 +371,7 @@ class Gossiper extends Thread {
     }
 
     void failJob(JobType type) {
-        gossip.localNodeFailTask(type);
+        gossip.localNodeFailJob(type);
         addQuotum();
     }
 
@@ -380,9 +380,9 @@ class Gossiper extends Thread {
         addQuotum();
     }
 
-    void setWorkerQueueTimePerJob(JobType type, double queueTimePerTask,
+    void setWorkerQueueTimePerJob(JobType type, double queueTimePerJob,
             int queueLength) {
-        gossip.setWorkerQueueTimePerTask(type, queueTimePerTask, queueLength);
+        gossip.setWorkerQueueTimePerJob(type, queueTimePerJob, queueLength);
         addQuotum();
     }
 

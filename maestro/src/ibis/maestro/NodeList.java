@@ -78,11 +78,11 @@ final class NodeList {
             node = ibisToNodeMap.get(result.source);
         }
         if (node == null) {
-            Globals.log.reportError("Task completed message from unknown node "
+            Globals.log.reportError("Job completed message from unknown node "
                     + result.source);
             return null;
         }
-        final JobInstance task = node.registerTaskCompleted(result);
+        final JobInstance task = node.registerJobCompleted(result);
         node.registerAsCommunicating();
         return task;
     }
@@ -100,11 +100,11 @@ final class NodeList {
         }
         if (node == null) {
             Globals.log
-                    .reportInternalError("Task received message from unknown node "
+                    .reportInternalError("Job received message from unknown node "
                             + msg.source);
             return;
         }
-        node.registerTaskReceived(msg);
+        node.registerJobReceived(msg);
         node.registerAsCommunicating();
     }
 
@@ -123,12 +123,12 @@ final class NodeList {
             node = ibisToNodeMap.get(ibis);
         }
         if (node == null) {
-            Globals.log.reportError("Task failed message from unknown node "
+            Globals.log.reportError("Job failed message from unknown node "
                     + ibis);
             return null;
         }
         node.registerAsCommunicating();
-        return node.registerTaskFailed(taskId);
+        return node.registerJobFailed(taskId);
     }
 
     /**
