@@ -185,7 +185,7 @@ final class NodeInfo {
      *         or <code>null</code>
      */
     JobInstance registerTaskCompleted(JobCompletedMessage result) {
-        final long id = result.taskId; // The identifier of the task, as handed
+        final long id = result.jobId; // The identifier of the task, as handed
         // out by us.
 
         final ActiveJob task = extractActiveTask(id);
@@ -248,7 +248,7 @@ final class NodeInfo {
         final ActiveJob task;
 
         // The identifier of the task, as handed out by us.
-        final long id = result.taskId;
+        final long id = result.jobId;
         synchronized (this) {
             final int ix = searchActiveJob(id);
 

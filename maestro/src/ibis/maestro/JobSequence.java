@@ -164,15 +164,15 @@ public final class JobSequence implements Job {
      *            The current job type.
      * @return The next job type, or <code>null</code> if there isn't one.
      */
-    JobType getPreviousTaskType(JobType jobType) {
+    JobType getPreviousJobType(JobType jobType) {
         if (!id.equals(jobType.job)) {
             Globals.log
                     .reportInternalError("getPreviousTaskType(): not my job: "
                             + jobType.job);
             return null;
         }
-        if (jobType.taskNo > 0) {
-            return jobTypes[jobType.taskNo - 1];
+        if (jobType.jobNo > 0) {
+            return jobTypes[jobType.jobNo - 1];
         }
         return null;
     }
@@ -185,14 +185,14 @@ public final class JobSequence implements Job {
      *            The current task type.
      * @return The next task type, or <code>null</code> if there isn't one.
      */
-    JobType getNextTaskType(JobType taskType) {
+    JobType getNextJobType(JobType taskType) {
         if (!id.equals(taskType.job)) {
             Globals.log.reportInternalError("getNextTaskType(): not my job: "
                     + taskType.job);
             return null;
         }
-        if (taskType.taskNo < jobs.length - 1) {
-            return jobTypes[taskType.taskNo + 1];
+        if (taskType.jobNo < jobs.length - 1) {
+            return jobTypes[taskType.jobNo + 1];
         }
         return null;
     }
@@ -213,16 +213,7 @@ public final class JobSequence implements Job {
         s.println("Job " + id + ": " + jobTime.toString());
     }
 
-    static int getTaskCount() {
+    static int getJobCount() {
         return index;
-    }
-
-    /**
-     * Returns the first task type of this job.
-     * 
-     * @return The first task type.
-     */
-    JobType getFirstJobType() {
-        return jobTypes[0];
     }
 }

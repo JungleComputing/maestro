@@ -5,7 +5,7 @@ import ibis.maestro.JobSequence.JobSequenceIdentifier;
 import java.io.Serializable;
 
 /**
- * A task type.
+ * A job type.
  * 
  * @author Kees van Reeuwijk
  */
@@ -13,9 +13,9 @@ final class JobType implements Serializable {
     /** Contractual obligation. */
     private static final long serialVersionUID = 13451L;
 
-    final int taskNo;
+    final int jobNo;
 
-    final int remainingTasks;
+    final int remainingJobs;
 
     final int index;
 
@@ -24,20 +24,20 @@ final class JobType implements Serializable {
     final boolean unpredictable;
 
     /**
-     * Constructs a new task type.
+     * Constructs a new job type.
      * 
      * @param id
-     *            The job this task belongs to.
+     *            The job sequence this job belongs to.
      * @param taskNo
-     *            The sequence number within the job.
-     * @param remainingTasks
+     *            The sequence number within the job sequence.
+     * @param remainingJobs
      *            The number of tasks after this one in the job.
      */
-    JobType(JobSequenceIdentifier id, int taskNo, int remainingTasks,
+    JobType(JobSequenceIdentifier id, int taskNo, int remainingJobs,
             boolean unpredictable, int index) {
         this.job = id;
-        this.taskNo = taskNo;
-        this.remainingTasks = remainingTasks;
+        this.jobNo = taskNo;
+        this.remainingJobs = remainingJobs;
         this.unpredictable = unpredictable;
         this.index = index;
     }
@@ -49,21 +49,21 @@ final class JobType implements Serializable {
      */
     @Override
     public String toString() {
-        return "(" + job.toString() + ",T" + taskNo + ")";
+        return "(" + job.toString() + ",J" + jobNo + ")";
     }
 
     /**
-     * Returns the hash code of this task type.
+     * Returns the hash code of this job type.
      * 
      * @return The hash code.
      */
     @Override
     public int hashCode() {
-        return job.hashCode() * 100 + taskNo;
+        return job.hashCode() * 100 + jobNo;
     }
 
     /**
-     * Returns true iff the given object is a task type that is equal to this
+     * Returns true iff the given object is a job type that is equal to this
      * one.
      * 
      * @param obj
@@ -79,7 +79,7 @@ final class JobType implements Serializable {
         if (getClass() != obj.getClass())
             return false;
         final JobType other = (JobType) obj;
-        if (taskNo != other.taskNo)
+        if (jobNo != other.jobNo)
             return false;
         if (job == null) {
             if (other.job != null)
@@ -90,20 +90,20 @@ final class JobType implements Serializable {
     }
 
     /**
-     * Compares two task types based on priority. Returns 1 if type a has more
+     * Compares two job types based on priority. Returns 1 if type a has more
      * priority as b, etc.
      * 
      * @param a
-     *            One of the task types to compare.
+     *            One of the job types to compare.
      * @param b
-     *            The other task type to compare.
+     *            The other tjob type to compare.
      * @return The comparison result.
      */
     static int comparePriorities(JobType a, JobType b) {
-        if (a.taskNo > b.taskNo) {
+        if (a.jobNo > b.jobNo) {
             return -1;
         }
-        if (a.taskNo < b.taskNo) {
+        if (a.jobNo < b.jobNo) {
             return 1;
         }
         return 0;

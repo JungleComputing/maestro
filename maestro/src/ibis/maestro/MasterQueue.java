@@ -10,21 +10,21 @@ import java.util.HashMap;
  * A class representing the master work queue.
  * 
  * This requires a special implementation because we want to enforce priorities
- * for the different task types, and we want to know which task types are
+ * for the different job types, and we want to know which job types are
  * currently present in the queue.
  * 
  * @author Kees van Reeuwijk
  * 
  */
 final class MasterQueue {
-    private int taskCount = 0;
+    private int jobCount = 0;
 
     private final TypeInfo queueTypes[];
 
     private final ArrayList<JobInstance> queue = new ArrayList<JobInstance>();
 
     /**
-     * Statistics per type for the different task types in the queue.
+     * Statistics per type for the different job types in the queue.
      * 
      * @author Kees van Reeuwijk
      */
@@ -32,7 +32,7 @@ final class MasterQueue {
         /** The type these statistics are about. */
         private final JobType type;
 
-        /** The total number of tasks of this type that entered the queue. */
+        /** The total number of jobs of this type that entered the queue. */
         private long taskCount = 0;
 
         /** Current number of elements of this type in the queue. */
@@ -181,7 +181,7 @@ final class MasterQueue {
      */
     @SuppressWarnings("synthetic-access")
     protected synchronized void add(JobInstance task) {
-        taskCount++;
+        jobCount++;
         final int pos = findInsertionPoint(queue, task);
         queue.add(pos, task);
 
@@ -225,22 +225,22 @@ final class MasterQueue {
                 t.printStatistics(s);
             }
         }
-        s.printf("Master: # incoming tasks = %5d\n", taskCount);
+        s.printf("Master: # incoming jobs = %5d\n", jobCount);
     }
 
     /**
-     * Given a task type, select the best worker from the list that has a free
+     * Given a job type, select the best worker from the list that has a free
      * slot. In this context 'best' is simply the worker with the shortest
      * overall completion time.
      * 
      * @param type
-     *            The type of task we want to execute.
-     * @return The info of the best worker for this task, or <code>null</code>
-     *         if there currently aren't any workers for this task type.
+     *            The type of job we want to execute.
+     * @return The info of the best worker for this job, or <code>null</code>
+     *         if there currently aren't any workers for this job type.
      */
     private Submission selectBestWorker(
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
-            NodePerformanceInfo tables[], JobInstance task) {
+            NodePerformanceInfo tables[], JobInstance job) {
         NodePerformanceInfo best = null;
         double bestInterval = Double.POSITIVE_INFINITY;
 
@@ -248,7 +248,7 @@ final class MasterQueue {
             final LocalNodeInfo localNodeInfo = localNodeInfoMap
                     .get(info.source);
             final double val = info.estimateJobCompletion(localNodeInfo,
-                    task.type, Settings.HARD_ALLOWANCES);
+                    job.type, Settings.HARD_ALLOWANCES);
 
             if (val < bestInterval) {
                 bestInterval = val;
@@ -265,7 +265,7 @@ final class MasterQueue {
                 final LocalNodeInfo localNodeInfo = localNodeInfoMap
                         .get(info.source);
                 final double val = info.estimateJobCompletion(localNodeInfo,
-                        task.type, true);
+                        job.type, true);
                 s.print(Utils.formatSeconds(val));
                 if (val == bestInterval && val != Double.POSITIVE_INFINITY) {
                     s.print('$');
@@ -276,19 +276,19 @@ final class MasterQueue {
         }
         if (best == null) {
             if (Settings.traceMasterQueue) {
-                Globals.log.reportProgress("No workers for task of type "
-                        + task.type);
+                Globals.log.reportProgress("No workers for job of type "
+                        + job.type);
             }
             return null;
         }
         if (Settings.traceMasterQueue) {
             Globals.log.reportProgress("Selected worker " + best.source
-                    + " for task of type " + task.type);
+                    + " for job of type " + job.type);
         }
         final LocalNodeInfo localNodeInfo = localNodeInfoMap.get(best.source);
         final double predictedDuration = localNodeInfo
-                .getPredictedDuration(task.type);
-        return new Submission(task, best.source, predictedDuration);
+                .getPredictedDuration(job.type);
+        return new Submission(job, best.source, predictedDuration);
     }
 
     /**
@@ -303,12 +303,12 @@ final class MasterQueue {
     synchronized Submission getSubmission(
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
             NodePerformanceInfo[] tables) {
-        int busyTypeIndex = -1; // Don't even consider tasks of this type, all
+        int busyTypeIndex = -1; // Don't even consider jobs of this type, all
         // workers are busy.
         int ix = 0;
         while (ix < queue.size()) {
-            final JobInstance task = queue.get(ix);
-            final JobType type = task.type;
+            final JobInstance job = queue.get(ix);
+            final JobType type = job.type;
             if (type.index == busyTypeIndex) {
                 if (Settings.traceMasterQueue || Settings.traceQueuing) {
                     Globals.log.reportProgress("Type " + type
@@ -316,7 +316,7 @@ final class MasterQueue {
                 }
             } else {
                 final Submission sub = selectBestWorker(localNodeInfoMap,
-                        tables, task);
+                        tables, job);
                 if (sub == null) {
                     busyTypeIndex = type.index;
                 } else {
@@ -326,7 +326,7 @@ final class MasterQueue {
                     if (Settings.traceMasterQueue || Settings.traceQueuing) {
                         final int length = queueTypeInfo.elements;
                         Globals.log.reportProgress("Removing "
-                                + task.formatJobAndType()
+                                + job.formatJobAndType()
                                 + " from master queue; length is now "
                                 + queue.size() + "; " + length + " of type "
                                 + type);
@@ -334,7 +334,7 @@ final class MasterQueue {
                     return sub;
                 }
                 if (Settings.traceMasterQueue) {
-                    Globals.log.reportProgress("No ready worker for task type "
+                    Globals.log.reportProgress("No ready worker for job type "
                             + type);
                 }
             }
@@ -365,14 +365,14 @@ final class MasterQueue {
     }
 
     /**
-     * Remove any copies of the given task instance from the master queue;
+     * Remove any copies of the given job instance from the master queue;
      * somebody already completed it.
      * 
-     * @param task
+     * @param job
      *            The task to remove.
      */
-    synchronized void removeDuplicates(JobInstance task) {
-        while (queue.remove(task)) {
+    synchronized void removeDuplicates(JobInstance job) {
+        while (queue.remove(job)) {
             // Nothing.
         }
     }

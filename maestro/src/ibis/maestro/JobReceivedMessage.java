@@ -4,7 +4,7 @@ import ibis.ipl.IbisIdentifier;
 
 /**
  * A message from the worker to the master, telling the master that the worker
- * has received the given task.
+ * has received the given job.
  * 
  * @author Kees van Reeuwijk
  * 
@@ -14,7 +14,7 @@ final class JobReceivedMessage extends Message {
     private static final long serialVersionUID = 1L;
 
     /** The identifier of the job. */
-    final long taskId;
+    final long jobId;
 
     final IbisIdentifier source;
 
@@ -26,7 +26,7 @@ final class JobReceivedMessage extends Message {
      */
     JobReceivedMessage(long jobId) {
         source = Globals.localIbis.identifier();
-        this.taskId = jobId;
+        this.jobId = jobId;
     }
 
     /**
@@ -36,6 +36,6 @@ final class JobReceivedMessage extends Message {
      */
     @Override
     public String toString() {
-        return "task received message: taskId=" + taskId;
+        return "job received message: jobId=" + jobId;
     }
 }

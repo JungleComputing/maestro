@@ -1145,8 +1145,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                     + " " + workerDwellTime);
         }
         if (!deadNodes.contains(message.source)) {
-            final Message msg = new JobCompletedMessage(message.jobId,
-                    workerDwellTime);
+            final Message msg = new JobCompletedMessage(message.jobId);
             boolean ok = sendPort.send(message.source, msg);
     
             if (!ok) {
@@ -1155,8 +1154,8 @@ public final class Node extends Thread implements PacketReceiveListener {
                 ok = sendPort.send(message.source, msg);
                 if (!ok) {
                     // Unfortunately, that didn't work.
-                    // TODO: think up another way to recover from failed result
-                    // report.
+                    // TODO: think up another way to recover from a failed
+                    // result report.
                     Globals.log
                             .reportError("Failed to send job completed message to "
                                     + message.source);

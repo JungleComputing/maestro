@@ -44,15 +44,15 @@ public final class JobList {
         return null;
     }
 
-    JobType getPreviousTaskType(JobType t) {
+    JobType getPreviousJobType(JobType t) {
         final JobSequence job = searchJobID(t.job);
         if (job == null) {
             Globals.log
-                    .reportInternalError("getPreviousTaskType(): task type with unknown job id: "
+                    .reportInternalError("getPreviousJobType(): job type with unknown job id: "
                             + t);
             return null;
         }
-        return job.getPreviousTaskType(t);
+        return job.getPreviousJobType(t);
     }
 
     void printStatistics(PrintStream s) {
@@ -68,36 +68,36 @@ public final class JobList {
      *            The job to register.
      */
     void registerJob(JobSequence job) {
-        final Job tasks[] = job.jobs;
+        final Job jobs[] = job.jobs;
 
-        for (int i = 0; i < tasks.length; i++) {
-            final Job t = tasks[i];
+        for (int i = 0; i < jobs.length; i++) {
+            final Job t = jobs[i];
 
-            final JobType taskType = job.jobTypes[i];
+            final JobType jobType = job.jobTypes[i];
             if (t.isSupported()) {
                 if (Settings.traceTypeHandling) {
                     Globals.log.reportProgress("Node supports task type "
-                            + taskType);
+                            + jobType);
                 }
-                supportedJobTypes.add(taskType);
+                supportedJobTypes.add(jobType);
             }
-            final int ix = taskType.index;
+            final int ix = jobType.index;
             while (allJobTypes.size() <= ix) {
                 allJobTypes.add(null);
             }
             if (allJobTypes.get(ix) != null) {
                 Globals.log.reportInternalError("Duplicate type index " + ix);
             }
-            allJobTypes.set(ix, taskType);
+            allJobTypes.set(ix, jobType);
         }
     }
 
     /**
-     * Creates a job with the given name and the given sequence of tasks. The
-     * jobs in the task will be executed in the given order.
+     * Creates a job with the given name and the given sequence of jobs. The
+     * jobs in the sequence will be executed in the given order.
      * 
      * @param jobs
-     *            The list of tasks of the job.
+     *            The list of jobs of the job.
      * @return A new job instance representing this job.
      */
     public JobSequence createJobSequence(Job... jobs) {
@@ -110,9 +110,9 @@ public final class JobList {
     }
 
     /**
-     * Returns a list of all the supported task types.
+     * Returns a list of all the supported job types.
      * 
-     * @return A list of all supported task types.
+     * @return A list of all supported job types.
      */
     JobType[] getSupportedJobTypes() {
         return supportedJobTypes.toArray(new JobType[supportedJobTypes
@@ -125,16 +125,15 @@ public final class JobList {
 
     Job getJob(JobType type) {
         final JobSequence job = findJob(type);
-        final Job task = job.jobs[type.taskNo];
-        return task;
+        return job.jobs[type.jobNo];
     }
 
     JobType getNextJobType(JobType type) {
         final JobSequence job = findJob(type);
-        return job.getNextTaskType(type);
+        return job.getNextJobType(type);
     }
 
-    int getNumberOfTaskTypes() {
+    int getNumberOfJobTypes() {
         return jobCounter;
     }
 
