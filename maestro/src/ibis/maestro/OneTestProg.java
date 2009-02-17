@@ -117,7 +117,7 @@ class OneTestProg {
 
         if (args.length == 0) {
             System.err
-                    .println("Missing parameter: I need a task count, or 'worker'");
+                    .println("Missing parameter: I need a job count, or 'worker'");
             System.exit(1);
         }
         String arg = args[0];

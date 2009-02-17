@@ -18,12 +18,12 @@ class NodePerformanceInfo implements Serializable {
     final IbisIdentifier source;
 
     /**
-     * For each type of task we know, the estimated time it will take to
-     * complete the remaining tasks of this job.
+     * For each type of job we know, the estimated time it will take to
+     * complete the remaining jobs of this job.
      */
     final double[] completionInfo;
 
-    /** For each type of task we know, the queue length on this worker. */
+    /** For each type of job we know, the queue length on this worker. */
     WorkerQueueInfo[] workerQueueInfo;
 
     long timeStamp;
@@ -116,7 +116,7 @@ class NodePerformanceInfo implements Serializable {
             }
             return Double.POSITIVE_INFINITY;
         }
-        // Give nodes already running tasks some penalty to encourage
+        // Give nodes already running jobs some penalty to encourage
         // spreading the load over nodes.
         final double executionTime = queueInfo.getExecutionTime();
         unpredictableOverhead = (currentJobs * executionTime) / 10;
@@ -136,7 +136,7 @@ class NodePerformanceInfo implements Serializable {
 
     /**
      * Given the index of a type, return the interval in nanoseconds it will
-     * take from the moment a task of this type arrives at the worker queue of
+     * take from the moment a job of this type arrives at the worker queue of
      * this node, until the entire job it belongs to is completed.
      * 
      * @param ix

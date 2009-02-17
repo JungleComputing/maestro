@@ -23,7 +23,7 @@ final class WorkThread extends Thread {
     }
 
     /**
-     * Run this thread: keep getting and executing tasks until a null task is
+     * Run this thread: keep getting and executing jobs until a null job is
      * returned.
      */
     @Override

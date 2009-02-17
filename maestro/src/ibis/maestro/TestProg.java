@@ -129,9 +129,9 @@ class TestProg {
         }
 
         /**
-         * Returns true iff this task is supported in this context.
+         * Returns true iff this job is supported in this context.
          * 
-         * @return True iff this task is supported.
+         * @return True iff this job is supported.
          */
         @Override
         public boolean isSupported() {

@@ -29,7 +29,7 @@ class Settings {
     /** Trace type handling? */
     static final boolean traceTypeHandling = false;
 
-    /** Trace the handling or result tasks? */
+    /** Trace the handling or result jobs? */
     static final boolean traceResultJobs = false;
 
     /** Trace the progress of the worker lists of masters. */
@@ -100,13 +100,13 @@ class Settings {
 
     /**
      * Multiplier of the estimated completion time to get an allowance deadline
-     * for a task.
+     * for a job.
      */
     static final long ALLOWANCE_DEADLINE_MARGIN = 3;
 
     /**
      * Multiplier of the allowance deadline to get a reschedule deadline for a
-     * task.
+     * job.
      */
     static final long RESCHEDULE_DEADLINE_MULTIPLIER = 2;
 
@@ -120,7 +120,7 @@ class Settings {
     static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 5 * GOSSIP_EXPIRATION_IN_CLUSTER;
 
     /**
-     * This many nodes that recently sent a task will be kept directly up to
+     * This many nodes that recently sent a job will be kept directly up to
      * date with our state changes (instead of through the gossip system).
      */
     static final int MAXIMAL_RECENT_MASTERS = 4;
@@ -143,11 +143,11 @@ class Settings {
     /** The default sleep time in ms between node terminations. */
     static final long DEFAULT_TERMINATOR_SLEEP = 100;
 
-    /** Don't take the time tasks spend the queues into account. */
+    /** Don't take the time jobs spend the queues into account. */
     static final boolean IGNORE_QUEUE_TIME = false;
 
     /**
-     * If set, processors over their allowance never get a new task, otherwise
+     * If set, processors over their allowance never get a new job, otherwise
      * they can get one if they are significantly faster.
      */
     static final boolean HARD_ALLOWANCES = true;
@@ -155,7 +155,7 @@ class Settings {
     /** Time in ms between polling attempts for free room in the master queue. */
     static final long ROOM_POLL_INTERVAL = 10L;
 
-    /** The number of tasks in the master queue before we start blocking. */
+    /** The number of jobs in the master queue before we start blocking. */
     static final int MAESTRO_MASTER_ROOM = 25;
 
     /**

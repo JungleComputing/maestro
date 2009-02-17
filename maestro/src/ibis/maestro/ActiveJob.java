@@ -13,10 +13,10 @@ class ActiveJob {
 
     final NodeJobInfo nodeJobInfo;
 
-    /** The time this task was sent to the worker. */
+    /** The time this job was sent to the worker. */
     final double startTime;
 
-    /** The predicted duration of the task. */
+    /** The predicted duration of the job. */
     final double predictedDuration;
 
     private double allowanceDeadline;
@@ -65,13 +65,13 @@ class ActiveJob {
     }
 
     /**
-     * Returns a string representation of this task queue entry.
+     * Returns a string representation of this job queue entry.
      * 
      * @return The string.
      */
     @Override
     public String toString() {
-        return "(ActiveJob id=" + id + ", task=" + job + ", start time "
+        return "(ActiveJob id=" + id + ", job=" + job + ", start time "
                 + Utils.formatSeconds(startTime) + ')';
     }
 

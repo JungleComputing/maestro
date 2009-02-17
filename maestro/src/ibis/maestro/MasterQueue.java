@@ -33,7 +33,7 @@ final class MasterQueue {
         private final JobType type;
 
         /** The total number of jobs of this type that entered the queue. */
-        private long taskCount = 0;
+        private long jobCount = 0;
 
         /** Current number of elements of this type in the queue. */
         private int elements = 0;
@@ -43,7 +43,7 @@ final class MasterQueue {
 
         private double frontChangedTime = 0;
 
-        /** The estimated time interval between tasks being dequeued. */
+        /** The estimated time interval between jobs being dequeued. */
         private final TimeEstimate dequeueInterval = new TimeEstimate(
                 1 * Utils.MILLISECOND);
 
@@ -52,8 +52,8 @@ final class MasterQueue {
         }
 
         private synchronized void printStatistics(PrintStream s) {
-            s.println("master queue for " + type + ": " + taskCount
-                    + " tasks; dequeue interval: " + dequeueInterval
+            s.println("master queue for " + type + ": " + jobCount
+                    + " jobs; dequeue interval: " + dequeueInterval
                     + "; maximal queue size: " + maxElements);
         }
 
@@ -67,7 +67,7 @@ final class MasterQueue {
                 // record the time it became this.
                 frontChangedTime = Utils.getPreciseTime();
             }
-            taskCount++;
+            jobCount++;
             return elements;
         }
 
@@ -91,14 +91,14 @@ final class MasterQueue {
         }
 
         /**
-         * Estimate the time a new task will spend in the queue.
+         * Estimate the time a new job will spend in the queue.
          * 
-         * @return The estimated time in seconds a new task will spend in
+         * @return The estimated time in seconds a new job will spend in
          *         the queue.
          */
         synchronized double estimateQueueTime() {
             final double timePerEntry = dequeueInterval.getAverage();
-            // Since at least one processor isn't working on a task (or we
+            // Since at least one processor isn't working on a job (or we
             // wouldn't be here), we are only impressed if there is more
             // than one idle processor.
             final double res = timePerEntry * (1 + elements);
@@ -110,7 +110,7 @@ final class MasterQueue {
     /**
      * Constructs a new MasterQueue.
      * 
-     * @param taskTypes
+     * @param jobTypes
      *            The supported types.
      */
     MasterQueue(JobType allTypes[]) {
@@ -173,23 +173,23 @@ final class MasterQueue {
     }
 
     /**
-     * Submit a new task, belonging to the job with the given identifier, to the
+     * Submit a new job, belonging to the job with the given identifier, to the
      * queue.
      * 
-     * @param task
-     *            The task to submit.
+     * @param job
+     *            The job to submit.
      */
     @SuppressWarnings("synthetic-access")
-    protected synchronized void add(JobInstance task) {
+    protected synchronized void add(JobInstance job) {
         jobCount++;
-        final int pos = findInsertionPoint(queue, task);
-        queue.add(pos, task);
+        final int pos = findInsertionPoint(queue, job);
+        queue.add(pos, job);
 
-        final JobType type = task.type;
+        final JobType type = job.type;
         final TypeInfo info = queueTypes[type.index];
         final int length = info.registerAdd();
         if (Settings.traceQueuing) {
-            Globals.log.reportProgress("Adding " + task.formatJobAndType()
+            Globals.log.reportProgress("Adding " + job.formatJobAndType()
                     + " at position " + pos
                     + " of master queue; length is now " + queue.size() + "; "
                     + length + " of type " + type);
@@ -200,16 +200,16 @@ final class MasterQueue {
     }
 
     /**
-     * Adds all the task instances in the given list to the queue. The list may
+     * Adds all the job instances in the given list to the queue. The list may
      * be <code>null</code>.
      * 
      * @param l
-     *            The list of task instances to add.
+     *            The list of job instances to add.
      */
     void add(ArrayList<JobInstance> l) {
         if (l != null) {
-            for (final JobInstance task : l) {
-                add(task);
+            for (final JobInstance job : l) {
+                add(job);
             }
         }
     }
@@ -369,7 +369,7 @@ final class MasterQueue {
      * somebody already completed it.
      * 
      * @param job
-     *            The task to remove.
+     *            The job to remove.
      */
     synchronized void removeDuplicates(JobInstance job) {
         while (queue.remove(job)) {

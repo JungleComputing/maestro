@@ -8,14 +8,14 @@ package ibis.maestro;
 class LocalNodeInfo {
     final boolean suspect;
 
-    /** The number of currently running tasks of each type. */
+    /** The number of currently running jobs of each type. */
     private final int currentJobs[];
 
     /** The transmission time to the node for each type. */
     private final double transmissionTime[];
 
     /**
-     * The predicted turnaround time to the master for each type of task. Used
+     * The predicted turnaround time to the master for each type of job. Used
      * for scheduling deadlines.
      */
     private final double predictedDuration[];
@@ -41,12 +41,12 @@ class LocalNodeInfo {
     }
 
     /**
-     * Given a task type, returns the predicted duration of the task on the
+     * Given a job type, returns the predicted duration of the job on the
      * local node. (Used for scheduling deadlines.)
      * 
      * @param type
-     *            The type of task we want the prediction for.
-     * @return The predicted duration of the task in seconds.
+     *            The type of job we want the prediction for.
+     * @return The predicted duration of the job in seconds.
      */
     double getPredictedDuration(JobType type) {
         return predictedDuration[type.index];

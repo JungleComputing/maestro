@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 /**
- * Statistics per type for the different task types in the queue.
+ * Statistics per type for the different job types in the queue.
  * 
  * @author Kees van Reeuwijk
  */
@@ -13,10 +13,10 @@ final class WorkerQueueJobInfo {
     /** The type these statistics are about. */
     final JobType type;
 
-    /** The workers that are willing to execute this task. */
+    /** The workers that are willing to execute this job. */
     private final List<NodeJobInfo> workers = new LinkedList<NodeJobInfo>();
 
-    /** The total number of tasks of this type that entered the queue. */
+    /** The total number of jobs of this type that entered the queue. */
     private long incomingJobCount = 0;
 
     private int outGoingJobCount = 0;

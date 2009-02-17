@@ -27,9 +27,9 @@ class Gossip {
         final int sz = Globals.allJobTypes.length;
         final double completionInfo[] = new double[sz];
         final WorkerQueueInfo queueInfo[] = new WorkerQueueInfo[sz];
-        final double taskTimes[] = jobs.getInitialJobTimes();
+        final double jobTimes[] = jobs.getInitialJobTimes();
         for (int i = 0; i < sz; i++) {
-            queueInfo[i] = new WorkerQueueInfo(0, 0, 0.0, taskTimes[i]);
+            queueInfo[i] = new WorkerQueueInfo(0, 0, 0.0, jobTimes[i]);
         }
         localPerformanceInfo = new NodePerformanceInfo(completionInfo,
                 queueInfo, Globals.localIbis.identifier(), numberOfProcessors,
@@ -42,7 +42,7 @@ class Gossip {
 
             for (final int typeIndex : indexList) {
                 localPerformanceInfo.completionInfo[typeIndex] = t;
-                t += taskTimes[typeIndex];
+                t += jobTimes[typeIndex];
             }
         }
         localPerformanceInfo.timeStamp = System.nanoTime();
@@ -73,7 +73,7 @@ class Gossip {
     }
 
     /**
-     * Returns the best average completion time for this task after it has been
+     * Returns the best average completion time for this job after it has been
      * sent by the master. We compute this by taking the minimum over all our
      * workers.
      * 
@@ -109,13 +109,13 @@ class Gossip {
 
     /**
      * Given the current queue intervals on the master, recompute in-place the
-     * completion intervals for the various task types. The completion interval
-     * is defined as the time it will take a task on a given master from the
+     * completion intervals for the various job types. The completion interval
+     * is defined as the time it will take a job on a given master from the
      * moment it enters its master queue to the moment its entire job is
      * completed.
      * 
      * @param masterQueueIntervals
-     *            The time in nanoseconds for each task it is estimated to dwell
+     *            The time in nanoseconds for each job it is estimated to dwell
      *            in the master queue.
      * @param localNodeInfoMap
      */
@@ -247,13 +247,13 @@ class Gossip {
     }
 
     /**
-     * Given a task type, return the estimated completion time of this task.
+     * Given a job type, return the estimated completion time of this job.
      * 
      * @param type
-     *            The task type for which we want to know the completion time.
+     *            The job type for which we want to know the completion time.
      * @param submitIfBusy
      *            If set, take into consideration processors that are currently
-     *            fully occupied with tasks.
+     *            fully occupied with jobs.
      * @param localNodeInfoMap
      *            Local knowledge about the different nodes.
      * @return The estimated completion time for the best worker.

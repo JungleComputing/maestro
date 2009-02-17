@@ -29,12 +29,12 @@ class MasterWorkerProgram {
         }
 
         /**
-         * Handle the completion of task 'j': the result is 'result'.
+         * Handle the completion of job 'j': the result is 'result'.
          * 
          * @param id
-         *            The task that was completed.
+         *            The job that was completed.
          * @param result
-         *            The result of the task.
+         *            The result of the job.
          */
         @Override
         public void jobCompleted(Node node, Object id, Object result) {
@@ -44,7 +44,7 @@ class MasterWorkerProgram {
                     + " jobs");
             if (jobsCompleted >= jobCount) {
                 System.out
-                        .println("I got all task results back; stopping test program");
+                        .println("I got all job results back; stopping test program");
                 node.setStopped();
             }
         }
@@ -205,7 +205,7 @@ class MasterWorkerProgram {
          * than the real execution time, so that the system is encouraged to try
          * all processors (and at least initially spread the load).
          * 
-         * @return The estimated execution time of a task.
+         * @return The estimated execution time of a job.
          */
         @Override
         public double estimateJobExecutionTime() {
@@ -215,8 +215,8 @@ class MasterWorkerProgram {
 
         /**
          * @param obj
-         *            The input parameter of the task.
-         * @return The result of the task.
+         *            The input parameter of the job.
+         * @return The result of the job.
          */
         @SuppressWarnings("synthetic-access")
         @Override
@@ -232,9 +232,9 @@ class MasterWorkerProgram {
         }
 
         /**
-         * Returns true iff this task is supported in this context.
+         * Returns true iff this job is supported in this context.
          * 
-         * @return True iff this task is supported.
+         * @return True iff this job is supported.
          */
         @Override
         public boolean isSupported() {
@@ -243,13 +243,13 @@ class MasterWorkerProgram {
     }
 
     @SuppressWarnings("synthetic-access")
-    private void run(int taskCount, boolean goForMaestro, int waitNodes)
+    private void run(int jobCount, boolean goForMaestro, int waitNodes)
             throws Exception {
         JobList jobs = new JobList();
 
         JobSequence job = jobs.createJobSequence( new SharpenJob());
         Node node = Node.createNode(jobs, goForMaestro);
-        Listener listener = new Listener(node, taskCount);
+        Listener listener = new Listener(node, jobCount);
         System.out.println("Node created");
         double startTime = Utils.getPreciseTime();
         if (node.isMaestro()) {
@@ -266,9 +266,9 @@ class MasterWorkerProgram {
                 }
             }
             if (goodToSubmit) {
-                System.out.println("I am maestro; submitting " + taskCount
-                        + " tasks");
-                for (int i = 0; i < taskCount; i++) {
+                System.out.println("I am maestro; submitting " + jobCount
+                        + " jobs");
+                for (int i = 0; i < jobCount; i++) {
                     Integer length = 12 * i;
                     node.submit(length, i, listener, job);
                 }
@@ -299,7 +299,7 @@ class MasterWorkerProgram {
      */
     public static void main(String args[]) {
         boolean goForMaestro = false;
-        int taskCount = 0;
+        int jobCount = 0;
         int waitNodes = 0;
 
         for (int i = 0; i < args.length; i++) {
@@ -310,15 +310,15 @@ class MasterWorkerProgram {
             } else if (args[i].equals("-w") || args[i].equals("--waitnodes")) {
                 waitNodes = Integer.parseInt(args[++i]);
             } else {
-                taskCount = Integer.parseInt(args[i]);
+                jobCount = Integer.parseInt(args[i]);
                 goForMaestro = true;
             }
         }
         System.out.println("Running on platform " + Utils.getPlatformVersion()
                 + " args.length=" + args.length + " goForMaestro="
-                + goForMaestro + "; taskCount=" + taskCount);
+                + goForMaestro + "; jobCount=" + jobCount);
         try {
-            new MasterWorkerProgram().run(taskCount, goForMaestro, waitNodes);
+            new MasterWorkerProgram().run(jobCount, goForMaestro, waitNodes);
         } catch (Exception e) {
             e.printStackTrace(System.err);
         }

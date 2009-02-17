@@ -3,7 +3,7 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 
 /**
- * Tell the worker to execute the task contained in this message.
+ * Tell the worker to execute the job contained in this message.
  * 
  * @author Kees van Reeuwijk
  * 
@@ -39,13 +39,13 @@ final class RunJobMessage extends Message {
     }
 
     /**
-     * Returns a string representation of this task message.
+     * Returns a string representation of this job message.
      * 
      * @return The string representation.
      */
     @Override
     public String toString() {
-        return "Job message for task " + jobId + " of type "
+        return "Job message for job " + jobId + " of type "
                 + jobInstance.type;
     }
 

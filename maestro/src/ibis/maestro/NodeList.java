@@ -17,8 +17,8 @@ final class NodeList {
 
     WorkerQueue workerQueue;
 
-    NodeList(WorkerQueue taskInfoList) {
-        this.workerQueue = taskInfoList;
+    NodeList(WorkerQueue jobInfoList) {
+        this.workerQueue = jobInfoList;
     }
 
     /**
@@ -65,11 +65,11 @@ final class NodeList {
     }
 
     /**
-     * Register a task result in the info of the worker that handled it.
+     * Register a job result in the info of the worker that handled it.
      * 
      * @param result
-     *            The task result.
-     * @return The task instance that was completed if it may have duplicates,
+     *            The job result.
+     * @return The job instance that was completed if it may have duplicates,
      *         or <code>null</code>
      */
     JobInstance registerJobCompleted(JobCompletedMessage result) {
@@ -82,13 +82,13 @@ final class NodeList {
                     + result.source);
             return null;
         }
-        final JobInstance task = node.registerJobCompleted(result);
+        final JobInstance job = node.registerJobCompleted(result);
         node.registerAsCommunicating();
-        return task;
+        return job;
     }
 
     /**
-     * Register the fact that the worker has received a task.
+     * Register the fact that the worker has received a job.
      * 
      * @param msg
      *            The message.
@@ -109,15 +109,15 @@ final class NodeList {
     }
 
     /**
-     * Register that a tasked has failed.
+     * Register that a jobed has failed.
      * 
      * @param ibis
-     *            The ibis that failed to execute the task.
-     * @param taskId
-     *            The id of the failed task.
-     * @return The task instance that was executed.
+     *            The ibis that failed to execute the job.
+     * @param jobId
+     *            The id of the failed job.
+     * @return The job instance that was executed.
      */
-    JobInstance registerJobFailed(IbisIdentifier ibis, long taskId) {
+    JobInstance registerJobFailed(IbisIdentifier ibis, long jobId) {
         final NodeInfo node;
         synchronized (this) {
             node = ibisToNodeMap.get(ibis);
@@ -128,7 +128,7 @@ final class NodeList {
             return null;
         }
         node.registerAsCommunicating();
-        return node.registerJobFailed(taskId);
+        return node.registerJobFailed(jobId);
     }
 
     /**

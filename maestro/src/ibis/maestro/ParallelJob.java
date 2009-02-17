@@ -8,7 +8,7 @@ package ibis.maestro;
  */
 public interface ParallelJob extends Job {
     /**
-     * Given an input, submits a number of tasks to the given handler.
+     * Given an input, submits a number of jobs to the given handler.
      * 
      * @param input
      *            The input value of this map.

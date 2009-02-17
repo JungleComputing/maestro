@@ -337,13 +337,13 @@ class Gossiper extends Thread {
     }
 
     /**
-     * Given a task type, return the estimated completion time of this task.
+     * Given a job type, return the estimated completion time of this job.
      * 
      * @param type
-     *            The task type for which we want to know the completion time.
+     *            The job type for which we want to know the completion time.
      * @param submitIfBusy
      *            If set, take into consideration processors that are currently
-     *            fully occupied with tasks.
+     *            fully occupied with jobs.
      * @param localNodeInfoMap
      *            Local knowledge about the different nodes.
      * @return

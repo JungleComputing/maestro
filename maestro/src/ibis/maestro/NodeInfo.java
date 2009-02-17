@@ -13,10 +13,10 @@ import java.util.List;
  * 
  */
 final class NodeInfo {
-    /** The active tasks of this worker. */
+    /** The active jobs of this worker. */
     private final List<ActiveJob> activeJobs = new ArrayList<ActiveJob>();
 
-    /** Info about the tasks for this particular node. */
+    /** Info about the jobs for this particular node. */
     private final NodeJobInfo nodeJobInfoList[];
 
     private boolean suspect = false;
@@ -58,8 +58,8 @@ final class NodeInfo {
             }
         }
         for (int ix = 0; ix < Globals.allJobTypes.length; ix++) {
-            final WorkerQueueJobInfo taskInfo = workerQueue.getJobInfo(ix);
-            nodeJobInfoList[ix] = new NodeJobInfo(taskInfo, this,
+            final WorkerQueueJobInfo jobInfo = workerQueue.getJobInfo(ix);
+            nodeJobInfoList[ix] = new NodeJobInfo(jobInfo, this,
                     estimatedPingTime);
         }
     }
@@ -74,11 +74,11 @@ final class NodeInfo {
     }
 
     /**
-     * Given a task identifier, returns the task queue entry with that id, or
+     * Given a job identifier, returns the job queue entry with that id, or
      * null.
      * 
      * @param id
-     *            The task identifier to search for.
+     *            The job identifier to search for.
      * @return The index of the ActiveJob with this id, or -1 if there isn't
      *         one.
      */
@@ -96,10 +96,10 @@ final class NodeInfo {
     }
 
     /**
-     * Mark this worker as dead, and return a list of active tasks of this
+     * Mark this worker as dead, and return a list of active jobs of this
      * worker.
      * 
-     * @return The list of task instances that were outstanding on this worker.
+     * @return The list of job instances that were outstanding on this worker.
      */
     ArrayList<JobInstance> setDead() {
         final ArrayList<JobInstance> orphans = new ArrayList<JobInstance>();
@@ -152,143 +152,143 @@ final class NodeInfo {
     }
 
     /**
-     * We failed to send the task to the destined worker, rectract it from the
-     * list of active tasks.
+     * We failed to send the job to the destined worker, rectract it from the
+     * list of active jobs.
      * 
-     * @param taskId
-     *            The task to retract.
+     * @param jobId
+     *            The job to retract.
      */
-    void retractJob(long taskId) {
+    void retractJob(long jobId) {
         // We ignore the result of the extract: it doesn't really matter if the
-        // task was
+        // job was
         // in our list of not.
-        extractActiveJob(taskId);
+        extractActiveJob(jobId);
     }
 
     JobInstance registerJobFailed(long id) {
-        final ActiveJob task = extractActiveJob(id);
-        if (task == null) {
+        final ActiveJob job = extractActiveJob(id);
+        if (job == null) {
             Globals.log.reportError("Job with unknown id " + id
                     + " seems to have failed");
             return null;
         }
-        task.nodeJobInfo.registerJobFailed();
-        return task.job;
+        job.nodeJobInfo.registerJobFailed();
+        return job.job;
     }
 
     /**
-     * Register a task result for an outstanding task.
+     * Register a job result for an outstanding job.
      * 
      * @param result
-     *            The task result message that tells about this task.
-     * @return The task instance that was completed if it may have duplicates,
+     *            The job result message that tells about this job.
+     * @return The job instance that was completed if it may have duplicates,
      *         or <code>null</code>
      */
     JobInstance registerJobCompleted(JobCompletedMessage result) {
-        final long id = result.jobId; // The identifier of the task, as handed
+        final long id = result.jobId; // The identifier of the job, as handed
         // out by us.
 
-        final ActiveJob task = extractActiveJob(id);
+        final ActiveJob job = extractActiveJob(id);
 
-        if (task == null) {
-            // Not in the list of active tasks, presumably because it was
+        if (job == null) {
+            // Not in the list of active jobs, presumably because it was
             // redundantly executed.
             return null;
         }
-        final double roundtripTime = result.arrivalMoment - task.startTime;
-        final NodeJobInfo nodeJobInfo = task.nodeJobInfo;
-        final JobType type = task.job.type;
-        if (task.getAllowanceDeadline() < result.arrivalMoment) {
+        final double roundtripTime = result.arrivalMoment - job.startTime;
+        final NodeJobInfo nodeJobInfo = job.nodeJobInfo;
+        final JobType type = job.job.type;
+        if (job.getAllowanceDeadline() < result.arrivalMoment) {
             nodeJobInfo.registerMissedAllowanceDeadline();
             if (Settings.traceMissedDeadlines) {
                 Globals.log.reportProgress("Missed allowance deadline for "
                         + type
-                        + " task: "
+                        + " job: "
                         + " predictedDuration="
-                        + Utils.formatSeconds(task.predictedDuration)
+                        + Utils.formatSeconds(job.predictedDuration)
                         + " allowanceDuration="
-                        + Utils.formatSeconds(task.getAllowanceDeadline()
-                                - task.startTime) + " realDuration="
+                        + Utils.formatSeconds(job.getAllowanceDeadline()
+                                - job.startTime) + " realDuration="
                         + Utils.formatSeconds(roundtripTime));
             }
         }
-        if (task.rescheduleDeadline < result.arrivalMoment) {
+        if (job.rescheduleDeadline < result.arrivalMoment) {
             if (Settings.traceMissedDeadlines) {
                 Globals.log.reportProgress("Missed reschedule deadline for "
                         + type
-                        + " task: "
+                        + " job: "
                         + " predictedDuration="
-                        + Utils.formatSeconds(task.predictedDuration)
+                        + Utils.formatSeconds(job.predictedDuration)
                         + " rescheduleDuration="
-                        + Utils.formatSeconds(task.rescheduleDeadline
-                                - task.startTime) + " realDuration="
+                        + Utils.formatSeconds(job.rescheduleDeadline
+                                - job.startTime) + " realDuration="
                         + Utils.formatSeconds(roundtripTime));
             }
             nodeJobInfo.registerMissedRescheduleDeadline();
         }
         nodeJobInfo.registerJobCompleted(roundtripTime);
         if (Settings.traceNodeProgress) {
-            Globals.log.reportProgress("Master: retired task " + task
+            Globals.log.reportProgress("Master: retired job " + job
                     + " roundtripTime="
                     + Utils.formatSeconds(roundtripTime));
         }
-        if (task.job.isOrphan()) {
-            return task.job;
+        if (job.job.isOrphan()) {
+            return job.job;
         }
         return null;
     }
 
     /**
-     * Register a reception notification for a task.
+     * Register a reception notification for a job.
      * 
      * @param result
-     *            The task received message that tells about this task.
+     *            The job received message that tells about this job.
      */
     void registerJobReceived(JobReceivedMessage result) {
-        final ActiveJob task;
+        final ActiveJob job;
 
-        // The identifier of the task, as handed out by us.
+        // The identifier of the job, as handed out by us.
         final long id = result.jobId;
         synchronized (this) {
             final int ix = searchActiveJob(id);
 
             if (ix < 0) {
-                // Not in the list of active tasks, presumably because it was
+                // Not in the list of active jobs, presumably because it was
                 // redundantly executed.
                 return;
             }
-            task = activeJobs.get(ix);
+            job = activeJobs.get(ix);
         }
-        final double transmissionTime = result.arrivalMoment - task.startTime;
-        final NodeJobInfo nodeJobInfo = task.nodeJobInfo;
+        final double transmissionTime = result.arrivalMoment - job.startTime;
+        final NodeJobInfo nodeJobInfo = job.nodeJobInfo;
         if (!local) {
             // If this is not the local node, this is interesting info.
             // If it is local, we know better: transmission time is 0.
             nodeJobInfo.registerJobReceived(transmissionTime);
         }
         if (Settings.traceNodeProgress) {
-            Globals.log.reportProgress("Master: retired task " + task
+            Globals.log.reportProgress("Master: retired job " + job
                     + " transmissionTime="
                     + Utils.formatSeconds(transmissionTime));
         }
     }
 
     /**
-     * Register the start of a new task.
+     * Register the start of a new job.
      * 
-     * @param task
-     *            The task that was started.
+     * @param job
+     *            The job that was started.
      * @param id
-     *            The id given to the task.
+     *            The id given to the job.
      * @param predictedDuration
-     *            The predicted duration in seconds of the task.
+     *            The predicted duration in seconds of the job.
      */
-    void registerJobStart(JobInstance task, long id, double predictedDuration) {
-        final JobType type = task.type;
+    void registerJobStart(JobInstance job, long id, double predictedDuration) {
+        final JobType type = job.type;
         final NodeJobInfo workerJobInfo = nodeJobInfoList[type.index];
         if (workerJobInfo == null) {
             Globals.log
-                    .reportInternalError("No worker task info for task type "
+                    .reportInternalError("No worker job info for job type "
                             + type);
         } else {
             workerJobInfo.incrementOutstandingJobs();
@@ -302,7 +302,7 @@ final class NodeInfo {
                 + Math.max(deadlineInterval, Settings.MINIMAL_DEADLINE);
         final double rescheduleDeadline = now + deadlineInterval
                 * Settings.RESCHEDULE_DEADLINE_MULTIPLIER;
-        final ActiveJob j = new ActiveJob(task, id, now, workerJobInfo,
+        final ActiveJob j = new ActiveJob(job, id, now, workerJobInfo,
                 predictedDuration, allowanceDeadline, rescheduleDeadline);
         synchronized (this) {
             activeJobs.add(j);
@@ -360,16 +360,16 @@ final class NodeInfo {
         if (false) {
             // TODO: enable this again when it is sane to do.
             synchronized (this) {
-                for (final ActiveJob task : activeJobs) {
-                    if (task.getAllowanceDeadline() < now) {
+                for (final ActiveJob job : activeJobs) {
+                    if (job.getAllowanceDeadline() < now) {
                         // Worker missed an allowance deadline.
-                        final double t = now - task.startTime
-                                + task.predictedDuration;
-                        final NodeJobInfo workerJobInfo = task.nodeJobInfo;
+                        final double t = now - job.startTime
+                                + job.predictedDuration;
+                        final NodeJobInfo workerJobInfo = job.nodeJobInfo;
                         if (workerJobInfo != null) {
                             workerJobInfo.updateRoundtripTimeEstimate(t);
                         }
-                        task.setAllowanceDeadline(t);
+                        job.setAllowanceDeadline(t);
                     }
                 }
             }

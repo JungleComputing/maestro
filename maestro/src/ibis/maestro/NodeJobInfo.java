@@ -3,10 +3,10 @@ package ibis.maestro;
 import java.io.PrintStream;
 
 /**
- * Information the node has about a particular task type on a particular node.
+ * Information the node has about a particular job type on a particular node.
  */
 final class NodeJobInfo {
-    final WorkerQueueJobInfo taskInfo;
+    final WorkerQueueJobInfo jobInfo;
 
     private final NodeInfo nodeInfo;
 
@@ -14,10 +14,10 @@ final class NodeJobInfo {
 
     private final TimeEstimate roundtripTimeEstimate;
 
-    /** How many instances of this task does this worker currently have? */
+    /** How many instances of this job does this worker currently have? */
     private int outstandingJobs = 0;
 
-    /** How many task instances has this worker executed until now? */
+    /** How many job instances has this worker executed until now? */
     private int executedJobs = 0;
 
     private boolean failed = false;
@@ -27,18 +27,18 @@ final class NodeJobInfo {
     private final Counter missedRescheduleDeadlines = new Counter();
 
     /**
-     * Constructs a new information class for a particular task type for a
+     * Constructs a new information class for a particular job type for a
      * particular worker.
      * 
-     * @param taskInfo
-     *            The type of task we have administration for.
+     * @param jobInfo
+     *            The type of job we have administration for.
      * @param worker
      *            The worker we have administration for.
      * @param pingTime
      *            The ping time of this worker.
      */
-    NodeJobInfo(WorkerQueueJobInfo taskInfo, NodeInfo worker, double pingTime) {
-        this.taskInfo = taskInfo;
+    NodeJobInfo(WorkerQueueJobInfo jobInfo, NodeInfo worker, double pingTime) {
+        this.jobInfo = jobInfo;
         this.nodeInfo = worker;
 
         // Totally unfounded guesses, but we should learn soon enough what the
@@ -56,38 +56,38 @@ final class NodeJobInfo {
      */
     @Override
     public String toString() {
-        return "[taskInfo=" + taskInfo + " worker=" + nodeInfo
+        return "[jobInfo=" + jobInfo + " worker=" + nodeInfo
                 + " transmissionTimeEstimate=" + transmissionTimeEstimate
                 + " outstandingJobs=" + outstandingJobs + "]";
     }
 
     /**
-     * Registers the completion of a task.
+     * Registers the completion of a job.
      * 
      * @param roundtripTime
-     *            The total roundtrip time of this task.
+     *            The total roundtrip time of this job.
      */
     synchronized void registerJobCompleted(double roundtripTime) {
         executedJobs++;
         outstandingJobs--;
         roundtripTimeEstimate.addSample(roundtripTime);
         if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
-            final String label = "task=" + taskInfo + " worker=" + nodeInfo;
+            final String label = "job=" + jobInfo + " worker=" + nodeInfo;
             Globals.log.reportProgress(label + ": roundTripTimeEstimate="
                     + roundtripTimeEstimate);
         }
     }
 
     /**
-     * Registers the reception of a task by the worker.
+     * Registers the reception of a job by the worker.
      * 
      * @param transmissionTime
-     *            The transmission time of this task.
+     *            The transmission time of this job.
      */
     synchronized void registerJobReceived(double transmissionTime) {
         transmissionTimeEstimate.addSample(transmissionTime);
         if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
-            final String label = "task=" + taskInfo + " worker=" + nodeInfo;
+            final String label = "job=" + jobInfo + " worker=" + nodeInfo;
             Globals.log.reportProgress(label + ": transmissionTimeEstimate="
                     + transmissionTimeEstimate);
         }
@@ -116,13 +116,13 @@ final class NodeJobInfo {
         roundtripTimeEstimate.addSample(t);
     }
 
-    /** Register that there is a new outstanding task. */
+    /** Register that there is a new outstanding job. */
     synchronized void incrementOutstandingJobs() {
         outstandingJobs++;
     }
 
     /**
-     * @return True iff this worker ever executed a task of this type.
+     * @return True iff this worker ever executed a job of this type.
      */
     private synchronized boolean didWork() {
         return (executedJobs != 0) || (outstandingJobs != 0);
@@ -137,13 +137,13 @@ final class NodeJobInfo {
 
     synchronized void printStatistics(PrintStream s) {
         if (didWork()) {
-            s.println("  " + taskInfo.type + ": executed " + executedJobs
-                    + " tasks, xmit time " + transmissionTimeEstimate
+            s.println("  " + jobInfo.type + ": executed " + executedJobs
+                    + " jobs, xmit time " + transmissionTimeEstimate
                     + (failed ? " FAILED" : ""));
             final int missedAllowance = missedAllowanceDeadlines.get();
             final int missedReschedule = missedRescheduleDeadlines.get();
             if (missedAllowance > 0 || missedReschedule > 0) {
-                s.println("  " + taskInfo.type
+                s.println("  " + jobInfo.type
                         + ": missed deadlines: allowance: " + missedAllowance
                         + " reschedule: " + missedReschedule);
             }
