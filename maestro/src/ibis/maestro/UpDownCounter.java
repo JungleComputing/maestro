@@ -49,31 +49,4 @@ class UpDownCounter {
     public String toString() {
         return Integer.toString(get());
     }
-
-    /**
-     * Wait until this counter has reached a value greater or equal to the given
-     * value.
-     * 
-     * @param n
-     *            The threshold value to wait for.
-     * @param duration
-     *            The maximal time in ms to wait.
-     * @return The actual value at the moment we stopped waiting.
-     */
-    private int waitForGreaterOrEqual(int n, long duration) {
-        final long deadline = System.currentTimeMillis() + duration;
-        while (true) {
-            final long waittime = deadline - System.currentTimeMillis();
-            synchronized (this) {
-                if (value >= n || waittime <= 0) {
-                    return value;
-                }
-                try {
-                    this.wait(waittime);
-                } catch (final InterruptedException e) {
-                    // Not interested.
-                }
-            }
-        }
-    }
 }
