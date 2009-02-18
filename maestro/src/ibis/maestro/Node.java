@@ -746,7 +746,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                     message, runMoment);
             mrt.split(input, handler);
             handler.start();
-        } else if (job instanceof JobSequence ) {
+        } else if (job instanceof SeriesJob ) {
             Globals.log.reportInternalError( "JobSequence should be handled" );
         } else if (job instanceof AlternativesJob) {
             Globals.log
@@ -928,8 +928,8 @@ public final class Node extends Thread implements PacketReceiveListener {
     public void submit(Object input, Serializable userId, JobCompletionListener listener,
             Job job) {
         waitForRoom();
-        if( job instanceof JobSequence ){
-            JobSequence jobSequence = (JobSequence) job;
+        if( job instanceof SeriesJob ){
+            SeriesJob jobSequence = (SeriesJob) job;
             jobSequence.submit(this, input, userId, listener);
         }
         else {

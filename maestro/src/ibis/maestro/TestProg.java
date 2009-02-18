@@ -214,7 +214,7 @@ class TestProg {
 
         // Job createJob = jobs.createJob("createarray", new CreateArrayJob()
         // );
-        final JobSequence job = jobs.createJobSequence(
+        final SeriesJob job = jobs.createSeriesJob(
                 // new AssembleArrayJob( createJob ),
                 new CreateArrayJob(), new AdditionJob(), new AdditionJob(),
                 new AdditionJob(), new AdditionJob());

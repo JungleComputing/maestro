@@ -1,6 +1,6 @@
 package ibis.maestro;
 
-import ibis.maestro.JobSequence.JobSequenceIdentifier;
+import ibis.maestro.SeriesJob.SeriesJobIdentifier;
 
 import java.io.Serializable;
 
@@ -17,7 +17,7 @@ final class JobType implements Serializable {
 
     final int index;
 
-    final JobSequenceIdentifier job;
+    final SeriesJobIdentifier job;
 
     final boolean unpredictable;
 
@@ -31,7 +31,7 @@ final class JobType implements Serializable {
      * @param remainingJobs
      *            The number of jobs after this one in the job sequence.
      */
-    JobType(JobSequenceIdentifier id, int jobNo,
+    JobType(SeriesJobIdentifier id, int jobNo,
             boolean unpredictable, int index) {
         this.job = id;
         this.jobNo = jobNo;

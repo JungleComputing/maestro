@@ -10,7 +10,7 @@ import java.util.ArrayList;
  */
 public final class JobList {
     // FIXME: let the JobList store Jobs instead of JobSequences
-    private final ArrayList<JobSequence> jobSequences = new ArrayList<JobSequence>();
+    private final ArrayList<SeriesJob> jobSequences = new ArrayList<SeriesJob>();
 
     private final ArrayList<JobType> allJobTypes = new ArrayList<JobType>();
 
@@ -30,7 +30,7 @@ public final class JobList {
      * @param job
      *            The job to register.
      */
-    private void registerJob(JobSequence job) {
+    private void registerJob(SeriesJob job) {
         final Job jobs[] = job.jobs;
 
         for (int i = 0; i < jobs.length; i++) {
@@ -63,9 +63,9 @@ public final class JobList {
      *            The list of jobs of the job.
      * @return A new job instance representing this job.
      */
-    public JobSequence createJobSequence(Job... jobs) {
+    public SeriesJob createSeriesJob(Job... jobs) {
         final int jobId = jobCounter++;
-        final JobSequence job = new JobSequence(jobId, jobs);
+        final SeriesJob job = new SeriesJob(jobId, jobs);
 
         jobSequences.add(job);
         registerJob(job);
@@ -83,12 +83,12 @@ public final class JobList {
     }
 
     Job getJob(JobType type) {
-        final JobSequence job = jobSequences.get(type.job.id);
+        final SeriesJob job = jobSequences.get(type.job.id);
         return job.jobs[type.jobNo];
     }
 
     JobType getNextJobType(JobType type) {
-        final JobSequence job = jobSequences.get(type.job.id);
+        final SeriesJob job = jobSequences.get(type.job.id);
         return job.getNextJobType(type);
     }
 
@@ -105,7 +105,7 @@ public final class JobList {
     int[][] getIndexLists() {
         final int res[][] = new int[jobSequences.size()][];
         int jobno = 0;
-        for (final JobSequence job : jobSequences) {
+        for (final SeriesJob job : jobSequences) {
             res[jobno++] = job.updateIndices;
         }
         return res;
@@ -149,8 +149,8 @@ public final class JobList {
             }
             return time;
         }
-        if( job instanceof JobSequence ){
-            JobSequence l = (JobSequence) job;
+        if( job instanceof SeriesJob ){
+            SeriesJob l = (SeriesJob) job;
             double time = 0.0;
 
             for( Job j: l.jobs ){

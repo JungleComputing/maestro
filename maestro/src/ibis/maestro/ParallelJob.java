@@ -15,7 +15,7 @@ public interface ParallelJob extends Job {
      * @param handler
      *            The handler.
      */
-    void split(Object input, ParallelJobHandler handler);
+    public void split(Object input, ParallelJobHandler handler);
 
     /**
      * Merges the result of one part of a split job into the final result.
@@ -26,7 +26,7 @@ public interface ParallelJob extends Job {
      * @param result
      *            The result.
      */
-    void merge(Object id, Object result);
+    public void merge(Object id, Object result);
 
     /**
      * Returns the final result of the parallel job. The system will only
@@ -36,5 +36,5 @@ public interface ParallelJob extends Job {
      * 
      * @return The result.
      */
-    Object getResult();
+    public Object getResult();
 }

@@ -87,7 +87,7 @@ class OneTestProg {
         Listener listener = new Listener(jobCount);
         JobList jobs = new JobList();
 
-        JobSequence job = jobs.createJobSequence( new CreateArrayJob());
+        SeriesJob job = jobs.createSeriesJob( new CreateArrayJob());
         Node node = Node.createNode(jobs, goForMaestro);
         System.out.println("Node created");
         double startTime = Utils.getPreciseTime();

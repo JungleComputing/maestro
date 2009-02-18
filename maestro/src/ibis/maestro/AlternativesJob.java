@@ -9,7 +9,7 @@ package ibis.maestro;
 public class AlternativesJob implements Job {
     final Job alternatives[];
 
-    AlternativesJob(Job... l) {
+    public AlternativesJob(Job... l) {
         alternatives = l;
     }
 

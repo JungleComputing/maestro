@@ -19,5 +19,5 @@ public interface AtomicJob extends Job {
      *             further jobs of this type are sent to the node, although it
      *             may take some time to propagate this information.
      */
-    Object run(Object input) throws JobFailedException;
+    public Object run(Object input) throws JobFailedException;
 }

@@ -8,8 +8,8 @@ import java.io.Serializable;
  * @author Kees van Reeuwijk
  * 
  */
-public final class JobSequence implements Job {
-    private final JobSequenceIdentifier id;
+public final class SeriesJob implements Job {
+    private final SeriesJobIdentifier id;
 
     final Job jobs[];
 
@@ -19,12 +19,12 @@ public final class JobSequence implements Job {
 
     private static int index = 0;
 
-    static final class JobSequenceIdentifier implements Serializable {
+    static final class SeriesJobIdentifier implements Serializable {
         private static final long serialVersionUID = -5895857432770361027L;
 
         final int id;
 
-        private JobSequenceIdentifier(int id) {
+        private SeriesJobIdentifier(int id) {
             this.id = id;
         }
 
@@ -57,7 +57,7 @@ public final class JobSequence implements Job {
             if (getClass() != obj.getClass()) {
                 return false;
             }
-            final JobSequenceIdentifier other = (JobSequenceIdentifier) obj;
+            final SeriesJobIdentifier other = (SeriesJobIdentifier) obj;
             return (id == other.id);
         }
 
@@ -83,8 +83,8 @@ public final class JobSequence implements Job {
     }
 
     @SuppressWarnings("synthetic-access")
-    JobSequence(final int id, final Job[] jobs) {
-        this.id = new JobSequenceIdentifier(id);
+    public SeriesJob(final int id, final Job[] jobs) {
+        this.id = new SeriesJobIdentifier(id);
         this.jobs = jobs;
         jobTypes = new JobType[jobs.length];
         updateIndices = new int[jobs.length];
