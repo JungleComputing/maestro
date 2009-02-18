@@ -15,7 +15,7 @@ public class FetchFrameJob implements AtomicJob {
     private static final long serialVersionUID = -3938044583266505212L;
 
     /**
-     * Runs this task.
+     * Runs this job.
      * 
      * @return The frame we have fetched.
      */
@@ -38,7 +38,7 @@ public class FetchFrameJob implements AtomicJob {
     }
 
     /**
-     * @return True, because this task can run anywhere.
+     * @return True, because this job can run anywhere.
      */
     @Override
     public boolean isSupported() {

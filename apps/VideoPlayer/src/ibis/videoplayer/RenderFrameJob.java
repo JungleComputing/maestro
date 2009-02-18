@@ -11,7 +11,7 @@ import java.io.IOException;
 import java.io.Serializable;
 
 /**
- * An task to run a PovRay scene description through povray, and load the
+ * An job to run a PovRay scene description through povray, and load the
  * resulting image.
  * 
  * @author Kees van Reeuwijk
@@ -172,7 +172,7 @@ public class RenderFrameJob implements AtomicJob {
     }
 
     /**
-     * Runs this render task.
+     * Runs this render job.
      * 
      * @return The rendered frame.
      */
@@ -184,7 +184,7 @@ public class RenderFrameJob implements AtomicJob {
     }
 
     /**
-     * @return True, because this task can run anywhere.
+     * @return True, because this job can run anywhere.
      */
     @Override
     public boolean isSupported() {

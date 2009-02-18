@@ -145,7 +145,7 @@ public class RenderMovieProgram implements JobCompletionListener {
         SeriesJob convertJob = jobList.createSeriesJob(new RenderFrameJob(),
                 new ColorCorrectJob(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
                         1.0),
-                // new ScaleFrameTask( 2 ),
+                // new ScaleFrameJob( 2 ),
                 new DownsampleJob(), new CompressFrameJob());
 
         int frameno = 0;
@@ -248,14 +248,14 @@ public class RenderMovieProgram implements JobCompletionListener {
     }
 
     /**
-     * Handles the completion of a task. (Overrides method in superclass.)
+     * Handles the completion of a job. (Overrides method in superclass.)
      * 
      * @param node
      *            The node we're running on.
      * @param id
-     *            The id of the completed task.
+     *            The id of the completed job.
      * @param result
-     *            The result of the task.
+     *            The result of the job.
      */
     @Override
     public void jobCompleted(Node node, Object id, Object result) {

@@ -158,11 +158,11 @@ class ConvertFramesProgram {
         private static final long serialVersionUID = 5452987225377415310L;
 
         /**
-         * Run a Jpeg conversion Maestro task.
+         * Run a Jpeg conversion Maestro job.
          * 
          * @param in
-         *            The input of this task.
-         * @return The result of the task.
+         *            The input of this job.
+         * @return The result of the job.
          */
         @Override
         public Object run(Object in) {
@@ -189,13 +189,13 @@ class ConvertFramesProgram {
 
     @SuppressWarnings("synthetic-access")
     private void run(File framesDirectory) throws Exception {
-        JobList tasks = new JobList();
+        JobList jobs = new JobList();
         Listener listener = new Listener();
-        SeriesJob convertJob = tasks.createSeriesJob(new FetchImageJob(),
+        SeriesJob convertJob = jobs.createSeriesJob(new FetchImageJob(),
                 new ColorCorrectJob(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
                         1.0), new ScaleFrameJob(2), new CompressFrameJob());
 
-        Node node = Node.createNode(tasks, framesDirectory != null);
+        Node node = Node.createNode(jobs, framesDirectory != null);
         System.out.println("Node created");
         if (framesDirectory != null) {
             File files[] = framesDirectory.listFiles();
