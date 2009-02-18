@@ -4,7 +4,7 @@ import ibis.maestro.AtomicJob;
 import ibis.maestro.JobCompletionListener;
 import ibis.maestro.JobExecutionTimeEstimator;
 import ibis.maestro.JobList;
-import ibis.maestro.JobSequence;
+import ibis.maestro.SeriesJob;
 import ibis.maestro.LabelTracker;
 import ibis.maestro.Node;
 import ibis.maestro.Utils;
@@ -582,7 +582,7 @@ class BenchmarkProgram {
                 + " saveFrames=" + saveFrames + " oneJob=" + oneJob
                 + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale);
         final JobList jobs = new JobList();
-        JobSequence convertJob;
+        SeriesJob convertJob;
         final Listener listener = new Listener();
         final File dir = saveFrames ? outputDir : null;
         if (oneJob) {
@@ -592,10 +592,10 @@ class BenchmarkProgram {
                 System.exit(1);
             }
             System.out.println("One-job benchmark");
-            convertJob = jobs.createJobSequence( new ProcessFrameJob(
+            convertJob = jobs.createSeriesJob( new ProcessFrameJob(
                     slowScale, slowSharpen, dir));
         } else {
-            convertJob = jobs.createJobSequence( new GenerateFrameJob(),
+            convertJob = jobs.createSeriesJob( new GenerateFrameJob(),
                     new ScaleUpFrameJob(2, slowScale, allowScale),
                     new SharpenFrameJob(slowSharpen, allowSharpen),
                     new CompressFrameJob(), new SaveFrameJob(dir));

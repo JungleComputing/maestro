@@ -3,7 +3,7 @@ package ibis.videoplayer;
 import ibis.maestro.AtomicJob;
 import ibis.maestro.JobCompletionListener;
 import ibis.maestro.JobList;
-import ibis.maestro.JobSequence;
+import ibis.maestro.SeriesJob;
 import ibis.maestro.Node;
 
 import java.io.File;
@@ -142,7 +142,7 @@ public class RenderMovieProgram implements JobCompletionListener {
     @SuppressWarnings("synthetic-access")
     private void run(File sourceDirectory, File iniFile) throws Exception {
         JobList jobList = new JobList();
-        JobSequence convertJob = jobList.createJobSequence(new RenderFrameJob(),
+        SeriesJob convertJob = jobList.createSeriesJob(new RenderFrameJob(),
                 new ColorCorrectJob(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
                         1.0),
                 // new ScaleFrameTask( 2 ),

@@ -3,7 +3,7 @@ package ibis.videoplayer;
 import ibis.maestro.AtomicJob;
 import ibis.maestro.JobCompletionListener;
 import ibis.maestro.JobList;
-import ibis.maestro.JobSequence;
+import ibis.maestro.SeriesJob;
 import ibis.maestro.LabelTracker;
 import ibis.maestro.Node;
 import ibis.maestro.LabelTracker.Label;
@@ -191,7 +191,7 @@ class ConvertFramesProgram {
     private void run(File framesDirectory) throws Exception {
         JobList tasks = new JobList();
         Listener listener = new Listener();
-        JobSequence convertJob = tasks.createJobSequence(new FetchImageJob(),
+        SeriesJob convertJob = tasks.createSeriesJob(new FetchImageJob(),
                 new ColorCorrectJob(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
                         1.0), new ScaleFrameJob(2), new CompressFrameJob());
 
