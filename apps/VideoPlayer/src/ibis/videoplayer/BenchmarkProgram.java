@@ -93,13 +93,13 @@ class BenchmarkProgram {
     }
 
     // Do all the image processing steps in one go. Used as baseline.
-    private static final class ProcessFrameTask implements AtomicJob, JobExecutionTimeEstimator {
+    private static final class ProcessFrameJob implements AtomicJob, JobExecutionTimeEstimator {
         private static final long serialVersionUID = -7976035811697720295L;
         final boolean slowScale;
         final boolean slowSharpen;
         final File saveDir;
 
-        ProcessFrameTask(final boolean slowScale, final boolean slowSharpen,
+        ProcessFrameJob(final boolean slowScale, final boolean slowSharpen,
                 final File saveDir) {
             this.slowScale = slowScale;
             this.slowSharpen = slowSharpen;
@@ -167,14 +167,14 @@ class BenchmarkProgram {
          * @return The estimated time in ns to execute this job.
          */
         @Override
-        public double estimateTaskExecutionTime() {
+        public double estimateJobExecutionTime() {
             final double startTime = Utils.getPreciseTime();
             run(0);
             return Utils.getPreciseTime() - startTime;
         }
     }
 
-    private static final class GenerateFrameTask implements AtomicJob,
+    private static final class GenerateFrameJob implements AtomicJob,
     JobExecutionTimeEstimator {
         private static final long serialVersionUID = -7976035811697720295L;
 
@@ -209,21 +209,21 @@ class BenchmarkProgram {
          * @return The estimated time in ns to execute this job.
          */
         @Override
-        public double estimateTaskExecutionTime() {
+        public double estimateJobExecutionTime() {
             final double startTime = Utils.getPreciseTime();
             generateFrame(0);
             return Utils.getPreciseTime() - startTime;
         }
     }
 
-    private static final class ScaleUpFrameTask implements AtomicJob,
+    private static final class ScaleUpFrameJob implements AtomicJob,
     JobExecutionTimeEstimator {
         private static final long serialVersionUID = 5452987225377415308L;
         private final int factor;
         private final boolean slow;
         private final boolean allowed;
 
-        ScaleUpFrameTask(int factor, boolean slow, boolean allowed) {
+        ScaleUpFrameJob(int factor, boolean slow, boolean allowed) {
             this.factor = factor;
 
             this.slow = slow;
@@ -274,23 +274,23 @@ class BenchmarkProgram {
          */
         @SuppressWarnings("synthetic-access")
         @Override
-        public double estimateTaskExecutionTime() {
+        public double estimateJobExecutionTime() {
             if( !allowed ){
                 return Double.POSITIVE_INFINITY;
             }
-            final Object frame = GenerateFrameTask.generateFrame(0);
+            final Object frame = GenerateFrameJob.generateFrame(0);
             final double startTime = Utils.getPreciseTime();
             run( frame );
             return Utils.getPreciseTime() - startTime;
         }
     }
 
-    private static final class SharpenFrameTask implements AtomicJob, JobExecutionTimeEstimator {
+    private static final class SharpenFrameJob implements AtomicJob, JobExecutionTimeEstimator {
         private static final long serialVersionUID = 54529872253774153L;
         private final boolean slow;
         private final boolean allowed;
 
-        SharpenFrameTask(boolean slow, boolean allowed) {
+        SharpenFrameJob(boolean slow, boolean allowed) {
             this.slow = slow;
             this.allowed = allowed;
             if (allowed) {
@@ -341,18 +341,18 @@ class BenchmarkProgram {
          */
         @SuppressWarnings("synthetic-access")
         @Override
-        public double estimateTaskExecutionTime() {
+        public double estimateJobExecutionTime() {
             if( !allowed ){
                 return Double.POSITIVE_INFINITY;
             }
-            final Object frame = GenerateFrameTask.generateFrame(0);
+            final Object frame = GenerateFrameJob.generateFrame(0);
             final double startTime = Utils.getPreciseTime();
             run( frame );
             return 4*(Utils.getPreciseTime() - startTime);
         }
     }
 
-    private static final class CompressFrameTask implements AtomicJob {
+    private static final class CompressFrameJob implements AtomicJob {
         private static final long serialVersionUID = 5452987225377415310L;
 
         /**
@@ -385,12 +385,12 @@ class BenchmarkProgram {
         }
     }
 
-    private static final class SaveFrameTask implements AtomicJob,
+    private static final class SaveFrameJob implements AtomicJob,
     JobExecutionTimeEstimator {
         private static final long serialVersionUID = 54529872253774153L;
         private final File saveDir;
 
-        SaveFrameTask(File saveDir) {
+        SaveFrameJob(File saveDir) {
             this.saveDir = saveDir;
         }
 
@@ -437,7 +437,7 @@ class BenchmarkProgram {
          * @return The estimated time on ns to execute this job.
          */
         @Override
-        public double estimateTaskExecutionTime() {
+        public double estimateJobExecutionTime() {
             // Saving a file may take some time, but otherwise the estimate
             // should be zero.
             if (saveDir != null) {
@@ -592,13 +592,13 @@ class BenchmarkProgram {
                 System.exit(1);
             }
             System.out.println("One-job benchmark");
-            convertJob = jobs.createJobSequence( new ProcessFrameTask(
+            convertJob = jobs.createJobSequence( new ProcessFrameJob(
                     slowScale, slowSharpen, dir));
         } else {
-            convertJob = jobs.createJobSequence( new GenerateFrameTask(),
-                    new ScaleUpFrameTask(2, slowScale, allowScale),
-                    new SharpenFrameTask(slowSharpen, allowSharpen),
-                    new CompressFrameTask(), new SaveFrameTask(dir));
+            convertJob = jobs.createJobSequence( new GenerateFrameJob(),
+                    new ScaleUpFrameJob(2, slowScale, allowScale),
+                    new SharpenFrameJob(slowSharpen, allowSharpen),
+                    new CompressFrameJob(), new SaveFrameJob(dir));
         }
         final Node node = Node.createNode(jobs, goForMaestro);
 
