@@ -3,6 +3,7 @@
  */
 package ibis.videoplayer;
 
+import ibis.maestro.Job;
 import ibis.maestro.JobList;
 import ibis.maestro.SeriesJob;
 import ibis.maestro.ParallelJob;
@@ -14,17 +15,17 @@ import ibis.maestro.ParallelJobHandler;
  */
 final class BuildFragmentJob implements ParallelJob {
     private static final long serialVersionUID = 6769001575637882594L;
-    private SeriesJob fetchJob;
+    private Job fetchJob;
     int startFrame;
     int endFrame;
     RGB48Image frames[];
 
-    BuildFragmentJob(SeriesJob fetchJob) {
+    BuildFragmentJob(Job fetchJob) {
         this.fetchJob = fetchJob;
     }
 
     static SeriesJob createGetFrameJob(JobList jobs) {
-        return jobs.createSeriesJob( new FetchFrameTask(),
+        return jobs.createSeriesJob( new FetchFrameJob(),
                 new DecompressFrameJob(), new ColourCorrectJob(),
                 new ScaleFrameJob(2));
     }

@@ -12,11 +12,11 @@ import java.util.ArrayList;
  * @author Kees van Reeuwijk
  * 
  */
-class CompareImageTask implements AtomicJob {
+class CompareImageJob implements AtomicJob {
     private static final long serialVersionUID = -4202576028676660015L;
     final File imageDirectory;
 
-    CompareImageTask(File dir) {
+    CompareImageJob(File dir) {
         this.imageDirectory = dir;
     }
 
