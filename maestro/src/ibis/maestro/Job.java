@@ -1,5 +1,6 @@
 package ibis.maestro;
 
+
 /**
  * The super-interface of all variations of jobs.
  * 

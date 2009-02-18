@@ -24,7 +24,7 @@ class NodePerformanceInfo implements Serializable {
     final double[] completionInfo;
 
     /** For each type of job we know, the queue length on this worker. */
-    final WorkerQueueInfo[] workerQueueInfo;
+    private final WorkerQueueInfo[] workerQueueInfo;
 
     long timeStamp;
 

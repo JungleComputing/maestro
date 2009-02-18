@@ -12,5 +12,5 @@ public interface JobExecutionTimeEstimator {
      * 
      * @return The estimated compute time of this job in nanoseconds.
      */
-    double estimateJobExecutionTime();
+    public double estimateJobExecutionTime();
 }

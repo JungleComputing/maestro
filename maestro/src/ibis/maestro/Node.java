@@ -420,7 +420,7 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     void addRunningJob(JobInstanceIdentifier id, JobInstance jobInstance,
-            JobSequence job, JobCompletionListener listener) {
+            Job job, JobCompletionListener listener) {
         runningJobList.add(new JobInstanceInfo(id, jobInstance, job, listener));
     }
 
@@ -933,7 +933,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             jobSequence.submit(this, input, userId, listener);
         }
         else {
-            Globals.log.reportInternalError("Don't know (yet) how to submit to job of type" );
+            Globals.log.reportInternalError("Don't know (yet) how to submit to job of type" + job.getClass() );
         }
     }
 

@@ -18,9 +18,9 @@ public final class JobList {
 
     private int jobCounter = 0;
 
-    void printStatistics(PrintStream s) {
-        for (final JobSequence t : jobSequences) {
-            t.printStatistics(s);
+    void printStatistics(@SuppressWarnings("unused") PrintStream s) {
+        for (@SuppressWarnings("unused") final Job t : jobSequences) {
+            // TODO: re-implement statistics printing.
         }
     }
 
@@ -63,7 +63,7 @@ public final class JobList {
      *            The list of jobs of the job.
      * @return A new job instance representing this job.
      */
-    protected JobSequence createJobSequence(Job... jobs) {
+    public JobSequence createJobSequence(Job... jobs) {
         final int jobId = jobCounter++;
         final JobSequence job = new JobSequence(jobId, jobs);
 
@@ -82,17 +82,13 @@ public final class JobList {
                 .size()]);
     }
 
-    private JobSequence findJob(JobType type) {
-        return jobSequences.get(type.job.id);
-    }
-
     Job getJob(JobType type) {
-        final JobSequence job = findJob(type);
+        final JobSequence job = jobSequences.get(type.job.id);
         return job.jobs[type.jobNo];
     }
 
     JobType getNextJobType(JobType type) {
-        final JobSequence job = findJob(type);
+        final JobSequence job = jobSequences.get(type.job.id);
         return job.getNextJobType(type);
     }
 

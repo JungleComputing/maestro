@@ -20,7 +20,7 @@ class Flag {
         set(false);
     }
 
-    synchronized void set(boolean val) {
+    private synchronized void set(boolean val) {
         final boolean changed = flag != val;
         flag = val;
         if (changed) {

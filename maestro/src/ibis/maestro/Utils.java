@@ -21,9 +21,7 @@ public class Utils {
 
     static final double MILLISECOND = 1e-3;
 
-    static final double SECOND = 1.0;
-
-    static final double MINUTE = 60 * SECOND;
+    private static final double SECOND = 1.0;
 
     static boolean areInSameCluster(IbisIdentifier a, IbisIdentifier b) {
         Location la = a.location();

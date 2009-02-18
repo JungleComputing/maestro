@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import java.io.PrintStream;
 import java.io.Serializable;
 
 /**
@@ -10,15 +9,13 @@ import java.io.Serializable;
  * 
  */
 public final class JobSequence implements Job {
-    final JobSequenceIdentifier id;
+    private final JobSequenceIdentifier id;
 
     final Job jobs[];
 
     final JobType jobTypes[];
 
     final int updateIndices[];
-
-    private final TimeEstimate jobTime = new TimeEstimate(0);
 
     private static int index = 0;
 
@@ -174,21 +171,5 @@ public final class JobSequence implements Job {
             return jobTypes[jobType.jobNo + 1];
         }
         return null;
-    }
-
-    void registerJobTime(double jobInterval) {
-        // Changes are not interesting, since this is part of a big change
-        // anyway.
-        jobTime.addSample(jobInterval);
-    }
-
-    /**
-     * Prints some statistics for this job.
-     * 
-     * @param s
-     *            The stream to print to.
-     */
-    protected void printStatistics(PrintStream s) {
-        s.println("Job " + id + ": " + jobTime.toString());
     }
 }

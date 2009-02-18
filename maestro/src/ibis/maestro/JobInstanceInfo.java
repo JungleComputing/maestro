@@ -3,7 +3,7 @@ package ibis.maestro;
 class JobInstanceInfo {
     final JobInstanceIdentifier identifier;
 
-    final JobSequence job;
+    final Job job;
 
     final JobCompletionListener listener;
 
@@ -22,7 +22,7 @@ class JobInstanceInfo {
      *            The completion listener associated with the job.
      */
     JobInstanceInfo(final JobInstanceIdentifier identifier,
-            JobInstance jobInstance, JobSequence job,
+            JobInstance jobInstance, Job job,
             final JobCompletionListener listener) {
         this.identifier = identifier;
         this.jobInstance = jobInstance;

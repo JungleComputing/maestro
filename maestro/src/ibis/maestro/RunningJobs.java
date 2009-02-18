@@ -18,8 +18,6 @@ class RunningJobs {
         for (int i = 0; i < runningJobs.size(); i++) {
             final JobInstanceInfo job = runningJobs.get(i);
             if (job.identifier.equals(id)) {
-                final double jobInterval = Utils.getPreciseTime() - job.startTime;
-                job.job.registerJobTime(jobInterval);
                 runningJobs.remove(i);
                 return job;
             }

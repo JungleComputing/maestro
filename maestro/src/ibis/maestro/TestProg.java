@@ -142,20 +142,20 @@ class TestProg {
     private class AssembleArrayJob implements ParallelJob {
         private static final long serialVersionUID = 1L;
 
-        private final JobSequence createJob;
+        private final Job createJob;
 
         private static final int SIZE = 4;
 
         Object res[] = new Object[SIZE];
 
-        AssembleArrayJob(JobSequence job) {
+        AssembleArrayJob(Job job) {
             this.createJob = job;
         }
 
         /**
-         * Returns the result of this map/reduce.
+         * Returns the result of this split/join computation.
          * 
-         * @return The result of this map/reduce.
+         * @return The joined result.
          */
         @Override
         public Object getResult() {
