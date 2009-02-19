@@ -9,6 +9,14 @@ package ibis.maestro;
 public class AlternativesJob implements Job {
     final Job alternatives[];
 
+    /**
+     * Creates a job that selects one of the given list of jobs to
+     * execute. Presumably all alternatives implement the same functionality,
+     * but the performance of each of them may be different on different
+     * platforms.
+     * 
+     * @param l The list of alternative implementations.
+     */
     public AlternativesJob(Job... l) {
         alternatives = l;
     }

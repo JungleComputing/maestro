@@ -83,7 +83,7 @@ public final class SeriesJob implements Job {
     }
 
     @SuppressWarnings("synthetic-access")
-    public SeriesJob(final int id, final Job[] jobs) {
+    SeriesJob(final int id, final Job[] jobs) {
         this.id = new SeriesJobIdentifier(id);
         this.jobs = jobs;
         jobTypes = new JobType[jobs.length];
@@ -139,7 +139,7 @@ public final class SeriesJob implements Job {
         final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
         final JobType type = jobTypes[0];
         final JobInstance jobInstance = new JobInstance(tii, type, value);
-        node.addRunningJob(tii, jobInstance, this, listener);
+        node.addRunningJob(tii, jobInstance, listener);
         node.submit(jobInstance);
     }
 
@@ -162,11 +162,6 @@ public final class SeriesJob implements Job {
      * @return The next job type, or <code>null</code> if there isn't one.
      */
     JobType getNextJobType(JobType jobType) {
-        if (!id.equals(jobType.job)) {
-            Globals.log.reportInternalError("getNextJobType(): not my job: "
-                    + jobType.job);
-            return null;
-        }
         if (jobType.jobNo < jobs.length - 1) {
             return jobTypes[jobType.jobNo + 1];
         }

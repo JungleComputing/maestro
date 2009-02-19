@@ -347,9 +347,10 @@ class Gossiper extends Thread {
         addQuotum();
     }
 
-    void setWorkerQueueLength(JobType type, int queueLength) {
-        gossip.setWorkerQueueLength(type, queueLength);
+    boolean setWorkerQueueLength(JobType type, int queueLength) {
+        boolean changed = gossip.setWorkerQueueLength(type, queueLength);
         addQuotum();
+        return changed;
     }
 
     /**

@@ -14,8 +14,6 @@ public final class JobList {
 
     private final ArrayList<JobType> allJobTypes = new ArrayList<JobType>();
 
-    private final ArrayList<JobType> supportedJobTypes = new ArrayList<JobType>();
-
     private int jobCounter = 0;
 
     void printStatistics(@SuppressWarnings("unused") PrintStream s) {
@@ -42,7 +40,6 @@ public final class JobList {
                     Globals.log.reportProgress("Node supports job type "
                             + jobType);
                 }
-                supportedJobTypes.add(jobType);
             }
             final int ix = jobType.index;
             while (allJobTypes.size() <= ix) {
@@ -70,16 +67,6 @@ public final class JobList {
         jobSequences.add(job);
         registerJob(job);
         return job;
-    }
-
-    /**
-     * Returns a list of all the supported job types.
-     * 
-     * @return A list of all supported job types.
-     */
-    JobType[] getSupportedJobTypes() {
-        return supportedJobTypes.toArray(new JobType[supportedJobTypes
-                .size()]);
     }
 
     Job getJob(JobType type) {

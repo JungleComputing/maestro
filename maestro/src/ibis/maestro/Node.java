@@ -185,23 +185,23 @@ public final class Node extends Thread implements PacketReceiveListener {
     /**
      * Constructs a new Maestro node using the given list of jobs. Optionally
      * try to get elected as maestro.
-     * 
-     * @param jobs
-     *            The jobs that should be supported in this node.
      * @param runForMaestro
      *            If true, try to get elected as maestro.
+     * @param jobs
+     *            The jobs that should be supported in this node.
+     * 
      * @throws IbisCreationFailedException
      *             Thrown if for some reason we cannot create an ibis.
      * @throws IOException
      *             Thrown if for some reason we cannot communicate.
      */
     @SuppressWarnings("synthetic-access")
-    private Node(JobList jobs, boolean runForMaestro)
+    private Node(boolean runForMaestro, JobList jobs)
             throws IbisCreationFailedException, IOException {
         final Properties ibisProperties = new Properties();
 
         this.jobs = jobs;
-        final JobType supportedTypes[] = jobs.getSupportedJobTypes();
+        //final JobType supportedTypes[] = jobs.getSupportedJobTypes();
         final JobType[] allTypes = jobs.getAllTypes();
         Globals.allJobTypes = allTypes;
         masterQueue = new MasterQueue(allTypes);
@@ -230,11 +230,6 @@ public final class Node extends Thread implements PacketReceiveListener {
         }
         Globals.log.reportProgress("Started ibis " + localIbis.identifier()
                 + ": isMaestro=" + isMaestro);
-        if (!isMaestro && supportedTypes.length == 0) {
-            Globals.log
-                    .reportProgress("This node does not support any types, and isn't the maestro. Stopping");
-            stopped.set();
-        }
         sendPort = new PacketSendPort(this, localIbis.identifier());
         terminator = buildTerminator();
         receivePort = new PacketUpcallReceivePort(localIbis,
@@ -357,6 +352,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             // Nothing we can do about it.
         }
         printStatistics(Globals.log.getPrintStream());
+        Globals.log.close();
     }
 
     /**
@@ -420,8 +416,8 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     void addRunningJob(JobInstanceIdentifier id, JobInstance jobInstance,
-            Job job, JobCompletionListener listener) {
-        runningJobList.add(new JobInstanceInfo(id, jobInstance, job, listener));
+             JobCompletionListener listener) {
+        runningJobList.add(new JobInstanceInfo(id, jobInstance, listener));
     }
 
     /**
@@ -667,7 +663,7 @@ public final class Node extends Thread implements PacketReceiveListener {
     private void handleGossipMessage(GossipMessage m) {
         boolean changed = gossiper.registerGossipMessage(m);
         if (changed) {
-            registerNewGossipHasArrived();
+            recomputeCompletionTimes.set();
             synchronized (this) {
                 this.notifyAll();
             }
@@ -952,7 +948,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      */
     public static Node createNode(JobList jobs, boolean goForMaestro)
             throws IbisCreationFailedException, IOException {
-        return new Node(jobs, goForMaestro);
+        return new Node(goForMaestro, jobs);
     }
 
     /**
@@ -1161,15 +1157,13 @@ public final class Node extends Thread implements PacketReceiveListener {
         if (!isDead && !source.equals(Globals.localIbis.identifier())) {
             recentMasterList.register(source);
         }
-        doUpdateRecentMasters.set();
         postJobReceivedMessage(source, msg.jobId);
         final int length = workerQueue.add(msg);
         if (gossiper != null) {
-            gossiper.setWorkerQueueLength(msg.jobInstance.type, length);
+            boolean changed = gossiper.setWorkerQueueLength(msg.jobInstance.type, length);
+            if( changed ) {
+                doUpdateRecentMasters.set();
+            }
         }
-    }
-
-    private void registerNewGossipHasArrived() {
-        recomputeCompletionTimes.set();
     }
 }

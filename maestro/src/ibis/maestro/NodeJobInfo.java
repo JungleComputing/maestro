@@ -124,7 +124,7 @@ final class NodeJobInfo {
     /**
      * @return True iff this worker ever executed a job of this type.
      */
-    private synchronized boolean didWork() {
+    private boolean didWork() {
         return (executedJobs != 0) || (outstandingJobs != 0);
     }
 

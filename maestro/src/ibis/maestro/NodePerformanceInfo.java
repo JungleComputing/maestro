@@ -225,11 +225,13 @@ class NodePerformanceInfo implements Serializable {
         }
     }
 
-    void setWorkerQueueLength(JobType type, int newQueueLength) {
+    boolean setWorkerQueueLength(JobType type, int newQueueLength) {
+        boolean changed = false;
         final WorkerQueueInfo info = workerQueueInfo[type.index];
         if (info != null) {
-            info.setQueueLength(newQueueLength);
+            changed = info.setQueueLength(newQueueLength);
             timeStamp = System.nanoTime();
         }
+        return changed;
     }
 }

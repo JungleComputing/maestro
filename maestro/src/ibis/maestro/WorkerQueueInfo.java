@@ -88,11 +88,15 @@ class WorkerQueueInfo implements Serializable {
         }
     }
 
-    synchronized void setQueueLength(int newQueueLength) {
+    synchronized boolean setQueueLength(int newQueueLength) {
+        boolean changed = false;
+
         if (this.queueLength != newQueueLength) {
             this.queueLength = newQueueLength;
             queueLengthSequenceNumber++;
+            changed = true;
         }
+        return changed;
     }
 
     synchronized double getExecutionTime() {

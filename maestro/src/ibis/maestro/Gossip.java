@@ -252,8 +252,8 @@ class Gossip {
                 queueLength);
     }
 
-    void setWorkerQueueLength(JobType type, int queueLength) {
-        localPerformanceInfo.setWorkerQueueLength(type, queueLength);
+    boolean setWorkerQueueLength(JobType type, int queueLength) {
+        return localPerformanceInfo.setWorkerQueueLength(type, queueLength);
     }
 
 }
