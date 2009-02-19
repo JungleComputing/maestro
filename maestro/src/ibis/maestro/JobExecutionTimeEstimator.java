@@ -8,9 +8,9 @@ package ibis.maestro;
  */
 public interface JobExecutionTimeEstimator {
     /**
-     * Returns an estimate in nanoseconds of the compute time of this job.
+     * Returns an estimate in seconds of the compute time of this job.
      * 
-     * @return The estimated compute time of this job in nanoseconds.
+     * @return The estimated compute time of this job in seconds.
      */
     public double estimateJobExecutionTime();
 }

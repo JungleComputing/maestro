@@ -115,7 +115,7 @@ class Gossip {
      * completed.
      * 
      * @param masterQueueIntervals
-     *            The time in nanoseconds for each job it is estimated to dwell
+     *            The time in seconds for each job it is estimated to dwell
      *            in the master queue.
      * @param localNodeInfoMap
      */

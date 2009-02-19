@@ -87,7 +87,7 @@ class Settings {
     // Unfortunately we still need some magic numbers.
 
     /**
-     * Deadlines below this value in nanoseconds are meaningless because they
+     * Deadlines below this value in seconds are meaningless because they
      * are too short to be measured with reasonable accuracy.
      */
     static final double MINIMAL_DEADLINE = 100 * Utils.MICROSECOND;

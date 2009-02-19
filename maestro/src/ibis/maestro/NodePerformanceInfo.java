@@ -135,7 +135,7 @@ class NodePerformanceInfo implements Serializable {
     }
 
     /**
-     * Given the index of a type, return the interval in nanoseconds it will
+     * Given the index of a type, return the interval in seconds it will
      * take from the moment a job of this type arrives at the worker queue of
      * this node, until the entire job it belongs to is completed.
      * 
