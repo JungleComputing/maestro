@@ -84,7 +84,7 @@ final class NodeInfo {
      */
     private int searchActiveJob(long id) {
         // Note that we blindly assume that there is only one entry with
-        // the given id. Reasonable because we hand out the ids ourselves,
+        // the given id. Reasonable, because we hand out the ids ourselves,
         // and we never make mistakes...
         for (int ix = 0; ix < activeJobs.size(); ix++) {
             final ActiveJob e = activeJobs.get(ix);
@@ -318,7 +318,7 @@ final class NodeInfo {
 
     /**
      * Register that this node is communicating with us. If we had it suspect,
-     * remove that flag. Return true iff we thing this node is dead. (No we're
+     * remove that flag. Return true iff we think this node is dead. (No, we're
      * not resurrecting it.)
      * 
      * @return True iff the node is dead.
@@ -329,29 +329,6 @@ final class NodeInfo {
         }
         suspect = false;
         return false;
-    }
-
-    boolean checkDeadlines(double now) {
-        final boolean changed = false;
-
-        if (false) {
-            // TODO: enable this again when it is sane to do.
-            synchronized (this) {
-                for (final ActiveJob job : activeJobs) {
-                    if (job.getAllowanceDeadline() < now) {
-                        // Worker missed an allowance deadline.
-                        final double t = now - job.startTime
-                                + job.predictedDuration;
-                        final NodeJobInfo workerJobInfo = job.nodeJobInfo;
-                        if (workerJobInfo != null) {
-                            workerJobInfo.updateRoundtripTimeEstimate(t);
-                        }
-                        job.setAllowanceDeadline(t);
-                    }
-                }
-            }
-        }
-        return changed;
     }
 
     synchronized LocalNodeInfo getLocalInfo() {

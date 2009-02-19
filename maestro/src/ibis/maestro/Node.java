@@ -479,7 +479,6 @@ public final class Node extends Thread implements PacketReceiveListener {
         drainOutgoingMessageQueue();
         restartLateJobs();
         drainMasterQueue();
-        nodes.checkDeadlines(Utils.getPreciseTime());
     }
 
     /** Print some statistics about the entire worker run. */
