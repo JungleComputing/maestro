@@ -2,6 +2,7 @@ package ibis.maestro;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * The list of all known jobs of this run.
@@ -9,17 +10,19 @@ import java.util.ArrayList;
  * @author Kees van Reeuwijk.
  */
 public final class JobList {
-    // FIXME: let the JobList store Jobs instead of JobSequences
-    private final ArrayList<SeriesJob> jobSequences = new ArrayList<SeriesJob>();
+    // A map from each job to its job type.
+    private final HashMap<Job, JobType> jobTypeMap = new HashMap<Job, JobType>();
+    
+    // A map from each type index to the job it belongs to.
+    private final ArrayList<Job> indexToJobMap = new ArrayList<Job>();
 
+    // A list of all known types.
     private final ArrayList<JobType> allJobTypes = new ArrayList<JobType>();
 
-    private int jobCounter = 0;
+    // For each job type, the list types to do.
+    private final ArrayList<JobType[]> todoLists = new ArrayList<JobType[]>();
 
     void printStatistics(@SuppressWarnings("unused") PrintStream s) {
-        for (@SuppressWarnings("unused") final Job t : jobSequences) {
-            // TODO: re-implement statistics printing.
-        }
     }
 
     /**
@@ -28,55 +31,64 @@ public final class JobList {
      * @param job
      *            The job to register.
      */
-    private void registerJob(SeriesJob job) {
-        final Job jobs[] = job.jobs;
-
-        for (int i = 0; i < jobs.length; i++) {
-            final Job t = jobs[i];
-
-            final JobType jobType = job.jobTypes[i];
-            if (t.isSupported()) {
-                if (Settings.traceTypeHandling) {
-                    Globals.log.reportProgress("Node supports job type "
-                            + jobType);
-                }
-            }
-            final int ix = jobType.index;
-            while (allJobTypes.size() <= ix) {
-                allJobTypes.add(null);
-            }
-            if (allJobTypes.get(ix) != null) {
-                Globals.log.reportInternalError("Duplicate type index " + ix);
-            }
-            allJobTypes.set(ix, jobType);
+    JobType registerJob(Job job) {
+        if( jobTypeMap.containsKey(job)) {
+            // No need to register, we already have it.
+            return jobTypeMap.get(job);
         }
-    }
+        boolean unpredictable;
+        if( job instanceof UnpredictableAtomicJob ) {
+            unpredictable = true;
+        }
+        else if( job instanceof AtomicJob ) {
+            unpredictable = false;
+        }
+        else if( job instanceof SeriesJob ) {
+            SeriesJob sjob = (SeriesJob) job;
+            final Job jobs[] = sjob.jobs;
 
-    /**
-     * Creates a job with the given name and the given sequence of jobs. The
-     * jobs in the sequence will be executed in the given order.
-     * 
-     * @param jobs
-     *            The list of jobs of the job.
-     * @return A new job instance representing this job.
-     */
-    public SeriesJob createSeriesJob(Job... jobs) {
-        final int jobId = jobCounter++;
-        final SeriesJob job = new SeriesJob(jobId, jobs);
+            unpredictable = false;
+            int i = jobs.length;
+            while( i>0 ) {
+                i--;
 
-        jobSequences.add(job);
-        registerJob(job);
-        return job;
+                final Job t = jobs[i];
+                final JobType jobType = registerJob( t );
+                unpredictable = jobType.unpredictable;
+                if (t.isSupported()) {
+                    if (Settings.traceTypeHandling) {
+                        Globals.log.reportProgress("Node supports job type "
+                                + jobType);
+                    }
+                }
+                final int ix = jobType.index;
+                while (allJobTypes.size() <= ix) {
+                    allJobTypes.add(null);
+                }
+                if (allJobTypes.get(ix) != null) {
+                    Globals.log.reportInternalError("Duplicate type index " + ix);
+                }
+                allJobTypes.set(ix, jobType);
+            }
+        }
+        else {
+            Globals.log.reportError( "Don't know how to register job type " + job.getClass() );
+            unpredictable = true;
+        }
+        int index = allJobTypes.size();
+        JobType t = new JobType( unpredictable, index );
+        jobTypeMap.put(job, t);
+        allJobTypes.add(t);
+        indexToJobMap.add(job);
+        return t;
     }
 
     Job getJob(JobType type) {
-        final SeriesJob job = jobSequences.get(type.job.id);
-        return job.jobs[type.jobNo];
+        return indexToJobMap.get(type.index);
     }
 
-    JobType getNextJobType(JobType type) {
-        final SeriesJob job = jobSequences.get(type.job.id);
-        return job.getNextJobType(type);
+    JobType[] getTodoList(JobType type) {
+        return todoLists.get(type.index);
     }
 
     JobType[] getAllTypes() {

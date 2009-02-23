@@ -247,7 +247,8 @@ class MasterWorkerProgram {
             throws Exception {
         JobList jobs = new JobList();
 
-        SeriesJob job = jobs.createSeriesJob( new SharpenJob());
+        SeriesJob job = new SeriesJob( new SharpenJob());
+        jobs.registerJob( job );
         Node node = Node.createNode(jobs, goForMaestro);
         Listener listener = new Listener(node, jobCount);
         System.out.println("Node created");

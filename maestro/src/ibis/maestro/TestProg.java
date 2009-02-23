@@ -214,10 +214,11 @@ class TestProg {
 
         // Job createJob = jobs.createJob("createarray", new CreateArrayJob()
         // );
-        final SeriesJob job = jobs.createSeriesJob(
+        final SeriesJob job = new SeriesJob(
                 // new AssembleArrayJob( createJob ),
                 new CreateArrayJob(), new AdditionJob(), new AdditionJob(),
                 new AdditionJob(), new AdditionJob());
+        jobs.registerJob( job );
         final Node node = Node.createNode(jobs, goForMaestro);
         final Listener listener = new Listener(node, jobCount);
         System.out.println("Node created");

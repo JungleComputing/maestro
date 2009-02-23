@@ -49,40 +49,43 @@ class Gossip {
     }
 
     /**
-	 * Given the current queue intervals on the master, recompute in-place the
-	 * completion intervals for the various job types. The completion interval
-	 * is defined as the time it will take a job on a given master from the
-	 * moment it enters its master queue to the moment its entire job is
-	 * completed.
-	 * 
-	 * @param masterQueueIntervals
-	 *            The time in seconds for each job it is estimated to dwell
-	 *            in the master queue.
-	 * @param localNodeInfoMap
-	 */
-	synchronized void recomputeCompletionTimes(double masterQueueIntervals[],
-	        JobList jobs,
-	        HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
-	    final int indexLists[][] = jobs.getIndexLists();
-	
-	    for (final int indexList[] : indexLists) {
-	        int nextIndex = -1;
-	
-	        for (final int typeIndex : indexList) {
-	            final double masterQueueInterval = masterQueueIntervals == null ? 0.0
-	                    : masterQueueIntervals[typeIndex];
-	            final double bestCompletionTimeAfterMasterQueue = getBestCompletionTimeAfterMasterQueue(
-	                    typeIndex, nextIndex, localNodeInfoMap);
-	            final double t = masterQueueInterval +
-	                    bestCompletionTimeAfterMasterQueue;
-	            localPerformanceInfo.completionInfo[typeIndex] = t;
-	            nextIndex = typeIndex;
-	        }
-	    }
-	    localPerformanceInfo.timeStamp = System.nanoTime();
-	}
+     * Given the current queue intervals on the master, recompute in-place the
+     * completion intervals for the various job types. The completion interval
+     * is defined as the time it will take a job on a given master from the
+     * moment it enters its master queue to the moment its entire job is
+     * completed.
+     * 
+     * @param masterQueueIntervals
+     *            The time in seconds for each job it is estimated to dwell in
+     *            the master queue.
+     * @param jobs
+     *            The job types we know about.
+     * @param localNodeInfoMap
+     *            The local knowledge about the nodes in the system.
+     */
+    synchronized void recomputeCompletionTimes(double masterQueueIntervals[],
+            JobList jobs,
+            HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
+        final int indexLists[][] = jobs.getIndexLists();
 
-	synchronized boolean isEmpty() {
+        for (final int indexList[] : indexLists) {
+            int nextIndex = -1;
+
+            for (final int typeIndex : indexList) {
+                final double masterQueueInterval = masterQueueIntervals == null ? 0.0
+                        : masterQueueIntervals[typeIndex];
+                final double bestCompletionTimeAfterMasterQueue = getBestCompletionTimeAfterMasterQueue(
+                        typeIndex, nextIndex, localNodeInfoMap);
+                final double t = masterQueueInterval
+                        + bestCompletionTimeAfterMasterQueue;
+                localPerformanceInfo.completionInfo[typeIndex] = t;
+                nextIndex = typeIndex;
+            }
+        }
+        localPerformanceInfo.timeStamp = System.nanoTime();
+    }
+
+    synchronized boolean isEmpty() {
         return gossipList.isEmpty();
     }
 
@@ -130,8 +133,8 @@ class Gossip {
 
             if (info != null) {
                 final double xmitTime = info.getTransmissionTime(ix);
-                final double val = xmitTime + node
-                        .getCompletionOnWorker(ix, nextIx);
+                final double val = xmitTime
+                        + node.getCompletionOnWorker(ix, nextIx);
 
                 if (val < res) {
                     res = val;

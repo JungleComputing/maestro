@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import ibis.maestro.SeriesJob.SeriesJobIdentifier;
 import junit.framework.TestCase;
 
 import org.junit.Test;
@@ -38,8 +37,7 @@ public class MasterQueueTest extends TestCase {
     /** */
     @Test
     public void testAdd() {
-        SeriesJobIdentifier id = null;
-        JobType type = new JobType(id, 0, false, 0);
+        JobType type = new JobType(false, 0);
         JobType l[] = new JobType[] { type };
         Globals.allJobTypes = l;
         MasterQueue queue = new MasterQueue(l);

@@ -86,8 +86,9 @@ class OneTestProg {
     private void run(int jobCount, boolean goForMaestro) throws Exception {
         Listener listener = new Listener(jobCount);
         JobList jobs = new JobList();
-
-        SeriesJob job = jobs.createSeriesJob( new CreateArrayJob());
+        CreateArrayJob job = new CreateArrayJob();
+        
+        jobs.registerJob( job);
         Node node = Node.createNode(jobs, goForMaestro);
         System.out.println("Node created");
         double startTime = Utils.getPreciseTime();
