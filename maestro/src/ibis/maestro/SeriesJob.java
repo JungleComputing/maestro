@@ -53,10 +53,10 @@ public final class SeriesJob implements Job {
      *            The listener that should be informed when this job is
      *            completed.
      */
-    void submit(Node node, Object value, Serializable userId,
+    private void submit(Node node, Object value, Serializable userId,
             JobCompletionListener listener) {
         final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
-        final JobType type = jobTypes[0];
+        final JobType type = null; // FIXME: needs right job type
         final JobInstance jobInstance = new JobInstance(tii, type, value);
         node.addRunningJob(tii, jobInstance, listener);
         node.submit(jobInstance);

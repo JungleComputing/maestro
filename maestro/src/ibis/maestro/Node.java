@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -1079,9 +1080,9 @@ public final class Node extends Thread implements PacketReceiveListener {
         final double jobCompletionMoment = Utils.getPreciseTime();
     
         final JobType type = message.jobInstance.type;
-    
-        final JobType nextJobType = jobs.getNextJobType(type);
-        if (nextJobType == null) {
+
+        final JobType todoList[] = message.todoList;
+        if (todoList == null || todoList.length == 0) {
             // This was the final step. Report back the result.
             final JobInstanceIdentifier identifier = message.jobInstance.jobInstance;
             boolean ok = sendJobResultMessage(identifier, result);
@@ -1097,10 +1098,12 @@ public final class Node extends Thread implements PacketReceiveListener {
                 }
             }
         } else {
+            
             // There is a next step to take.
             final JobInstance nextJob = new JobInstance(
-                    message.jobInstance.jobInstance, nextJobType, result);
-            submit(nextJob);
+                    message.jobInstance.jobInstance, todoList[0], result);
+            JobType newTodoList[] = Arrays.copyOfRange(todoList, 1, todoList.length);
+            submit(nextJob,newTodoList);
         }
     
         // Update statistics.

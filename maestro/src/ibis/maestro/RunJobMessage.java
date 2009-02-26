@@ -18,6 +18,8 @@ final class RunJobMessage extends Message {
 
     final IbisIdentifier source;
 
+    final JobType todoList[];
+
     /**
      * Given a job and its source, constructs a new RunJobMessage.
      * 
@@ -25,12 +27,13 @@ final class RunJobMessage extends Message {
      *            The job to run.
      * @param jobId
      *            The identifier of the job.
+     *            @param todoList The list of subsequent jobs to do.
      */
-    RunJobMessage(JobInstance job,
-            long jobId) {
+    RunJobMessage(JobInstance job, long jobId,JobType todoList[]) {
         this.source = Globals.localIbis.identifier();
         this.jobInstance = job;
         this.jobId = jobId;
+        this.todoList = todoList;
     }
 
     /**
@@ -40,8 +43,7 @@ final class RunJobMessage extends Message {
      */
     @Override
     public String toString() {
-        return "Job message for job " + jobId + " of type "
-                + jobInstance.type;
+        return "Job message for job " + jobId + " of type " + jobInstance.type;
     }
 
     String label() {

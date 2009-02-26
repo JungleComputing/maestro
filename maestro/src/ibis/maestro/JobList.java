@@ -95,21 +95,6 @@ public final class JobList {
         return allJobTypes.toArray(new JobType[allJobTypes.size()]);
     }
 
-    /**
-     * Returns an array of arrays with type indices that should be updated in
-     * the given order from front to back.
-     * 
-     * @return
-     */
-    int[][] getIndexLists() {
-        final int res[][] = new int[jobSequences.size()][];
-        int jobno = 0;
-        for (final SeriesJob job : jobSequences) {
-            res[jobno++] = job.updateIndices;
-        }
-        return res;
-    }
-
     double[] getInitialJobTimes() {
         final double res[] = new double[allJobTypes.size()];
         int i = 0;
