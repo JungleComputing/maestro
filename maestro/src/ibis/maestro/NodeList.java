@@ -51,14 +51,16 @@ final class NodeList {
      *            The identifier o the ibis.
      * @param local
      *            Is this a local node?
+     *            @param jobCount
+     *            The total number of known job types.
      * @return The newly created Node info for this node.
      */
-    synchronized NodeInfo registerNode(IbisIdentifier theIbis, boolean local) {
+    synchronized NodeInfo registerNode(IbisIdentifier theIbis, boolean local,int jobCount) {
         NodeInfo info = ibisToNodeMap.get(theIbis);
         if (info != null) {
             return info;
         }
-        info = new NodeInfo(theIbis, workerQueue, local);
+        info = new NodeInfo(theIbis, workerQueue, local,jobCount);
         workerQueue.registerNode(info);
         ibisToNodeMap.put(theIbis, info);
         return info;
@@ -164,14 +166,7 @@ final class NodeList {
      * @return Its NodeInfo.
      */
     private NodeInfo getNodeInfo(IbisIdentifier source) {
-        NodeInfo nodeInfo = ibisToNodeMap.get(source);
-        if (nodeInfo == null) {
-            nodeInfo = registerNode(source, false); // This must be a remote
-            // node, since we certainly
-            // have registered the local
-            // node.
-        }
-        return nodeInfo;
+        return ibisToNodeMap.get(source);
     }
 
     /**

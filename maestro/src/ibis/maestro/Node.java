@@ -12,7 +12,6 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Properties;
 
@@ -204,7 +203,6 @@ public final class Node extends Thread implements PacketReceiveListener {
         this.jobs = jobs;
         //final JobType supportedTypes[] = jobs.getSupportedJobTypes();
         final JobType[] allTypes = jobs.getAllTypes();
-        Globals.allJobTypes = allTypes;
         masterQueue = new MasterQueue(allTypes);
         workerQueue = new WorkerQueue(jobs);
         nodes = new NodeList(workerQueue);
@@ -216,7 +214,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         if (Settings.traceNodes) {
             Globals.log.reportProgress("Created ibis " + localIbis);
         }
-        nodes.registerNode(localIbis.identifier(), true);
+        nodes.registerNode(localIbis.identifier(), true,jobs.getTypeCount());
         final Registry registry = localIbis.registry();
         if (runForMaestro) {
             final IbisIdentifier m = registry.elect(MAESTRO_ELECTION_NAME);
@@ -515,7 +513,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 + String.format(" (%.1f%%)", overheadPercentage));
         masterQueue.printStatistics(s);
         Utils.printThreadStats(s);
-        gossiper.printStatistics(s);
+        gossiper.printStatistics(s,jobs);
         s.printf("update        messages:   %5d sent\n", updateMessageCount
                 .get());
     }
@@ -820,7 +818,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 } else {
                     // We have a job to execute.
                     final double runMoment = Utils.getPreciseTime();
-                    final JobType type = message.jobInstance.getFirstType();
+                    final JobType type = message.jobInstance.getStageType();
                     final Job job = jobs.getJob(type);
 
                     runningJobCount.up();
@@ -857,7 +855,7 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     private void failNode(RunJobMessage message, Throwable t) {
-        final JobType type = message.jobInstance.getFirstType();
+        final JobType type = message.jobInstance.getStageType();
         Globals.log.reportError("Node fails for type " + type);
         t.printStackTrace(Globals.log.getPrintStream());
         final boolean allFailed = workerQueue.failJob(type);
@@ -938,8 +936,9 @@ public final class Node extends Thread implements PacketReceiveListener {
             Job job) {
         waitForRoom();
         final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
-        JobType todoList[] = jobs.getTodoList(job);
-        final JobInstance jobInstance = new JobInstance(tii, input,todoList);
+        JobType type = jobs.getJobType(job);
+        JobType stageType = jobs.getStageType(type,0);
+        final JobInstance jobInstance = new JobInstance(tii, input,type,stageType,0);
         addRunningJob(tii, jobInstance, listener);
         submit(jobInstance);
     }
@@ -986,7 +985,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             }
         }
         sendPort.registerDestination(theIbis);
-        nodes.registerNode(theIbis, local);
+        nodes.registerNode(theIbis, local,jobs.getTypeCount());
         if (!local) {
             gossiper.registerNode(theIbis);
         }
@@ -1091,10 +1090,11 @@ public final class Node extends Thread implements PacketReceiveListener {
     protected void handleJobResult(RunJobMessage message, Object result, double runMoment) {
         final double jobCompletionMoment = Utils.getPreciseTime();
     
-        final JobType todoList[] = message.jobInstance.todoList;
-        final JobType type = todoList[0];
+        final JobType todoList[] = jobs.getTodoList(message.jobInstance.type);
+        final int stage = message.jobInstance.stage;
+        final JobType type = todoList[stage];
 
-        if (todoList.length<2) {
+        if (todoList.length<stage+1) {
             // This was the final step. Report back the result.
             final JobInstanceIdentifier identifier = message.jobInstance.jobInstance;
             boolean ok = sendJobResultMessage(identifier, result);
@@ -1110,11 +1110,8 @@ public final class Node extends Thread implements PacketReceiveListener {
                 }
             }
         } else {
-            
-            // There is a next step to take.
-            JobType newTodoList[] = Arrays.copyOfRange(todoList, 1, todoList.length);
             final JobInstance nextJob = new JobInstance(
-                    message.jobInstance.jobInstance, result, newTodoList);
+                    message.jobInstance.jobInstance, result, message.jobInstance.type,todoList[stage+1],stage+1);
             submit(nextJob);
         }
     
@@ -1174,7 +1171,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         postJobReceivedMessage(source, msg.jobId);
         final int length = workerQueue.add(msg);
         if (gossiper != null) {
-            boolean changed = gossiper.setWorkerQueueLength(msg.jobInstance.getFirstType(), length);
+            boolean changed = gossiper.setWorkerQueueLength(msg.jobInstance.getStageType(), length);
             if( changed ) {
                 doUpdateRecentMasters.set();
             }

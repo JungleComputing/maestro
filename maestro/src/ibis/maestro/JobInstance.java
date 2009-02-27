@@ -1,7 +1,6 @@
 package ibis.maestro;
 
 import java.io.Serializable;
-import java.util.Arrays;
 
 /**
  * The representation of a job instance.
@@ -16,7 +15,14 @@ class JobInstance implements Serializable {
 
     final Object input;
 
-    final JobType todoList[];
+    /** The type of job we are executing. */
+    final JobType type;
+    
+    /** The type of the current stage. */
+    final JobType stageType;
+
+    /** The index in the todo list of this job type. */
+    final int stage;
 
     private boolean orphan = false;
 
@@ -27,17 +33,23 @@ class JobInstance implements Serializable {
      *            The type of this job instance.
      * @param input
      *            The input for this job.
-     *            @param todoList
-     *            The list of jobs to do on the input.
+     *            @param type
+     *            The overall type of job to execute
+     *            @param stageType
+     *            The type of the current stage of the job
+     *            @param stage
+     *            The index in the todo list of this job
      */
-    JobInstance(JobInstanceIdentifier tii, Object input,JobType todoList[]) {
+    JobInstance(JobInstanceIdentifier tii, Object input,JobType type,JobType stageType,int stage) {
         this.jobInstance = tii;
         this.input = input;
-        this.todoList = todoList;
+        this.type = type;
+        this.stageType = stageType;
+        this.stage = stage;
     }
 
     String formatJobAndType() {
-        return "(jobId=" + jobInstance.id + ",todo=" + Arrays.deepToString(todoList) + ")";
+        return "(jobId=" + jobInstance.id + ",type=" + type + "stage=" + stage  + ")";
     }
 
     /**
@@ -47,12 +59,13 @@ class JobInstance implements Serializable {
      */
     @Override
     public String toString() {
-        return "(job instance: job instance=" + jobInstance + " todo=" + Arrays.deepToString(todoList)
+        return "(job instance: job instance=" + jobInstance + " type=" + type
+        + " stage=" + stage
                 + " input=" + input + ")";
     }
 
     String shortLabel() {
-        return jobInstance.label() + "#" + Arrays.deepToString(todoList);
+        return jobInstance.label() + "#" + type + "@" + stage;
     }
 
     void setOrphan() {
@@ -63,8 +76,7 @@ class JobInstance implements Serializable {
         return orphan;
     }
 
-    JobType getFirstType() {
-        return todoList[0];
+    JobType getStageType() {
+        return stageType;
     }
-
 }

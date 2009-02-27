@@ -15,8 +15,7 @@ public class MasterQueueTest extends TestCase {
         for (Integer id : ids) {
             JobInstanceIdentifier jobInstance = new JobInstanceIdentifier(id,
                     null, null);
-            JobType todoList[] = new JobType[] { type };
-            JobInstance ti = new JobInstance(jobInstance, 0, todoList);
+            JobInstance ti = new JobInstance(jobInstance, 0, type, type, 0);
             queue.add(ti);
         }
     }
@@ -40,7 +39,6 @@ public class MasterQueueTest extends TestCase {
     public void testAdd() {
         JobType type = new JobType(false, 0);
         JobType l[] = new JobType[] { type };
-        Globals.allJobTypes = l;
         MasterQueue queue = new MasterQueue(l);
 
         addToQueue(type, queue, 0);

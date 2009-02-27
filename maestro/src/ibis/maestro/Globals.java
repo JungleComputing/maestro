@@ -21,6 +21,4 @@ class Globals {
     static final Random rng = new Random();
 
     static Ibis localIbis;
-
-    static JobType[] allJobTypes = null;
 }

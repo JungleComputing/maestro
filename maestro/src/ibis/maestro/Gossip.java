@@ -24,8 +24,8 @@ class Gossip {
     Gossip(JobList jobs) {
         final int numberOfProcessors = Runtime.getRuntime()
                 .availableProcessors();
-        final int sz = Globals.allJobTypes.length;
-        final double completionInfo[] = new double[sz];
+        final int sz = jobs.getTypeCount();
+        final double completionInfo[][] = buildCompletionInfo( jobs );
         final WorkerQueueInfo queueInfo[] = new WorkerQueueInfo[sz];
         final double jobTimes[] = jobs.getInitialJobTimes();
         for (int i = 0; i < sz; i++) {
@@ -36,6 +36,20 @@ class Gossip {
                 System.nanoTime());
         gossipList.add(localPerformanceInfo);
         localPerformanceInfo.timeStamp = System.nanoTime();
+    }
+
+    private double[][] buildCompletionInfo(JobList jobs) {
+        JobType types[] = jobs.getAllTypes();
+        double res[][] = new double[types.length][];
+
+        for( int i=0; i<types.length; i++ ){
+            JobType t = types[i];
+            JobType todoList[] = jobs.getTodoList(t);
+            double l1[] = new double[todoList.length];
+
+            res[i] = l1;
+        }
+        return res;
     }
 
     /**
@@ -56,20 +70,25 @@ class Gossip {
     synchronized void recomputeCompletionTimes(double masterQueueIntervals[],
             JobList jobs,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
-        final int indexLists[][] = jobs.getIndexLists();
-
-        for (final int indexList[] : indexLists) {
+        JobType types[] = jobs.getAllTypes();
+        
+        for( int tix=0; tix<types.length; tix++ ){
+            JobType todoList[] = jobs.getTodoList(types[tix]);
+            
+            int ix = todoList.length;
             int nextIndex = -1;
-
-            for (final int typeIndex : indexList) {
+            
+            while( ix>0 ){
+                ix--;
+                
                 final double masterQueueInterval = masterQueueIntervals == null ? 0.0
-                        : masterQueueIntervals[typeIndex];
+                        : masterQueueIntervals[ix];
                 final double bestCompletionTimeAfterMasterQueue = getBestCompletionTimeAfterMasterQueue(
-                        typeIndex, nextIndex, localNodeInfoMap);
+                        tix, ix, nextIndex, localNodeInfoMap);
                 final double t = masterQueueInterval
                         + bestCompletionTimeAfterMasterQueue;
-                localPerformanceInfo.completionInfo[typeIndex] = t;
-                nextIndex = typeIndex;
+                localPerformanceInfo.completionInfo[tix][ix] = t;
+                nextIndex = ix;
             }
         }
         localPerformanceInfo.timeStamp = System.nanoTime();
@@ -114,7 +133,7 @@ class Gossip {
      *            nodes.
      * @return The best average completion time of our workers.
      */
-    private double getBestCompletionTimeAfterMasterQueue(int ix, int nextIx,
+    private double getBestCompletionTimeAfterMasterQueue(int todoIx, int ix, int nextIx,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
         double res = Double.POSITIVE_INFINITY;
 
@@ -124,7 +143,7 @@ class Gossip {
             if (info != null) {
                 final double xmitTime = info.getTransmissionTime(ix);
                 final double val = xmitTime
-                        + node.getCompletionOnWorker(ix, nextIx);
+                        + node.getCompletionOnWorker(todoIx,ix, nextIx);
 
                 if (val < res) {
                     res = val;
@@ -183,8 +202,8 @@ class Gossip {
         return localPerformanceInfo.getDeepCopy();
     }
 
-    synchronized void print(PrintStream s) {
-        NodePerformanceInfo.printTopLabel(s);
+    synchronized void print(PrintStream s,JobList jobs) {
+        NodePerformanceInfo.printTopLabel(s,jobs);
         for (final NodePerformanceInfo entry : gossipList) {
             entry.print(s);
         }

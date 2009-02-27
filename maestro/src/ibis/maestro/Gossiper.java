@@ -254,7 +254,7 @@ class Gossiper extends Thread {
         }
     }
 
-    synchronized void printStatistics(PrintStream s) {
+    synchronized void printStatistics(PrintStream s,JobList jobs) {
         s.println("Sent " + messageCount.get() + " gossip messages, with "
                 + failedGossipMessageCount.get() + " failures, received "
                 + gossipItemCount.get() + " gossip items, "
@@ -262,7 +262,7 @@ class Gossiper extends Thread {
         s.println("Sent " + Utils.formatByteCount(sentBytes) + " in "
                 + Utils.formatSeconds(sendTime) + ", administration time "
                 + Utils.formatSeconds(adminTime));
-        gossip.print(s);
+        gossip.print(s,jobs);
     }
 
     /**

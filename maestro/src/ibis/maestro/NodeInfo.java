@@ -40,10 +40,10 @@ final class NodeInfo {
      *            Is this the local node?
      */
     protected NodeInfo(IbisIdentifier ibis, WorkerQueue workerQueue,
-            boolean local) {
+            boolean local,int jobCount) {
         this.ibis = ibis;
         this.local = local;
-        nodeJobInfoList = new NodeJobInfo[Globals.allJobTypes.length];
+        nodeJobInfoList = new NodeJobInfo[jobCount];
         // For non-local nodes, start with a very pessimistic ping time.
         // This means that only if we really need another node, we use it.
         // long pessimisticPingTime = local?0L:Utils.HOUR_IN_NANOSECONDS;
@@ -57,7 +57,7 @@ final class NodeInfo {
                 estimatedPingTime *= 3;
             }
         }
-        for (int ix = 0; ix < Globals.allJobTypes.length; ix++) {
+        for (int ix = 0; ix < jobCount; ix++) {
             final WorkerQueueJobInfo jobInfo = workerQueue.getJobInfo(ix);
             nodeJobInfoList[ix] = new NodeJobInfo(jobInfo, this,
                     estimatedPingTime);
@@ -188,7 +188,7 @@ final class NodeInfo {
         }
         final double roundtripTime = result.arrivalMoment - job.startTime;
         final NodeJobInfo nodeJobInfo = job.nodeJobInfo;
-        final JobType type = job.job.getFirstType();
+        final JobType type = job.job.getStageType();
         if (job.getAllowanceDeadline() < result.arrivalMoment) {
             nodeJobInfo.registerMissedAllowanceDeadline();
             if (Settings.traceMissedDeadlines) {
@@ -275,7 +275,7 @@ final class NodeInfo {
      *            The predicted duration in seconds of the job.
      */
     void registerJobStart(JobInstance job, long id, double predictedDuration) {
-        final JobType type = job.getFirstType();
+        final JobType type = job.getStageType();
         final NodeJobInfo workerJobInfo = nodeJobInfoList[type.index];
         if (workerJobInfo == null) {
             Globals.log

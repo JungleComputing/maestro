@@ -1,5 +1,12 @@
 package ibis.maestro;
 
+/**
+ * Some information about a running job instance. This class is used
+ * by nodes to keep track of running job instances.
+ * 
+ * @author Kees van Reeuwijk
+ *
+ */
 class JobInstanceInfo {
     final JobInstanceIdentifier identifier;
 

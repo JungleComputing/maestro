@@ -78,13 +78,22 @@ public final class JobList {
         return t;
     }
 
+
+    JobType getJobType(Job job) {
+        return jobTypeMap.get(job);
+    }
+
     Job getJob(JobType type) {
         return indexToJobMap.get(type.index);
     }
 
+    JobType[] getTodoList(JobType type) {
+        return todoLists.get(type.index);
+    }
+
     JobType[] getTodoList(Job job) {
         JobType jobType = jobTypeMap.get(job);
-        return todoLists.get(jobType.index);
+        return getTodoList(jobType);
     }
 
     JobType[] getAllTypes() {
@@ -149,5 +158,17 @@ public final class JobList {
             return time;
         }
         return 0.0;
+    }
+
+    /**
+     * @return Return the number of registered types.
+     */
+    int getTypeCount() {
+        return allJobTypes.size();
+    }
+
+    JobType getStageType(JobType type, int i) {
+        JobType todoList[] = getTodoList(type);
+        return todoList[i];
     }
 }

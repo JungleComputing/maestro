@@ -27,7 +27,7 @@ final class WorkerQueue {
      *            The list of job types we support.
      */
     WorkerQueue(JobList jobs) {
-        final JobType[] jobTypes = Globals.allJobTypes;
+        final JobType[] jobTypes = jobs.getAllTypes();
         queueTypes = new WorkerQueueJobInfo[jobTypes.length];
         for (final JobType t : jobTypes) {
             final WorkerQueueJobInfo queueTypeInfo = new WorkerQueueJobInfo(t);
@@ -104,7 +104,7 @@ final class WorkerQueue {
      */
     int add(RunJobMessage msg) {
         final int length;
-        final JobType type = msg.jobInstance.getFirstType();
+        final JobType type = msg.jobInstance.getStageType();
         final WorkerQueueJobInfo info = queueTypes[type.index];
         final int pos;
         synchronized (this) {
@@ -138,7 +138,7 @@ final class WorkerQueue {
                 return null;
             }
             res = queue.remove(0);
-            type = res.jobInstance.getFirstType();
+            type = res.jobInstance.getStageType();
             info = queueTypes[type.index];
             length = info.registerRemove();
         }
