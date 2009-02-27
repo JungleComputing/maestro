@@ -820,7 +820,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 } else {
                     // We have a job to execute.
                     final double runMoment = Utils.getPreciseTime();
-                    final JobType type = message.jobInstance.type;
+                    final JobType type = message.jobInstance.getFirstType();
                     final Job job = jobs.getJob(type);
 
                     runningJobCount.up();
@@ -857,7 +857,7 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     private void failNode(RunJobMessage message, Throwable t) {
-        final JobType type = message.jobInstance.type;
+        final JobType type = message.jobInstance.getFirstType();
         Globals.log.reportError("Node fails for type " + type);
         t.printStackTrace(Globals.log.getPrintStream());
         final boolean allFailed = workerQueue.failJob(type);
@@ -865,7 +865,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         if (allFailed && !isMaestro) {
             setStopped();
         }
-        gossiper.failJob(message.jobInstance.type);
+        gossiper.failJob(type);
     }
 
     /**
@@ -909,13 +909,26 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     /**
+     * Builds a new identifier containing the given user identifier.
+     * 
+     * @param userIdentifier
+     *            The user identifier to include in this identifier.
+     * @return The newly constructed identifier.
+     */
+    private JobInstanceIdentifier buildJobInstanceIdentifier(
+            Serializable userIdentifier) {
+        return new JobInstanceIdentifier(userIdentifier, Globals.localIbis
+                .identifier());
+    }
+
+    /**
      * Given an input and a job to execute, submit this input to the job.
      * If <code>submitIfBusy</code> is set, also submit when all workers
      * are currently busy.
      * 
      * @param input
      *            The input of the job.
-     *            @param userId The user-supplied id of the job.
+     * @param userId The user-supplied id of the job.
      * @param listener
      *            The completion listener for this job.
      * @param job
@@ -924,13 +937,11 @@ public final class Node extends Thread implements PacketReceiveListener {
     public void submit(Object input, Serializable userId, JobCompletionListener listener,
             Job job) {
         waitForRoom();
-        if( job instanceof SeriesJob ){
-            SeriesJob jobSequence = (SeriesJob) job;
-            jobSequence.submit(this, input, userId, listener);
-        }
-        else {
-            Globals.log.reportInternalError("Don't know (yet) how to submit to job of type" + job.getClass() );
-        }
+        final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
+        JobType todoList[] = jobs.getTodoList(job);
+        final JobInstance jobInstance = new JobInstance(tii, input,todoList);
+        addRunningJob(tii, jobInstance, listener);
+        submit(jobInstance);
     }
 
     /**
@@ -1022,6 +1033,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 Globals.log.reportProgress("Submitting job " + job + " to "
                         + node);
             }
+            
             final RunJobMessage msg = new RunJobMessage(job, jobId);
             final boolean ok = sendPort.send(node, msg);
             if (ok) {
@@ -1079,10 +1091,10 @@ public final class Node extends Thread implements PacketReceiveListener {
     protected void handleJobResult(RunJobMessage message, Object result, double runMoment) {
         final double jobCompletionMoment = Utils.getPreciseTime();
     
-        final JobType type = message.jobInstance.type;
+        final JobType todoList[] = message.jobInstance.todoList;
+        final JobType type = todoList[0];
 
-        final JobType todoList[] = message.todoList;
-        if (todoList == null || todoList.length == 0) {
+        if (todoList.length<2) {
             // This was the final step. Report back the result.
             final JobInstanceIdentifier identifier = message.jobInstance.jobInstance;
             boolean ok = sendJobResultMessage(identifier, result);
@@ -1100,10 +1112,10 @@ public final class Node extends Thread implements PacketReceiveListener {
         } else {
             
             // There is a next step to take.
-            final JobInstance nextJob = new JobInstance(
-                    message.jobInstance.jobInstance, todoList[0], result);
             JobType newTodoList[] = Arrays.copyOfRange(todoList, 1, todoList.length);
-            submit(nextJob,newTodoList);
+            final JobInstance nextJob = new JobInstance(
+                    message.jobInstance.jobInstance, result, newTodoList);
+            submit(nextJob);
         }
     
         // Update statistics.
@@ -1162,7 +1174,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         postJobReceivedMessage(source, msg.jobId);
         final int length = workerQueue.add(msg);
         if (gossiper != null) {
-            boolean changed = gossiper.setWorkerQueueLength(msg.jobInstance.type, length);
+            boolean changed = gossiper.setWorkerQueueLength(msg.jobInstance.getFirstType(), length);
             if( changed ) {
                 doUpdateRecentMasters.set();
             }

@@ -35,16 +35,6 @@ class Gossip {
                 queueInfo, Globals.localIbis.identifier(), numberOfProcessors,
                 System.nanoTime());
         gossipList.add(localPerformanceInfo);
-        final int indexLists[][] = jobs.getIndexLists();
-
-        for (final int indexList[] : indexLists) {
-            int t = 0;
-
-            for (final int typeIndex : indexList) {
-                localPerformanceInfo.completionInfo[typeIndex] = t;
-                t += jobTimes[typeIndex];
-            }
-        }
         localPerformanceInfo.timeStamp = System.nanoTime();
     }
 

@@ -104,7 +104,7 @@ final class WorkerQueue {
      */
     int add(RunJobMessage msg) {
         final int length;
-        final JobType type = msg.jobInstance.type;
+        final JobType type = msg.jobInstance.getFirstType();
         final WorkerQueueJobInfo info = queueTypes[type.index];
         final int pos;
         synchronized (this) {
@@ -131,24 +131,26 @@ final class WorkerQueue {
         final RunJobMessage res;
         final int length;
         final WorkerQueueJobInfo info;
+        final JobType type;
 
         synchronized (this) {
             if (queue.isEmpty()) {
                 return null;
             }
             res = queue.remove(0);
-            info = queueTypes[res.jobInstance.type.index];
+            type = res.jobInstance.getFirstType();
+            info = queueTypes[type.index];
             length = info.registerRemove();
         }
         if (Settings.traceQueuing) {
             Globals.log.reportProgress("Removing "
                     + res.jobInstance.formatJobAndType()
                     + " from worker queue; length is now " + queue.size()
-                    + "; " + length + " of type " + res.jobInstance.type);
+                    + "; " + length + " of type " + type);
         }
         if (gossiper != null) {
             final double queueTimePerJob = info.getDequeueInterval();
-            gossiper.setWorkerQueueTimePerJob(res.jobInstance.type,
+            gossiper.setWorkerQueueTimePerJob(type,
                     queueTimePerJob, length);
         }
         return res;

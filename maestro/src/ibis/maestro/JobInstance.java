@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * The representation of a job instance.
@@ -13,28 +14,30 @@ class JobInstance implements Serializable {
 
     final JobInstanceIdentifier jobInstance;
 
-    final JobType type;
-
     final Object input;
+
+    final JobType todoList[];
 
     private boolean orphan = false;
 
     /**
      * @param tii
-     *            The job sequence this job belongs to.
+     *            The identifier of this job instance.
      * @param type
      *            The type of this job instance.
      * @param input
      *            The input for this job.
+     *            @param todoList
+     *            The list of jobs to do on the input.
      */
-    JobInstance(JobInstanceIdentifier tii, JobType type, Object input) {
-        jobInstance = tii;
-        this.type = type;
+    JobInstance(JobInstanceIdentifier tii, Object input,JobType todoList[]) {
+        this.jobInstance = tii;
         this.input = input;
+        this.todoList = todoList;
     }
 
     String formatJobAndType() {
-        return "(jobId=" + jobInstance.id + ",type=" + type + ")";
+        return "(jobId=" + jobInstance.id + ",todo=" + Arrays.deepToString(todoList) + ")";
     }
 
     /**
@@ -44,12 +47,12 @@ class JobInstance implements Serializable {
      */
     @Override
     public String toString() {
-        return "(job instance: job instance=" + jobInstance + " type=" + type
+        return "(job instance: job instance=" + jobInstance + " todo=" + Arrays.deepToString(todoList)
                 + " input=" + input + ")";
     }
 
     String shortLabel() {
-        return jobInstance.label() + "#" + type;
+        return jobInstance.label() + "#" + Arrays.deepToString(todoList);
     }
 
     void setOrphan() {
@@ -60,47 +63,8 @@ class JobInstance implements Serializable {
         return orphan;
     }
 
-    /**
-     * Returns the hash code of this job instance.
-     * 
-     * @return The hash code.
-     */
-    @Override
-    public int hashCode() {
-        final int prime = 31;
-        int result = prime 
-                + ((jobInstance == null) ? 0 : jobInstance.hashCode());
-        result = prime * result + ((type == null) ? 0 : type.hashCode());
-        return result;
-    }
-
-    /**
-     * Determines whether the given object equals this job instance.
-     * 
-     * @param obj
-     *            The object to compare with.
-     * @return True iff the given object equals this job instance.
-     */
-    @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
-            return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        final JobInstance other = (JobInstance) obj;
-        if (jobInstance == null) {
-            if (other.jobInstance != null)
-                return false;
-        } else if (!jobInstance.equals(other.jobInstance))
-            return false;
-        if (type == null) {
-            if (other.type != null)
-                return false;
-        } else if (!type.equals(other.type))
-            return false;
-        return true;
+    JobType getFirstType() {
+        return todoList[0];
     }
 
 }

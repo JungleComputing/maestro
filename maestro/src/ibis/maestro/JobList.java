@@ -36,50 +36,45 @@ public final class JobList {
             // No need to register, we already have it.
             return jobTypeMap.get(job);
         }
-        boolean unpredictable;
+        JobType t;
+        int index = allJobTypes.size();
+        indexToJobMap.add(job);
         if( job instanceof UnpredictableAtomicJob ) {
-            unpredictable = true;
+            t = new JobType( true, index );
+            todoLists.add( new JobType[] { t } );
         }
         else if( job instanceof AtomicJob ) {
-            unpredictable = false;
+            t = new JobType( false, index );
+            todoLists.add( new JobType[] { t } );
         }
         else if( job instanceof SeriesJob ) {
             SeriesJob sjob = (SeriesJob) job;
             final Job jobs[] = sjob.jobs;
+            ArrayList<JobType> todoList = new ArrayList<JobType>();
 
-            unpredictable = false;
+            boolean unpredictable = false;
             int i = jobs.length;
             while( i>0 ) {
                 i--;
 
-                final Job t = jobs[i];
-                final JobType jobType = registerJob( t );
-                unpredictable = jobType.unpredictable;
-                if (t.isSupported()) {
-                    if (Settings.traceTypeHandling) {
-                        Globals.log.reportProgress("Node supports job type "
-                                + jobType);
-                    }
+                final Job t1 = jobs[i];
+                final JobType jobType = registerJob( t1 );
+                unpredictable |= jobType.unpredictable;
+                JobType tl1[] = getTodoList(t1);
+                for( JobType e: tl1) {
+                    todoList.add( e );
                 }
-                final int ix = jobType.index;
-                while (allJobTypes.size() <= ix) {
-                    allJobTypes.add(null);
-                }
-                if (allJobTypes.get(ix) != null) {
-                    Globals.log.reportInternalError("Duplicate type index " + ix);
-                }
-                allJobTypes.set(ix, jobType);
             }
+            t = new JobType( unpredictable, index );
+            JobType todoArray[] = todoList.toArray(new JobType[todoList.size()]);
+            todoLists.add( todoArray );
         }
         else {
             Globals.log.reportError( "Don't know how to register job type " + job.getClass() );
-            unpredictable = true;
+            t = null;
         }
-        int index = allJobTypes.size();
-        JobType t = new JobType( unpredictable, index );
         jobTypeMap.put(job, t);
         allJobTypes.add(t);
-        indexToJobMap.add(job);
         return t;
     }
 
@@ -87,8 +82,9 @@ public final class JobList {
         return indexToJobMap.get(type.index);
     }
 
-    JobType[] getTodoList(JobType type) {
-        return todoLists.get(type.index);
+    JobType[] getTodoList(Job job) {
+        JobType jobType = jobTypeMap.get(job);
+        return todoLists.get(jobType.index);
     }
 
     JobType[] getAllTypes() {

@@ -185,7 +185,7 @@ final class MasterQueue {
 		final int pos = findInsertionPoint(queue, job);
 		queue.add(pos, job);
 
-		final JobType type = job.type;
+		final JobType type = job.getFirstType();
 		final TypeInfo info = queueTypes[type.index];
 		final int length = info.registerAdd();
 		if (Settings.traceQueuing) {
@@ -248,7 +248,7 @@ final class MasterQueue {
 			final LocalNodeInfo localNodeInfo = localNodeInfoMap
 			.get(info.source);
 			final double val = info.estimateJobCompletion(localNodeInfo,
-					job.type, Settings.HARD_ALLOWANCES);
+					job.getFirstType(), Settings.HARD_ALLOWANCES);
 
 			if (val < bestInterval) {
 				bestInterval = val;
@@ -265,7 +265,7 @@ final class MasterQueue {
 				final LocalNodeInfo localNodeInfo = localNodeInfoMap
 				.get(info.source);
 				final double val = info.estimateJobCompletion(localNodeInfo,
-						job.type, true);
+						job.getFirstType(), true);
 				s.print(Utils.formatSeconds(val));
 				if (val == bestInterval && val != Double.POSITIVE_INFINITY) {
 					s.print('$');
@@ -277,17 +277,17 @@ final class MasterQueue {
 		if (best == null) {
 			if (Settings.traceMasterQueue) {
 				Globals.log.reportProgress("No workers for job of type "
-						+ job.type);
+						+ job.getFirstType());
 			}
 			return null;
 		}
 		if (Settings.traceMasterQueue) {
 			Globals.log.reportProgress("Selected worker " + best.source
-					+ " for job of type " + job.type);
+					+ " for job of type " + job.getFirstType());
 		}
 		final LocalNodeInfo localNodeInfo = localNodeInfoMap.get(best.source);
 		final double predictedDuration = localNodeInfo
-		.getPredictedDuration(job.type);
+		.getPredictedDuration(job.getFirstType());
 		return new Submission(job, best.source, predictedDuration);
 	}
 
@@ -308,7 +308,7 @@ final class MasterQueue {
 		int ix = 0;
 		while (ix < queue.size()) {
 			final JobInstance job = queue.get(ix);
-			final JobType type = job.type;
+			final JobType type = job.getFirstType();
 			if (type.index == busyTypeIndex) {
 				if (Settings.traceMasterQueue || Settings.traceQueuing) {
 					Globals.log.reportProgress("Type " + type

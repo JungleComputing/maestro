@@ -188,7 +188,7 @@ final class NodeInfo {
         }
         final double roundtripTime = result.arrivalMoment - job.startTime;
         final NodeJobInfo nodeJobInfo = job.nodeJobInfo;
-        final JobType type = job.job.type;
+        final JobType type = job.job.getFirstType();
         if (job.getAllowanceDeadline() < result.arrivalMoment) {
             nodeJobInfo.registerMissedAllowanceDeadline();
             if (Settings.traceMissedDeadlines) {
@@ -275,7 +275,7 @@ final class NodeInfo {
      *            The predicted duration in seconds of the job.
      */
     void registerJobStart(JobInstance job, long id, double predictedDuration) {
-        final JobType type = job.type;
+        final JobType type = job.getFirstType();
         final NodeJobInfo workerJobInfo = nodeJobInfoList[type.index];
         if (workerJobInfo == null) {
             Globals.log
