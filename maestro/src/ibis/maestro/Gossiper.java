@@ -45,13 +45,13 @@ class Gossiper extends Thread {
 
     private long sentBytes = 0;
 
-    Gossiper(PacketSendPort sendPort, boolean isMaestro, JobList jobs) {
+    Gossiper(PacketSendPort sendPort, boolean isMaestro, JobList jobs,IbisIdentifier localIbis) {
         super("Maestro gossiper thread");
         this.sendPort = sendPort;
         this.gossipQuotum = new UpDownCounter(isMaestro ? 40 : 4);
         setDaemon(true);
         setPriority(Thread.MAX_PRIORITY);
-        gossip = new Gossip(jobs);
+        gossip = new Gossip(jobs,localIbis);
     }
 
     NodePerformanceInfo[] getGossipCopy() {

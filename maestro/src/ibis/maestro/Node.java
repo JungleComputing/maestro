@@ -214,11 +214,12 @@ public final class Node extends Thread implements PacketReceiveListener {
         if (Settings.traceNodes) {
             Globals.log.reportProgress("Created ibis " + localIbis);
         }
-        nodes.registerNode(localIbis.identifier(), true,jobs.getTypeCount());
+        IbisIdentifier myIbis = localIbis.identifier();
+        nodes.registerNode(myIbis, true,jobs.getTypeCount());
         final Registry registry = localIbis.registry();
         if (runForMaestro) {
             final IbisIdentifier m = registry.elect(MAESTRO_ELECTION_NAME);
-            isMaestro = m.equals(localIbis.identifier());
+            isMaestro = m.equals(myIbis);
             if (isMaestro) {
                 enableRegistration.set(); // We're maestro, we're allowed to
                 // register with others.
@@ -227,16 +228,16 @@ public final class Node extends Thread implements PacketReceiveListener {
             isMaestro = false;
 
         }
-        Globals.log.reportProgress("Started ibis " + localIbis.identifier()
+        Globals.log.reportProgress("Started ibis " + myIbis
                 + ": isMaestro=" + isMaestro);
-        sendPort = new PacketSendPort(this, localIbis.identifier());
+        sendPort = new PacketSendPort(this, myIbis);
         terminator = buildTerminator();
         receivePort = new PacketUpcallReceivePort(localIbis,
                 Globals.receivePortName, this);
         traceStats = System.getProperty("ibis.maestro.traceWorkerStatistics") != null;
-        gossiper = new Gossiper(sendPort, isMaestro(), jobs);
+        gossiper = new Gossiper(sendPort, isMaestro(), jobs,myIbis);
         startTime = Utils.getPreciseTime();
-        recentMasterList.register(localIbis.identifier());
+        recentMasterList.register(myIbis);
         startThreads();
         if( Settings.traceNodes ){
             Globals.log.log("Started a Maestro node");

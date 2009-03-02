@@ -21,7 +21,7 @@ class Gossip {
         return new GossipMessage(target, content, needsReply);
     }
 
-    Gossip(JobList jobs) {
+    Gossip(JobList jobs,IbisIdentifier localIbis) {
         final int numberOfProcessors = Runtime.getRuntime()
                 .availableProcessors();
         final int sz = jobs.getTypeCount();
@@ -32,7 +32,7 @@ class Gossip {
             queueInfo[i] = new WorkerQueueInfo(0, 0, 0.0, jobTimes[i]);
         }
         localPerformanceInfo = new NodePerformanceInfo(completionInfo,
-                queueInfo, Globals.localIbis.identifier(), numberOfProcessors,
+                queueInfo, localIbis, numberOfProcessors,
                 System.nanoTime());
         gossipList.add(localPerformanceInfo);
         localPerformanceInfo.timeStamp = System.nanoTime();
