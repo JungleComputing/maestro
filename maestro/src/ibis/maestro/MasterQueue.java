@@ -280,17 +280,16 @@ final class MasterQueue {
         if (best == null) {
             if (Settings.traceMasterQueue) {
                 Globals.log.reportProgress("No workers for job of type "
-                        + job.getStageType());
+                        + job.stageType);
             }
             return null;
         }
         if (Settings.traceMasterQueue) {
             Globals.log.reportProgress("Selected worker " + best.source
-                    + " for job of type " + job.getStageType());
+                    + " for job of type " + job.stageType);
         }
         final LocalNodeInfo localNodeInfo = localNodeInfoMap.get(best.source);
-        final double predictedDuration = localNodeInfo.getPredictedDuration(job
-                .getStageType());
+        final double predictedDuration = localNodeInfo.getPredictedDuration(job.stageType);
         return new Submission(job, best.source, predictedDuration);
     }
 
@@ -311,7 +310,7 @@ final class MasterQueue {
         int ix = 0;
         while (ix < queue.size()) {
             final JobInstance job = queue.get(ix);
-            final JobType type = job.getStageType();
+            final JobType type = job.stageType;
             if (type.index == busyTypeIndex) {
                 if (Settings.traceMasterQueue || Settings.traceQueuing) {
                     Globals.log.reportProgress("Type " + type

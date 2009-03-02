@@ -17,7 +17,7 @@ class JobInstance implements Serializable {
 
     /** The type of job we are executing. */
     final JobType type;
-    
+
     /** The type of the current stage. */
     final JobType stageType;
 
@@ -33,23 +33,29 @@ class JobInstance implements Serializable {
      *            The type of this job instance.
      * @param input
      *            The input for this job.
-     *            @param type
+     * @param type
      *            The overall type of job to execute
-     *            @param stageType
+     * @param stageType
      *            The type of the current stage of the job
-     *            @param stage
-     *            The index in the todo list of this job
+     * @param stage
+     *            The index in the todo list of the current state of the job
      */
-    JobInstance(JobInstanceIdentifier tii, Object input,JobType type,JobType stageType,int stage) {
+    JobInstance(JobInstanceIdentifier tii, Object input, JobType type,
+            JobType stageType, int stage) {
         this.jobInstance = tii;
         this.input = input;
         this.type = type;
         this.stageType = stageType;
         this.stage = stage;
+        if (!stageType.isAtomic) {
+            Globals.log.reportInternalError("Non-atomic stage type "
+                    + stageType);
+        }
     }
 
     String formatJobAndType() {
-        return "(jobId=" + jobInstance.id + ",type=" + type + "stage=" + stage  + ")";
+        return "(jobId=" + jobInstance.id + ",type=" + type + "stage=" + stage
+                + ")";
     }
 
     /**
@@ -60,8 +66,7 @@ class JobInstance implements Serializable {
     @Override
     public String toString() {
         return "(job instance: job instance=" + jobInstance + " type=" + type
-        + " stage=" + stage
-                + " input=" + input + ")";
+                + " stage=" + stage + " input=" + input + ")";
     }
 
     String shortLabel() {
@@ -74,9 +79,5 @@ class JobInstance implements Serializable {
 
     boolean isOrphan() {
         return orphan;
-    }
-
-    JobType getStageType() {
-        return stageType;
     }
 }

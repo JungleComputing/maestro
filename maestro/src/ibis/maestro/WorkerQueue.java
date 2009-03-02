@@ -104,7 +104,7 @@ final class WorkerQueue {
      */
     int add(RunJobMessage msg) {
         final int length;
-        final JobType type = msg.jobInstance.getStageType();
+        final JobType type = msg.jobInstance.stageType;
         final WorkerQueueJobInfo info = queueTypes[type.index];
         final int pos;
         synchronized (this) {
@@ -138,7 +138,7 @@ final class WorkerQueue {
                 return null;
             }
             res = queue.remove(0);
-            type = res.jobInstance.getStageType();
+            type = res.jobInstance.stageType;
             info = queueTypes[type.index];
             length = info.registerRemove();
         }

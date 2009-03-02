@@ -819,7 +819,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 } else {
                     // We have a job to execute.
                     final double runMoment = Utils.getPreciseTime();
-                    final JobType type = message.jobInstance.getStageType();
+                    final JobType type = message.jobInstance.stageType;
                     final Job job = jobs.getJob(type);
 
                     if( !type.isAtomic ){
@@ -862,7 +862,7 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     private void failNode(RunJobMessage message, Throwable t) {
-        final JobType type = message.jobInstance.getStageType();
+        final JobType type = message.jobInstance.stageType;
         Globals.log.reportError("Node fails for type " + type);
         t.printStackTrace(Globals.log.getPrintStream());
         final boolean allFailed = workerQueue.failJob(type);
@@ -1178,7 +1178,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         postJobReceivedMessage(source, msg.jobId);
         final int length = workerQueue.add(msg);
         if (gossiper != null) {
-            boolean changed = gossiper.setWorkerQueueLength(msg.jobInstance.getStageType(), length);
+            boolean changed = gossiper.setWorkerQueueLength(msg.jobInstance.stageType, length);
             if( changed ) {
                 doUpdateRecentMasters.set();
             }
