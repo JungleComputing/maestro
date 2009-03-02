@@ -81,8 +81,13 @@ public class GossipTest extends TestCase {
         JobType tj2 = jobs.getJobType(j2);
         gossip.setLocalComputeTime(tj2, 3.0);
         gossip.setWorkerQueueTimePerJob(tj2, 0.3, 3);
-        double masterQueueIntervals[] = new double[] { 0.0, 0.0, 0.0, 0.0 };
+        double masterQueueIntervals[] = new double[] { 0.2, 0.2, 0.2, 0.2 };
+        double completionTimes[] = new double[] { 0.2, 0.2, 0.2, 0.2 };
+        double transmissionTimes[] = new double[] { 0.0, 0.0, 0.0, 0.0 };
         HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap = new HashMap<IbisIdentifier, LocalNodeInfo>();
+        int queueLengths[] = new int[] { 1, 1, 1, 1 };
+        LocalNodeInfo localNodeInfo = new LocalNodeInfo(false, queueLengths, transmissionTimes, completionTimes);
+        localNodeInfoMap.put(null, localNodeInfo);
         gossip.recomputeCompletionTimes(masterQueueIntervals, jobs, localNodeInfoMap);
         NodePerformanceInfo info = gossip.getLocalUpdate();
         System.out.println( "info=" + info );

@@ -123,6 +123,7 @@ class Gossip {
      * sent by the master. We compute this by taking the minimum over all our
      * workers.
      * 
+     * @param todoIx The index in the todo list.
      * @param ix
      *            The index of the type we're computing the completion time for.
      * @param nextIx
