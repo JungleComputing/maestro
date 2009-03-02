@@ -742,7 +742,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             mrt.split(input, handler);
             handler.start();
         } else if (job instanceof SeriesJob ) {
-            Globals.log.reportInternalError( "JobSequence should be handled" );
+            Globals.log.reportInternalError( "SeriesJob " + job + " should be handled" );
         } else if (job instanceof AlternativesJob) {
             Globals.log
                     .reportInternalError("AlternativesJob should have been selected by the master "
@@ -822,6 +822,12 @@ public final class Node extends Thread implements PacketReceiveListener {
                     final JobType type = message.jobInstance.getStageType();
                     final Job job = jobs.getJob(type);
 
+                    if( !type.isAtomic ){
+                        Globals.log.reportInternalError( "Job type " + type + " is not atomic" );
+                    }
+                    if( job instanceof SeriesJob ){
+                        Globals.log.reportInternalError( "A SeriesJob " + job + "(type " + type + ") is not handled" );
+                    }
                     runningJobCount.up();
                     if (Settings.traceNodeProgress) {
                         final double queueInterval = runMoment

@@ -33,7 +33,7 @@ public final class JobList {
      * @param job
      *            The job to register.
      */
-    JobType registerJob(Job job) {
+    public JobType registerJob(Job job) {
         if( jobTypeMap.containsKey(job)) {
             // No need to register, we already have it.
             return jobTypeMap.get(job);
@@ -43,12 +43,12 @@ public final class JobList {
         indexToJobMap.add(job);
         if( job instanceof UnpredictableAtomicJob ) {
             index = allJobTypes.size();
-            t = new JobType( true, index );
+            t = new JobType( true, true, index );
             todoLists.add( new JobType[] { t } );
         }
         else if( job instanceof AtomicJob ) {
             index = allJobTypes.size();
-            t = new JobType( false, index );
+            t = new JobType( false, true, index );
             todoLists.add( new JobType[] { t } );
         }
         else if( job instanceof SeriesJob ) {
@@ -67,7 +67,7 @@ public final class JobList {
                 }                
             }
             index = allJobTypes.size();
-            t = new JobType( unpredictable, index );
+            t = new JobType( unpredictable, false, index );
             JobType todoArray[] = todoList.toArray(new JobType[todoList.size()]);
             todoLists.add( todoArray );
         }
@@ -94,7 +94,7 @@ public final class JobList {
     }
 
     JobType[] getTodoList(Job job) {
-        JobType jobType = jobTypeMap.get(job);
+        JobType jobType = getJobType(job);
 
         return getTodoList(jobType);
     }

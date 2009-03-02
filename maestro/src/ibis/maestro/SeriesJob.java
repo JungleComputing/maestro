@@ -8,7 +8,7 @@ import java.util.Arrays;
  * @author Kees van Reeuwijk
  * 
  */
-public final class SeriesJob implements Job {
+public class SeriesJob implements Job {
     final Job jobs[];
 
     /** Returns true iff this job type is supported.
@@ -21,7 +21,7 @@ public final class SeriesJob implements Job {
         return true;
     }
 
-    SeriesJob(final Job... jobs) {
+    public SeriesJob(final Job... jobs) {
         this.jobs = jobs;
     }
 

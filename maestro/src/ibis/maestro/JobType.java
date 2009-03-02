@@ -14,13 +14,16 @@ final class JobType implements Serializable {
     final int index;
 
     final boolean unpredictable;
+    
+    final boolean isAtomic;
 
     /**
      * Constructs a new job type.
      * 
      */
-    JobType(boolean unpredictable, int index) {
+    JobType(boolean unpredictable, boolean isAtomic, int index) {
         this.unpredictable = unpredictable;
+        this.isAtomic = isAtomic;
         this.index = index;
     }
 
@@ -31,7 +34,9 @@ final class JobType implements Serializable {
      */
     @Override
     public String toString() {
-        return "(J" + index + ")";
+        String unp = unpredictable ? "U" : "";
+        String at = isAtomic ? "A" : "";
+        return "(J" + index + unp + at + ")";
     }
 
     /**

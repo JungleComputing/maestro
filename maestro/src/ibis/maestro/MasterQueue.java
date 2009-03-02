@@ -187,6 +187,9 @@ final class MasterQueue {
 
         final JobType type = job.stageType;
         final TypeInfo info = queueTypes[type.index];
+        if( !type.isAtomic ){
+            Globals.log.reportInternalError( "Submitted job type " + type + " is not atomic" );
+        }
         final int length = info.registerAdd();
         if (Settings.traceQueuing) {
             Globals.log.reportProgress("Adding " + job.formatJobAndType()

@@ -37,7 +37,7 @@ public class MasterQueueTest extends TestCase {
     /** */
     @Test
     public void testAdd() {
-        JobType type = new JobType(false, 0);
+        JobType type = new JobType(false, true, 0);
         JobType l[] = new JobType[] { type };
         MasterQueue queue = new MasterQueue(l);
 
