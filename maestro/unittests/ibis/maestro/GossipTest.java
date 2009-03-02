@@ -41,7 +41,7 @@ public class GossipTest extends TestCase {
      * 
      */
     @Test
-    private JobList buildJobList()
+    public void testGossip()
     {
         JobList jobs = new JobList();
         Job j1 = new J1();
@@ -73,16 +73,7 @@ public class GossipTest extends TestCase {
         Job s3 = new SeriesJob( new J1(), new J1(), new J2(), s2 );
         jobs.registerJob(s3);
         jobs.sanityCheck( );
-        return jobs;
-    }
-
-    /**
-     * 
-     */
-    @Test
-    public void testGossip()
-    {
-        JobList jobs = buildJobList();
         Gossip gossip = new Gossip(jobs,null);
+        gossip.setLocalComputeTime(jobs.getJobType(j1), 1.0);
     }
 }
