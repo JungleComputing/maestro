@@ -1,5 +1,9 @@
 package ibis.maestro;
 
+import ibis.ipl.IbisIdentifier;
+
+import java.util.HashMap;
+
 import junit.framework.TestCase;
 
 import org.junit.Test;
@@ -66,14 +70,21 @@ public class GossipTest extends TestCase {
         jobs.registerJob( s );
         jobs.sanityCheck( );
         assertEquals( 4, jobs.getTypeCount());
-        Job s2 = new SeriesJob( j1, j1, j2, s );
-        jobs.registerJob(s2);
-        jobs.sanityCheck( );
-        assertEquals( 5, jobs.getTypeCount());
-        Job s3 = new SeriesJob( new J1(), new J1(), new J2(), s2 );
-        jobs.registerJob(s3);
-        jobs.sanityCheck( );
+
         Gossip gossip = new Gossip(jobs,null);
-        gossip.setLocalComputeTime(jobs.getJobType(j1), 1.0);
+        JobType tj1 = jobs.getJobType(j1);
+        gossip.setLocalComputeTime(tj1, 1.0);
+        gossip.setWorkerQueueTimePerJob(tj1, 0.1, 1);
+        JobType tj11 = jobs.getJobType(j11);
+        gossip.setLocalComputeTime(tj11, 2.0);
+        gossip.setWorkerQueueTimePerJob(tj11, 0.2, 2);
+        JobType tj2 = jobs.getJobType(j2);
+        gossip.setLocalComputeTime(tj2, 3.0);
+        gossip.setWorkerQueueTimePerJob(tj2, 0.3, 3);
+        double masterQueueIntervals[] = new double[] { 0.0, 0.0, 0.0, 0.0 };
+        HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap = new HashMap<IbisIdentifier, LocalNodeInfo>();
+        gossip.recomputeCompletionTimes(masterQueueIntervals, jobs, localNodeInfoMap);
+        NodePerformanceInfo info = gossip.getLocalUpdate();
+        System.out.println( "info=" + info );
     }
 }

@@ -55,9 +55,11 @@ class NodePerformanceInfo implements Serializable {
     private String buildCompletionString() {
         final StringBuilder b = new StringBuilder("[");
         for( final double l[]: completionInfo){
-            b.append('[');
+            char sep = '[';
             for (final double i : l) {
+                b.append(sep);
                 b.append(Utils.formatSeconds(i));
+                sep = ',';
             }
             b.append(']');
         }
