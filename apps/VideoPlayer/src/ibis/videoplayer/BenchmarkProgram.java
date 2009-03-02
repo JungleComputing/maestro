@@ -592,14 +592,16 @@ class BenchmarkProgram {
                 System.exit(1);
             }
             System.out.println("One-job benchmark");
-            convertJob = jobs.createSeriesJob( new ProcessFrameJob(
-                    slowScale, slowSharpen, dir));
+            ProcessFrameJob processFrameJob = new ProcessFrameJob(
+                                slowScale, slowSharpen, dir);
+            convertJob = new SeriesJob( processFrameJob);
         } else {
-            convertJob = jobs.createSeriesJob( new GenerateFrameJob(),
+            convertJob = new SeriesJob( new GenerateFrameJob(),
                     new ScaleUpFrameJob(2, slowScale, allowScale),
                     new SharpenFrameJob(slowSharpen, allowSharpen),
                     new CompressFrameJob(), new SaveFrameJob(dir));
         }
+        jobs.registerJob(convertJob);
         final Node node = Node.createNode(jobs, goForMaestro);
 
         removeDirectory(dir);

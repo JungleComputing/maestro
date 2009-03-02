@@ -191,10 +191,11 @@ class ConvertFramesProgram {
     private void run(File framesDirectory) throws Exception {
         JobList jobs = new JobList();
         Listener listener = new Listener();
-        SeriesJob convertJob = jobs.createSeriesJob(new FetchImageJob(),
+        SeriesJob convertJob = new SeriesJob(new FetchImageJob(),
                 new ColorCorrectJob(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
                         1.0), new ScaleFrameJob(2), new CompressFrameJob());
 
+        jobs.registerJob(convertJob);
         Node node = Node.createNode(jobs, framesDirectory != null);
         System.out.println("Node created");
         if (framesDirectory != null) {
