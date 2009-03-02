@@ -28,12 +28,12 @@ public class CalculationVertexTest extends TestCase {
         assertEquals(8, scd.getValue(), eps);
         assertEquals(8, max.getValue(), eps);
         assertEquals(5, min.getValue(), eps);
-               
+
         a.setValue(6.0);
         assertEquals( 9, sab.getValue(), eps);
         assertEquals( 9, max.getValue(), eps);
         assertEquals( 8, min.getValue(), eps);
-        
+
         ValueVertex e = new ValueVertex( 3 );
         sab.add( e );
         scd.add( e );
@@ -42,13 +42,13 @@ public class CalculationVertexTest extends TestCase {
         assertEquals(11, scd.getValue(), eps);
         assertEquals(12, max.getValue(), eps);
         assertEquals(11, min.getValue(), eps);
-        
+
         e.withdrawFromGraph();
         assertEquals( 9, sab.getValue(), eps);
         assertEquals( 8, scd.getValue(), eps);
         assertEquals( 9, max.getValue(), eps);
         assertEquals( 8, min.getValue(), eps);
-        
+
         e.setValue( 20 );
         assertEquals( 9, sab.getValue(), eps);
         assertEquals( 8, scd.getValue(), eps);

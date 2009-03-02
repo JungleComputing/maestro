@@ -20,7 +20,9 @@ public class AllTests {
         // $JUnit-BEGIN$
         suite.addTestSuite(CalculationVertexTest.class);
         suite.addTestSuite(MasterQueueTest.class);
-        // $JUnit-END$
+        suite.addTestSuite(JobListTest.class);
+        suite.addTestSuite(GossipTest.class);
+               // $JUnit-END$
         return suite;
     }
 

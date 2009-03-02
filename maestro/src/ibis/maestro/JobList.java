@@ -4,6 +4,8 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import junit.framework.Assert;
+
 /**
  * The list of all known jobs of this run.
  * 
@@ -37,34 +39,34 @@ public final class JobList {
             return jobTypeMap.get(job);
         }
         JobType t;
-        int index = allJobTypes.size();
+        int index;
         indexToJobMap.add(job);
         if( job instanceof UnpredictableAtomicJob ) {
+            index = allJobTypes.size();
             t = new JobType( true, index );
             todoLists.add( new JobType[] { t } );
         }
         else if( job instanceof AtomicJob ) {
+            index = allJobTypes.size();
             t = new JobType( false, index );
             todoLists.add( new JobType[] { t } );
         }
         else if( job instanceof SeriesJob ) {
             SeriesJob sjob = (SeriesJob) job;
             final Job jobs[] = sjob.jobs;
-            ArrayList<JobType> todoList = new ArrayList<JobType>();
 
             boolean unpredictable = false;
-            int i = jobs.length;
-            while( i>0 ) {
-                i--;
-
-                final Job t1 = jobs[i];
-                final JobType jobType = registerJob( t1 );
+            ArrayList<JobType> todoList = new ArrayList<JobType>();
+            for( Job j: jobs ) {
+                final JobType jobType = registerJob( j );
                 unpredictable |= jobType.unpredictable;
-                JobType tl1[] = getTodoList(t1);
+                JobType tl1[] = getTodoList(j);
+
                 for( JobType e: tl1) {
                     todoList.add( e );
-                }
+                }                
             }
+            index = allJobTypes.size();
             t = new JobType( unpredictable, index );
             JobType todoArray[] = todoList.toArray(new JobType[todoList.size()]);
             todoLists.add( todoArray );
@@ -93,6 +95,7 @@ public final class JobList {
 
     JobType[] getTodoList(Job job) {
         JobType jobType = jobTypeMap.get(job);
+
         return getTodoList(jobType);
     }
 
@@ -170,5 +173,13 @@ public final class JobList {
     JobType getStageType(JobType type, int i) {
         JobType todoList[] = getTodoList(type);
         return todoList[i];
+    }
+
+    void sanityCheck() {
+        final int size = allJobTypes.size();
+
+        Assert.assertEquals(todoLists.size(), size);
+        Assert.assertEquals(indexToJobMap.size(), size);
+        Assert.assertEquals(jobTypeMap.size(), size);
     }
 }
