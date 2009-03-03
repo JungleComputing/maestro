@@ -779,7 +779,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         final JobType completedStageType = todoList[stage];
         final int nextStageNumber = stage+1;
 
-        if (todoList.length<nextStageNumber) {
+        if (nextStageNumber>=todoList.length) {
             // This was the final step. Report back the result.
             final JobInstanceIdentifier identifier = message.jobInstance.jobInstance;
             boolean ok = sendJobResultMessage(identifier, result);
