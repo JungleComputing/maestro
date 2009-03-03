@@ -251,7 +251,7 @@ final class MasterQueue {
             final LocalNodeInfo localNodeInfo = localNodeInfoMap
                     .get(info.source);
             final double val = info.estimateJobCompletion(localNodeInfo, job
-                    .type, job.stage, Settings.HARD_ALLOWANCES);
+                    .overallType, job.stageNumber, Settings.HARD_ALLOWANCES);
 
             if (val < bestInterval) {
                 bestInterval = val;
@@ -268,7 +268,7 @@ final class MasterQueue {
                 final LocalNodeInfo localNodeInfo = localNodeInfoMap
                         .get(info.source);
                 final double val = info.estimateJobCompletion(localNodeInfo,
-                        job.type, job.stage, true);
+                        job.overallType, job.stageNumber, true);
                 s.print(Utils.formatSeconds(val));
                 if (val == bestInterval && val != Double.POSITIVE_INFINITY) {
                     s.print('$');

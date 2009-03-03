@@ -15,38 +15,38 @@ class JobInstance implements Serializable {
 
     final Object input;
 
-    /** The type of job we are executing. */
-    final JobType type;
+    /** The overall type of job we are executing. */
+    final JobType overallType;
 
     /** The type of the current stage. */
     final JobType stageType;
 
     /** The index in the todo list of this job type. */
-    final int stage;
+    final int stageNumber;
 
     private boolean orphan = false;
 
     /**
      * @param tii
      *            The identifier of this job instance.
-     * @param type
+     * @param overallType
      *            The type of this job instance.
      * @param input
      *            The input for this job.
-     * @param type
+     * @param overallType
      *            The overall type of job to execute
      * @param stageType
      *            The type of the current stage of the job
      * @param stage
      *            The index in the todo list of the current state of the job
      */
-    JobInstance(JobInstanceIdentifier tii, Object input, JobType type,
+    JobInstance(JobInstanceIdentifier tii, Object input, JobType overallType,
             JobType stageType, int stage) {
         this.jobInstance = tii;
         this.input = input;
-        this.type = type;
+        this.overallType = overallType;
         this.stageType = stageType;
-        this.stage = stage;
+        this.stageNumber = stage;
         if (!stageType.isAtomic) {
             Globals.log.reportInternalError("Non-atomic stage type "
                     + stageType);
@@ -54,7 +54,7 @@ class JobInstance implements Serializable {
     }
 
     String formatJobAndType() {
-        return "(jobId=" + jobInstance.id + ",type=" + type + "stage=" + stage
+        return "(jobId=" + jobInstance.id + ",overallType=" + overallType + "stageNumber=" + stageNumber
                 + ")";
     }
 
@@ -65,12 +65,12 @@ class JobInstance implements Serializable {
      */
     @Override
     public String toString() {
-        return "(job instance: job instance=" + jobInstance + " type=" + type
-                + " stage=" + stage + " input=" + input + ")";
+        return "(job instance: job instance=" + jobInstance + " overallType=" + overallType
+                + " stageNumber=" + stageNumber + " input=" + input + ")";
     }
 
     String shortLabel() {
-        return jobInstance.label() + "#" + type + "@" + stage;
+        return jobInstance.label() + "#" + overallType + "@" + stageNumber;
     }
 
     void setOrphan() {

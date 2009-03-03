@@ -774,8 +774,8 @@ public final class Node extends Thread implements PacketReceiveListener {
      */
     protected void handleJobResult(RunJobMessage message, Object result, double runMoment) {
         final double jobCompletionMoment = Utils.getPreciseTime();    
-        final JobType todoList[] = jobs.getTodoList(message.jobInstance.type);
-        final int stage = message.jobInstance.stage;
+        final JobType todoList[] = jobs.getTodoList(message.jobInstance.overallType);
+        final int stage = message.jobInstance.stageNumber;
         final JobType completedStageType = todoList[stage];
         final int nextStageNumber = stage+1;
 
@@ -795,9 +795,10 @@ public final class Node extends Thread implements PacketReceiveListener {
                 }
             }
         } else {
+            JobType nextJobType = todoList[nextStageNumber];
             final JobInstance nextJob = new JobInstance(
                 message.jobInstance.jobInstance, result,
-                message.jobInstance.type,todoList[nextStageNumber],nextStageNumber
+                message.jobInstance.overallType,nextJobType,nextStageNumber
             );
             submit(nextJob);
         }
@@ -1061,9 +1062,16 @@ public final class Node extends Thread implements PacketReceiveListener {
             Job job) {
         waitForRoom();
         final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
-        JobType type = jobs.getJobType(job);
-        JobType stageType = jobs.getStageType(type,0);
-        final JobInstance jobInstance = new JobInstance(tii, input,type,stageType,0);
+        JobType overallType = jobs.getJobType(job);
+        JobType stageType = jobs.getStageType(overallType,0);
+        Job j = jobs.getJob(stageType);
+        if( j == job && !overallType.isAtomic ){
+            Globals.log.reportInternalError( "Overall job is the same as first stage for non-atomic type " + overallType );
+        }
+        else if( !(j instanceof AtomicJob)){
+            Globals.log.reportInternalError( "Bad first stage job (stageType=" + stageType + "):" + j );
+        }
+        final JobInstance jobInstance = new JobInstance(tii, input,overallType,stageType,0);
         addRunningJob(tii, jobInstance, listener);
         submit(jobInstance);
     }

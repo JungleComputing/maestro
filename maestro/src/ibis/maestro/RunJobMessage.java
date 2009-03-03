@@ -21,15 +21,15 @@ final class RunJobMessage extends Message {
     /**
      * Given a job and its source, constructs a new RunJobMessage.
      * 
-     * @param job
+     * @param jobInstance
      *            The job to run.
      * @param jobId
      *            The identifier of the job.
      *            @param todoList The list of subsequent jobs to do.
      */
-    RunJobMessage(JobInstance job, long jobId) {
+    RunJobMessage(JobInstance jobInstance, long jobId) {
         this.source = Globals.localIbis.identifier();
-        this.jobInstance = job;
+        this.jobInstance = jobInstance;
         this.jobId = jobId;
     }
 

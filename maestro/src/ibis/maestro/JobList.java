@@ -2,6 +2,7 @@ package ibis.maestro;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import junit.framework.Assert;
@@ -41,7 +42,6 @@ public final class JobList {
         }
         JobType t;
         int index;
-        indexToJobMap.add(job);
         if( job instanceof UnpredictableAtomicJob ) {
             index = allJobTypes.size();
             t = new JobType( true, true, index );
@@ -61,9 +61,12 @@ public final class JobList {
             for( Job j: jobs ) {
                 final JobType jobType = registerJob( j );
                 unpredictable |= jobType.unpredictable;
-                JobType tl1[] = getTodoList(j);
+                JobType tl1[] = getTodoList(jobType);
 
                 for( JobType e: tl1) {
+                    if( !e.isAtomic ){
+                        Globals.log.reportInternalError( "Todo list element of type " + e + " is not atomic" );
+                    }
                     todoList.add( e );
                 }                
             }
@@ -78,6 +81,7 @@ public final class JobList {
         }
         jobTypeMap.put(job, t);
         allJobTypes.add(t);
+        indexToJobMap.add(job);
         return t;
     }
 
