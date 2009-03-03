@@ -12,15 +12,20 @@ public class SeriesJob implements Job {
     final Job jobs[];
 
     /** Returns true iff this job type is supported.
-     * Always returns true since job sequences are always supported.
-     * @return <code>true</code> since job sequences are always supported.
+     * Returns true iff the first stage is supported,
+     * since all other elements can be submitted to other nodes.
+     * @return <code>true</code> iff the first stage of the series is supported.
      */
     @Override
     public boolean isSupported()
     {
-        return true;
+        return jobs.length == 0 || jobs[0].isSupported();
     }
 
+    /**
+     * Constructs a series job.
+     * @param jobs The list of jobs in this series.
+     */
     public SeriesJob(final Job... jobs) {
         this.jobs = jobs;
     }

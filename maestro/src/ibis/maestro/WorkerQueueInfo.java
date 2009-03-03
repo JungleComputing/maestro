@@ -3,8 +3,9 @@ package ibis.maestro;
 import java.io.Serializable;
 
 /**
- * A class representing the current worker queue length for the given type.
- * 
+ * A class containing information about the current worker queue length
+ * for the given type.
+ *
  * @author Kees van Reeuwijk
  */
 class WorkerQueueInfo implements Serializable {

@@ -22,6 +22,7 @@ public class AllTests {
         suite.addTestSuite(MasterQueueTest.class);
         suite.addTestSuite(JobListTest.class);
         suite.addTestSuite(GossipTest.class);
+        suite.addTestSuite(LabelTrackerTest.class);
                // $JUnit-END$
         return suite;
     }

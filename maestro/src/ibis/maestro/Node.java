@@ -570,7 +570,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         if (deadNodes.contains(ibis)) {
             return false;
         }
-        final Message msg = new JobFailMessage(jobId);
+        final Message msg = new JobFailedMessage(jobId);
         jobFailMessageCount.add();
         return sendPort.send(ibis, msg);
     }
@@ -614,7 +614,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param msg
      *            The status message.
      */
-    private void handleJobFailMessage(JobFailMessage msg) {
+    private void handleJobFailMessage(JobFailedMessage msg) {
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Received a job failed message "
                     + msg);
@@ -643,14 +643,42 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     /**
-     * Handles message <code>msg</code> from worker.
+     * A worker has sent us a message with its current status, handle it.
+     * 
+     * @param m
+     *            The update message.
+     */
+    private void handleNodeUpdateMessage(UpdateNodeMessage m) {
+        if (Settings.traceNodeProgress) {
+            Globals.log.reportProgress("Received node update message " + m);
+        }
+        boolean isnew = gossiper.registerGossip(m.update, m.update.source);
+        if (isnew) {
+            // TODO: can this be moved to the gossiper?
+            recomputeCompletionTimes.set();
+        }
+    }
+
+    /**
+     * Handle a message containing a new job to run.
      * 
      * @param msg
-     *            The message we received.
+     *            The message to handle.
      */
-    @Override
-    public void messageReceived(Message msg) {
-        handleMessage(msg);
+    private void handleRunJobMessage(RunJobMessage msg) {
+        final IbisIdentifier source = msg.source;
+        final boolean isDead = nodes.registerAsCommunicating(source);
+        if (!isDead && !source.equals(Globals.localIbis.identifier())) {
+            recentMasterList.register(source);
+        }
+        postJobReceivedMessage(source, msg.jobId);
+        final int length = workerQueue.add(msg);
+        if (gossiper != null) {
+            boolean changed = gossiper.setWorkerQueueLength(msg.jobInstance.stageType, length);
+            if( changed ) {
+                doUpdateRecentMasters.set();
+            }
+        }
     }
 
     /**
@@ -667,6 +695,17 @@ public final class Node extends Thread implements PacketReceiveListener {
                 this.notifyAll();
             }
         }
+    }
+
+    /**
+     * Handles message <code>msg</code> from worker.
+     * 
+     * @param msg
+     *            The message we received.
+     */
+    @Override
+    public void messageReceived(Message msg) {
+        handleMessage(msg);
     }
 
     /** Handle the given message. */
@@ -686,8 +725,8 @@ public final class Node extends Thread implements PacketReceiveListener {
             handleJobResultMessage((JobResultMessage) msg);
         } else if (msg instanceof RunJobMessage) {
             handleRunJobMessage((RunJobMessage) msg);
-        } else if (msg instanceof JobFailMessage) {
-            handleJobFailMessage((JobFailMessage) msg);
+        } else if (msg instanceof JobFailedMessage) {
+            handleJobFailMessage((JobFailedMessage) msg);
         } else if (msg instanceof StopNodeMessage) {
             handleStopNodeMessage((StopNodeMessage) msg);
         } else {
@@ -723,6 +762,85 @@ public final class Node extends Thread implements PacketReceiveListener {
             return true;
         }
         return false;
+    }
+
+    /**
+     * @param message
+     *            The job that was run.
+     * @param result
+     *            The result of the job.
+     * @param runMoment
+     *            The moment the job was started.
+     */
+    protected void handleJobResult(RunJobMessage message, Object result, double runMoment) {
+        final double jobCompletionMoment = Utils.getPreciseTime();    
+        final JobType todoList[] = jobs.getTodoList(message.jobInstance.type);
+        final int stage = message.jobInstance.stage;
+        final JobType completedStageType = todoList[stage];
+        final int nextStageNumber = stage+1;
+
+        if (todoList.length<nextStageNumber) {
+            // This was the final step. Report back the result.
+            final JobInstanceIdentifier identifier = message.jobInstance.jobInstance;
+            boolean ok = sendJobResultMessage(identifier, result);
+            if (!ok) {
+                // Could not send the result message. We're in trouble.
+                // Just try again.
+                ok = sendJobResultMessage(identifier, result);
+                if (!ok) {
+                    // Nothing we can do, we give up.
+                    Globals.log
+                            .reportError("Could not send job result message to "
+                                    + identifier);
+                }
+            }
+        } else {
+            final JobInstance nextJob = new JobInstance(
+                message.jobInstance.jobInstance, result,
+                message.jobInstance.type,todoList[nextStageNumber],nextStageNumber
+            );
+            submit(nextJob);
+        }
+    
+        // Update statistics.
+        final double computeInterval = jobCompletionMoment - runMoment;
+        final double averageComputeTime = workerQueue.countJob(completedStageType,
+                computeInterval);
+        gossiper.setComputeTime(completedStageType, averageComputeTime);
+        runningJobCount.down();
+        if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
+            final double queueInterval = runMoment - message.arrivalMoment;
+            Globals.log.reportProgress("Completed " + message.jobInstance
+                    + "; queueInterval="
+                    + Utils.formatSeconds(queueInterval)
+                    + "; runningJobs=" + runningJobCount);
+        }
+        final double workerDwellTime = jobCompletionMoment
+                - message.arrivalMoment;
+        if (traceStats) {
+            final double now = (Utils.getPreciseTime() - startTime);
+            System.out.println("TRACE:workerDwellTime " + completedStageType + " " + now
+                    + " " + workerDwellTime);
+        }
+        if (!deadNodes.contains(message.source)) {
+            final Message msg = new JobCompletedMessage(message.jobId);
+            boolean ok = sendPort.send(message.source, msg);
+    
+            if (!ok) {
+                // Could not send the result message. We're desperate.
+                // First simply try again.
+                ok = sendPort.send(message.source, msg);
+                if (!ok) {
+                    // Unfortunately, that didn't work.
+                    // TODO: think up another way to recover from a failed
+                    // result report.
+                    Globals.log
+                            .reportError("Failed to send job completed message to "
+                                    + message.source);
+                }
+            }
+        }
+        doUpdateRecentMasters.set();
     }
 
     private void executeJob(RunJobMessage message, Job job, Object input,
@@ -1057,131 +1175,16 @@ public final class Node extends Thread implements PacketReceiveListener {
         }
     }
 
-    /**
-     * A worker has sent us a message with its current status, handle it.
-     * 
-     * @param m
-     *            The update message.
-     */
-    private void handleNodeUpdateMessage(UpdateNodeMessage m) {
-        if (Settings.traceNodeProgress) {
-            Globals.log.reportProgress("Received node update message " + m);
-        }
-        boolean isnew = gossiper.registerGossip(m.update, m.update.source);
-        if (isnew) {
-            // TODO: can this be moved to the gossiper?
-            recomputeCompletionTimes.set();
-        }
-    }
-
     private void updateRecentMasters() {
         final NodePerformanceInfo update = gossiper.getLocalUpdate();
         final UpdateNodeMessage msg = new UpdateNodeMessage(update);
+
         for (final IbisIdentifier ibis : recentMasterList.getArray()) {
             if (Settings.traceUpdateMessages) {
                 Globals.log.reportProgress("Sending " + msg + " to " + ibis);
             }
             sendPort.send(ibis, msg);
             updateMessageCount.add();
-        }
-    }
-
-    /**
-     * @param message
-     *            The job that was run.
-     * @param result
-     *            The result of the job.
-     * @param runMoment
-     *            The moment the job was started.
-     */
-    protected void handleJobResult(RunJobMessage message, Object result, double runMoment) {
-        final double jobCompletionMoment = Utils.getPreciseTime();
-    
-        final JobType todoList[] = jobs.getTodoList(message.jobInstance.type);
-        final int stage = message.jobInstance.stage;
-        final JobType type = todoList[stage];
-
-        if (todoList.length<stage+1) {
-            // This was the final step. Report back the result.
-            final JobInstanceIdentifier identifier = message.jobInstance.jobInstance;
-            boolean ok = sendJobResultMessage(identifier, result);
-            if (!ok) {
-                // Could not send the result message. We're in trouble.
-                // Just try again.
-                ok = sendJobResultMessage(identifier, result);
-                if (!ok) {
-                    // Nothing we can do, we give up.
-                    Globals.log
-                            .reportError("Could not send job result message to "
-                                    + identifier);
-                }
-            }
-        } else {
-            final JobInstance nextJob = new JobInstance(
-                    message.jobInstance.jobInstance, result, message.jobInstance.type,todoList[stage+1],stage+1);
-            submit(nextJob);
-        }
-    
-        // Update statistics.
-        final double computeInterval = jobCompletionMoment - runMoment;
-        final double averageComputeTime = workerQueue.countJob(type,
-                computeInterval);
-        gossiper.setComputeTime(type, averageComputeTime);
-        runningJobCount.down();
-        if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
-            final double queueInterval = runMoment - message.arrivalMoment;
-            Globals.log.reportProgress("Completed " + message.jobInstance
-                    + "; queueInterval="
-                    + Utils.formatSeconds(queueInterval)
-                    + "; runningJobs=" + runningJobCount);
-        }
-        final double workerDwellTime = jobCompletionMoment
-                - message.arrivalMoment;
-        if (traceStats) {
-            final double now = (Utils.getPreciseTime() - startTime);
-            System.out.println("TRACE:workerDwellTime " + type + " " + now
-                    + " " + workerDwellTime);
-        }
-        if (!deadNodes.contains(message.source)) {
-            final Message msg = new JobCompletedMessage(message.jobId);
-            boolean ok = sendPort.send(message.source, msg);
-    
-            if (!ok) {
-                // Could not send the result message. We're desperate.
-                // First simply try again.
-                ok = sendPort.send(message.source, msg);
-                if (!ok) {
-                    // Unfortunately, that didn't work.
-                    // TODO: think up another way to recover from a failed
-                    // result report.
-                    Globals.log
-                            .reportError("Failed to send job completed message to "
-                                    + message.source);
-                }
-            }
-        }
-        doUpdateRecentMasters.set();
-    }
-
-    /**
-     * Handle a message containing a new job to run.
-     * 
-     * @param msg
-     *            The message to handle.
-     */
-    private void handleRunJobMessage(RunJobMessage msg) {
-        final IbisIdentifier source = msg.source;
-        final boolean isDead = nodes.registerAsCommunicating(source);
-        if (!isDead && !source.equals(Globals.localIbis.identifier())) {
-            recentMasterList.register(source);
-        }
-        postJobReceivedMessage(source, msg.jobId);
-        final int length = workerQueue.add(msg);
-        if (gossiper != null) {
-            boolean changed = gossiper.setWorkerQueueLength(msg.jobInstance.stageType, length);
-            if( changed ) {
-                doUpdateRecentMasters.set();
-            }
         }
     }
 }

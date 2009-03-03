@@ -10,7 +10,7 @@ import ibis.ipl.IbisIdentifier;
  * @author Kees van Reeuwijk
  * 
  */
-final class JobFailMessage extends Message {
+final class JobFailedMessage extends Message {
     private static final long serialVersionUID = 5158569253342276404L;
 
     final IbisIdentifier source;
@@ -23,7 +23,7 @@ final class JobFailMessage extends Message {
      * @param id
      *            The identifier of the job this is a result for.
      */
-    protected JobFailMessage(long id) {
+    protected JobFailedMessage(long id) {
         this.source = Globals.localIbis.identifier();
         this.id = id;
     }

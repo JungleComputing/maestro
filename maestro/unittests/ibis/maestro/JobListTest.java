@@ -73,6 +73,9 @@ public class JobListTest extends TestCase {
         jobs.sanityCheck( );
         assertEquals( 4, jobs.getTypeCount());
         JobType ts = jobs.getJobType(s);
+        // Note that we can get away with (pointer) equality comparison
+        // because the system guarantees that for each particular type,
+        // always the same <code>JobType</code> instance is returned.
         assertEquals(tj1, jobs.getStageType(ts, 0));
         assertEquals(tj11, jobs.getStageType(ts, 1));
         assertEquals(tj2, jobs.getStageType(ts, 2));

@@ -32,6 +32,7 @@ public final class JobList {
      * 
      * @param job
      *            The job to register.
+     *            @return The type of the registered job.
      */
     public JobType registerJob(Job job) {
         if( jobTypeMap.containsKey(job)) {

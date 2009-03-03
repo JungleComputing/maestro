@@ -14,6 +14,7 @@ import org.junit.Test;
  * @author Kees van Reeuwijk.
  */
 public class GossipTest extends TestCase {
+    private static final double eps = 0.1;
 
     private static class J1 implements AtomicJob {
 
@@ -44,6 +45,7 @@ public class GossipTest extends TestCase {
     /**
      * 
      */
+    @SuppressWarnings("synthetic-access")
     @Test
     public void testGossip()
     {
@@ -82,14 +84,17 @@ public class GossipTest extends TestCase {
         gossip.setLocalComputeTime(tj2, 3.0);
         gossip.setWorkerQueueTimePerJob(tj2, 0.3, 3);
         double masterQueueIntervals[] = new double[] { 0.2, 0.2, 0.2, 0.2 };
-        double completionTimes[] = new double[] { 0.2, 0.2, 0.2, 0.2 };
-        double transmissionTimes[] = new double[] { 0.0, 0.0, 0.0, 0.0 };
+        double completionTimes[] = new double[] { 0.5, 0.5, 0.5, 0.5 };
+        double transmissionTimes[] = new double[] { 0.4, 0.3, 0.2, 0.1 };
         HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap = new HashMap<IbisIdentifier, LocalNodeInfo>();
         int queueLengths[] = new int[] { 1, 1, 1, 1 };
         LocalNodeInfo localNodeInfo = new LocalNodeInfo(false, queueLengths, transmissionTimes, completionTimes);
         localNodeInfoMap.put(null, localNodeInfo);
         gossip.recomputeCompletionTimes(masterQueueIntervals, jobs, localNodeInfoMap);
         NodePerformanceInfo info = gossip.getLocalUpdate();
-        System.out.println( "info=" + info );
+        double l[] = info.completionInfo[3];
+        assertEquals( 9.5, l[0], eps );
+        assertEquals( 7.7, l[1], eps );
+        assertEquals( 4.6, l[2], eps );
     }
 }
