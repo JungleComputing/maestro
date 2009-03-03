@@ -352,7 +352,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             // Nothing we can do about it.
         }
         printStatistics(Globals.log.getPrintStream());
-        Globals.log.close();
+        //Globals.log.close();
     }
 
     /**

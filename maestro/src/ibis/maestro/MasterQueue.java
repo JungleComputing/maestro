@@ -250,6 +250,7 @@ final class MasterQueue {
         for (final NodePerformanceInfo info : tables) {
             final LocalNodeInfo localNodeInfo = localNodeInfoMap
                     .get(info.source);
+            
             final double val = info.estimateJobCompletion(localNodeInfo, job
                     .overallType, job.stageNumber, Settings.HARD_ALLOWANCES);
 
