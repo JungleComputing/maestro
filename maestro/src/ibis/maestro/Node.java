@@ -993,26 +993,6 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     /**
-     * Writes the given progress message to the logger.
-     * 
-     * @param msg
-     *            The message to write.
-     */
-    public void reportProgress(String msg) {
-        Globals.log.reportProgress(msg);
-    }
-
-    /**
-     * Writes the given error message to the logger.
-     * 
-     * @param msg
-     *            The message to write.
-     */
-    public void reportError(String msg) {
-        Globals.log.reportError(msg);
-    }
-
-    /**
      * Given a number of nodes to wait for, keep waiting until we have gossip
      * information about at least this many nodes, or until the given time has
      * elapsed.

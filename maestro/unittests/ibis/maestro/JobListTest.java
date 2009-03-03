@@ -37,6 +37,9 @@ public class JobListTest extends TestCase {
         }
     }
 
+    /**
+     * Reproduce the circumstances of a bug in the real system.
+     */
     @Test
     public void testBenchmarkJobList() {
         JobList jobs = new JobList();
