@@ -1,13 +1,14 @@
 package ibis.maestro;
 
 /**
- * Some information about a running job instance. This class is used
- * by nodes to keep track of running job instances.
+ * Some information about a running submitted job instance. This class is used
+ * by nodes to keep track of running job instances that were submitted
+ * by the user to the Maestro system.
  * 
  * @author Kees van Reeuwijk
  *
  */
-class JobInstanceInfo {
+class SubmittedJobInfo {
     final JobInstanceIdentifier identifier;
 
     final JobCompletionListener listener;
@@ -26,7 +27,7 @@ class JobInstanceInfo {
      * @param listener
      *            The completion listener associated with the job.
      */
-    JobInstanceInfo(final JobInstanceIdentifier identifier,
+    SubmittedJobInfo(final JobInstanceIdentifier identifier,
             JobInstance jobInstance,
             final JobCompletionListener listener) {
         this.identifier = identifier;

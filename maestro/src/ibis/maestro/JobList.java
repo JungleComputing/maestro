@@ -26,6 +26,7 @@ public final class JobList {
 
     void printStatistics(@SuppressWarnings("unused")
     PrintStream s) {
+        // FIXME: print some statistics again.
     }
 
     /**

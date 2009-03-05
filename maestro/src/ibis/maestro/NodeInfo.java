@@ -107,7 +107,7 @@ final class NodeInfo {
             suspect = true;
             dead = true;
             for (final ActiveJob t : activeJobs) {
-                orphans.add(t.job);
+                orphans.add(t.jobInstance);
             }
             activeJobs.clear(); // Don't let those orphans take up memory.
         }
@@ -164,7 +164,7 @@ final class NodeInfo {
             return null;
         }
         job.nodeJobInfo.registerJobFailed();
-        return job.job;
+        return job.jobInstance;
     }
 
     /**
@@ -188,8 +188,8 @@ final class NodeInfo {
         }
         final double roundtripTime = result.arrivalMoment - job.startTime;
         final NodeJobInfo nodeJobInfo = job.nodeJobInfo;
-        final JobType type = job.job.stageType;
-        if (job.getAllowanceDeadline() < result.arrivalMoment) {
+        final JobType type = job.jobInstance.stageType;
+        if (job.allowanceDeadline < result.arrivalMoment) {
             nodeJobInfo.registerMissedAllowanceDeadline();
             if (Settings.traceMissedDeadlines) {
                 Globals.log.reportProgress("Missed allowance deadline for "
@@ -198,7 +198,7 @@ final class NodeInfo {
                         + " predictedDuration="
                         + Utils.formatSeconds(job.predictedDuration)
                         + " allowanceDuration="
-                        + Utils.formatSeconds(job.getAllowanceDeadline()
+                        + Utils.formatSeconds(job.allowanceDeadline
                                 - job.startTime) + " realDuration="
                         + Utils.formatSeconds(roundtripTime));
             }
@@ -223,8 +223,8 @@ final class NodeInfo {
                     + " roundtripTime="
                     + Utils.formatSeconds(roundtripTime));
         }
-        if (job.job.isOrphan()) {
-            return job.job;
+        if (job.jobInstance.isOrphan()) {
+            return job.jobInstance;
         }
         return null;
     }

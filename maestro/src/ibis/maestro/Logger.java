@@ -64,13 +64,6 @@ class Logger {
         t.printStackTrace(logfile);
     }
 
-    /** Close the logger. */
-    void close() {
-        if (logfile != null) {
-            logfile.close();
-        }
-    }
-
     /**
      * Returns the print stream of this logger.
      * 

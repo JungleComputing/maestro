@@ -12,9 +12,10 @@ import java.io.Serializable;
 class JobInstanceIdentifier implements Serializable {
     private static final long serialVersionUID = -7567750999837567234L;
 
+    /** The job instance identifiers we hand out. */
     private static long serialNo = 0;
 
-    /** The identifier issued by the maestro to which it was submitted. */
+    /** The identifier issued by the master node. */
     final long id;
 
     /**
@@ -24,21 +25,23 @@ class JobInstanceIdentifier implements Serializable {
      */
     final Serializable userId;
 
-    /** The ibis to which the final result should be transmitted. */
-    final IbisIdentifier ibis;
+    /** The node to which the final result should be transmitted. */
+    final IbisIdentifier resultNode;
 
     /**
      * Constructs a new identifier.
      * 
+     * @param id
+     *     The identifier issued by the master.
      * @param userId
      *            The user identifier to include.
-     * @param ibis
-     *            The ibis to send the result to.
+     * @param resultNode
+     *            The node to send the result to.
      */
-    JobInstanceIdentifier(long id, Serializable userId, IbisIdentifier ibis) {
+    private JobInstanceIdentifier(long id, Serializable userId, IbisIdentifier resultNode) {
         this.id = id;
         this.userId = userId;
-        this.ibis = ibis;
+        this.resultNode = resultNode;
     }
 
     /**
@@ -46,11 +49,11 @@ class JobInstanceIdentifier implements Serializable {
      * 
      * @param userId
      *            The user identifier to include.
-     * @param ibis
-     *            The ibis to send the result to.
+     * @param resultNode
+     *            The node to send the result to.
      */
-    JobInstanceIdentifier(Serializable userId, IbisIdentifier ibis) {
-        this(serialNo++, userId, ibis);
+    JobInstanceIdentifier(Serializable userId, IbisIdentifier resultNode) {
+        this(serialNo++, userId, resultNode);
     }
 
     /**
@@ -61,7 +64,7 @@ class JobInstanceIdentifier implements Serializable {
     @Override
     public String toString() {
         return "(job instance: id=" + id + " user id=" + userId + " port="
-                + ibis + ")";
+                + resultNode + ")";
     }
 
     /**

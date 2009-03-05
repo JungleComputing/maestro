@@ -26,9 +26,6 @@ class Settings {
 
     // Debugging flags.
 
-    /** Trace type handling? */
-    static final boolean traceTypeHandling = false;
-
     /** Trace the progress of the worker lists of masters. */
     static final boolean traceWorkerList = false;
 

@@ -409,15 +409,15 @@ public final class Node extends Thread implements PacketReceiveListener {
      *            The job result.
      */
     private void reportCompletion(JobInstanceIdentifier id, Object result) {
-        final JobInstanceInfo job = runningJobList.remove(id);
+        final SubmittedJobInfo job = runningJobList.remove(id);
         if (job != null) {
             job.listener.jobCompleted(this, id.userId, result);
         }
     }
 
-    void addRunningJob(JobInstanceIdentifier id, JobInstance jobInstance,
+    private void addRunningJob(JobInstanceIdentifier id, JobInstance jobInstance,
              JobCompletionListener listener) {
-        runningJobList.add(new JobInstanceInfo(id, jobInstance, listener));
+        runningJobList.add(new SubmittedJobInfo(id, jobInstance, listener));
     }
 
     /**
@@ -531,14 +531,14 @@ public final class Node extends Thread implements PacketReceiveListener {
      */
     private boolean sendJobResultMessage(JobInstanceIdentifier id,
             Object result) {
-        if (deadNodes.contains(id.ibis)) {
+        if (deadNodes.contains(id.resultNode)) {
             // We say it has been delivered to avoid error recovery.
             // Think of this as an optimization.
             return true;
         }
         final Message msg = new JobResultMessage(id, result);
         aggregateResultMessageCount.add();
-        return sendPort.send(id.ibis, msg);
+        return sendPort.send(id.resultNode, msg);
     }
 
     /**
@@ -589,6 +589,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         }
         final JobInstance job = nodes.registerJobCompleted(result);
         if (job != null) {
+            // This was an outstanding job, remove it from our administration.
             masterQueue.removeDuplicates(job);
         }
         doUpdateRecentMasters.set();
@@ -750,7 +751,7 @@ public final class Node extends Thread implements PacketReceiveListener {
 
     }
 
-    void submit(JobInstance job) {
+    private void submit(JobInstance job) {
         masterQueue.add(job);
     }
 
@@ -1072,17 +1073,6 @@ public final class Node extends Thread implements PacketReceiveListener {
     public static Node createNode(JobList jobs, boolean goForMaestro)
             throws IbisCreationFailedException, IOException {
         return new Node(goForMaestro, jobs);
-    }
-
-    /**
-     * Writes the given error message about an internal inconsistency in the
-     * program to the logger.
-     * 
-     * @param msg
-     *            The message to write.
-     */
-    public void reportInternalError(String msg) {
-        Globals.log.reportInternalError(msg);
     }
 
     /**

@@ -7,7 +7,7 @@ package ibis.maestro;
  * 
  */
 class ActiveJob {
-    final JobInstance job;
+    final JobInstance jobInstance;
 
     final long id;
 
@@ -19,15 +19,15 @@ class ActiveJob {
     /** The predicted duration of the job. */
     final double predictedDuration;
 
-    private double allowanceDeadline;
+    final double allowanceDeadline;
 
     /** The moment this job should be completed. */
     final double rescheduleDeadline;
 
-    ActiveJob(JobInstance job, long id, double startTime,
+    ActiveJob(JobInstance jobInstance, long id, double startTime,
             NodeJobInfo nodeJobInfo, double predictedDuration,
             double allowanceDeadline, double rescheduleDeadline) {
-        this.job = job;
+        this.jobInstance = jobInstance;
         this.id = id;
         this.nodeJobInfo = nodeJobInfo;
         this.startTime = startTime;
@@ -37,32 +37,13 @@ class ActiveJob {
     }
 
     /**
-     * Returns allowanceDeadline.
-     * 
-     * @return allowanceDeadline.
-     */
-    double getAllowanceDeadline() {
-        return allowanceDeadline;
-    }
-
-    /**
-     * Assign a new value to allowanceDeadline.
-     * 
-     * @param allowanceDeadline
-     *            The new value for allowanceDeadline.
-     */
-    void setAllowanceDeadline(double allowanceDeadline) {
-        this.allowanceDeadline = allowanceDeadline;
-    }
-
-    /**
      * Returns a string representation of this job queue entry.
      * 
      * @return The string.
      */
     @Override
     public String toString() {
-        return "(ActiveJob id=" + id + ", job=" + job + ", start time "
+        return "(ActiveJob id=" + id + ", job=" + jobInstance + ", start time "
                 + Utils.formatSeconds(startTime) + ')';
     }
 

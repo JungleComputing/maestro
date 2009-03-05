@@ -13,8 +13,8 @@ public class MasterQueueTest extends TestCase {
     private static void addToQueue(JobType type, MasterQueue queue,
             Integer... ids) {
         for (Integer id : ids) {
-            JobInstanceIdentifier jobInstance = new JobInstanceIdentifier(id,
-                    null, null);
+            JobInstanceIdentifier jobInstance = new JobInstanceIdentifier(
+                    id, null);
             JobInstance ti = new JobInstance(jobInstance, 0, type, type, 0);
             queue.add(ti);
         }

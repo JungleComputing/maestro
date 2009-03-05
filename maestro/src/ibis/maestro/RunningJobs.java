@@ -8,15 +8,15 @@ import java.util.ArrayList;
  * @author Kees van Reeuwijk.
  */
 class RunningJobs {
-    private final ArrayList<JobInstanceInfo> runningJobs = new ArrayList<JobInstanceInfo>();
+    private final ArrayList<SubmittedJobInfo> runningJobs = new ArrayList<SubmittedJobInfo>();
 
-    synchronized void add(JobInstanceInfo info) {
+    synchronized void add(SubmittedJobInfo info) {
         runningJobs.add(info);
     }
 
-    synchronized JobInstanceInfo remove(JobInstanceIdentifier id) {
+    synchronized SubmittedJobInfo remove(JobInstanceIdentifier id) {
         for (int i = 0; i < runningJobs.size(); i++) {
-            final JobInstanceInfo job = runningJobs.get(i);
+            final SubmittedJobInfo job = runningJobs.get(i);
             if (job.identifier.equals(id)) {
                 runningJobs.remove(i);
                 return job;
@@ -27,9 +27,9 @@ class RunningJobs {
 
     /** Returns the earliest late job. */
     synchronized JobInstance getLateJob() {
-        JobInstanceInfo earliest = null;
+        SubmittedJobInfo earliest = null;
         for (int i = 0; i < runningJobs.size(); i++) {
-            final JobInstanceInfo job = runningJobs.get(i);
+            final SubmittedJobInfo job = runningJobs.get(i);
 
             if (earliest == null || earliest.startTime > job.startTime) {
                 earliest = job;

@@ -105,17 +105,6 @@ final class NodeJobInfo {
         missedRescheduleDeadlines.add();
     }
 
-    /**
-     * Update the roundtrip time estimate with the given value. (Used by the
-     * handling of missed deadlines.
-     * 
-     * @param t
-     *            The new estimate of the roundtrip time.
-     */
-    synchronized void updateRoundtripTimeEstimate(double t) {
-        roundtripTimeEstimate.addSample(t);
-    }
-
     /** Register that there is a new outstanding job. */
     synchronized void incrementOutstandingJobs() {
         outstandingJobs++;
