@@ -38,7 +38,7 @@ class JobInstanceIdentifier implements Serializable {
      * @param resultNode
      *            The node to send the result to.
      */
-    private JobInstanceIdentifier(long id, Serializable userId, IbisIdentifier resultNode) {
+    JobInstanceIdentifier(long id, Serializable userId, IbisIdentifier resultNode) {
         this.id = id;
         this.userId = userId;
         this.resultNode = resultNode;

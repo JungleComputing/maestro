@@ -13,9 +13,9 @@ public class MasterQueueTest extends TestCase {
     private static void addToQueue(JobList jobs,JobType type, MasterQueue queue,
             Integer... ids) {
         for (Integer id : ids) {
-            JobInstanceIdentifier jobInstance = new JobInstanceIdentifier(
-                    id, null);
-            JobInstance ti = new JobInstance(jobInstance, 0, type, 0);
+            JobInstanceIdentifier jii = new JobInstanceIdentifier(
+                    id, id, null);
+            JobInstance ti = new JobInstance(jii, 0, type, 0);
             queue.add(jobs,ti);
         }
     }
@@ -34,12 +34,16 @@ public class MasterQueueTest extends TestCase {
         }
     }
     
-    private static class J1 implements Job {
+    private static class J1 implements AtomicJob {
         @Override
         public boolean isSupported() {
             return true;
         }
-        
+
+		@Override
+		public Object run(Object input) throws JobFailedException {
+			return input;
+		}
     }
 
     /** */
@@ -48,7 +52,7 @@ public class MasterQueueTest extends TestCase {
     public void testAdd() {
         JobList jobs = new JobList();
         JobType type = jobs.registerJob(new J1());
-        JobType l[] = new JobType[] { type };
+        JobType l[] = jobs.getAllTypes();
         MasterQueue queue = new MasterQueue(l);
 
         addToQueue(jobs,type, queue, 0);
