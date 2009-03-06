@@ -4,7 +4,6 @@
 package ibis.videoplayer;
 
 import ibis.maestro.Job;
-import ibis.maestro.JobList;
 import ibis.maestro.SeriesJob;
 import ibis.maestro.ParallelJob;
 import ibis.maestro.ParallelJobHandler;
@@ -24,7 +23,7 @@ final class BuildFragmentJob implements ParallelJob {
         this.fetchJob = fetchJob;
     }
 
-    static SeriesJob createGetFrameJob(JobList jobs) {
+    static SeriesJob createGetFrameJob() {
         return new SeriesJob( new FetchFrameJob(),
                 new DecompressFrameJob(), new ColourCorrectJob(),
                 new ScaleFrameJob(2));

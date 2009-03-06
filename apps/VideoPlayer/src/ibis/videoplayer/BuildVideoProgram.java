@@ -65,7 +65,7 @@ public class BuildVideoProgram {
         final int fragmentCount = (frameCount + Settings.FRAME_FRAGMENT_COUNT - 1)
                 / Settings.FRAME_FRAGMENT_COUNT;
         final Listener listener = new Listener(fragmentCount);
-        final SeriesJob getFrameJob = BuildFragmentJob.createGetFrameJob(jobList);
+        final SeriesJob getFrameJob = BuildFragmentJob.createGetFrameJob();
         final SeriesJob playJob = new SeriesJob(
                 new BuildFragmentJob(getFrameJob));
         jobList.registerJob(getFrameJob);
