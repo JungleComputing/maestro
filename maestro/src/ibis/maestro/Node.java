@@ -382,7 +382,6 @@ public final class Node extends Thread implements PacketReceiveListener {
             terminator.removeNode(theIbis);
         }
         deadNodes.add(theIbis);
-        final ArrayList<JobInstance> orphans = nodes.removeNode(theIbis);
         if (maestro != null && theIbis.equals(maestro)) {
             Globals.log.reportProgress("The maestro has left; stopping..");
             setStopped();
@@ -392,11 +391,12 @@ public final class Node extends Thread implements PacketReceiveListener {
                     .reportProgress("This node has been declared dead, stopping..");
             setStopped();
         }
+        final ArrayList<JobInstance> orphans = nodes.removeNode(theIbis);
         if (!stopped.isSet()) {
             for (final JobInstance ti : orphans) {
                 ti.setOrphan();
             }
-            masterQueue.add(orphans);
+            masterQueue.add(jobs,orphans);
         }
     }
 
@@ -413,11 +413,6 @@ public final class Node extends Thread implements PacketReceiveListener {
         if (job != null) {
             job.listener.jobCompleted(this, id.userId, result);
         }
-    }
-
-    private void addRunningJob(JobInstanceIdentifier id, JobInstance jobInstance,
-             JobCompletionListener listener) {
-        runningJobList.add(new SubmittedJobInfo(id, jobInstance, listener));
     }
 
     /**
@@ -587,7 +582,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                     .reportProgress("Received a job completed message "
                             + result);
         }
-        final JobInstance job = nodes.registerJobCompleted(result);
+        final JobInstance job = nodes.registerJobCompleted(jobs,result);
         if (job != null) {
             // This was an outstanding job, remove it from our administration.
             masterQueue.removeDuplicates(job);
@@ -625,7 +620,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         Globals.log.reportError("Node " + msg.source
                 + " failed to execute job with id " + msg.id
                 + "; node will no longer get jobs of this type");
-        masterQueue.add(failedJob);
+        masterQueue.add(jobs,failedJob);
     }
 
     /**
@@ -673,9 +668,9 @@ public final class Node extends Thread implements PacketReceiveListener {
             recentMasterList.register(source);
         }
         postJobReceivedMessage(source, msg.jobId);
-        final int length = workerQueue.add(msg);
+        final int length = workerQueue.add(jobs,msg);
         if (gossiper != null) {
-            boolean changed = gossiper.setWorkerQueueLength(msg.jobInstance.stageType, length);
+            boolean changed = gossiper.setWorkerQueueLength(msg.jobInstance.getStageType(jobs), length);
             if( changed ) {
                 doUpdateRecentMasters.set();
             }
@@ -745,14 +740,10 @@ public final class Node extends Thread implements PacketReceiveListener {
             final JobInstance job = runningJobList.getLateJob();
             if (job != null) {
                 Globals.log.reportProgress("Resubmitted late job " + job);
-                masterQueue.add(job);
+                masterQueue.add(jobs,job);
             }
         }
 
-    }
-
-    private void submit(JobInstance job) {
-        masterQueue.add(job);
     }
 
     private boolean keepRunning() {
@@ -796,12 +787,11 @@ public final class Node extends Thread implements PacketReceiveListener {
                 }
             }
         } else {
-            JobType nextJobType = todoList[nextStageNumber];
             final JobInstance nextJob = new JobInstance(
                 message.jobInstance.jobInstance, result,
-                message.jobInstance.overallType,nextJobType,nextStageNumber
+                message.jobInstance.overallType,nextStageNumber
             );
-            submit(nextJob);
+            masterQueue.add(jobs,nextJob);
         }
     
         // Update statistics.
@@ -939,7 +929,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 } else {
                     // We have a job to execute.
                     final double runMoment = Utils.getPreciseTime();
-                    final JobType type = message.jobInstance.stageType;
+                    final JobType type = message.jobInstance.getStageType(jobs);
                     final Job job = jobs.getJob(type);
 
                     if( !type.isAtomic ){
@@ -982,7 +972,7 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     private void failNode(RunJobMessage message, Throwable t) {
-        final JobType type = message.jobInstance.stageType;
+        final JobType type = message.jobInstance.getStageType(jobs);
         Globals.log.reportError("Node fails for type " + type);
         t.printStackTrace(Globals.log.getPrintStream());
         final boolean allFailed = workerQueue.failJob(type);
@@ -1010,7 +1000,7 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     private RunJobMessage getWork() {
-        return workerQueue.remove(gossiper);
+        return workerQueue.remove(jobs,gossiper);
     }
 
     /**
@@ -1052,9 +1042,9 @@ public final class Node extends Thread implements PacketReceiveListener {
         else if( !(j instanceof AtomicJob)){
             Globals.log.reportInternalError( "Bad first stage job (stageType=" + stageType + "):" + j );
         }
-        final JobInstance jobInstance = new JobInstance(tii, input,overallType,stageType,0);
-        addRunningJob(tii, jobInstance, listener);
-        submit(jobInstance);
+        final JobInstance jobInstance = new JobInstance(tii, input,overallType,0);
+        runningJobList.add(new SubmittedJobInfo(tii, jobInstance, listener));
+        masterQueue.add(jobs,jobInstance);
     }
 
     /**
@@ -1119,6 +1109,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 final HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap = nodes
                         .getLocalNodeInfo();
                 final Submission submission = masterQueue.getSubmission(
+                        jobs,
                         localNodeInfoMap, tables);
                 if (submission == null) {
                     break;
@@ -1128,7 +1119,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 worker = nodes.get(node);
                 jobId = nextJobId++;
     
-                worker.registerJobStart(job, jobId,
+                worker.registerJobStart(jobs,job, jobId,
                         submission.predictedDuration);
             }
             if (Settings.traceMasterQueue || Settings.traceSubmissions) {
@@ -1143,7 +1134,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             } else {
                 // Try to put the paste back in the tube.
                 // The send port has already registered the trouble.
-                masterQueue.add(msg.jobInstance);
+                masterQueue.add(jobs,msg.jobInstance);
                 worker.retractJob(jobId);
             }
             changed = true;

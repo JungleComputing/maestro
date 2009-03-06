@@ -160,7 +160,7 @@ final class NodeInfo {
         final ActiveJob job = extractActiveJob(id);
         if (job == null) {
             Globals.log.reportError("Job with unknown id " + id
-                    + " seems to have failed");
+                    + " has failed");
             return null;
         }
         job.nodeJobInfo.registerJobFailed();
@@ -175,7 +175,7 @@ final class NodeInfo {
      * @return The job instance that was completed if it may have duplicates,
      *         or <code>null</code>
      */
-    JobInstance registerJobCompleted(JobCompletedMessage result) {
+    JobInstance registerJobCompleted(JobList jobs,JobCompletedMessage result) {
         final long id = result.jobId; // The identifier of the job, as handed
         // out by us.
 
@@ -188,7 +188,7 @@ final class NodeInfo {
         }
         final double roundtripTime = result.arrivalMoment - job.startTime;
         final NodeJobInfo nodeJobInfo = job.nodeJobInfo;
-        final JobType type = job.jobInstance.stageType;
+        final JobType type = job.jobInstance.getStageType(jobs);
         if (job.allowanceDeadline < result.arrivalMoment) {
             nodeJobInfo.registerMissedAllowanceDeadline();
             if (Settings.traceMissedDeadlines) {
@@ -274,8 +274,8 @@ final class NodeInfo {
      * @param predictedDuration
      *            The predicted duration in seconds of the job.
      */
-    void registerJobStart(JobInstance job, long id, double predictedDuration) {
-        final JobType type = job.stageType;
+    void registerJobStart(JobList jobs,JobInstance job, long id, double predictedDuration) {
+        final JobType type = job.getStageType(jobs);
         final NodeJobInfo workerJobInfo = nodeJobInfoList[type.index];
         if (workerJobInfo == null) {
             Globals.log
@@ -285,13 +285,13 @@ final class NodeInfo {
             workerJobInfo.incrementOutstandingJobs();
         }
         final double now = Utils.getPreciseTime();
-        final double deadlineInterval = predictedDuration
+        final double allowanceDeadlineInterval = predictedDuration
                 * Settings.ALLOWANCE_DEADLINE_MARGIN;
         // Don't try to enforce a deadline interval below a certain reasonable
         // minimum.
         final double allowanceDeadline = now
-                + Math.max(deadlineInterval, Settings.MINIMAL_DEADLINE);
-        final double rescheduleDeadline = now + deadlineInterval
+                + Math.max(allowanceDeadlineInterval, Settings.MINIMAL_DEADLINE);
+        final double rescheduleDeadline = now + allowanceDeadlineInterval
                 * Settings.RESCHEDULE_DEADLINE_MULTIPLIER;
         final ActiveJob j = new ActiveJob(job, id, now, workerJobInfo,
                 predictedDuration, allowanceDeadline, rescheduleDeadline);

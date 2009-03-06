@@ -109,17 +109,6 @@ public final class JobList {
         return allJobTypes.toArray(new JobType[allJobTypes.size()]);
     }
 
-    double[] getInitialJobTimes() {
-        final double res[] = new double[allJobTypes.size()];
-        int i = 0;
-        for (final JobType t : allJobTypes) {
-            final Job job = getJob(t);
-            double time = initialEstimateJobTime(job);
-            res[i++] = time;
-        }
-        return res;
-    }
-
     /**
      * Given a a job, return the initial estimate for its execution time.
      * 
@@ -140,7 +129,7 @@ public final class JobList {
             // We estimate this will be the minimum of all alternatives.
             AlternativesJob aj = (AlternativesJob) job;
             double time = Double.POSITIVE_INFINITY;
-
+    
             for (Job j : aj.alternatives) {
                 double t1 = initialEstimateJobTime(j);
                 if (t1 < time) {
@@ -152,10 +141,10 @@ public final class JobList {
         if (job instanceof SeriesJob) {
             SeriesJob l = (SeriesJob) job;
             double time = 0.0;
-
+    
             for (Job j : l.jobs) {
                 double t1 = initialEstimateJobTime(j);
-
+    
                 if (t1 == Double.POSITIVE_INFINITY) {
                     /*
                      * Yes, this looks weird, but infinity here means we cannot
@@ -170,6 +159,17 @@ public final class JobList {
             return time;
         }
         return 0.0;
+    }
+
+    double[] getInitialJobTimes() {
+        final double res[] = new double[allJobTypes.size()];
+        int i = 0;
+        for (final JobType t : allJobTypes) {
+            final Job job = getJob(t);
+            double time = initialEstimateJobTime(job);
+            res[i++] = time;
+        }
+        return res;
     }
 
     /**

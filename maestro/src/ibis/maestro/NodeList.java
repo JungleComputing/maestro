@@ -74,7 +74,7 @@ final class NodeList {
      * @return The job instance that was completed if it may have duplicates,
      *         or <code>null</code>
      */
-    JobInstance registerJobCompleted(JobCompletedMessage result) {
+    JobInstance registerJobCompleted(JobList jobs,JobCompletedMessage result) {
         final NodeInfo node;
         synchronized (this) {
             node = ibisToNodeMap.get(result.source);
@@ -84,8 +84,8 @@ final class NodeList {
                     + result.source);
             return null;
         }
-        final JobInstance job = node.registerJobCompleted(result);
         node.registerAsCommunicating();
+        final JobInstance job = node.registerJobCompleted(jobs,result);
         return job;
     }
 

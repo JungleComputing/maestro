@@ -18,16 +18,13 @@ class JobInstance implements Serializable {
     /** The overall type of job we are executing. */
     final JobType overallType;
 
-    /** The type of the current stage. */
-    final JobType stageType;
-
     /** The index in the todo list of this job type. */
     final int stageNumber;
 
     private boolean orphan = false;
 
     /**
-     * @param tii
+     * @param jii
      *            The identifier of this job instance.
      * @param overallType
      *            The type of this job instance.
@@ -35,22 +32,15 @@ class JobInstance implements Serializable {
      *            The input for this job.
      * @param overallType
      *            The overall type of job to execute
-     * @param stageType
-     *            The type of the current stage of the job
      * @param stageNumber
      *            The index in the todo list of the current state of the job
      */
-    JobInstance(JobInstanceIdentifier tii, Object input, JobType overallType,
-            JobType stageType, int stageNumber) {
-        this.jobInstance = tii;
+    JobInstance(JobInstanceIdentifier jii, Object input, JobType overallType,
+            int stageNumber) {
+        this.jobInstance = jii;
         this.input = input;
         this.overallType = overallType;
-        this.stageType = stageType;
         this.stageNumber = stageNumber;
-        if (!stageType.isAtomic) {
-            Globals.log.reportInternalError("Non-atomic stage type "
-                    + stageType);
-        }
     }
 
     String formatJobAndType() {
@@ -79,5 +69,9 @@ class JobInstance implements Serializable {
 
     boolean isOrphan() {
         return orphan;
+    }
+
+    JobType getStageType(JobList jobs) {
+        return jobs.getStageType(overallType, stageNumber);
     }
 }

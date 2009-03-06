@@ -180,12 +180,12 @@ final class MasterQueue {
      *            The job to submit.
      */
     @SuppressWarnings("synthetic-access")
-    protected synchronized void add(JobInstance job) {
+    protected synchronized void add(JobList jobs,JobInstance job) {
         jobCount++;
         final int pos = findInsertionPoint(queue, job);
         queue.add(pos, job);
 
-        final JobType type = job.stageType;
+        final JobType type = job.getStageType(jobs);
         final TypeInfo info = queueTypes[type.index];
         if( !type.isAtomic ){
             Globals.log.reportInternalError( "Submitted job type " + type + " is not atomic" );
@@ -209,10 +209,10 @@ final class MasterQueue {
      * @param l
      *            The list of job instances to add.
      */
-    void add(ArrayList<JobInstance> l) {
+    void add(JobList jobs,ArrayList<JobInstance> l) {
         if (l != null) {
             for (final JobInstance job : l) {
-                add(job);
+                add(jobs,job);
             }
         }
     }
@@ -236,12 +236,17 @@ final class MasterQueue {
      * slot. In this context 'best' is simply the worker with the shortest
      * overall completion time.
      * 
-     * @param type
-     *            The type of job we want to execute.
+     * @param jobs Information about job types.
+     * @param localNodeInfoMap Local information about all nodes
+     * @param tables Globally known iformation about all nodes
+     * @param job
+     *            The job instance we want a worker for.
+     *
      * @return The info of the best worker for this job, or <code>null</code>
      *         if there currently aren't any workers for this job type.
      */
     private Submission selectBestWorker(
+            JobList jobs,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
             NodePerformanceInfo tables[], JobInstance job) {
         NodePerformanceInfo best = null;
@@ -281,16 +286,16 @@ final class MasterQueue {
         if (best == null) {
             if (Settings.traceMasterQueue) {
                 Globals.log.reportProgress("No workers for job of type "
-                        + job.stageType);
+                        + job.getStageType(jobs));
             }
             return null;
         }
         if (Settings.traceMasterQueue) {
             Globals.log.reportProgress("Selected worker " + best.source
-                    + " for job of type " + job.stageType);
+                    + " for job of type " + job.getStageType(jobs));
         }
         final LocalNodeInfo localNodeInfo = localNodeInfoMap.get(best.source);
-        final double predictedDuration = localNodeInfo.getPredictedDuration(job.stageType);
+        final double predictedDuration = localNodeInfo.getPredictedDuration(job.getStageType(jobs));
         return new Submission(job, best.source, predictedDuration);
     }
 
@@ -304,6 +309,7 @@ final class MasterQueue {
      *         workers for any of the jobs in the queue.
      */
     synchronized Submission getSubmission(
+            JobList jobs,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
             NodePerformanceInfo[] tables) {
         int busyTypeIndex = -1; // Don't even consider jobs of this type, all
@@ -311,14 +317,14 @@ final class MasterQueue {
         int ix = 0;
         while (ix < queue.size()) {
             final JobInstance job = queue.get(ix);
-            final JobType type = job.stageType;
+            final JobType type = job.getStageType(jobs);
             if (type.index == busyTypeIndex) {
                 if (Settings.traceMasterQueue || Settings.traceQueuing) {
                     Globals.log.reportProgress("Type " + type
                             + " has no ready workers, don't bother");
                 }
             } else {
-                final Submission sub = selectBestWorker(localNodeInfoMap,
+                final Submission sub = selectBestWorker(jobs,localNodeInfoMap,
                         tables, job);
                 if (sub == null) {
                     busyTypeIndex = type.index;
