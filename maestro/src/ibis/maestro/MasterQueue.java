@@ -158,7 +158,7 @@ final class MasterQueue {
     /**
      * Returns true iff the entire queue is empty.
      * 
-     * @return
+     * @return <code>true</code> iff the entire master queue is empty.
      */
     synchronized boolean isEmpty() {
         return queue.isEmpty();

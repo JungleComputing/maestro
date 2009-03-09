@@ -895,7 +895,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 if (runningJobCount.isBelow(numberOfProcessors)) {
                     // Only try to start a new job when there are idle
                     // processors.
-                    message = getWork();
+                    message = workerQueue.remove(jobs,gossiper);
                     readyForWork = true;
                 }
                 if (message == null) {
@@ -996,10 +996,6 @@ public final class Node extends Thread implements PacketReceiveListener {
      */
     public int waitForReadyNodes(int n, long maximalWaitTime) {
         return gossiper.waitForReadyNodes(n, maximalWaitTime);
-    }
-
-    private RunJobMessage getWork() {
-        return workerQueue.remove(jobs,gossiper);
     }
 
     /**
