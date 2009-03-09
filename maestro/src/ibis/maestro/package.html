@@ -2,7 +2,24 @@
 A dataflow programming environment for Ibis.
 <p>
 A Maestro program consists of a set of computational steps,
-called <em>tasks</em> that are grouped into <em>jobs</em>:
+called <em>jobs</em>. Such a job must implement the <code>Job</code>
+interface.
+Every job has a single input of arbitrary type, represented as
+a (subclass of) <code>Object</code>. Every job returns a single
+value, again represented as a subclass of <code>Object</code>.
+</p>
+<p>
+The simplest type of job is the <em>atomic</em> job,
+a job that not divisible into other jobs. Such a job must implement
+the <code>AtomicJob</code> interface, a subinterface of <code>Job</code>.
+</p>
+<p>
+Jobs can also consist of aggregates of other jobs. Such aggregates
+can be composed in a number of different ways.
+One such composition is the <code>SeriesJob</code>, a class
+where the
+output of one job is the input of the next job.
+that are grouped into <em>jobs</em>:
 sequences of tasks that are executed sequentially.
 The program is executed by a set of <em>nodes</em> running
 on separate (possibly multiprocessor or multicore) computers. Each node

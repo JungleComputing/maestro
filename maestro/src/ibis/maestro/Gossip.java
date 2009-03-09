@@ -189,13 +189,10 @@ class Gossip {
     }
 
     synchronized void removeNode(IbisIdentifier ibis) {
-        if (false) {
-            // FIXME: enable again or remove method.
-            final int ix = searchInfo(ibis);
+        final int ix = searchInfo(ibis);
 
-            if (ix >= 0) {
-                gossipList.remove(ix);
-            }
+        if (ix >= 0) {
+            gossipList.remove(ix);
         }
     }
 

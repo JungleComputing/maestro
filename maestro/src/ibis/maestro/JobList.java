@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -23,11 +22,6 @@ public final class JobList {
 
     // For each job type, the list types to do.
     private final ArrayList<JobType[]> todoLists = new ArrayList<JobType[]>();
-
-    void printStatistics(@SuppressWarnings("unused")
-    PrintStream s) {
-        // FIXME: print some statistics again.
-    }
 
     /**
      * Register a new job sequence.

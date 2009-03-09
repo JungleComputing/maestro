@@ -11,11 +11,11 @@ final class JobType implements Serializable {
     /** Contractual obligation. */
     private static final long serialVersionUID = 13451L;
 
-    final int index;
-
     final boolean unpredictable;
     
     final boolean isAtomic;
+
+    final int index;
 
     /**
      * Constructs a new job type.

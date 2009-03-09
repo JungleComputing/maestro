@@ -160,12 +160,11 @@ final class WorkerQueue {
         final WorkerQueueJobInfo info = queueTypes[type.index];
         info.failJob();
 
-        // TODO: synchronize this properly; due to race conditions the last two
-        // job types may be failed at the same time without either one
-        // returning false.
-        for (final WorkerQueueJobInfo i : queueTypes) {
-            if (i != null && !i.hasFailed()) {
-                return false; // There still is a non-failed job type.
+        synchronized( this ) {
+            for (final WorkerQueueJobInfo i : queueTypes) {
+                if (i != null && !i.hasFailed()) {
+                    return false; // There still is a non-failed job type.
+                }
             }
         }
         return true; // All job types have failed.

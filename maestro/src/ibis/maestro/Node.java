@@ -484,7 +484,6 @@ public final class Node extends Thread implements PacketReceiveListener {
         }
         s.printf("# work threads  = %5d\n", workThreads.length);
         nodes.printStatistics(s);
-        jobs.printStatistics(s);
         s.printf("submit       messages:   %5d sent\n", submitMessageCount
                 .get());
         s.printf("job received messages:   %5d sent\n",
