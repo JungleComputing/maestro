@@ -171,13 +171,12 @@ public final class Node extends Thread implements PacketReceiveListener {
 
         @Override
         public void poolClosed() {
-            // TODO: can we do something useful with the poolClosed() signal?
+            // TODO: can we do something with the poolClosed() signal?
         }
 
         @Override
         public void poolTerminated(IbisIdentifier arg0) {
-            // TODO: can we do something useful with the poolTerminated()
-            // signal?
+            // TODO: can we do something with the poolTerminated() signal?
 
         }
     }
@@ -667,9 +666,10 @@ public final class Node extends Thread implements PacketReceiveListener {
             recentMasterList.register(source);
         }
         postJobReceivedMessage(source, msg.jobId);
-        final int length = workerQueue.add(jobs,msg);
+        JobType stageType = msg.jobInstance.getStageType(jobs);
+        final int length = workerQueue.add(stageType,msg);
         if (gossiper != null) {
-            boolean changed = gossiper.setWorkerQueueLength(msg.jobInstance.getStageType(jobs), length);
+			boolean changed = gossiper.setWorkerQueueLength(stageType, length);
             if( changed ) {
                 doUpdateRecentMasters.set();
             }

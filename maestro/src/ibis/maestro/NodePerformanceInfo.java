@@ -28,6 +28,7 @@ class NodePerformanceInfo implements Serializable {
 
     long timeStamp;
 
+    /** The number of processors on this node. */
     private final int numberOfProcessors;
 
     NodePerformanceInfo(double[][] completionInfo,

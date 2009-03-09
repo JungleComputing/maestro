@@ -102,9 +102,8 @@ final class WorkerQueue {
      * @param msg
      *            The job to add to the queue
      */
-    int add(JobList jobs,RunJobMessage msg) {
+    int add(JobType type,RunJobMessage msg) {
         final int length;
-        final JobType type = msg.jobInstance.getStageType(jobs);
         final WorkerQueueJobInfo info = queueTypes[type.index];
         final int pos;
         synchronized (this) {
