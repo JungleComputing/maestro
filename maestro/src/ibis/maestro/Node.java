@@ -1079,7 +1079,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         }
     }
 
-    /** On a locked queue, try to send out as many jobs as we can. */
+    /** Try to send out as many jobs as we can. */
     private void drainMasterQueue() {
         boolean changed = false;
     

@@ -239,6 +239,8 @@ final class MasterQueue {
      * @param jobs Information about job types.
      * @param localNodeInfoMap Local information about all nodes
      * @param tables Globally known iformation about all nodes
+     * @param jobs
+     *     Information about the different  types of jobs we support.
      * @param job
      *            The job instance we want a worker for.
      *
@@ -327,6 +329,8 @@ final class MasterQueue {
                 final Submission sub = selectBestWorker(jobs,localNodeInfoMap,
                         tables, job);
                 if (sub == null) {
+                    // This job type is busy, skip all other instances
+                    // of the type.
                     busyTypeIndex = type.index;
                 } else {
                     queue.remove(ix);

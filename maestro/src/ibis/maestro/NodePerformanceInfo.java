@@ -24,7 +24,7 @@ class NodePerformanceInfo implements Serializable {
     final double[][] completionInfo;
 
     /** For each type of job we know, the queue length on this worker. */
-    private final WorkerQueueInfo[] workerQueueInfo;
+    private final WorkerQueueInfo[] workersQueueInfo;
 
     long timeStamp;
 
@@ -35,7 +35,7 @@ class NodePerformanceInfo implements Serializable {
             WorkerQueueInfo[] workerQueueInfo, IbisIdentifier source,
             int numberOfProcessors, long timeStamp) {
         this.completionInfo = completionInfo;
-        this.workerQueueInfo = workerQueueInfo;
+        this.workersQueueInfo = workerQueueInfo;
         this.source = source;
         this.numberOfProcessors = numberOfProcessors;
         this.timeStamp = timeStamp;
@@ -48,7 +48,7 @@ class NodePerformanceInfo implements Serializable {
                     completionInfo[i].length);
         }
         final WorkerQueueInfo workerQueueInfoCopy[] = Arrays.copyOf(
-                workerQueueInfo, workerQueueInfo.length);
+                workersQueueInfo, workersQueueInfo.length);
         return new NodePerformanceInfo(completionInfoCopy, workerQueueInfoCopy,
                 source, numberOfProcessors, timeStamp);
     }
@@ -76,7 +76,7 @@ class NodePerformanceInfo implements Serializable {
     @Override
     public String toString() {
         final String completion = buildCompletionString();
-        final String workerQueue = Arrays.deepToString(workerQueueInfo);
+        final String workerQueue = Arrays.deepToString(workersQueueInfo);
         return "Update @" + timeStamp + " " + workerQueue + " " + completion;
     }
 
@@ -88,11 +88,9 @@ class NodePerformanceInfo implements Serializable {
             }
             return Double.POSITIVE_INFINITY;
         }
-        final WorkerQueueInfo queueInfo = workerQueueInfo[type.index];
-        final double completionInterval = completionInfo[type.index][stage];
-        double unpredictableOverhead = 0L;
+        final WorkerQueueInfo workerQueueInfo = workersQueueInfo[type.index];
 
-        if (queueInfo == null) {
+        if (workerQueueInfo == null) {
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportError("Node " + source
                         + " does not provide queue info for type " + type);
@@ -106,6 +104,7 @@ class NodePerformanceInfo implements Serializable {
             }
             return Double.POSITIVE_INFINITY;
         }
+        final double completionInterval = completionInfo[type.index][stage];
         if (completionInterval == Double.POSITIVE_INFINITY) {
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportError("Node " + source
@@ -121,20 +120,18 @@ class NodePerformanceInfo implements Serializable {
             // Don't submit jobs, there are no idle processors.
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportError("Node " + source
-                        + " has no idle processors");
+                        + " has no idle processors for type " + type );
             }
             return Double.POSITIVE_INFINITY;
         }
         // Give nodes already running jobs some penalty to encourage
         // spreading the load over nodes.
-        final double executionTime = queueInfo.getExecutionTime();
-        unpredictableOverhead = (currentJobs * executionTime) / 10;
+        final double executionTime = workerQueueInfo.getExecutionTime();
+        double unpredictableOverhead = (currentJobs * executionTime) / 10;
         final double transmissionTime = localNodeInfo.getTransmissionTime(type);
-        final int waitingJobs = Math.max(0,
-                (1 + queueInfo.getQueueLength() + currentJobs)
-                        - numberOfProcessors);
+        final int waitingJobs = 1+workerQueueInfo.getQueueLength();
         final double total = transmissionTime + waitingJobs
-                * queueInfo.getDequeueTimePerJob() + queueInfo
+                * workerQueueInfo.getDequeueTimePerJob() + workerQueueInfo
                 .getExecutionTime() + completionInterval + unpredictableOverhead;
         if (Settings.traceRemainingJobTime) {
             Globals.log.reportProgress("Estimated completion time for "
@@ -157,7 +154,7 @@ class NodePerformanceInfo implements Serializable {
      *            type.
      */
     double getCompletionOnWorker(int todoIx, int ix, int nextIx) {
-        final WorkerQueueInfo info = workerQueueInfo[ix];
+        final WorkerQueueInfo info = workersQueueInfo[ix];
         double nextCompletionInterval;
 
         if (info == null) {
@@ -175,7 +172,7 @@ class NodePerformanceInfo implements Serializable {
     }
 
     void print(PrintStream s) {
-        for (final WorkerQueueInfo i : workerQueueInfo) {
+        for (final WorkerQueueInfo i : workersQueueInfo) {
             if (i == null) {
                 s.print(WorkerQueueInfo.emptyFormat());
             } else {
@@ -213,7 +210,7 @@ class NodePerformanceInfo implements Serializable {
     }
 
     void failJob(JobType type) {
-        final WorkerQueueInfo info = workerQueueInfo[type.index];
+        final WorkerQueueInfo info = workersQueueInfo[type.index];
         if (info != null) {
             info.failJob();
             timeStamp = System.nanoTime();
@@ -221,7 +218,7 @@ class NodePerformanceInfo implements Serializable {
     }
 
     void setComputeTime(JobType type, double t) {
-        final WorkerQueueInfo info = workerQueueInfo[type.index];
+        final WorkerQueueInfo info = workersQueueInfo[type.index];
         if (info != null) {
             info.setExecutionTime(t);
             timeStamp = System.nanoTime();
@@ -230,7 +227,7 @@ class NodePerformanceInfo implements Serializable {
 
     void setWorkerQueueTimePerJob(JobType type, double queueTimePerJob,
             int queueLength) {
-        final WorkerQueueInfo info = workerQueueInfo[type.index];
+        final WorkerQueueInfo info = workersQueueInfo[type.index];
         if (info != null) {
             info.setQueueTimePerJob(queueTimePerJob, queueLength);
             timeStamp = System.nanoTime();
@@ -239,7 +236,7 @@ class NodePerformanceInfo implements Serializable {
 
     boolean setWorkerQueueLength(JobType type, int newQueueLength) {
         boolean changed = false;
-        final WorkerQueueInfo info = workerQueueInfo[type.index];
+        final WorkerQueueInfo info = workersQueueInfo[type.index];
         if (info != null) {
             changed = info.setQueueLength(newQueueLength);
             timeStamp = System.nanoTime();

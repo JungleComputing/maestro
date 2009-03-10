@@ -267,6 +267,8 @@ final class NodeInfo {
     /**
      * Register the start of a new job.
      * 
+     * @param jobs
+     *    Information about the different types of jobs that are known.
      * @param job
      *            The job that was started.
      * @param id
@@ -338,15 +340,9 @@ final class NodeInfo {
 
         for (int i = 0; i < nodeJobInfoList.length; i++) {
             final NodeJobInfo nodeJobInfo = nodeJobInfoList[i];
-            if (nodeJobInfo == null) {
-                currentJobs[i] = 0;
-                transmissionTime[i] = 0;
-                predictedDuration[i] = Double.POSITIVE_INFINITY;
-            } else {
-                currentJobs[i] = nodeJobInfo.getCurrentJobs();
-                transmissionTime[i] = nodeJobInfo.getTransmissionTime();
-                predictedDuration[i] = nodeJobInfo.estimateRoundtripTime();
-            }
+            currentJobs[i] = nodeJobInfo.getCurrentJobs();
+            transmissionTime[i] = nodeJobInfo.getTransmissionTime();
+            predictedDuration[i] = nodeJobInfo.estimateRoundtripTime();
         }
         return new LocalNodeInfo(suspect, currentJobs, transmissionTime,
                 predictedDuration);
