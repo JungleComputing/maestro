@@ -238,7 +238,7 @@ final class MasterQueue {
      * 
      * @param jobs Information about job types.
      * @param localNodeInfoMap Local information about all nodes
-     * @param tables Globally known iformation about all nodes
+     * @param tables Globally known information about all nodes
      * @param jobs
      *     Information about the different  types of jobs we support.
      * @param job
@@ -256,8 +256,8 @@ final class MasterQueue {
 
         for (final NodePerformanceInfo info : tables) {
             final LocalNodeInfo localNodeInfo = localNodeInfoMap
-                    .get(info.source);
-            
+            .get(info.source);
+
             final double val = info.estimateJobCompletion(localNodeInfo, job
                     .overallType, job.stageNumber, Settings.HARD_ALLOWANCES);
 
@@ -267,23 +267,7 @@ final class MasterQueue {
             }
         }
         if (Settings.traceWorkerSelection) {
-            final PrintStream s = Globals.log.getPrintStream();
-            for (final NodePerformanceInfo i : tables) {
-                i.print(s);
-            }
-            s.print("Best worker: ");
-            for (final NodePerformanceInfo info : tables) {
-                final LocalNodeInfo localNodeInfo = localNodeInfoMap
-                        .get(info.source);
-                final double val = info.estimateJobCompletion(localNodeInfo,
-                        job.overallType, job.stageNumber, true);
-                s.print(Utils.formatSeconds(val));
-                if (val == bestInterval && val != Double.POSITIVE_INFINITY) {
-                    s.print('$');
-                }
-                s.print(' ');
-            }
-            s.println();
+            dumpChoices(localNodeInfoMap, tables, job, bestInterval);
         }
         if (best == null) {
             if (Settings.traceMasterQueue) {
@@ -299,6 +283,28 @@ final class MasterQueue {
         final LocalNodeInfo localNodeInfo = localNodeInfoMap.get(best.source);
         final double predictedDuration = localNodeInfo.getPredictedDuration(job.getStageType(jobs));
         return new Submission(job, best.source, predictedDuration);
+    }
+
+    private static void dumpChoices(
+            HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
+            NodePerformanceInfo[] tables, JobInstance job, double bestInterval) {
+        final PrintStream s = Globals.log.getPrintStream();
+        for (final NodePerformanceInfo i : tables) {
+            i.print(s);
+        }
+        s.print("Best worker: ");
+        for (final NodePerformanceInfo info : tables) {
+            final LocalNodeInfo localNodeInfo = localNodeInfoMap
+            .get(info.source);
+            final double val = info.estimateJobCompletion(localNodeInfo,
+                    job.overallType, job.stageNumber, true);
+            s.print(Utils.formatSeconds(val));
+            if (val == bestInterval && val != Double.POSITIVE_INFINITY) {
+                s.print('$');
+            }
+            s.print(' ');
+        }
+        s.println();
     }
 
     /**

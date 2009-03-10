@@ -84,7 +84,7 @@ class NodePerformanceInfo implements Serializable {
             boolean ignoreBusyProcessors) {
         if (localNodeInfo == null) {
             if (Settings.traceRemainingJobTime) {
-                Globals.log.reportError("No local node info");
+                Globals.log.reportInternalError("No local node info");
             }
             return Double.POSITIVE_INFINITY;
         }
@@ -92,7 +92,7 @@ class NodePerformanceInfo implements Serializable {
 
         if (workerQueueInfo == null) {
             if (Settings.traceRemainingJobTime) {
-                Globals.log.reportError("Node " + source
+                Globals.log.reportInternalError("Node " + source
                         + " does not provide queue info for type " + type);
             }
             return Double.POSITIVE_INFINITY;
@@ -127,12 +127,12 @@ class NodePerformanceInfo implements Serializable {
         // Give nodes already running jobs some penalty to encourage
         // spreading the load over nodes.
         final double executionTime = workerQueueInfo.getExecutionTime();
-        double unpredictableOverhead = (currentJobs * executionTime) / 10;
+        final double unpredictableOverhead = (currentJobs * executionTime) / 10;
         final double transmissionTime = localNodeInfo.getTransmissionTime(type);
         final int waitingJobs = 1+workerQueueInfo.getQueueLength();
         final double total = transmissionTime + waitingJobs
-                * workerQueueInfo.getDequeueTimePerJob() + workerQueueInfo
-                .getExecutionTime() + completionInterval + unpredictableOverhead;
+        * workerQueueInfo.getDequeueTimePerJob() + workerQueueInfo
+        .getExecutionTime() + completionInterval + unpredictableOverhead;
         if (Settings.traceRemainingJobTime) {
             Globals.log.reportProgress("Estimated completion time for "
                     + source + " is " + Utils.formatSeconds(total));
@@ -167,8 +167,8 @@ class NodePerformanceInfo implements Serializable {
             nextCompletionInterval = 0.0;
         }
         return (1 + info.getQueueLength())
-                * info.getDequeueTimePerJob() + info.getExecutionTime() +
-                nextCompletionInterval;
+        * info.getDequeueTimePerJob() + info.getExecutionTime() +
+        nextCompletionInterval;
     }
 
     void print(PrintStream s) {
@@ -182,15 +182,24 @@ class NodePerformanceInfo implements Serializable {
         }
         s.print(" | ");
         for (final double l[]: completionInfo){
+            s.print('[');
+            boolean first = true;
             for (final double t : l) {
-                s.printf("%8s ", Utils.formatSeconds(t));
+                if( first ){
+                    first = false;
+                }
+                else {
+                    s.print( ' ' );
+                }
+                s.printf("%8s", Utils.formatSeconds(t));
             }
+            s.print(']');
         }
         s.println(source);
     }
 
     static void printTopLabel(PrintStream s,JobList jobs) {
-        JobType[] allJobTypes = jobs.getAllTypes();
+        final JobType[] allJobTypes = jobs.getAllTypes();
         for (final JobType t : allJobTypes) {
             s.print(WorkerQueueInfo.topLabelType(t));
             s.print(' ');
@@ -201,7 +210,7 @@ class NodePerformanceInfo implements Serializable {
         }
         s.println();
         for (@SuppressWarnings("unused")
-        final JobType t : allJobTypes) {
+                final JobType t : allJobTypes) {
             s.print(WorkerQueueInfo.topLabel());
             s.print(' ');
         }
