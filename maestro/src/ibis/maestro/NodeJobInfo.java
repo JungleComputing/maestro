@@ -17,6 +17,9 @@ final class NodeJobInfo {
     /** How many instances of this job does this worker currently have? */
     private int outstandingJobs = 0;
 
+    /** How many instance of this job are currently being transmitted to this worker? */
+    private int inFlightJobs = 0;
+
     /** How many job instances has this worker executed until now? */
     private int executedJobs = 0;
 
@@ -57,15 +60,15 @@ final class NodeJobInfo {
     @Override
     public String toString() {
         return "[jobInfo=" + jobInfo + " worker=" + nodeInfo
-                + " transmissionTimeEstimate=" + transmissionTimeEstimate
-                + " outstandingJobs=" + outstandingJobs + "]";
+        + " transmissionTimeEstimate=" + transmissionTimeEstimate
+        + " outstandingJobs=" + outstandingJobs + "]";
     }
 
     /**
      * Registers the completion of a job.
      * 
      * @param roundtripTime
-     *            The total roundtrip time of this job.
+     *            The total round-trip time of this job.
      */
     synchronized void registerJobCompleted(double roundtripTime) {
         executedJobs++;
@@ -85,6 +88,7 @@ final class NodeJobInfo {
      *            The transmission time of this job.
      */
     synchronized void registerJobReceived(double transmissionTime) {
+        inFlightJobs--;
         transmissionTimeEstimate.addSample(transmissionTime);
         if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
             final String label = "job=" + jobInfo + " worker=" + nodeInfo;
@@ -106,7 +110,8 @@ final class NodeJobInfo {
     }
 
     /** Register that there is a new outstanding job. */
-    synchronized void incrementOutstandingJobs() {
+    synchronized void registerJobSubmitted() {
+        inFlightJobs++;
         outstandingJobs++;
     }
 
@@ -114,7 +119,7 @@ final class NodeJobInfo {
      * @return True iff this worker ever executed a job of this type.
      */
     private boolean didWork() {
-        return (executedJobs != 0) || (outstandingJobs != 0);
+        return (executedJobs != 0) || (outstandingJobs != 0) || (inFlightJobs != 0);
     }
 
     synchronized double estimateRoundtripTime() {
@@ -145,6 +150,10 @@ final class NodeJobInfo {
 
     synchronized double getTransmissionTime() {
         return transmissionTimeEstimate.getAverage();
+    }
+
+    synchronized int getInFlightJobs() {
+        return inFlightJobs;
     }
 
 }

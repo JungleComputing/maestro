@@ -284,7 +284,7 @@ final class NodeInfo {
             .reportInternalError("No worker job info for job type "
                     + type);
         } else {
-            workerJobInfo.incrementOutstandingJobs();
+            workerJobInfo.registerJobSubmitted();
         }
         final double now = Utils.getPreciseTime();
         final double allowanceDeadlineInterval = predictedDuration
@@ -334,6 +334,7 @@ final class NodeInfo {
     }
 
     synchronized LocalNodeInfo getLocalInfo() {
+        final int inFlightJobs[] = new int[nodeJobInfoList.length];
         final int currentJobs[] = new int[nodeJobInfoList.length];
         final double transmissionTime[] = new double[nodeJobInfoList.length];
         final double predictedDuration[] = new double[nodeJobInfoList.length];
@@ -341,11 +342,12 @@ final class NodeInfo {
         for (int i = 0; i < nodeJobInfoList.length; i++) {
             final NodeJobInfo nodeJobInfo = nodeJobInfoList[i];
 
+            inFlightJobs[i] = nodeJobInfo.getInFlightJobs();
             currentJobs[i] = nodeJobInfo.getCurrentJobs();
             transmissionTime[i] = nodeJobInfo.getTransmissionTime();
             predictedDuration[i] = nodeJobInfo.estimateRoundtripTime();
         }
-        return new LocalNodeInfo(suspect, currentJobs, transmissionTime,
+        return new LocalNodeInfo(suspect, inFlightJobs, currentJobs, transmissionTime,
                 predictedDuration);
     }
 }

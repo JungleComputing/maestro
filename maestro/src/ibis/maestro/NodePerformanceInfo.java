@@ -114,6 +114,7 @@ class NodePerformanceInfo implements Serializable {
             return Double.POSITIVE_INFINITY;
         }
         final int currentJobs = localNodeInfo.getCurrentJobs(stageType);
+        final int inFlightJobs = localNodeInfo.getInFlightJobs(stageType);
         final int maximalQueueLength = stageType.unpredictable ? 0
                 : Settings.MAXIMAL_QUEUE_FOR_PREDICTABLE;
         if (ignoreBusyProcessors
@@ -130,7 +131,7 @@ class NodePerformanceInfo implements Serializable {
         final double executionTime = workerQueueInfo.getExecutionTime();
         final double unpredictableOverhead = (currentJobs * executionTime) / 10;
         final double transmissionTime = localNodeInfo.getTransmissionTime(stageType);
-        final int waitingJobs = 1+workerQueueInfo.getQueueLength();
+        final int waitingJobs = 1+inFlightJobs+workerQueueInfo.getQueueLength();
         final double total = transmissionTime + waitingJobs
         * workerQueueInfo.getDequeueTimePerJob() + workerQueueInfo
         .getExecutionTime() + completionInterval + unpredictableOverhead;
