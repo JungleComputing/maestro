@@ -50,7 +50,7 @@ final class NodeInfo {
         double estimatedPingTime = 0.0;
         if (!local) {
             estimatedPingTime = Utils.MILLISECOND
-                    + Utils.MILLISECOND*Globals.rng.nextDouble();
+            + Utils.MILLISECOND*Globals.rng.nextDouble();
             if (!Utils.areInSameCluster(Globals.localIbis.identifier(), ibis)) {
                 // Be more pessimistic if the nodes are not in the same cluster.
                 // TODO: simply look at the number of differing levels.
@@ -124,8 +124,8 @@ final class NodeInfo {
     void setSuspect() {
         if (local) {
             Globals.log
-                    .reportInternalError("Cannot communicate with local node "
-                            + ibis + "???");
+            .reportInternalError("Cannot communicate with local node "
+                    + ibis + "???");
         } else {
             Globals.log.reportError("Cannot communicate with node " + ibis);
             synchronized (this) {
@@ -200,7 +200,7 @@ final class NodeInfo {
                         + " allowanceDuration="
                         + Utils.formatSeconds(job.allowanceDeadline
                                 - job.startTime) + " realDuration="
-                        + Utils.formatSeconds(roundtripTime));
+                                + Utils.formatSeconds(roundtripTime));
             }
         }
         if (job.rescheduleDeadline < result.arrivalMoment) {
@@ -213,7 +213,7 @@ final class NodeInfo {
                         + " rescheduleDuration="
                         + Utils.formatSeconds(job.rescheduleDeadline
                                 - job.startTime) + " realDuration="
-                        + Utils.formatSeconds(roundtripTime));
+                                + Utils.formatSeconds(roundtripTime));
             }
             nodeJobInfo.registerMissedRescheduleDeadline();
         }
@@ -281,20 +281,20 @@ final class NodeInfo {
         final NodeJobInfo workerJobInfo = nodeJobInfoList[type.index];
         if (workerJobInfo == null) {
             Globals.log
-                    .reportInternalError("No worker job info for job type "
-                            + type);
+            .reportInternalError("No worker job info for job type "
+                    + type);
         } else {
             workerJobInfo.incrementOutstandingJobs();
         }
         final double now = Utils.getPreciseTime();
         final double allowanceDeadlineInterval = predictedDuration
-                * Settings.ALLOWANCE_DEADLINE_MARGIN;
+        * Settings.ALLOWANCE_DEADLINE_MARGIN;
         // Don't try to enforce a deadline interval below a certain reasonable
         // minimum.
         final double allowanceDeadline = now
-                + Math.max(allowanceDeadlineInterval, Settings.MINIMAL_DEADLINE);
+        + Math.max(allowanceDeadlineInterval, Settings.MINIMAL_DEADLINE);
         final double rescheduleDeadline = now + allowanceDeadlineInterval
-                * Settings.RESCHEDULE_DEADLINE_MULTIPLIER;
+        * Settings.RESCHEDULE_DEADLINE_MULTIPLIER;
         final ActiveJob j = new ActiveJob(job, id, now, workerJobInfo,
                 predictedDuration, allowanceDeadline, rescheduleDeadline);
         synchronized (this) {
@@ -340,6 +340,7 @@ final class NodeInfo {
 
         for (int i = 0; i < nodeJobInfoList.length; i++) {
             final NodeJobInfo nodeJobInfo = nodeJobInfoList[i];
+
             currentJobs[i] = nodeJobInfo.getCurrentJobs();
             transmissionTime[i] = nodeJobInfo.getTransmissionTime();
             predictedDuration[i] = nodeJobInfo.estimateRoundtripTime();

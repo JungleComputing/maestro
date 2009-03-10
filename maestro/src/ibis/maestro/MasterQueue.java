@@ -248,9 +248,8 @@ final class MasterQueue {
      *         if there currently aren't any workers for this job type.
      */
     private Submission selectBestWorker(
-            JobList jobs,
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
-            NodePerformanceInfo tables[], JobInstance job) {
+            NodePerformanceInfo tables[], JobInstance job,JobType stageType) {
         NodePerformanceInfo best = null;
         double bestInterval = Double.POSITIVE_INFINITY;
 
@@ -259,7 +258,7 @@ final class MasterQueue {
             .get(info.source);
 
             final double val = info.estimateJobCompletion(localNodeInfo, job
-                    .overallType, job.stageNumber, Settings.HARD_ALLOWANCES);
+                    .overallType, job.stageNumber, stageType,Settings.HARD_ALLOWANCES);
 
             if (val < bestInterval) {
                 bestInterval = val;
@@ -267,27 +266,27 @@ final class MasterQueue {
             }
         }
         if (Settings.traceWorkerSelection) {
-            dumpChoices(localNodeInfoMap, tables, job, bestInterval);
+            dumpChoices(localNodeInfoMap, tables, job, stageType, bestInterval);
         }
         if (best == null) {
             if (Settings.traceMasterQueue) {
                 Globals.log.reportProgress("No workers for job of type "
-                        + job.getStageType(jobs));
+                        + stageType);
             }
             return null;
         }
         if (Settings.traceMasterQueue) {
             Globals.log.reportProgress("Selected worker " + best.source
-                    + " for job of type " + job.getStageType(jobs));
+                    + " for job of type " + stageType);
         }
         final LocalNodeInfo localNodeInfo = localNodeInfoMap.get(best.source);
-        final double predictedDuration = localNodeInfo.getPredictedDuration(job.getStageType(jobs));
+        final double predictedDuration = localNodeInfo.getPredictedDuration(stageType);
         return new Submission(job, best.source, predictedDuration);
     }
 
     private static void dumpChoices(
             HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
-            NodePerformanceInfo[] tables, JobInstance job, double bestInterval) {
+            NodePerformanceInfo[] tables, JobInstance job, JobType stageType, double bestInterval) {
         final PrintStream s = Globals.log.getPrintStream();
         for (final NodePerformanceInfo i : tables) {
             i.print(s);
@@ -297,7 +296,7 @@ final class MasterQueue {
             final LocalNodeInfo localNodeInfo = localNodeInfoMap
             .get(info.source);
             final double val = info.estimateJobCompletion(localNodeInfo,
-                    job.overallType, job.stageNumber, true);
+                    job.overallType, job.stageNumber, stageType, true);
             s.print(Utils.formatSeconds(val));
             if (val == bestInterval && val != Double.POSITIVE_INFINITY) {
                 s.print('$');
@@ -325,22 +324,22 @@ final class MasterQueue {
         int ix = 0;
         while (ix < queue.size()) {
             final JobInstance job = queue.get(ix);
-            final JobType type = job.getStageType(jobs);
-            if (type.index == busyTypeIndex) {
+            final JobType stageType = job.getStageType(jobs);
+            if (stageType.index == busyTypeIndex) {
                 if (Settings.traceMasterQueue || Settings.traceQueuing) {
-                    Globals.log.reportProgress("Type " + type
+                    Globals.log.reportProgress("Type " + stageType
                             + " has no ready workers, don't bother");
                 }
             } else {
-                final Submission sub = selectBestWorker(jobs,localNodeInfoMap,
-                        tables, job);
+                final Submission sub = selectBestWorker(localNodeInfoMap,
+                        tables, job,stageType);
                 if (sub == null) {
                     // This job type is busy, skip all other instances
                     // of the type.
-                    busyTypeIndex = type.index;
+                    busyTypeIndex = stageType.index;
                 } else {
                     queue.remove(ix);
-                    final TypeInfo queueTypeInfo = queueTypes[type.index];
+                    final TypeInfo queueTypeInfo = queueTypes[stageType.index];
                     queueTypeInfo.registerRemove();
                     if (Settings.traceMasterQueue || Settings.traceQueuing) {
                         final int length = queueTypeInfo.elements;
@@ -348,13 +347,13 @@ final class MasterQueue {
                                 + job.formatJobAndType()
                                 + " from master queue; length is now "
                                 + queue.size() + "; " + length + " of type "
-                                + type);
+                                + stageType);
                     }
                     return sub;
                 }
                 if (Settings.traceMasterQueue) {
                     Globals.log.reportProgress("No ready worker for job type "
-                            + type);
+                            + stageType);
                 }
             }
             ix++;

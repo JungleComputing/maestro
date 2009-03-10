@@ -80,7 +80,8 @@ class NodePerformanceInfo implements Serializable {
         return "Update @" + timeStamp + " " + workerQueue + " " + completion;
     }
 
-    double estimateJobCompletion(LocalNodeInfo localNodeInfo, JobType type,int stage,
+    double estimateJobCompletion(LocalNodeInfo localNodeInfo, JobType seriesType,int stage,
+            JobType stageType,
             boolean ignoreBusyProcessors) {
         if (localNodeInfo == null) {
             if (Settings.traceRemainingJobTime) {
@@ -88,12 +89,12 @@ class NodePerformanceInfo implements Serializable {
             }
             return Double.POSITIVE_INFINITY;
         }
-        final WorkerQueueInfo workerQueueInfo = workersQueueInfo[type.index];
+        final WorkerQueueInfo workerQueueInfo = workersQueueInfo[stageType.index];
 
         if (workerQueueInfo == null) {
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportInternalError("Node " + source
-                        + " does not provide queue info for type " + type);
+                        + " does not provide queue info for type " + stageType);
             }
             return Double.POSITIVE_INFINITY;
         }
@@ -104,7 +105,7 @@ class NodePerformanceInfo implements Serializable {
             }
             return Double.POSITIVE_INFINITY;
         }
-        final double completionInterval = completionInfo[type.index][stage];
+        final double completionInterval = completionInfo[seriesType.index][stage];
         if (completionInterval == Double.POSITIVE_INFINITY) {
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportError("Node " + source
@@ -112,15 +113,15 @@ class NodePerformanceInfo implements Serializable {
             }
             return Double.POSITIVE_INFINITY;
         }
-        final int currentJobs = localNodeInfo.getCurrentJobs(type);
-        final int maximalQueueLength = type.unpredictable ? 0
+        final int currentJobs = localNodeInfo.getCurrentJobs(stageType);
+        final int maximalQueueLength = stageType.unpredictable ? 0
                 : Settings.MAXIMAL_QUEUE_FOR_PREDICTABLE;
         if (ignoreBusyProcessors
                 && currentJobs >= (numberOfProcessors + maximalQueueLength)) {
             // Don't submit jobs, there are no idle processors.
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportError("Node " + source
-                        + " has no idle processors for type " + type );
+                        + " has no idle processors for type " + stageType );
             }
             return Double.POSITIVE_INFINITY;
         }
@@ -128,7 +129,7 @@ class NodePerformanceInfo implements Serializable {
         // spreading the load over nodes.
         final double executionTime = workerQueueInfo.getExecutionTime();
         final double unpredictableOverhead = (currentJobs * executionTime) / 10;
-        final double transmissionTime = localNodeInfo.getTransmissionTime(type);
+        final double transmissionTime = localNodeInfo.getTransmissionTime(stageType);
         final int waitingJobs = 1+workerQueueInfo.getQueueLength();
         final double total = transmissionTime + waitingJobs
         * workerQueueInfo.getDequeueTimePerJob() + workerQueueInfo
