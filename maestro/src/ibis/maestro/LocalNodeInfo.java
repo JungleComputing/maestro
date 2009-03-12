@@ -4,7 +4,6 @@
 package ibis.maestro;
 
 class LocalNodeInfo {
-    final int inFlightJobs;
     final int currentJobs;
     final double transmissionTime;
     final double predictedDuration;
@@ -14,9 +13,8 @@ class LocalNodeInfo {
      * @param transmissionTime
      * @param predictedDuration
      */
-    LocalNodeInfo(int inFlightJobs,int currentJobs, double transmissionTime,
+    LocalNodeInfo(int currentJobs, double transmissionTime,
             double predictedDuration) {
-        this.inFlightJobs = inFlightJobs;
         this.currentJobs = currentJobs;
         this.transmissionTime = transmissionTime;
         this.predictedDuration = predictedDuration;
@@ -24,7 +22,7 @@ class LocalNodeInfo {
     
     public String toString()
     {
-    	return "(inFlight=" + inFlightJobs + ",currentJobs="
+    	return "(currentJobs=" + currentJobs
     	  + ",transmissionTime=" + Utils.formatSeconds(transmissionTime) +
     	  ",predictedDuration=" + Utils.formatSeconds(predictedDuration) + ")";
     	 

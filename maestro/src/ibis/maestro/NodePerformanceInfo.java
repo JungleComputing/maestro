@@ -109,13 +109,16 @@ class NodePerformanceInfo implements Serializable {
         if (completionInterval == Double.POSITIVE_INFINITY) {
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportError("Node " + source
-                        + " has infinite completion time");
+                        + " has infinite completion time for seriesType=" + seriesType + " stage " + stage);
             }
             return Double.POSITIVE_INFINITY;
         }
         final LocalNodeInfo performanceInfo = localNodeInfo.getLocalNodeInfo(stageType);
-        final int currentJobs = performanceInfo.currentJobs;
-        final int inFlightJobs = performanceInfo.inFlightJobs;
+        int ql = workerQueueInfo.getQueueLength();
+        // The estimated number of jobs on the node. The queue length `ql'
+        // from the gossip is the most direct measures, but it might be outdated.
+        // We therefore also take our local count of outstanding jobs into account.
+        final int currentJobs = Math.max( ql, performanceInfo.currentJobs );
         final int maximalQueueLength = stageType.unpredictable ? 0
                 : Settings.MAXIMAL_QUEUE_FOR_PREDICTABLE;
         if (ignoreBusyProcessors
@@ -123,8 +126,7 @@ class NodePerformanceInfo implements Serializable {
             // Don't submit jobs, there are no idle processors.
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportProgress("Node " + source
-                        + " has no idle processors for type " + stageType );
-                Globals.log.reportProgress("--performanceInfo=" + performanceInfo);
+                        + " has no idle processors for stage type " + stageType + ": performanceInfo=" + performanceInfo);
             }
             return Double.POSITIVE_INFINITY;
         }
@@ -133,14 +135,13 @@ class NodePerformanceInfo implements Serializable {
         final double executionTime = workerQueueInfo.getExecutionTime();
         double unpredictableOverhead = (currentJobs * executionTime) / 10;
         final double transmissionTime = performanceInfo.transmissionTime;
-        final int waitingJobs = 1+inFlightJobs+workerQueueInfo.getQueueLength();
-        final double total = (1+inFlightJobs) * transmissionTime + waitingJobs
+        final int waitingJobs = 1+workerQueueInfo.getQueueLength();
+        final double total = transmissionTime + waitingJobs
         * workerQueueInfo.getDequeueTimePerJob() + workerQueueInfo
         .getExecutionTime() + completionInterval + unpredictableOverhead;
         if (Settings.traceRemainingJobTime) {
-            Globals.log.reportProgress("--performanceInfo=" + performanceInfo);
             Globals.log.reportProgress("Estimated completion time for "
-                    + source + " is " + Utils.formatSeconds(total));
+                    + source + " for " + seriesType + " stage " + stage + " " + stageType + " is " + Utils.formatSeconds(total) + ": performanceInfo=" + performanceInfo);
         }
         return total;
     }

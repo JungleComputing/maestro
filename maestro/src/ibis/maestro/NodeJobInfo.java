@@ -18,9 +18,6 @@ final class NodeJobInfo {
     /** How many instances of this job does this worker currently have? */
     private int outstandingJobs = 0;
 
-    /** How many instance of this job are currently being transmitted to this worker? */
-    private int inFlightJobs = 0;
-
     /** How many job instances has this worker executed until now? */
     private int executedJobs = 0;
 
@@ -89,7 +86,6 @@ final class NodeJobInfo {
      *            The transmission time of this job.
      */
     synchronized void registerJobReceived(double transmissionTime) {
-        inFlightJobs--;
         transmissionTimeEstimate.addSample(transmissionTime);
         if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
             final String label = "job=" + jobInfo + " worker=" + nodeInfo;
@@ -112,19 +108,11 @@ final class NodeJobInfo {
 
     /** Register that there is a new outstanding job. */
     synchronized void registerJobSubmitted() {
-        inFlightJobs++;
         outstandingJobs++;
     }
 
-    /**
-     * @return True iff this worker ever executed a job of this type.
-     */
-    private boolean didWork() {
-        return (executedJobs != 0) || (outstandingJobs != 0) || (inFlightJobs != 0);
-    }
-
     synchronized void printStatistics(PrintStream s) {
-        if (didWork()) {
+        if ((executedJobs != 0) || (outstandingJobs != 0)) {
             s.println("  " + jobInfo.type + ": executed " + executedJobs
                     + " jobs, xmit time " + transmissionTimeEstimate
                     + (failed ? " FAILED" : ""));
@@ -147,7 +135,7 @@ final class NodeJobInfo {
         else {
             predictedDuration = roundtripTimeEstimate.getAverage();
         }
-        return new LocalNodeInfo( inFlightJobs,outstandingJobs, transmissionTime,predictedDuration);
+        return new LocalNodeInfo( outstandingJobs, transmissionTime,predictedDuration);
     }
 
 }

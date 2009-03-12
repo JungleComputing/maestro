@@ -102,7 +102,7 @@ public class GossipTest extends TestCase {
             double[] transmissionTimes, double[] completionTimes) {
         LocalNodeInfo res[] = new LocalNodeInfo[queueLengths.length];
         for( int i=0; i<queueLengths.length; i++) {
-            res[i] = new LocalNodeInfo(0,queueLengths[i],transmissionTimes[i],completionTimes[i]);
+            res[i] = new LocalNodeInfo(queueLengths[i],transmissionTimes[i],completionTimes[i]);
         }
         return res;
     }

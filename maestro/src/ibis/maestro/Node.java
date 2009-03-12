@@ -81,6 +81,8 @@ public final class Node extends Thread implements PacketReceiveListener {
 
     private final Counter jobReceivedMessageCount = new Counter();
 
+    private final Counter jobCompletedMessageCount = new Counter();
+
     private final Counter aggregateResultMessageCount = new Counter();
 
     private final Counter jobFailMessageCount = new Counter();
@@ -487,6 +489,8 @@ public final class Node extends Thread implements PacketReceiveListener {
                 .get());
         s.printf("job received messages:   %5d sent\n",
                 jobReceivedMessageCount.get());
+        s.printf("job completed messages:  %5d sent\n",
+                jobCompletedMessageCount.get());
         s.printf("job result   messages:   %5d sent\n", aggregateResultMessageCount
                 .get());
         s.printf("job fail     messages:   %5d sent\n", jobFailMessageCount
@@ -816,12 +820,19 @@ public final class Node extends Thread implements PacketReceiveListener {
         if (!deadNodes.contains(message.source)) {
             final Message msg = new JobCompletedMessage(message.jobId);
             boolean ok = sendPort.send(message.source, msg);
-    
-            if (!ok) {
+   
+            
+            if (ok) {
+            	jobCompletedMessageCount.add();
+            }
+            else {
                 // Could not send the result message. We're desperate.
                 // First simply try again.
                 ok = sendPort.send(message.source, msg);
-                if (!ok) {
+                if (ok) {
+                	jobCompletedMessageCount.add();
+                }
+                else {
                     // Unfortunately, that didn't work.
                     // TODO: think up another way to recover from a failed
                     // result report.

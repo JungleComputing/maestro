@@ -245,18 +245,15 @@ final class NodeInfo {
 
             if (ix < 0) {
                 // Not in the list of active jobs, presumably because it was
-                // redundantly executed.
+                // redundantly executed, or the completed message
+            	// was received before the job received message.
                 return;
             }
             job = activeJobs.get(ix);
         }
-        final double transmissionTime = result.arrivalMoment - job.startTime;
+        final double transmissionTime = local ? 0.0 : (result.arrivalMoment - job.startTime);
         final NodeJobInfo nodeJobInfo = job.nodeJobInfo;
-        if (!local) {
-            // If this is not the local node, this is interesting info.
-            // If it is local, we know better: transmission time is 0.
-            nodeJobInfo.registerJobReceived(transmissionTime);
-        }
+        nodeJobInfo.registerJobReceived(transmissionTime);
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Master: retired job " + job
                     + " transmissionTime="
