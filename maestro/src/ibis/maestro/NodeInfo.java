@@ -188,13 +188,13 @@ final class NodeInfo {
         }
         final double roundtripTime = result.arrivalMoment - job.startTime;
         final NodeJobInfo nodeJobInfo = job.nodeJobInfo;
-        final JobType type = job.jobInstance.getStageType(jobs);
+        final JobType stageType = job.jobInstance.getStageType(jobs);
         if (job.allowanceDeadline < result.arrivalMoment) {
             nodeJobInfo.registerMissedAllowanceDeadline();
             if (Settings.traceMissedDeadlines) {
                 Globals.log.reportProgress("Missed allowance deadline for "
-                        + type
-                        + " job: "
+                        + stageType
+                        + " job: " + job
                         + " predictedDuration="
                         + Utils.formatSeconds(job.predictedDuration)
                         + " allowanceDuration="
@@ -206,8 +206,8 @@ final class NodeInfo {
         if (job.rescheduleDeadline < result.arrivalMoment) {
             if (Settings.traceMissedDeadlines) {
                 Globals.log.reportProgress("Missed reschedule deadline for "
-                        + type
-                        + " job: "
+                        + stageType
+                        + " job: " + job
                         + " predictedDuration="
                         + Utils.formatSeconds(job.predictedDuration)
                         + " rescheduleDuration="

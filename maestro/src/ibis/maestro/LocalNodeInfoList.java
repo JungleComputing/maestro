@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.util.Arrays;
+
 /**
  * Local information about a node.
  * 
@@ -25,6 +27,14 @@ class LocalNodeInfoList {
             this.currentJobs = currentJobs;
             this.transmissionTime = transmissionTime;
             this.predictedDuration = predictedDuration;
+        }
+        
+        public String toString()
+        {
+        	return "(inFlight=" + inFlightJobs + ",currentJobs="
+        	  + ",transmissionTime=" + Utils.formatSeconds(transmissionTime) +
+        	  ",predictedDuration=" + Utils.formatSeconds(predictedDuration) + ")";
+        	 
         }
     }
 
@@ -61,5 +71,10 @@ class LocalNodeInfoList {
      */
     double getPredictedDuration(JobType type) {
         return infoPerType[type.index].predictedDuration;
+    }
+    
+    public String toString()
+    {
+    	return Arrays.deepToString(infoPerType);
     }
 }

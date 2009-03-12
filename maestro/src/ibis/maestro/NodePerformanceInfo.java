@@ -123,8 +123,9 @@ class NodePerformanceInfo implements Serializable {
                 && currentJobs >= (numberOfProcessors + maximalQueueLength)) {
             // Don't submit jobs, there are no idle processors.
             if (Settings.traceRemainingJobTime) {
-                Globals.log.reportError("Node " + source
+                Globals.log.reportProgress("Node " + source
                         + " has no idle processors for type " + stageType );
+                Globals.log.reportProgress("--performanceInfo=" + performanceInfo);
             }
             return Double.POSITIVE_INFINITY;
         }
@@ -138,6 +139,7 @@ class NodePerformanceInfo implements Serializable {
         * workerQueueInfo.getDequeueTimePerJob() + workerQueueInfo
         .getExecutionTime() + completionInterval + unpredictableOverhead;
         if (Settings.traceRemainingJobTime) {
+            Globals.log.reportProgress("--performanceInfo=" + performanceInfo);
             Globals.log.reportProgress("Estimated completion time for "
                     + source + " is " + Utils.formatSeconds(total));
         }
