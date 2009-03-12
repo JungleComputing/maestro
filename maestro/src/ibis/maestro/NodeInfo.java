@@ -334,7 +334,7 @@ final class NodeInfo {
     }
 
     synchronized LocalNodeInfoList getLocalInfo() {
-        final LocalNodeInfoList.LocalNodeInfo l[] = new LocalNodeInfoList.LocalNodeInfo[nodeJobInfoList.length];
+        final LocalNodeInfo l[] = new LocalNodeInfo[nodeJobInfoList.length];
 
         for (int i = 0; i < nodeJobInfoList.length; i++) {
             l[i] = nodeJobInfoList[i].getLocalNodeInfo();

@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import ibis.maestro.LocalNodeInfoList.LocalNodeInfo;
 
 import java.io.PrintStream;
 
@@ -139,7 +138,7 @@ final class NodeJobInfo {
         }
     }
 
-    synchronized LocalNodeInfoList.LocalNodeInfo getLocalNodeInfo() {
+    synchronized LocalNodeInfo getLocalNodeInfo() {
         double transmissionTime = transmissionTimeEstimate.getAverage();
         double predictedDuration;
         if (failed) {

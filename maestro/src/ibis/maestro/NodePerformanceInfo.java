@@ -1,7 +1,6 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
-import ibis.maestro.LocalNodeInfoList.LocalNodeInfo;
 
 import java.io.PrintStream;
 import java.io.Serializable;
