@@ -133,8 +133,8 @@ class NodePerformanceInfo implements Serializable {
         final double executionTime = workerQueueInfo.getExecutionTime();
         double unpredictableOverhead = (currentJobs * executionTime) / 10;
         final double transmissionTime = performanceInfo.transmissionTime;
-        final int waitingJobs = 1+workerQueueInfo.getQueueLength();
-        final double total = transmissionTime + waitingJobs
+        final int waitingJobs = 1+inFlightJobs+workerQueueInfo.getQueueLength();
+        final double total = (1+inFlightJobs) * transmissionTime + waitingJobs
         * workerQueueInfo.getDequeueTimePerJob() + workerQueueInfo
         .getExecutionTime() + completionInterval + unpredictableOverhead;
         if (Settings.traceRemainingJobTime) {
