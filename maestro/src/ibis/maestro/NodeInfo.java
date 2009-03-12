@@ -333,21 +333,12 @@ final class NodeInfo {
         return false;
     }
 
-    synchronized LocalNodeInfo getLocalInfo() {
-        final int inFlightJobs[] = new int[nodeJobInfoList.length];
-        final int currentJobs[] = new int[nodeJobInfoList.length];
-        final double transmissionTime[] = new double[nodeJobInfoList.length];
-        final double predictedDuration[] = new double[nodeJobInfoList.length];
+    synchronized LocalNodeInfoList getLocalInfo() {
+        final LocalNodeInfoList.LocalNodeInfo l[] = new LocalNodeInfoList.LocalNodeInfo[nodeJobInfoList.length];
 
         for (int i = 0; i < nodeJobInfoList.length; i++) {
-            final NodeJobInfo nodeJobInfo = nodeJobInfoList[i];
-
-            inFlightJobs[i] = nodeJobInfo.getInFlightJobs();
-            currentJobs[i] = nodeJobInfo.getCurrentJobs();
-            transmissionTime[i] = nodeJobInfo.getTransmissionTime();
-            predictedDuration[i] = nodeJobInfo.estimateRoundtripTime();
+            l[i] = nodeJobInfoList[i].getLocalNodeInfo();
         }
-        return new LocalNodeInfo(suspect, inFlightJobs, currentJobs, transmissionTime,
-                predictedDuration);
+        return new LocalNodeInfoList(suspect, l);
     }
 }

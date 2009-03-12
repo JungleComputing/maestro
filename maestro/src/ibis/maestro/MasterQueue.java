@@ -248,13 +248,13 @@ final class MasterQueue {
      *         if there currently aren't any workers for this job type.
      */
     private Submission selectBestWorker(
-            HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
+            HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
             NodePerformanceInfo tables[], JobInstance job,JobType stageType) {
         NodePerformanceInfo best = null;
         double bestInterval = Double.POSITIVE_INFINITY;
 
         for (final NodePerformanceInfo info : tables) {
-            final LocalNodeInfo localNodeInfo = localNodeInfoMap
+            final LocalNodeInfoList localNodeInfo = localNodeInfoMap
             .get(info.source);
 
             final double val = info.estimateJobCompletion(localNodeInfo, job
@@ -279,13 +279,13 @@ final class MasterQueue {
             Globals.log.reportProgress("Selected worker " + best.source
                     + " for job of type " + stageType);
         }
-        final LocalNodeInfo localNodeInfo = localNodeInfoMap.get(best.source);
+        final LocalNodeInfoList localNodeInfo = localNodeInfoMap.get(best.source);
         final double predictedDuration = localNodeInfo.getPredictedDuration(stageType);
         return new Submission(job, best.source, predictedDuration);
     }
 
     private static void dumpChoices(
-            HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
+            HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
             NodePerformanceInfo[] tables, JobInstance job, JobType stageType, double bestInterval) {
         final PrintStream s = Globals.log.getPrintStream();
         for (final NodePerformanceInfo i : tables) {
@@ -293,7 +293,7 @@ final class MasterQueue {
         }
         s.print("Best worker: ");
         for (final NodePerformanceInfo info : tables) {
-            final LocalNodeInfo localNodeInfo = localNodeInfoMap
+            final LocalNodeInfoList localNodeInfo = localNodeInfoMap
             .get(info.source);
             final double val = info.estimateJobCompletion(localNodeInfo,
                     job.overallType, job.stageNumber, stageType, true);
@@ -317,7 +317,7 @@ final class MasterQueue {
      */
     synchronized Submission getSubmission(
             JobList jobs,
-            HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap,
+            HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
             NodePerformanceInfo[] tables) {
         int busyTypeIndex = -1; // Don't even consider jobs of this type, all
         // workers are busy.

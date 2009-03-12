@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
+import ibis.maestro.LocalNodeInfoList.LocalNodeInfo;
 
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -80,7 +81,7 @@ class NodePerformanceInfo implements Serializable {
         return "Update @" + timeStamp + " " + workerQueue + " " + completion;
     }
 
-    double estimateJobCompletion(LocalNodeInfo localNodeInfo, JobType seriesType,int stage,
+    double estimateJobCompletion(LocalNodeInfoList localNodeInfo, JobType seriesType,int stage,
             JobType stageType,
             boolean ignoreBusyProcessors) {
         if (localNodeInfo == null) {
@@ -113,8 +114,9 @@ class NodePerformanceInfo implements Serializable {
             }
             return Double.POSITIVE_INFINITY;
         }
-        final int currentJobs = localNodeInfo.getCurrentJobs(stageType);
-        final int inFlightJobs = localNodeInfo.getInFlightJobs(stageType);
+        final LocalNodeInfo performanceInfo = localNodeInfo.getLocalNodeInfo(stageType);
+        final int currentJobs = performanceInfo.currentJobs;
+        final int inFlightJobs = performanceInfo.inFlightJobs;
         final int maximalQueueLength = stageType.unpredictable ? 0
                 : Settings.MAXIMAL_QUEUE_FOR_PREDICTABLE;
         if (ignoreBusyProcessors
@@ -129,9 +131,9 @@ class NodePerformanceInfo implements Serializable {
         // Give nodes already running jobs some penalty to encourage
         // spreading the load over nodes.
         final double executionTime = workerQueueInfo.getExecutionTime();
-        final double unpredictableOverhead = (currentJobs * executionTime) / 10;
-        final double transmissionTime = localNodeInfo.getTransmissionTime(stageType);
-        final int waitingJobs = 1+inFlightJobs+workerQueueInfo.getQueueLength();
+        double unpredictableOverhead = (currentJobs * executionTime) / 10;
+        final double transmissionTime = performanceInfo.transmissionTime;
+        final int waitingJobs = 1+workerQueueInfo.getQueueLength();
         final double total = transmissionTime + waitingJobs
         * workerQueueInfo.getDequeueTimePerJob() + workerQueueInfo
         .getExecutionTime() + completionInterval + unpredictableOverhead;
