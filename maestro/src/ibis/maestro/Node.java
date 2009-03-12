@@ -665,9 +665,9 @@ public final class Node extends Thread implements PacketReceiveListener {
         if (!isDead && !source.equals(Globals.localIbis.identifier())) {
             recentMasterList.register(source);
         }
-        postJobReceivedMessage(source, msg.jobId);
         JobType stageType = msg.jobInstance.getStageType(jobs);
         final int length = workerQueue.add(stageType,msg);
+        postJobReceivedMessage(source, msg.jobId);
         if (gossiper != null) {
 			boolean changed = gossiper.setWorkerQueueLength(stageType, length);
             if( changed ) {
@@ -858,7 +858,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                             + job);
         } else {
             Globals.log
-                    .reportInternalError("Don't know what to do with a jbo of type "
+                    .reportInternalError("Don't know what to do with a job of type "
                             + job.getClass());
         }
     }
@@ -928,21 +928,21 @@ public final class Node extends Thread implements PacketReceiveListener {
                 } else {
                     // We have a job to execute.
                     final double runMoment = Utils.getPreciseTime();
-                    final JobType type = message.jobInstance.getStageType(jobs);
-                    final Job job = jobs.getJob(type);
+                    final JobType stageType = message.jobInstance.getStageType(jobs);
+                    final Job job = jobs.getJob(stageType);
 
-                    if( !type.isAtomic ){
-                        Globals.log.reportInternalError( "Job type " + type + " is not atomic" );
+                    if( !stageType.isAtomic ){
+                        Globals.log.reportInternalError( "Job type " + stageType + " is not atomic" );
                     }
                     if( job instanceof SeriesJob ){
-                        Globals.log.reportInternalError( "A SeriesJob " + job + "(type " + type + ") is not handled" );
+                        Globals.log.reportInternalError( "A SeriesJob " + job + "(type " + stageType + ") is not handled" );
                     }
                     runningJobCount.up();
                     if (Settings.traceNodeProgress) {
                         final double queueInterval = runMoment
                                 - message.arrivalMoment;
                         Globals.log.reportProgress("Worker: handed out job "
-                                + message + " of type " + type
+                                + message + " of type " + stageType
                                 + "; it was queued for "
                                 + Utils.formatSeconds(queueInterval)
                                 + "; there are now " + runningJobCount
@@ -971,15 +971,15 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     private void failNode(RunJobMessage message, Throwable t) {
-        final JobType type = message.jobInstance.getStageType(jobs);
-        Globals.log.reportError("Node fails for type " + type);
+        final JobType stageType = message.jobInstance.getStageType(jobs);
+        Globals.log.reportError("Node fails for type " + stageType);
         t.printStackTrace(Globals.log.getPrintStream());
-        final boolean allFailed = workerQueue.failJob(type);
+        final boolean allFailed = workerQueue.failJob(stageType);
         sendJobFailMessage(message.source, message.jobId);
         if (allFailed && !isMaestro) {
             setStopped();
         }
-        gossiper.failJob(type);
+        gossiper.failJob(stageType);
     }
 
     /**

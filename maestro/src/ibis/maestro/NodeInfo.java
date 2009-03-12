@@ -277,12 +277,12 @@ final class NodeInfo {
      *            The predicted duration in seconds of the job.
      */
     void registerJobStart(JobList jobs,JobInstance job, long id, double predictedDuration) {
-        final JobType type = job.getStageType(jobs);
-        final NodeJobInfo workerJobInfo = nodeJobInfoList[type.index];
+        final JobType stageType = job.getStageType(jobs);
+        final NodeJobInfo workerJobInfo = nodeJobInfoList[stageType.index];
         if (workerJobInfo == null) {
             Globals.log
             .reportInternalError("No worker job info for job type "
-                    + type);
+                    + stageType);
         } else {
             workerJobInfo.registerJobSubmitted();
         }
