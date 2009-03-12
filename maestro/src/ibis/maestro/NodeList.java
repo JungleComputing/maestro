@@ -191,8 +191,8 @@ final class NodeList {
      * 
      * @return The information table.
      */
-    synchronized HashMap<IbisIdentifier, LocalNodeInfo> getLocalNodeInfo() {
-        final HashMap<IbisIdentifier, LocalNodeInfo> res = new HashMap<IbisIdentifier, LocalNodeInfo>();
+    synchronized HashMap<IbisIdentifier, LocalNodeInfoList> getLocalNodeInfo() {
+        final HashMap<IbisIdentifier, LocalNodeInfoList> res = new HashMap<IbisIdentifier, LocalNodeInfoList>();
         for (final Map.Entry<IbisIdentifier, NodeInfo> entry : ibisToNodeMap
                 .entrySet()) {
             final NodeInfo nodeInfo = entry.getValue();

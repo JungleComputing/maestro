@@ -242,7 +242,7 @@ class Gossiper extends Thread {
     }
 
     void recomputeCompletionTimes(double masterQueueIntervals[], JobList jobs,
-            HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
+            HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap) {
         gossip.recomputeCompletionTimes(masterQueueIntervals, jobs,
                 localNodeInfoMap);
     }

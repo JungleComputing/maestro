@@ -464,7 +464,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             if (!Settings.IGNORE_QUEUE_TIME) {
                 masterQueueIntervals = masterQueue.getQueueIntervals();
             }
-            final HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap = nodes
+            final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap = nodes
                     .getLocalNodeInfo();
             gossiper.recomputeCompletionTimes(masterQueueIntervals, jobs,
                     localNodeInfoMap);
@@ -1101,7 +1101,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 // select the same worker for multiple instances of the
                 // same job type.
                 final NodePerformanceInfo[] tables = gossiper.getGossipCopy();
-                final HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap = nodes
+                final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap = nodes
                         .getLocalNodeInfo();
                 final Submission submission = masterQueue.getSubmission(
                         jobs,

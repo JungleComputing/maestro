@@ -69,7 +69,7 @@ class Gossip {
      */
     synchronized void recomputeCompletionTimes(double masterQueueIntervals[],
             JobList jobs,
-            HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
+            HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap) {
         JobType types[] = jobs.getAllTypes();
         
         for( int tix=0; tix<types.length; tix++ ){
@@ -135,11 +135,11 @@ class Gossip {
      * @return The best average completion time of our workers.
      */
     private double getBestCompletionTimeAfterMasterQueue(int todoIx, int ix, int nextIx,
-            HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap) {
+            HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap) {
         double res = Double.POSITIVE_INFINITY;
 
         for (final NodePerformanceInfo node : gossipList) {
-            final LocalNodeInfo info = localNodeInfoMap.get(node.source);
+            final LocalNodeInfoList info = localNodeInfoMap.get(node.source);
 
             if (info != null) {
                 final double xmitTime = info.getTransmissionTime(ix);

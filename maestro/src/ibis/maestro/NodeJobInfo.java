@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.maestro.LocalNodeInfoList.LocalNodeInfo;
+
 import java.io.PrintStream;
 
 /**
@@ -122,13 +124,6 @@ final class NodeJobInfo {
         return (executedJobs != 0) || (outstandingJobs != 0) || (inFlightJobs != 0);
     }
 
-    synchronized double estimateRoundtripTime() {
-        if (failed) {
-            return Double.POSITIVE_INFINITY;
-        }
-        return roundtripTimeEstimate.getAverage();
-    }
-
     synchronized void printStatistics(PrintStream s) {
         if (didWork()) {
             s.println("  " + jobInfo.type + ": executed " + executedJobs
@@ -144,16 +139,16 @@ final class NodeJobInfo {
         }
     }
 
-    synchronized int getCurrentJobs() {
-        return outstandingJobs;
-    }
-
-    synchronized double getTransmissionTime() {
-        return transmissionTimeEstimate.getAverage();
-    }
-
-    synchronized int getInFlightJobs() {
-        return inFlightJobs;
+    synchronized LocalNodeInfoList.LocalNodeInfo getLocalNodeInfo() {
+        double transmissionTime = transmissionTimeEstimate.getAverage();
+        double predictedDuration;
+        if (failed) {
+            predictedDuration = Double.POSITIVE_INFINITY;
+        }
+        else {
+            predictedDuration = roundtripTimeEstimate.getAverage();
+        }
+        return new LocalNodeInfo( inFlightJobs,outstandingJobs, transmissionTime,predictedDuration);
     }
 
 }

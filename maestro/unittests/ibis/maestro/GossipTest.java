@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
+import ibis.maestro.LocalNodeInfoList.LocalNodeInfo;
 
 import java.util.HashMap;
 
@@ -86,9 +87,9 @@ public class GossipTest extends TestCase {
         double masterQueueIntervals[] = new double[] { 0.2, 0.2, 0.2, 0.2 };
         double completionTimes[] = new double[] { 0.5, 0.5, 0.5, 0.5 };
         double transmissionTimes[] = new double[] { 0.4, 0.3, 0.2, 0.1 };
-        HashMap<IbisIdentifier, LocalNodeInfo> localNodeInfoMap = new HashMap<IbisIdentifier, LocalNodeInfo>();
+        HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap = new HashMap<IbisIdentifier, LocalNodeInfoList>();
         int queueLengths[] = new int[] { 1, 1, 1, 1 };
-        LocalNodeInfo localNodeInfo = new LocalNodeInfo(false, queueLengths, transmissionTimes, completionTimes);
+        LocalNodeInfoList localNodeInfo = new LocalNodeInfoList(false, buildLocalNodeInfoList(queueLengths, transmissionTimes, completionTimes));
         localNodeInfoMap.put(null, localNodeInfo);
         gossip.recomputeCompletionTimes(masterQueueIntervals, jobs, localNodeInfoMap);
         NodePerformanceInfo info = gossip.getLocalUpdate();
@@ -96,5 +97,14 @@ public class GossipTest extends TestCase {
         assertEquals( 9.5, l[0], eps );
         assertEquals( 7.7, l[1], eps );
         assertEquals( 4.6, l[2], eps );
+    }
+
+    private LocalNodeInfo[] buildLocalNodeInfoList(int[] queueLengths,
+            double[] transmissionTimes, double[] completionTimes) {
+        LocalNodeInfo res[] = new LocalNodeInfo[queueLengths.length];
+        for( int i=0; i<queueLengths.length; i++) {
+            res[i] = new LocalNodeInfo(0,queueLengths[i],transmissionTimes[i],completionTimes[i]);
+        }
+        return res;
     }
 }
