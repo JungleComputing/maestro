@@ -20,6 +20,7 @@ class LocalNodeInfo {
         this.predictedDuration = predictedDuration;
     }
     
+    @Override
     public String toString()
     {
     	return "(currentJobs=" + currentJobs

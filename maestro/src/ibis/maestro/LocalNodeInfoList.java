@@ -45,6 +45,7 @@ class LocalNodeInfoList {
         return infoPerType[type.index].predictedDuration;
     }
     
+    @Override
     public String toString()
     {
     	return Arrays.deepToString(infoPerType);
