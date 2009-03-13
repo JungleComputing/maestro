@@ -118,11 +118,10 @@ class NodePerformanceInfo implements Serializable {
         // The estimated number of jobs on the node. The queue length `ql'
         // from the gossip is the most direct measure, but it might be stale.
         // We therefore also take our local count of outstanding jobs into account.
-        final int currentJobs = Math.max( ql, performanceInfo.currentJobs );
         final int maximalQueueLength = stageType.unpredictable ? 0
                 : Settings.MAXIMAL_QUEUE_FOR_PREDICTABLE;
         if (ignoreBusyProcessors
-                && currentJobs >= (numberOfProcessors + maximalQueueLength)) {
+                && performanceInfo.currentJobs >= (numberOfProcessors + maximalQueueLength)) {
             // Don't submit jobs, there are no idle processors.
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportProgress("Node " + source
@@ -132,6 +131,7 @@ class NodePerformanceInfo implements Serializable {
         }
         // Give nodes already running jobs some penalty to encourage
         // spreading the load over nodes.
+        final int currentJobs = Math.max( ql, performanceInfo.currentJobs );
         final double executionTime = workerQueueInfo.getExecutionTime();
         double unpredictableOverhead = (currentJobs * executionTime) / 10;
         final double transmissionTime = performanceInfo.transmissionTime;
