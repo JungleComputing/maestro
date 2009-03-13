@@ -116,7 +116,7 @@ class NodePerformanceInfo implements Serializable {
         final LocalNodeInfo performanceInfo = localNodeInfo.getLocalNodeInfo(stageType);
         int ql = workerQueueInfo.getQueueLength();
         // The estimated number of jobs on the node. The queue length `ql'
-        // from the gossip is the most direct measures, but it might be outdated.
+        // from the gossip is the most direct measure, but it might be stale.
         // We therefore also take our local count of outstanding jobs into account.
         final int currentJobs = Math.max( ql, performanceInfo.currentJobs );
         final int maximalQueueLength = stageType.unpredictable ? 0
@@ -135,7 +135,7 @@ class NodePerformanceInfo implements Serializable {
         final double executionTime = workerQueueInfo.getExecutionTime();
         double unpredictableOverhead = (currentJobs * executionTime) / 10;
         final double transmissionTime = performanceInfo.transmissionTime;
-        final int waitingJobs = 1+workerQueueInfo.getQueueLength();
+        final int waitingJobs = Math.max( 0, currentJobs-numberOfProcessors);
         final double total = transmissionTime + waitingJobs
         * workerQueueInfo.getDequeueTimePerJob() + workerQueueInfo
         .getExecutionTime() + completionInterval + unpredictableOverhead;
