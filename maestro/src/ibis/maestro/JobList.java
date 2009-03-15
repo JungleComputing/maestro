@@ -70,6 +70,11 @@ public final class JobList {
             JobType todoArray[] = todoList
                     .toArray(new JobType[todoList.size()]);
             todoLists.add(todoArray);
+        } else if (job instanceof ParallelJob) {
+            boolean unpredictable = true; // FIXME: allow predictable parallel jobs.
+            index = allJobTypes.size();
+            t = new JobType(unpredictable, false, index);
+            todoLists.add(new JobType[] { t });
         } else {
             Globals.log.reportError("Don't know how to register job type "
                     + job.getClass());

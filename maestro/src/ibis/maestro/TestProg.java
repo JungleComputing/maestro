@@ -190,7 +190,7 @@ class TestProg {
          *            The result.
          */
         @Override
-        public void merge(Object id, Object result) {
+        public void merge(Serializable id, Object result) {
             final Integer ix = (Integer) id;
 
             res[ix] = result;
@@ -209,7 +209,7 @@ class TestProg {
     }
 
     @SuppressWarnings("synthetic-access")
-    private void run(int jobCount, boolean goForMaestro) throws Exception {
+    private static void run(int jobCount, boolean goForMaestro) throws Exception {
         final JobList jobs = new JobList();
 
         // Job createJob = jobs.createJob("createarray", new CreateArrayJob()
@@ -261,7 +261,7 @@ class TestProg {
                 + " args.length=" + args.length + " goForMaestro="
                 + goForMaestro + "; jobCount=" + jobCount);
         try {
-            new TestProg().run(jobCount, goForMaestro);
+            run(jobCount, goForMaestro);
         } catch (final Exception e) {
             e.printStackTrace(System.err);
         }

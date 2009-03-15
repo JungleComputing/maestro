@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.io.Serializable;
+
 /**
  * The interface of a parallel job in the Maestro workflow system.
  * 
@@ -26,7 +28,7 @@ public interface ParallelJob extends Job {
      * @param result
      *            The result.
      */
-    public void merge(Object id, Object result);
+    public void merge(Serializable id, Object result);
 
     /**
      * Returns the final result of the parallel job. The system will only

@@ -37,14 +37,20 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
         this.runMoment = runMoment;
     }
 
+    /**
+     * The identifier of a job instance for our and the user's administration.
+     * 
+     * @author Kees van Reeuwijk
+     *
+     */
     private static final class Id implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        final Object userID;
+        final Serializable userID;
 
         final Label label;
 
-        private Id(final Object userID, final Label label) {
+        private Id(final Serializable userID, final Label label) {
             super();
             this.userID = userID;
             this.label = label;
@@ -72,7 +78,7 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
      *            The job to submit to.
      */
     @SuppressWarnings("synthetic-access")
-    public synchronized void submit(Object input, Object userId,
+    public synchronized void submit(Object input, Serializable userId,
             Job job) {
         Label label = labeler.nextLabel();
         Serializable id = new Id(userId, label);
