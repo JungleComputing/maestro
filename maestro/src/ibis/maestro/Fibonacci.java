@@ -47,7 +47,7 @@ class Fibonacci implements ParallelJob {
         @Override
         public void jobCompleted(Node node, Object id, Object result) {
             if (Settings.traceNodes) {
-                System.out.println("I now have the result");
+                System.out.println("I now have the result: " + result);
             }
         }
     }
