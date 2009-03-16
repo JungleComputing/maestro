@@ -1,8 +1,5 @@
 #!/bin/sh
 
-#SERVERHOST=babylon.cs.vu.nl
-SERVERHOST=fs0.das3.cs.vu.nl
-
 # Check setting of VIDEOPLAYER_HOME
 if [ -z "$VIDEOPLAYER_HOME" ];  then
     echo "please set VIDEOPLAYER_HOME to the location of your Maestro installation" 1>&2
@@ -29,4 +26,4 @@ add_to_libclasspath "${VIDEOPLAYER_HOME}"/support-libs
 exec java \
     -classpath "$CLASSPATH:$LIBCLASSPATH" \
     -Dlog4j.configuration=file:"$VIDEOPLAYER_HOME"/log4j.properties \
-     ibis.server.Server --stats --events --port 5437
+     ibis.ipl.server.Server --stats --events --port 5437
