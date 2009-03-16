@@ -23,9 +23,8 @@ class Fibonacci implements ParallelJob {
             n = 1;
         }
         else {
-            handler.submit( n-1, 0, this );
-            handler.submit( n-2, 1, this );
-            n = 0;
+            handler.submit( i-1, 0, this );
+            handler.submit( i-2, 1, this );
         }
     }
 
