@@ -1040,14 +1040,6 @@ public final class Node extends Thread implements PacketReceiveListener {
         waitForRoom();
         final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
         JobType overallType = jobs.getJobType(job);
-        JobType stageType = jobs.getStageType(overallType,0);
-        Job j = jobs.getJob(stageType);
-        if( j == job && !overallType.isAtomic ){
-            Globals.log.reportInternalError( "Overall job is the same as first stage for non-atomic type " + overallType );
-        }
-        else if( !(j instanceof AtomicJob)){
-            Globals.log.reportInternalError( "Bad first stage job (stageType=" + stageType + "):" + j );
-        }
         final JobInstance jobInstance = new JobInstance(tii, input,overallType,0);
         runningJobList.add(new SubmittedJobInfo(tii, jobInstance, listener));
         masterQueue.add(jobs,jobInstance);
