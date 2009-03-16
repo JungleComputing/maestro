@@ -23,8 +23,8 @@ def computeVariation( l ):
 
 def extractJobLabel( s ):
     s = s[len(workerString):].strip()
-    s = s[5:-2]
-    return int( s )
+    v = s[2:-3]
+    return int( v )
 
 def extractJobCount( s ):
     s = s.strip()
@@ -36,13 +36,17 @@ def getJobCounts( fnm ):
     res = [0]*5
     jobLabel = None
     for line in fh.readlines():
-        if jobLabel != None:
-            count = extractJobCount( line )
-            res[jobLabel] = count
-        if startsWith( line, workerString ) and line[-2] == ':':
-            jobLabel = extractJobLabel( line )
-        else:
-            jobLabel = None
+        try:
+            if jobLabel != None:
+                count = extractJobCount( line )
+                res[jobLabel] = count
+            if startsWith( line, workerString ) and line[-2] == ':':
+                jobLabel = extractJobLabel( line )
+            else:
+                jobLabel = None
+        except ValueError, x:
+            print x
+            print fnm + ":[" + line + "]"
     fh.close()
     return res
 
