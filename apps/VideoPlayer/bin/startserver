@@ -26,4 +26,4 @@ add_to_libclasspath "${VIDEOPLAYER_HOME}"/support-libs
 exec java \
     -classpath "$CLASSPATH:$LIBCLASSPATH" \
     -Dlog4j.configuration=file:"$VIDEOPLAYER_HOME"/log4j.properties \
-     ibis.ipl.server.Server --stats --events --port 5437
+     ibis.ipl.server.Server --events --port 5437
