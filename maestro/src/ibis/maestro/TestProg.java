@@ -139,28 +139,15 @@ class TestProg {
         }
     }
 
-    private class AssembleArrayJob implements ParallelJob {
+    private static class AssembleArrayJob implements ParallelJob {
         private static final long serialVersionUID = 1L;
 
         private final Job createJob;
 
         private static final int SIZE = 4;
 
-        Object res[] = new Object[SIZE];
-
         AssembleArrayJob(Job job) {
             this.createJob = job;
-        }
-
-        /**
-         * Returns the result of this split/join computation.
-         * 
-         * @return The joined result.
-         */
-        @Override
-        public Object getResult() {
-            // FIXME: do something more interesting.
-            return res[0];
         }
 
         /**
@@ -173,27 +160,44 @@ class TestProg {
          *            The handler for this map/reduce job
          */
         @Override
-        public void split(Object input, ParallelJobHandler handler) {
+        public AssembleArrayJobInstance split(Object input, ParallelJobHandler handler) {
             for (int n = 0; n < SIZE; n++) {
                 final Integer userId = n;
                 handler.submit(input, userId, createJob);
             }
+            return new AssembleArrayJobInstance();
         }
 
-        /**
-         * Add a given result to the collected result. (Overrides method in
-         * superclass.)
-         * 
-         * @param id
-         *            The identifier of the result.
-         * @param result
-         *            The result.
-         */
-        @Override
-        public void merge(Serializable id, Object result) {
-            final Integer ix = (Integer) id;
+        static class AssembleArrayJobInstance implements ParallelJobInstance {
+            Object res[] = new Object[SIZE];
 
-            res[ix] = result;
+            /**
+             * Returns the result of this split/join computation.
+             * 
+             * @return The joined result.
+             */
+            @Override
+            public Object getResult() {
+                // FIXME: do something more interesting.
+                return res[0];
+            }
+
+
+            /**
+             * Add a given result to the collected result. (Overrides method in
+             * superclass.)
+             * 
+             * @param id
+             *            The identifier of the result.
+             * @param result
+             *            The result.
+             */
+            @Override
+            public void merge(Serializable id, Object result) {
+                final Integer ix = (Integer) id;
+
+                res[ix] = result;
+            }
         }
 
         /**

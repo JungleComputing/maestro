@@ -3,29 +3,38 @@ package ibis.maestro;
 import java.io.Serializable;
 
 class Fibonacci implements ParallelJob {
-    private int n = 0;
+    static class FibonacciInstance implements ParallelJobInstance {
+        private int n;
 
-    @Override
-    public Object getResult() {
-        return n;
+        public FibonacciInstance(int n) {
+            this.n = n;
+        }
+
+        @Override
+        public Object getResult() {
+            return n;
+        }
+
+        @Override
+        public void merge(Serializable id, Object result) {
+            n += (Integer) result;
+        }
     }
 
     @Override
-    public void merge(Serializable id, Object result) {
-        n += (Integer) result;
-    }
-
-    @Override
-    public void split(Object input, ParallelJobHandler handler) {
+    public ParallelJobInstance split(Object input, ParallelJobHandler handler) {
         int i = (Integer) input;
-        
+        int n;
+
         if( i<3 ) {
             n = 1;
         }
         else {
             handler.submit( i-1, 0, this );
             handler.submit( i-2, 1, this );
+            n = 0;
         }
+        return new FibonacciInstance(n);
     }
 
     @Override
@@ -48,6 +57,7 @@ class Fibonacci implements ParallelJob {
             if (Settings.traceNodes) {
                 System.out.println("I now have the result: " + result);
             }
+            node.setStopped();
         }
     }
 

@@ -859,8 +859,9 @@ public final class Node extends Thread implements PacketReceiveListener {
             final ParallelJob mrt = (ParallelJob) job;
             final ParallelJobHandler handler = new ParallelJobHandler(this, mrt,
                     message, runMoment);
+            System.out.println( "Splitting parallel job " + message.jobInstance );
             mrt.split(input, handler);
-            handler.start();
+            handler.start();  // Start the handler thread.
         } else if (job instanceof SeriesJob ) {
             Globals.log.reportInternalError( "SeriesJob " + job + " should be handled" );
         } else if (job instanceof AlternativesJob) {
@@ -942,16 +943,10 @@ public final class Node extends Thread implements PacketReceiveListener {
                     final JobType stageType = message.jobInstance.getStageType(jobs);
                     final Job job = jobs.getJob(stageType);
 
-                    if( !stageType.isAtomic ){
-                        Globals.log.reportInternalError( "Job type " + stageType + " is not atomic" );
-                    }
-                    if( job instanceof SeriesJob ){
-                        Globals.log.reportInternalError( "A SeriesJob " + job + "(type " + stageType + ") is not handled" );
-                    }
                     runningJobCount.up();
                     if (Settings.traceNodeProgress) {
                         final double queueInterval = runMoment
-                                - message.arrivalMoment;
+                        - message.arrivalMoment;
                         Globals.log.reportProgress("Worker: handed out job "
                                 + message + " of type " + stageType
                                 + "; it was queued for "
@@ -1037,7 +1032,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      */
     public void submit(Object input, Serializable userId, JobCompletionListener listener,
             Job job) {
-        waitForRoom();
+        waitForRoom(); // FIXME: don't wait for recursive jobs: deadlock!
         final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
         JobType overallType = jobs.getJobType(job);
         final JobInstance jobInstance = new JobInstance(tii, input,overallType,0);

@@ -104,7 +104,7 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
     public synchronized void jobCompleted(Node node, Object userId,
             Object result) {
         if (Settings.traceParallelJobs) {
-            Globals.log.reportProgress("MapReduce: got back " + userId);
+            Globals.log.reportProgress("ParallelJobHandler: got back " + userId);
         }
         if (!(userId instanceof Id)) {
             Globals.log
