@@ -805,7 +805,6 @@ public final class Node extends Thread implements PacketReceiveListener {
         final double averageComputeTime = workerQueue.countJob(completedStageType,
                 computeInterval);
         gossiper.setComputeTime(completedStageType, averageComputeTime);
-        runningJobCount.down();
         if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
             final double queueInterval = runMoment - message.arrivalMoment;
             Globals.log.reportProgress("Completed " + jobInstance
@@ -863,6 +862,10 @@ public final class Node extends Thread implements PacketReceiveListener {
             final ParallelJobInstance jobInstance = parallelJob.createInstance(message, runMoment);
             System.out.println( "Splitting parallel job " + message.jobInstance );
             jobInstance.split(input, parallelJobHandler);
+            if( jobInstance.resultIsReady() ){
+                final Object result = jobInstance.getResult();
+                handleJobResult(message,result, runMoment);
+            }
         } else if (job instanceof SeriesJob ) {
             Globals.log.reportInternalError( "SeriesJob " + job + " should be handled" );
         } else if (job instanceof AlternativesJob) {
@@ -958,6 +961,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                     final Object input = message.jobInstance.input;
                     threadOverhead += Utils.getPreciseTime() - overheadStart;
                     executeJob(message, job, input, runMoment);
+                    runningJobCount.down();
                     overheadStart = Utils.getPreciseTime();
                     if (Settings.traceNodeProgress) {
                         Globals.log.reportProgress("Work thread: completed "
