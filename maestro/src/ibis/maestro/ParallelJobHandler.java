@@ -1,40 +1,24 @@
 package ibis.maestro;
 
-import ibis.maestro.LabelTracker.Label;
-
 import java.io.Serializable;
 
 /**
- * Handles the execution of a split/merge job. In particular, it handles the
- * submission of sub-jobs, waits for their completion, merges the results, and
- * retreives the result.
+ * Handles the execution of parallel (split/merge) jobs. In particular, it
+ * handles the submission of sub-jobs, waits for their completion, merges
+ * the results, and retrieves the result.
  * 
  * @author Kees van Reeuwijk
  * 
  */
-public class ParallelJobHandler extends Thread implements JobCompletionListener {
+public class ParallelJobHandler implements JobCompletionListener {
     private final Node localNode;
-
-    private final ParallelJob reducer;
-
-    private final LabelTracker labeler = new LabelTracker();
-
-    private final RunJobMessage message;
-
-    private final double runMoment;
 
     /**
      * @param localNode
      *            The node we are running on.
-     * @param reducer
-     *            The reducer to run on each result we're waiting for.
      */
-    ParallelJobHandler(Node localNode, ParallelJob reducer,
-            RunJobMessage message, double runMoment) {
+    ParallelJobHandler(Node localNode) {
         this.localNode = localNode;
-        this.reducer = reducer;
-        this.message = message;
-        this.runMoment = runMoment;
     }
 
     /**
@@ -48,12 +32,12 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
 
         final Serializable userID;
 
-        final Label label;
+        final ParallelJobInstance instance;
 
-        private Id(final Serializable userID, final Label label) {
+        private Id(final Serializable userID, final ParallelJobInstance jobInstance) {
             super();
             this.userID = userID;
-            this.label = label;
+            this.instance = jobInstance;
         }
 
         /**
@@ -61,7 +45,7 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
          */
         @Override
         public String toString() {
-            return "label=" + label + " userID=" + userID;
+            return "jobInstance=" + instance + " userID=" + userID;
         }
     }
 
@@ -72,16 +56,17 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
      * 
      * @param input
      *            Input for the job.
+     * @param jobInstance
+     *            The parallel job instance this submission belongs to.
      * @param userId
      *            The identifier the user attaches to this job.
      * @param job
      *            The job to submit to.
      */
     @SuppressWarnings("synthetic-access")
-    public synchronized void submit(Object input, Serializable userId,
+    public synchronized void submit(Object input, ParallelJobInstance jobInstance, Serializable userId,
             Job job) {
-        Label label = labeler.nextLabel();
-        Serializable id = new Id(userId, label);
+        final Serializable id = new Id(userId, jobInstance);
         if (Settings.traceParallelJobs) {
             Globals.log.reportProgress("ParallelJobHandler: Submitting " + id + " to "
                     + job);
@@ -108,29 +93,17 @@ public class ParallelJobHandler extends Thread implements JobCompletionListener 
         }
         if (!(userId instanceof Id)) {
             Globals.log
-                    .reportInternalError("The identifier is not a ParallelJobHandler.Id but a "
-                            + userId.getClass());
+            .reportInternalError("The identifier is not a ParallelJobHandler.Id but a "
+                    + userId.getClass());
             return;
         }
-        Id id = (Id) userId;
-        labeler.returnLabel(id.label);
-        reducer.merge(id.userID, result);
-    }
+        final Id id = (Id) userId;
+        final ParallelJobInstance instance = id.instance;
 
-    /**
-     * Runs this thread. We assume that the split phase has been completed, so
-     * all we have to do is wait for the return of all results. The user should
-     * not use this method.
-     */
-    @Override
-    public void run() {
-        try {
-            labeler.waitForAllLabels();
-        } catch (InterruptedException x) {
-            // Nothing we can do.
+        instance.merge(id.userID, result);
+
+        if( instance.resultIsReady() ){
+            final Object mergedResult = instance.getResult();
         }
-        Object result = reducer.getResult();
-        localNode.handleJobResult(message, result, runMoment);
     }
-
 }

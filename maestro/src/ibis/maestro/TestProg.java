@@ -45,7 +45,7 @@ class TestProg {
             }
             if (jobsCompleted >= jobCount) {
                 System.out
-                        .println("I got all job results back; stopping test program");
+                .println("I got all job results back; stopping test program");
                 node.setStopped();
             }
         }
@@ -71,7 +71,7 @@ class TestProg {
                 return "(AdditionData [<empty>])";
             }
             return "(AdditionData [" + data[0] + ",...,"
-                    + data[data.length - 1] + "])";
+            + data[data.length - 1] + "])";
         }
 
     }
@@ -161,15 +161,17 @@ class TestProg {
          */
         @Override
         public AssembleArrayJobInstance split(Object input, ParallelJobHandler handler) {
+            final AssembleArrayJobInstance instance = new AssembleArrayJobInstance();
             for (int n = 0; n < SIZE; n++) {
                 final Integer userId = n;
-                handler.submit(input, userId, createJob);
+                handler.submit(input, instance, userId, createJob);
             }
-            return new AssembleArrayJobInstance();
+            return instance;
         }
 
         static class AssembleArrayJobInstance implements ParallelJobInstance {
-            Object res[] = new Object[SIZE];
+            private final Object res[] = new Object[SIZE];
+            private int resultCount = 0;
 
             /**
              * Returns the result of this split/join computation.
@@ -196,7 +198,15 @@ class TestProg {
             public void merge(Serializable id, Object result) {
                 final Integer ix = (Integer) id;
 
-                res[ix] = result;
+                if( res[ix] == null ){
+                    res[ix] = result;
+                    resultCount++;
+                }
+            }
+
+            public boolean resultIsReady()
+            {
+                return resultCount >= SIZE;
             }
         }
 
@@ -252,7 +262,7 @@ class TestProg {
 
         if (args.length == 0) {
             System.err
-                    .println("Missing parameter: I need a job count, or 'worker'");
+            .println("Missing parameter: I need a job count, or 'worker'");
             System.exit(1);
         }
         final String arg = args[0];

@@ -4,37 +4,65 @@ import java.io.Serializable;
 
 class Fibonacci implements ParallelJob {
     static class FibonacciInstance implements ParallelJobInstance {
-        private int n;
+        boolean haveResult0 = false;
+        boolean haveResult1 = false;
+        private int result;
+        private int results = 0;
+        private final int expectedResults;
 
-        public FibonacciInstance(int n) {
-            this.n = n;
+        public FibonacciInstance(int result, int expectedResults) {
+            this.result = result;
+            this.expectedResults = expectedResults;
         }
 
         @Override
         public Object getResult() {
-            return n;
+            return result ;
         }
 
         @Override
-        public void merge(Serializable id, Object result) {
-            n += (Integer) result;
+        public boolean resultIsReady()
+        {
+            return results>=expectedResults;
+        }
+
+        @Override
+        public void merge(Serializable idObject, Object v) {
+            final int id = (Integer) idObject;
+            final int n = (Integer) v;
+
+            if( id == 0 ){
+                if( !haveResult0 ){
+                    result += n;
+                    haveResult0 = true;
+                    results++;
+                }
+            }
+            else if( id == 1 ){
+                result += n;
+                haveResult1 = true;
+                results++;
+            }
+            else {
+                Globals.log.reportInternalError( "Bad id " + id );
+            }
         }
     }
 
     @Override
     public ParallelJobInstance split(Object input, ParallelJobHandler handler) {
-        int i = (Integer) input;
-        int n;
+        final int i = (Integer) input;
+        FibonacciInstance res;
 
         if( i<3 ) {
-            n = 1;
+            res = new FibonacciInstance( 1, 0 );
         }
         else {
-            handler.submit( i-1, 0, this );
-            handler.submit( i-2, 1, this );
-            n = 0;
+            res = new FibonacciInstance( 0, 2 );
+            handler.submit( i-1, res, 0, this );
+            handler.submit( i-2, res, 1, this );
         }
-        return new FibonacciInstance(n);
+        return res;
     }
 
     @Override
@@ -92,7 +120,7 @@ class Fibonacci implements ParallelJob {
 
         if (args.length == 0) {
             System.err
-                    .println("Missing parameter: I need a value, or 'worker'");
+            .println("Missing parameter: I need a value, or 'worker'");
             System.exit(1);
         }
         final String arg = args[0];
