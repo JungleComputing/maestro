@@ -8,13 +8,11 @@ package ibis.maestro;
  */
 public interface ParallelJob extends Job {
     /**
-     * Given an input, submits a number of jobs to the given handler.
-     * 
-     * @param input
-     *            The input value of this map.
-     * @param handler
-     *            The handler.
-     *            @return The Job instance that was created during the split.
+     * Given some administration stuff, create a new instance of a parallel job.
+     * @param message The job message belonging to this instance.
+     * @param runMoment The moment the job was run.
+     * @return The newly created job instance.
      */
-    public ParallelJobInstance split(Object input, ParallelJobHandler handler);
+    public ParallelJobInstance createInstance(RunJobMessage message,
+            double runMoment);
 }

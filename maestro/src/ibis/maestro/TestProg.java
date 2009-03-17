@@ -142,36 +142,37 @@ class TestProg {
     private static class AssembleArrayJob implements ParallelJob {
         private static final long serialVersionUID = 1L;
 
-        private final Job createJob;
+        private static Job createJob;
 
         private static final int SIZE = 4;
 
-        AssembleArrayJob(Job job) {
-            this.createJob = job;
-        }
-
-        /**
-         * Generate jobs to compute different components for this job.
-         * (Overrides method in superclass.)
-         * 
-         * @param input
-         *            The input
-         * @param handler
-         *            The handler for this map/reduce job
-         */
-        @Override
-        public AssembleArrayJobInstance split(Object input, ParallelJobHandler handler) {
-            final AssembleArrayJobInstance instance = new AssembleArrayJobInstance();
-            for (int n = 0; n < SIZE; n++) {
-                final Integer userId = n;
-                handler.submit(input, instance, userId, createJob);
+        static class AssembleArrayJobInstance extends ParallelJobInstance {
+            public AssembleArrayJobInstance(RunJobMessage message,
+                    double runMoment) {
+                super(message, runMoment);
             }
-            return instance;
-        }
 
-        static class AssembleArrayJobInstance implements ParallelJobInstance {
             private final Object res[] = new Object[SIZE];
             private int resultCount = 0;
+
+
+            /**
+             * Generate jobs to compute different components for this job.
+             * (Overrides method in superclass.)
+             * 
+             * @param input
+             *            The input
+             * @param handler
+             *            The handler for this map/reduce job
+             */
+            @SuppressWarnings("synthetic-access")
+            @Override
+            public void split(Object input, ParallelJobHandler handler) {
+                for (int n = 0; n < SIZE; n++) {
+                    final Integer userId = n;
+                    handler.submit(input, this, userId, createJob);
+                }
+            }
 
             /**
              * Returns the result of this split/join computation.
@@ -204,6 +205,7 @@ class TestProg {
                 }
             }
 
+            @Override
             public boolean resultIsReady()
             {
                 return resultCount >= SIZE;
@@ -220,13 +222,20 @@ class TestProg {
             return true;
         }
 
+        @Override
+        public ParallelJobInstance createInstance(RunJobMessage message,
+                double runMoment) {
+            // TODO Auto-generated method stub
+            return null;
+        }
+
     }
 
     @SuppressWarnings("synthetic-access")
     private static void run(int jobCount, boolean goForMaestro) throws Exception {
         final JobList jobs = new JobList();
 
-        // Job createJob = jobs.createJob("createarray", new CreateArrayJob()
+        // createJob = jobs.createJob("createarray", new CreateArrayJob()
         // );
         final SeriesJob job = new SeriesJob(
                 // new AssembleArrayJob( createJob ),

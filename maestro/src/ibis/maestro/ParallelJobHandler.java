@@ -3,9 +3,8 @@ package ibis.maestro;
 import java.io.Serializable;
 
 /**
- * Handles the execution of parallel (split/merge) jobs. In particular, it
- * handles the submission of sub-jobs, waits for their completion, merges
- * the results, and retrieves the result.
+ * Handles the merge phase of parallel (split/merge) jobs. In particular, it
+ * acts as the JobCompletionListener for the sub-jobs of a parallel job.
  * 
  * @author Kees van Reeuwijk
  * 
@@ -104,6 +103,7 @@ public class ParallelJobHandler implements JobCompletionListener {
 
         if( instance.resultIsReady() ){
             final Object mergedResult = instance.getResult();
+            instance.handleJobResult(node, mergedResult);
         }
     }
 }

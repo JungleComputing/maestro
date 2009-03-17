@@ -771,14 +771,15 @@ public final class Node extends Thread implements PacketReceiveListener {
      */
     protected void handleJobResult(RunJobMessage message, Object result, double runMoment) {
         final double jobCompletionMoment = Utils.getPreciseTime();
-        final JobType todoList[] = jobs.getTodoList(message.jobInstance.overallType);
-        final int stage = message.jobInstance.stageNumber;
+        final JobInstance jobInstance = message.jobInstance;
+        final JobType todoList[] = jobs.getTodoList(jobInstance.overallType);
+        final int stage = jobInstance.stageNumber;
         final JobType completedStageType = todoList[stage];
         final int nextStageNumber = stage+1;
 
         if (nextStageNumber>=todoList.length) {
             // This was the final step. Report back the result.
-            final JobInstanceIdentifier identifier = message.jobInstance.jobInstance;
+            final JobInstanceIdentifier identifier = jobInstance.jobInstance;
             boolean ok = sendJobResultMessage(identifier, result);
             if (!ok) {
                 // Could not send the result message. We're in trouble.
@@ -793,8 +794,8 @@ public final class Node extends Thread implements PacketReceiveListener {
             }
         } else {
             final JobInstance nextJob = new JobInstance(
-                    message.jobInstance.jobInstance, result,
-                    message.jobInstance.overallType,nextStageNumber
+                    jobInstance.jobInstance, result,
+                    jobInstance.overallType,nextStageNumber
             );
             masterQueue.add(jobs,nextJob);
         }
@@ -807,7 +808,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         runningJobCount.down();
         if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
             final double queueInterval = runMoment - message.arrivalMoment;
-            Globals.log.reportProgress("Completed " + message.jobInstance
+            Globals.log.reportProgress("Completed " + jobInstance
                     + "; queueInterval="
                     + Utils.formatSeconds(queueInterval)
                     + "; runningJobs=" + runningJobCount);
@@ -858,9 +859,10 @@ public final class Node extends Thread implements PacketReceiveListener {
                 failNode(message, x);
             }
         } else if (job instanceof ParallelJob) {
-            final ParallelJob mrt = (ParallelJob) job;
+            final ParallelJob parallelJob = (ParallelJob) job;
+            final ParallelJobInstance jobInstance = parallelJob.createInstance(message, runMoment);
             System.out.println( "Splitting parallel job " + message.jobInstance );
-            mrt.split(input, parallelJobHandler);
+            jobInstance.split(input, parallelJobHandler);
         } else if (job instanceof SeriesJob ) {
             Globals.log.reportInternalError( "SeriesJob " + job + " should be handled" );
         } else if (job instanceof AlternativesJob) {

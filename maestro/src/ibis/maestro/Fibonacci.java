@@ -3,27 +3,34 @@ package ibis.maestro;
 import java.io.Serializable;
 
 class Fibonacci implements ParallelJob {
-    static class FibonacciInstance implements ParallelJobInstance {
+    static Fibonacci jobType;
+
+    static class FibonacciInstance extends ParallelJobInstance {
         boolean haveResult0 = false;
         boolean haveResult1 = false;
         private int result;
-        private int results = 0;
-        private final int expectedResults;
+        private int resultCount = 0;
+        private int expectedResults;
 
-        public FibonacciInstance(int result, int expectedResults) {
-            this.result = result;
-            this.expectedResults = expectedResults;
+        public FibonacciInstance(RunJobMessage message, double runMoment) {
+            super(message, runMoment);
         }
 
-        @Override
-        public Object getResult() {
-            return result ;
-        }
 
         @Override
-        public boolean resultIsReady()
-        {
-            return results>=expectedResults;
+        public void split(Object input, ParallelJobHandler handler) {
+            final int i = (Integer) input;
+
+            if( i<3 ) {
+                result = 1;
+                expectedResults = 0;
+            }
+            else {
+                result = 0;
+                expectedResults = 2;
+                handler.submit( i-1, this, 0, jobType );
+                handler.submit( i-2, this, 1, jobType );
+            }
         }
 
         @Override
@@ -35,39 +42,42 @@ class Fibonacci implements ParallelJob {
                 if( !haveResult0 ){
                     result += n;
                     haveResult0 = true;
-                    results++;
+                    resultCount++;
                 }
             }
             else if( id == 1 ){
                 result += n;
                 haveResult1 = true;
-                results++;
+                resultCount++;
             }
             else {
                 Globals.log.reportInternalError( "Bad id " + id );
             }
         }
-    }
 
-    @Override
-    public ParallelJobInstance split(Object input, ParallelJobHandler handler) {
-        final int i = (Integer) input;
-        FibonacciInstance res;
 
-        if( i<3 ) {
-            res = new FibonacciInstance( 1, 0 );
+        @Override
+        public boolean resultIsReady()
+        {
+            return resultCount>=expectedResults;
         }
-        else {
-            res = new FibonacciInstance( 0, 2 );
-            handler.submit( i-1, res, 0, this );
-            handler.submit( i-2, res, 1, this );
+
+
+        @Override
+        public Object getResult() {
+            return result ;
         }
-        return res;
     }
 
     @Override
     public boolean isSupported() {
         return true;
+    }
+
+    @Override
+    public ParallelJobInstance createInstance(RunJobMessage message,
+            double runMoment) {
+        return new FibonacciInstance(message, runMoment);
     }
 
     private static class Listener implements JobCompletionListener {
@@ -93,15 +103,15 @@ class Fibonacci implements ParallelJob {
     private static void run(int value, boolean goForMaestro) throws Exception {
         final JobList jobs = new JobList();
 
-        final Job job = new Fibonacci();
-        jobs.registerJob( job );
+        jobType = new Fibonacci();
+        jobs.registerJob( jobType );
         final Node node = Node.createNode(jobs, goForMaestro);
         final Listener listener = new Listener();
         System.out.println("Node created");
         final double startTime = Utils.getPreciseTime();
         if (node.isMaestro()) {
             System.out.println("I am maestro; submitting value " + value );
-            node.submit(value, 0, listener, job);
+            node.submit(value, 0, listener, jobType);
         }
         node.waitToTerminate();
         final double stopTime = Utils.getPreciseTime();
