@@ -9,10 +9,10 @@ import java.util.ArrayList;
  * @author Kees van Reeuwijk
  *
  */
-public class RunningParallelJobInstanceList {
-    ArrayList<ParallelJobInstance> l = new ArrayList<ParallelJobInstance>();
+class RunningParallelJobInstanceList {
+    final ArrayList<ParallelJobInstance> l = new ArrayList<ParallelJobInstance>();
 
-    public synchronized ParallelJobId register(ParallelJobInstance i) {
+    synchronized ParallelJobId register(ParallelJobInstance i) {
         final int id = l.size();
 
         l.add(i);
