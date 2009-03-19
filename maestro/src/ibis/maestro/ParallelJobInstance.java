@@ -23,7 +23,6 @@ public abstract class ParallelJobInstance {
      *            The input value of this map.
      * @param handler
      *            The handler.
-     * @return The Job instance that was created during the split.
      */
     public abstract void split(Object input, ParallelJobHandler handler);
 
@@ -35,7 +34,6 @@ public abstract class ParallelJobInstance {
      *            The identifier of the result.
      * @param result
      *            The result.
-     * @return True iff we now have the result.
      */
     public abstract void merge(Serializable id, Object result);
 
