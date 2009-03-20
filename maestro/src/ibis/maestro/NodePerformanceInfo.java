@@ -43,6 +43,7 @@ class NodePerformanceInfo implements Serializable {
 
     NodePerformanceInfo getDeepCopy() {
         final double completionInfoCopy[][] = new double[completionInfo.length][];
+
         for( int i=0; i<completionInfo.length; i++ ){
             completionInfoCopy[i] = Arrays.copyOf(completionInfo[i],
                     completionInfo[i].length);

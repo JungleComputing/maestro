@@ -1037,7 +1037,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      */
     public void submit(Object input, Serializable userId, JobCompletionListener listener,
             Job job) {
-        waitForRoom(); // FIXME: don't wait for recursive jobs: deadlock!
+        waitForRoom(); // FIXME: don't wait for recursive jobs: causes deadlock!
         final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
         final JobType overallType = jobs.getJobType(job);
         final JobInstance jobInstance = new JobInstance(tii, input,overallType,0);

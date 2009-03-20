@@ -19,8 +19,12 @@ import java.util.HashMap;
 final class MasterQueue {
     private int jobCount = 0;
 
+    /** For each known type, some administration about its
+     * presence in the queue.
+     */
     private final TypeInfo queueTypes[];
 
+    /** The queue itself. */
     private final ArrayList<JobInstance> queue = new ArrayList<JobInstance>();
 
     /**
@@ -32,15 +36,16 @@ final class MasterQueue {
         /** The type these statistics are about. */
         private final JobType type;
 
-        /** The total number of jobs of this type that entered the queue. */
+        /** The total number of jobs of this type that ever entered the queue. */
         private long jobCount = 0;
 
         /** Current number of elements of this type in the queue. */
         private int elements = 0;
 
-        /** Maximal ever number of elements in the queue. */
+        /** Maximal ever number of elements ever in the queue. */
         private int maxElements = 0;
 
+        /** Last time the fron of the queue changed. */
         private double frontChangedTime = 0;
 
         /** The estimated time interval between jobs being dequeued. */
@@ -57,7 +62,7 @@ final class MasterQueue {
                     + "; maximal queue size: " + maxElements);
         }
 
-        synchronized private int registerAdd() {
+        synchronized private int administrateAdd() {
             elements++;
             if (elements > maxElements) {
                 maxElements = elements;
@@ -71,7 +76,7 @@ final class MasterQueue {
             return elements;
         }
 
-        void registerRemove() {
+        void administrateRemove() {
             final double now = Utils.getPreciseTime();
             synchronized (this) {
                 if (frontChangedTime != 0) {
@@ -193,7 +198,7 @@ final class MasterQueue {
         		Globals.log.reportInternalError( "Submitted job type " + type + " is not atomic" );
         	}
         }
-        final int length = info.registerAdd();
+        final int length = info.administrateAdd();
         if (Settings.traceQueuing) {
             Globals.log.reportProgress("Adding " + job.formatJobAndType()
                     + " at position " + pos
@@ -343,7 +348,7 @@ final class MasterQueue {
                 } else {
                     queue.remove(ix);
                     final TypeInfo queueTypeInfo = queueTypes[stageType.index];
-                    queueTypeInfo.registerRemove();
+                    queueTypeInfo.administrateRemove();
                     if (Settings.traceMasterQueue || Settings.traceQueuing) {
                         final int length = queueTypeInfo.elements;
                         Globals.log.reportProgress("Removing "

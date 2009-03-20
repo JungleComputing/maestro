@@ -137,5 +137,4 @@ final class NodeJobInfo {
         }
         return new LocalNodeInfo( outstandingJobs, transmissionTime,predictedDuration);
     }
-
 }
