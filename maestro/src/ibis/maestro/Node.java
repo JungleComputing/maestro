@@ -762,6 +762,36 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     /**
+     * @param source
+     * @param jobId
+     */
+    private void sendJobCompletedMessage(IbisIdentifier source, long jobId) {
+        final Message msg = new JobCompletedMessage(jobId);
+        boolean ok = sendPort.send(source, msg);
+    
+    
+        if (ok) {
+            jobCompletedMessageCount.add();
+        }
+        else {
+            // Could not send the result message. We're desperate.
+            // First simply try again.
+            ok = sendPort.send(source, msg);
+            if (ok) {
+                jobCompletedMessageCount.add();
+            }
+            else {
+                // Unfortunately, that didn't work.
+                // TODO: think up another way to recover from a failed
+                // result report.
+                Globals.log
+                .reportError("Failed to send job completed message to "
+                        + source);
+            }
+        }
+    }
+
+    /**
      * @param message
      *            The job that was run.
      * @param result
@@ -819,30 +849,12 @@ public final class Node extends Thread implements PacketReceiveListener {
             System.out.println("TRACE:workerDwellTime " + completedStageType + " " + now
                     + " " + workerDwellTime);
         }
-        if (!deadNodes.contains(message.source)) {
-            final Message msg = new JobCompletedMessage(message.jobId);
-            boolean ok = sendPort.send(message.source, msg);
-
-
-            if (ok) {
-                jobCompletedMessageCount.add();
-            }
-            else {
-                // Could not send the result message. We're desperate.
-                // First simply try again.
-                ok = sendPort.send(message.source, msg);
-                if (ok) {
-                    jobCompletedMessageCount.add();
-                }
-                else {
-                    // Unfortunately, that didn't work.
-                    // TODO: think up another way to recover from a failed
-                    // result report.
-                    Globals.log
-                    .reportError("Failed to send job completed message to "
-                            + message.source);
-                }
-            }
+        IbisIdentifier source = message.source;
+        if (!deadNodes.contains(source)&& !jobs.isParallelJobType(completedStageType)) {
+            // If the master node isn't dead, tell it this job
+            // is completed.
+            long jobId = message.jobId;
+            sendJobCompletedMessage(source, jobId);
         }
         doUpdateRecentMasters.set();
     }
@@ -866,6 +878,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 final Object result = jobInstance.getResult();
                 handleJobResult(message,result, runMoment);
             }
+            sendJobCompletedMessage(message.source,  message.jobId);
         } else if (job instanceof SeriesJob ) {
             Globals.log.reportInternalError( "SeriesJob " + job + " should be handled" );
         } else if (job instanceof AlternativesJob) {
@@ -1037,7 +1050,18 @@ public final class Node extends Thread implements PacketReceiveListener {
      */
     public void submit(Object input, Serializable userId, JobCompletionListener listener,
             Job job) {
-        waitForRoom(); // FIXME: don't wait for recursive jobs: causes deadlock!
+        waitForRoom();
+        submitAlways(input, userId, listener, job);
+    }
+
+    /**
+     * @param input
+     * @param userId
+     * @param listener
+     * @param job
+     */
+    void submitAlways(Object input, Serializable userId,
+            JobCompletionListener listener, Job job) {
         final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
         final JobType overallType = jobs.getJobType(job);
         final JobInstance jobInstance = new JobInstance(tii, input,overallType,0);

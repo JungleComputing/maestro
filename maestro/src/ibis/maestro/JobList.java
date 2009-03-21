@@ -183,6 +183,12 @@ public final class JobList {
         return todoList[i];
     }
 
+    boolean isParallelJobType(JobType t) {
+        Job job = indexToJobMap.get(t.index);
+        return job instanceof ParallelJob;
+    }
+
+    /** Do some sanity checks on the administration. */
     void sanityCheck() {
         final int size = allJobTypes.size();
 
