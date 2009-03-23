@@ -6,12 +6,12 @@ public abstract class ParallelJobInstance {
     private final RunJobMessage message;
     private final double runMoment;
 
-    public ParallelJobInstance(RunJobMessage message, double runMoment) {
-        this.message = message;
-        this.runMoment = runMoment;
-    }
+    public ParallelJobInstance(ParallelJobContext context) {
+        this.message = context.message;
+        this.runMoment = context.runMoment;
+	}
 
-    void handleJobResult(Node node,Object result)
+	void handleJobResult(Node node,Object result)
     {
         node.handleJobResult(message, result, runMoment);
     }

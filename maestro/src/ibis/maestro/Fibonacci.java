@@ -12,8 +12,8 @@ class Fibonacci implements ParallelJob {
         private int resultCount = 0;
         private int expectedResults;
 
-        public FibonacciInstance(RunJobMessage message, double runMoment) {
-            super(message, runMoment);
+        public FibonacciInstance(ParallelJobContext context) {
+            super(context);
         }
 
 
@@ -75,9 +75,8 @@ class Fibonacci implements ParallelJob {
     }
 
     @Override
-    public ParallelJobInstance createInstance(RunJobMessage message,
-            double runMoment) {
-        return new FibonacciInstance(message, runMoment);
+    public ParallelJobInstance createInstance(ParallelJobContext context) {
+        return new FibonacciInstance(context);
     }
 
     private static class Listener implements JobCompletionListener {

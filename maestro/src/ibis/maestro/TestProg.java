@@ -147,9 +147,8 @@ class TestProg {
         private static final int SIZE = 4;
 
         static class AssembleArrayJobInstance extends ParallelJobInstance {
-            public AssembleArrayJobInstance(RunJobMessage message,
-                    double runMoment) {
-                super(message, runMoment);
+            public AssembleArrayJobInstance(ParallelJobContext context) {
+                super(context);
             }
 
             private final Object res[] = new Object[SIZE];
@@ -223,9 +222,8 @@ class TestProg {
         }
 
         @Override
-        public ParallelJobInstance createInstance(RunJobMessage message,
-                double runMoment) {
-            // TODO Auto-generated method stub
+        public ParallelJobInstance createInstance(ParallelJobContext context) {
+            // FIXME Auto-generated method stub
             return null;
         }
 

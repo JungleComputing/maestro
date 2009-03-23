@@ -9,10 +9,8 @@ package ibis.maestro;
 public interface ParallelJob extends Job {
     /**
      * Given some administration stuff, create a new instance of a parallel job.
-     * @param message The job message belonging to this instance.
-     * @param runMoment The moment the job was run.
+     * @param context The context of this job instance.
      * @return The newly created job instance.
      */
-    public ParallelJobInstance createInstance(RunJobMessage message,
-            double runMoment);
+    public ParallelJobInstance createInstance(ParallelJobContext context);
 }
