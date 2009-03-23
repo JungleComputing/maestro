@@ -568,4 +568,35 @@ class RGB24Image extends UncompressedImage {
                 + " to a RGB24 image");
         return null;
     }
+
+	@Override
+	UncompressedImage getVerticalSlice(int start, int end) {
+        int fromByte = start * BANDS * width;
+        int toByte = end * BANDS * width;
+        byte res[] = Arrays.copyOfRange(data, fromByte, toByte);
+        return new RGB24Image(frameno, width, end-start, res);
+	}
+
+
+	public static RGB24Image concatenateImagesVertically(
+			UncompressedImage[] fragments) {
+		int width = fragments[0].width;
+		int height = 0;
+		for( UncompressedImage img: fragments ){
+			height += img.height;
+			if( img.width != width ){
+		        System.err.println("Not all concatenated images have the same width");
+				return null;
+			}
+		}
+		byte res[] = new byte[width*height*BANDS];
+		int fillix = 0;
+		for( UncompressedImage img: fragments ){
+			RGB24Image img24 = (RGB24Image) img;
+			int sz = img.height*width*BANDS;
+			System.arraycopy(img24.data, 0, res[fillix], fillix, sz );
+			fillix += sz;
+		}
+		return new RGB24Image(fragments[0].frameno,width,height,res);
+	}
 }

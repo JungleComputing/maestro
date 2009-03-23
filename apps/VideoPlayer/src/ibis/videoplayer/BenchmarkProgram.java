@@ -1,9 +1,14 @@
 package ibis.videoplayer;
 
 import ibis.maestro.AtomicJob;
+import ibis.maestro.Job;
 import ibis.maestro.JobCompletionListener;
 import ibis.maestro.JobExecutionTimeEstimator;
 import ibis.maestro.JobList;
+import ibis.maestro.ParallelJob;
+import ibis.maestro.ParallelJobContext;
+import ibis.maestro.ParallelJobHandler;
+import ibis.maestro.ParallelJobInstance;
 import ibis.maestro.SeriesJob;
 import ibis.maestro.LabelTracker;
 import ibis.maestro.Node;
@@ -24,6 +29,7 @@ import java.util.Arrays;
 class BenchmarkProgram {
     static final int DVD_WIDTH = 720;
     static final int DVD_HEIGHT = 576;
+    static Job scalerJob;
 
     static final File outputDir = new File("output");
 
@@ -285,6 +291,69 @@ class BenchmarkProgram {
         }
     }
 
+    static class ParallelScaler implements ParallelJob {
+    	static final int FRAGMENT_COUNT = 9;
+
+    	ParallelScaler(){
+    	}
+
+    	@Override
+    	public boolean isSupported() {
+    		return scalerJob.isSupported();
+    	}
+    	
+    	static class ParallelScalerInstance extends ParallelJobInstance {
+    		UncompressedImage fragments[] = new UncompressedImage[FRAGMENT_COUNT];
+
+    		ParallelScalerInstance(ParallelJobContext context) {
+    			super(context);
+    		}
+
+    		@Override
+    		public Object getResult() {
+    			return UncompressedImage.concatenateImagesVertically( fragments );
+    		}
+
+    		@Override
+    		public void merge(Serializable id, Object result) {
+    			int ix = (Integer) id;
+    			fragments[ix] = (UncompressedImage) result;
+    		}
+
+    		/**
+    		 * Returns true iff the result is ready. In this case, when we have all
+    		 * the fragments.
+    		 * @return True iff we have all fragments.
+    		 */
+    		@Override
+    		public boolean resultIsReady() {
+    			for( UncompressedImage fragment: fragments ){
+    				if( fragment == null ){
+    					return false;
+    				}
+    			}
+    			return true;
+    		}
+
+    		@Override
+    		public void split(Object input, ParallelJobHandler handler) {
+    			UncompressedImage img = (UncompressedImage) input;
+    			
+    			UncompressedImage l[] = img.splitVertically( FRAGMENT_COUNT );
+    			for( int i=0; i<l.length; i++ ){
+    				handler.submit(l[i], this, i, scalerJob);
+    			}
+    		}
+    		
+    	}
+
+    	@Override
+    	public ParallelJobInstance createInstance(ParallelJobContext context) {
+    		return new ParallelScalerInstance(context);
+    	}
+
+    }
+
     private static final class SharpenFrameJob implements AtomicJob, JobExecutionTimeEstimator {
         private static final long serialVersionUID = 54529872253774153L;
         private final boolean slow;
@@ -454,6 +523,7 @@ class BenchmarkProgram {
     private boolean slowSharpen = false;
     private boolean slowScale = false;
     private boolean allowSharpen = true;
+    private boolean parallelScaling = false;
     private boolean allowScale = true;
     private boolean oneJob = false;
 
@@ -480,6 +550,8 @@ class BenchmarkProgram {
             }
             if (arg.equalsIgnoreCase("-save")) {
                 saveFrames = true;
+            } else if (arg.equalsIgnoreCase("-parallelscaling")) {
+                parallelScaling = true;
             } else if (arg.equalsIgnoreCase("-onejob")) {
                 oneJob = true;
             } else if (arg.equalsIgnoreCase("-nosharpen")) {
@@ -580,7 +652,8 @@ class BenchmarkProgram {
         }
         System.out.println("frames=" + frames + " goForMaestro=" + goForMaestro
                 + " saveFrames=" + saveFrames + " oneJob=" + oneJob
-                + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale);
+                + " slowSharpen=" + slowSharpen + " slowScale=" + slowScale
+                + " parallelScaling=" + parallelScaling);
         final JobList jobs = new JobList();
         SeriesJob convertJob;
         final Listener listener = new Listener();
@@ -596,8 +669,16 @@ class BenchmarkProgram {
                                 slowScale, slowSharpen, dir);
             convertJob = new SeriesJob( processFrameJob);
         } else {
-            convertJob = new SeriesJob( new GenerateFrameJob(),
-                    new ScaleUpFrameJob(2, slowScale, allowScale),
+            Job scaleUpFrameJob;
+            if( parallelScaling ){
+        		scalerJob = new ScaleUpFrameJob(2, slowScale, allowScale);            	
+            	scaleUpFrameJob = new ParallelScaler();
+            }
+            else {
+            	scaleUpFrameJob = new ScaleUpFrameJob(2, slowScale, allowScale);
+            }
+			convertJob = new SeriesJob( new GenerateFrameJob(),
+                    scaleUpFrameJob,
                     new SharpenFrameJob(slowSharpen, allowSharpen),
                     new CompressFrameJob(), new SaveFrameJob(dir));
         }

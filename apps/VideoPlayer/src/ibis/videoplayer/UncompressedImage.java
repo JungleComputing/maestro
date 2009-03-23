@@ -241,5 +241,36 @@ abstract class UncompressedImage extends Image {
         stream.close();
         return new RGB48Image(frameno, width, height, data);
     }
+    
+    abstract UncompressedImage getVerticalSlice( int yStart, int yEnd );
+
+    /**
+     * Return <code>n</code> images containing a vertical slice of is image.
+     * @param n The number of slices to create.
+     * @return An array containing the slices.
+     */
+	public UncompressedImage[] splitVertically(int n) {
+		UncompressedImage res[] = new UncompressedImage[n];
+		int yStart = 0;
+
+		for( int i=0; i<n; i++ ){
+			int yNextStart = ((i+1)*height)/n;
+			res[i] = getVerticalSlice( yStart, yNextStart );
+			yStart = yNextStart;
+		}
+		return res;
+	}
+
+	public static Object concatenateImagesVertically(
+			UncompressedImage[] fragments) {
+		// We blindly assume that all images have the same bit depth.
+		if( fragments[0] instanceof RGB24Image ){
+			return RGB24Image.concatenateImagesVertically(fragments);
+		}
+		if( fragments[0] instanceof RGB48Image ){
+			return RGB48Image.concatenateImagesVertically(fragments);
+		}
+		return null;
+	}
 
 }

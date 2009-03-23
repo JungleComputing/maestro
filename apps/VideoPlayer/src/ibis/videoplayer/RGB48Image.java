@@ -286,4 +286,19 @@ class RGB48Image extends UncompressedImage {
         // FIXME Auto-generated method stub
         return null;
     }
+
+	@Override
+	UncompressedImage getVerticalSlice(int start, int end) {
+        int fromByte = start * BANDS * width;
+        int toByte = end * BANDS * width;
+        short res[] = Arrays.copyOfRange(data, fromByte, toByte);
+        return new RGB48Image(frameno, width, end-start, res);
+	}
+
+	public static RGB48Image concatenateImagesVertically(
+			UncompressedImage[] fragments) {
+		// FIXME: implement this
+		return null;
+	}
+
 }
