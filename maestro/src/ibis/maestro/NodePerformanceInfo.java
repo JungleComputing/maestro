@@ -152,6 +152,7 @@ class NodePerformanceInfo implements Serializable {
      * take from the moment a job of this type arrives at the worker queue of
      * this node, until the entire job it belongs to is completed.
      * 
+     * @param todoIx The index of the todo list of the overall type.
      * @param ix
      *            The index of the type we're interested in.
      * @param nextIx
@@ -169,7 +170,8 @@ class NodePerformanceInfo implements Serializable {
             return Double.POSITIVE_INFINITY;
         }
         if (nextIx >= 0) {
-            nextCompletionInterval = completionInfo[todoIx][nextIx];
+            double[] todoList = completionInfo[todoIx];
+            nextCompletionInterval = todoList[nextIx];
         } else {
             nextCompletionInterval = 0.0;
         }

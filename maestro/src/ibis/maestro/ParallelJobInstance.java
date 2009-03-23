@@ -2,10 +2,20 @@ package ibis.maestro;
 
 import java.io.Serializable;
 
+/**
+ * The abstract superclass of instances of a parallel job.
+ * 
+ * @author Kees van Reeuwijk
+ *
+ */
 public abstract class ParallelJobInstance {
     private final RunJobMessage message;
     private final double runMoment;
 
+    /**
+     * Constructs a new instance.
+     * @param context The context of this instance.
+     */
     public ParallelJobInstance(ParallelJobContext context) {
         this.message = context.message;
         this.runMoment = context.runMoment;
