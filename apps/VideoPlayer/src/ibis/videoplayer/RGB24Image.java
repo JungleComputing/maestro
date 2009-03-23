@@ -594,7 +594,12 @@ class RGB24Image extends UncompressedImage {
 		for( UncompressedImage img: fragments ){
 			RGB24Image img24 = (RGB24Image) img;
 			int sz = img.height*width*BANDS;
-			System.arraycopy(img24.data, 0, res[fillix], fillix, sz );
+			if( img24.data == null ) {
+			    System.err.println( "RGB24Image with null data???");
+			}
+			else {
+			    System.arraycopy(img24.data, 0, res[fillix], fillix, sz );
+			}
 			fillix += sz;
 		}
 		return new RGB24Image(fragments[0].frameno,width,height,res);
