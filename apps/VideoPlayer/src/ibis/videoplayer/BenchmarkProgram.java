@@ -70,7 +70,7 @@ class BenchmarkProgram {
                 System.out.println("Now " + returned + " of " + issued
                         + " frames returned");
             }
-            if ((issued - returned) < 20) {
+            if ((issued - returned) < 5) {
                 final Label[] l = labelTracker.listOutstandingLabels();
                 System.out.println("Waiting for " + Arrays.deepToString(l));
             }
