@@ -873,7 +873,9 @@ public final class Node extends Thread implements PacketReceiveListener {
             final ParallelJob parallelJob = (ParallelJob) job;
             final ParallelJobContext context = new ParallelJobContext(message, runMoment);
             final ParallelJobInstance jobInstance = parallelJob.createInstance(context);
-            System.out.println( "Splitting parallel job " + message.jobInstance );
+            if( Settings.traceParallelJobs ){
+                System.out.println( "Splitting parallel job " + message.jobInstance );
+            }
             jobInstance.split(input, parallelJobHandler);
             if( jobInstance.resultIsReady() ){
                 final Object result = jobInstance.getResult();
