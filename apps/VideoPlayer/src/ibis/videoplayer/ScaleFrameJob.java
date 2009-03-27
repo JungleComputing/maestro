@@ -2,6 +2,8 @@ package ibis.videoplayer;
 
 import ibis.maestro.AtomicJob;
 
+import java.io.Serializable;
+
 /**
  * A job to scale down a frame.
  * 
@@ -25,8 +27,8 @@ class ScaleFrameJob implements AtomicJob {
      * @return The scaled image.
      */
     @Override
-    public Object run(Object obj) {
-        Image frame = (Image) obj;
+    public Serializable run(Object obj) {
+        final Image frame = (Image) obj;
         System.out.println("Scaling " + frame);
         return frame.scaleDown(factor);
     }

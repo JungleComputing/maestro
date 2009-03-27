@@ -2,8 +2,10 @@ package ibis.videoplayer;
 
 import ibis.maestro.JobCompletionListener;
 import ibis.maestro.JobList;
-import ibis.maestro.SeriesJob;
 import ibis.maestro.Node;
+import ibis.maestro.SeriesJob;
+
+import java.io.Serializable;
 
 /**
  * Small test program.
@@ -33,7 +35,7 @@ public class BuildVideoProgram {
          */
         @Override
         public synchronized void jobCompleted(Node node, Object id,
-                Object result) {
+                Serializable result) {
             // System.out.println( "result is " + result );
             jobsCompleted++;
             runningJobs--;
@@ -41,7 +43,7 @@ public class BuildVideoProgram {
             // jobCount + " jobs" );
             if (jobsCompleted >= jobCount) {
                 System.out
-                        .println("I got all job results back; stopping test program");
+                .println("I got all job results back; stopping test program");
                 node.setStopped();
             }
             notifyAll();
@@ -63,7 +65,7 @@ public class BuildVideoProgram {
         final JobList jobList = new JobList();
         // How many fragments will there be?
         final int fragmentCount = (frameCount + Settings.FRAME_FRAGMENT_COUNT - 1)
-                / Settings.FRAME_FRAGMENT_COUNT;
+        / Settings.FRAME_FRAGMENT_COUNT;
         final Listener listener = new Listener(fragmentCount);
         final SeriesJob getFrameJob = BuildFragmentJob.createGetFrameJob();
         final SeriesJob playJob = new SeriesJob(
@@ -99,7 +101,7 @@ public class BuildVideoProgram {
 
         if (args.length == 0) {
             System.err
-                    .println("Missing parameter: I need a job count, or 'worker'");
+            .println("Missing parameter: I need a job count, or 'worker'");
             System.exit(1);
         }
         final String arg = args[0];

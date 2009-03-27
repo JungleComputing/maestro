@@ -4,6 +4,7 @@ import ibis.maestro.AtomicJob;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * A job to fetch a frame.
@@ -20,13 +21,13 @@ public class FetchFrameJob implements AtomicJob {
      * @return The frame we have fetched.
      */
     @Override
-    public Object run(Object obj) {
-        Integer frameno = (Integer) obj;
-        File frameFile = new File(String.format("frame-%04d.ppm"));
+    public Serializable run(Object obj) {
+        final Integer frameno = (Integer) obj;
+        final File frameFile = new File(String.format("frame-%04d.ppm"));
         Image frame;
         try {
             frame = Image.load(frameFile, frameno);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.err.println("Can not load frame '" + frameFile + "'");
             e.printStackTrace();
             frame = null;

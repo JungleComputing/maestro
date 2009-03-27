@@ -3,9 +3,9 @@ package ibis.videoplayer;
 import ibis.maestro.AtomicJob;
 import ibis.maestro.JobCompletionListener;
 import ibis.maestro.JobList;
-import ibis.maestro.SeriesJob;
 import ibis.maestro.LabelTracker;
 import ibis.maestro.Node;
+import ibis.maestro.SeriesJob;
 import ibis.maestro.LabelTracker.Label;
 
 import java.io.File;
@@ -34,7 +34,7 @@ class ConvertFramesProgram {
          *            The result of the job.
          */
         @Override
-        public void jobCompleted(Node node, Object id, Object result) {
+        public void jobCompleted(Node node, Object id, Serializable result) {
             if (!(id instanceof LabelTracker.Label)) {
                 System.err
                 .println("Internal error: Object id is not a tracker label: "
@@ -90,11 +90,11 @@ class ConvertFramesProgram {
          * @return The fetched image.
          */
 
-        public Object run(Object in) {
-            File f = (File) in;
+        public Serializable run(Object in) {
+            final File f = (File) in;
             try {
                 return Image.load(f, 0);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 System.err.println("Cannot read image file: "
                         + e.getLocalizedMessage());
                 return null;
@@ -139,8 +139,8 @@ class ConvertFramesProgram {
          * @return THe converted image.
          */
         @Override
-        public Object run(Object in) {
-            UncompressedImage img = (UncompressedImage) in;
+        public Serializable run(Object in) {
+            final UncompressedImage img = (UncompressedImage) in;
 
             return img.colourCorrect(rr, rg, rb, gr, gg, gb, br, bg, bb);
         }
@@ -165,12 +165,12 @@ class ConvertFramesProgram {
          * @return The result of the job.
          */
         @Override
-        public Object run(Object in) {
-            UncompressedImage img = (UncompressedImage) in;
+        public Serializable run(Object in) {
+            final UncompressedImage img = (UncompressedImage) in;
 
             try {
                 return JpegCompressedImage.convert(img);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 System.err.println("Cannot convert image to JPEG: "
                         + e.getLocalizedMessage());
                 e.printStackTrace();
@@ -189,20 +189,20 @@ class ConvertFramesProgram {
 
     @SuppressWarnings("synthetic-access")
     private void run(File framesDirectory) throws Exception {
-        JobList jobs = new JobList();
-        Listener listener = new Listener();
-        SeriesJob convertJob = new SeriesJob(new FetchImageJob(),
+        final JobList jobs = new JobList();
+        final Listener listener = new Listener();
+        final SeriesJob convertJob = new SeriesJob(new FetchImageJob(),
                 new ColorCorrectJob(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
                         1.0), new ScaleFrameJob(2), new CompressFrameJob());
 
         jobs.registerJob(convertJob);
-        Node node = Node.createNode(jobs, framesDirectory != null);
+        final Node node = Node.createNode(jobs, framesDirectory != null);
         System.out.println("Node created");
         if (framesDirectory != null) {
-            File files[] = framesDirectory.listFiles();
+            final File files[] = framesDirectory.listFiles();
             System.out.println("I am maestro; converting " + files.length
                     + " images");
-            for (File f : files) {
+            for (final File f : files) {
                 final Serializable label = listener.getLabel();
                 node.submit(f,label,listener,convertJob);
             }
@@ -223,7 +223,7 @@ class ConvertFramesProgram {
 
         if (args.length == 1) {
             System.err
-                    .println("Missing parameter: I need an input AND an output directory, or nothing'");
+            .println("Missing parameter: I need an input AND an output directory, or nothing'");
             System.exit(1);
         }
         if (args.length > 1) {
@@ -257,7 +257,7 @@ class ConvertFramesProgram {
                 + " output=" + outputDir);
         try {
             new ConvertFramesProgram().run(inputDir);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace(System.err);
         }
     }

@@ -72,7 +72,7 @@ public class RenderFrameJob implements AtomicJob {
             int readLength = 0; // How many bytes do we already have?
             br = new BufferedReader(new FileReader(f));
             while (readLength < len) {
-                int numRead = br.read(buf, readLength, len - readLength);
+                final int numRead = br.read(buf, readLength, len - readLength);
                 if (numRead < 0) {
                     // Surprisingly, we have reached the end of the file.
                     System.err.println("Short read on file '" + f + "': only "
@@ -81,13 +81,13 @@ public class RenderFrameJob implements AtomicJob {
                 }
                 readLength += numRead;
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             buf = null;
         } finally {
             if (br != null) {
                 try {
                     br.close();
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     // Nothing we can do about it.
                 }
             }
@@ -100,14 +100,14 @@ public class RenderFrameJob implements AtomicJob {
 
     RenderInfo loadScene(File f, int width, int height, int startRow,
             int endRow, int startColumn, int endColumn, int frameno) {
-        String scene = readFile(f);
+        final String scene = readFile(f);
         return new RenderInfo(width, height, startRow, endRow, startColumn,
                 endColumn, frameno, scene);
     }
 
     private static boolean writeFile(File f, String s) throws IOException {
-        boolean ok = f.delete(); // First make sure it doesn't exist.
-        FileWriter output = new FileWriter(f);
+        final boolean ok = f.delete(); // First make sure it doesn't exist.
+        final FileWriter output = new FileWriter(f);
         output.write(s);
         output.close();
         return ok;
@@ -131,24 +131,24 @@ public class RenderFrameJob implements AtomicJob {
             outFile = File.createTempFile(String.format("fr-%06d", frameno),
                     ".ppm", tmpDir);
             writeFile(povFile, scene);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.err.println("Cannot write render input file: "
                     + e.getLocalizedMessage());
             return null;
         }
-        String command[] = { povrayExecutable, povFile.getAbsolutePath(),
+        final String command[] = { povrayExecutable, povFile.getAbsolutePath(),
                 "+O" + outFile.getAbsolutePath(), "+SR" + startRow,
                 "+ER" + endRow, "+SC" + startColumn, "+EC" + endColumn,
                 "+H" + height, "+W" + width, "-D", // No output display
                 "-GA", // No output (ignored by some povray versions)
                 "+FP16", "+Q9", "+A0.5" };
         try {
-            RunProcess p = new RunProcess(command);
+            final RunProcess p = new RunProcess(command);
             p.run();
-            int exit = p.getExitStatus();
+            final int exit = p.getExitStatus();
             if (exit != 0) {
                 String cmd = "";
-                for (String c : command) {
+                for (final String c : command) {
                     if (!cmd.isEmpty()) {
                         cmd += ' ';
                     }
@@ -162,7 +162,7 @@ public class RenderFrameJob implements AtomicJob {
             img = Image.load(outFile, frameno);
             povFile.delete();
             outFile.delete();
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.err.println("Cannot run renderer: "
                     + e.getLocalizedMessage());
             return null;
@@ -177,8 +177,8 @@ public class RenderFrameJob implements AtomicJob {
      * @return The rendered frame.
      */
     @Override
-    public Object run(Object obj) {
-        RenderInfo info = (RenderInfo) obj;
+    public Serializable run(Object obj) {
+        final RenderInfo info = (RenderInfo) obj;
         return renderImage(info.width, info.height, info.startRow, info.endRow,
                 info.startColumn, info.endColumn, info.frameno, info.scene);
     }

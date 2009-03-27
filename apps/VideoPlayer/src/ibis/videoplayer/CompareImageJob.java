@@ -1,6 +1,7 @@
 package ibis.videoplayer;
 
 import ibis.maestro.AtomicJob;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.Serializable;
@@ -43,7 +44,7 @@ class CompareImageJob implements AtomicJob {
             if (matches.size() == 0) {
                 res += " nothing";
             } else {
-                for (File m : matches) {
+                for (final File m : matches) {
                     res += " " + m;
                 }
             }
@@ -53,9 +54,9 @@ class CompareImageJob implements AtomicJob {
 
     private static boolean matchesImage(Image img, File f) {
         try {
-            Image other = UncompressedImage.loadPNG(f, 0);
+            final Image other = UncompressedImage.loadPNG(f, 0);
             return img.equals(other);
-        } catch (IOException x) {
+        } catch (final IOException x) {
             System.err.println("Cannot read image file '" + f + "': "
                     + x.getLocalizedMessage());
         }
@@ -64,8 +65,8 @@ class CompareImageJob implements AtomicJob {
 
     private void matchImages(File file, ImageMatches img) {
         if (file.isDirectory()) {
-            File files[] = file.listFiles();
-            for (File f : files) {
+            final File files[] = file.listFiles();
+            for (final File f : files) {
                 matchImages(f, img);
             }
         } else {
@@ -85,8 +86,8 @@ class CompareImageJob implements AtomicJob {
      *         site.
      */
     @Override
-    public Object run(Object input) {
-        ImageMatches img = (ImageMatches) input;
+    public Serializable run(Object input) {
+        final ImageMatches img = (ImageMatches) input;
 
         matchImages(imageDirectory, img);
         return img;

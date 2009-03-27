@@ -3,14 +3,14 @@
  */
 package ibis.videoplayer;
 
-import java.io.Serializable;
-
 import ibis.maestro.Job;
 import ibis.maestro.ParallelJob;
 import ibis.maestro.ParallelJobContext;
 import ibis.maestro.ParallelJobHandler;
 import ibis.maestro.ParallelJobInstance;
 import ibis.maestro.SeriesJob;
+
+import java.io.Serializable;
 
 /**
  * @author Kees van Reeuwijk
@@ -54,7 +54,7 @@ final class BuildFragmentJob implements ParallelJob {
          * @return The result.
          */
         @Override
-        public Object getResult() {
+        public Serializable getResult() {
             int sz = 0;
 
             for (int i = 0; i < frames.length; i++) {
@@ -69,8 +69,8 @@ final class BuildFragmentJob implements ParallelJob {
                 final RGB48Image frame = frames[i];
                 if (frame != null) {
                     System
-                            .arraycopy(frame.data, 0, data, ix,
-                                    frame.data.length);
+                    .arraycopy(frame.data, 0, data, ix,
+                            frame.data.length);
                     ix += frame.data.length;
                 }
             }
@@ -92,7 +92,7 @@ final class BuildFragmentJob implements ParallelJob {
          *            The result.
          */
         @Override
-        public void merge(Serializable id, Object result) {
+        public void merge(Serializable id, Serializable result) {
             final int ix = (Integer) id;
             frames[ix] = (RGB48Image) result;
         }
@@ -110,7 +110,7 @@ final class BuildFragmentJob implements ParallelJob {
          *            The map/reduce handler assigned to this computation.
          */
         @Override
-        public void split(Object input, ParallelJobHandler handler) {
+        public void split(Serializable input, ParallelJobHandler handler) {
             final FrameNumberRange range = (FrameNumberRange) input;
             if (Settings.traceFragmentBuilder) {
                 System.out.println("Collecting frames for fragment " + range);

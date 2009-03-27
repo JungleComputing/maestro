@@ -5,13 +5,13 @@ import ibis.maestro.Job;
 import ibis.maestro.JobCompletionListener;
 import ibis.maestro.JobExecutionTimeEstimator;
 import ibis.maestro.JobList;
+import ibis.maestro.LabelTracker;
+import ibis.maestro.Node;
 import ibis.maestro.ParallelJob;
 import ibis.maestro.ParallelJobContext;
 import ibis.maestro.ParallelJobHandler;
 import ibis.maestro.ParallelJobInstance;
 import ibis.maestro.SeriesJob;
-import ibis.maestro.LabelTracker;
-import ibis.maestro.Node;
 import ibis.maestro.Utils;
 import ibis.maestro.LabelTracker.Label;
 
@@ -47,11 +47,11 @@ class BenchmarkProgram {
          *            The result of the job.
          */
         @Override
-        public void jobCompleted(Node node, Object id, Object result) {
+        public void jobCompleted(Node node, Object id, Serializable result) {
             if (!(id instanceof LabelTracker.Label)) {
                 System.err
-                        .println("Internal error: Object id is not a tracker label: "
-                                + id);
+                .println("Internal error: Object id is not a tracker label: "
+                        + id);
                 System.exit(1);
             }
             labelTracker.returnLabel((LabelTracker.Label) id);
@@ -61,7 +61,7 @@ class BenchmarkProgram {
             }
             if (finished) {
                 System.out
-                        .println("I got all job results back; stopping test program");
+                .println("I got all job results back; stopping test program");
                 node.setStopped();
             }
             final long returned = labelTracker.getReturnedLabels();
@@ -88,7 +88,7 @@ class BenchmarkProgram {
             }
             if (finished) {
                 System.out
-                        .println("I got all job results back; stopping test program");
+                .println("I got all job results back; stopping test program");
                 node.setStopped();
             }
         }
@@ -101,7 +101,7 @@ class BenchmarkProgram {
 
     // Do all the image processing steps in one go. Used as baseline.
     private static final class ProcessFrameJob implements AtomicJob,
-            JobExecutionTimeEstimator {
+    JobExecutionTimeEstimator {
         private static final long serialVersionUID = -7976035811697720295L;
         final boolean slowScale;
         final boolean slowSharpen;
@@ -122,7 +122,7 @@ class BenchmarkProgram {
          *         this job.
          */
         @Override
-        public Object run(Object in) {
+        public Serializable run(Object in) {
             final int frame = (Integer) in;
 
             UncompressedImage img = RGB24Image.buildGradientImage(frame,
@@ -182,7 +182,7 @@ class BenchmarkProgram {
     }
 
     private static final class GenerateFrameJob implements AtomicJob,
-            JobExecutionTimeEstimator {
+    JobExecutionTimeEstimator {
         private static final long serialVersionUID = -7976035811697720295L;
 
         /**
@@ -190,12 +190,12 @@ class BenchmarkProgram {
          *            The input of this job: the frame number.
          * @return The generated image.
          */
-        public Object run(Object in) {
+        public Serializable run(Object in) {
             final int frame = (Integer) in;
             return generateFrame(frame);
         }
 
-        private static Object generateFrame(int frame) {
+        private static Serializable generateFrame(int frame) {
             return RGB24Image.buildGradientImage(frame, DVD_WIDTH, DVD_HEIGHT,
                     (byte) frame, (byte) (frame / 10), (byte) (frame / 100));
         }
@@ -224,7 +224,7 @@ class BenchmarkProgram {
     }
 
     private static final class ScaleUpFrameJob implements AtomicJob,
-            JobExecutionTimeEstimator {
+    JobExecutionTimeEstimator {
         private static final long serialVersionUID = 5452987225377415308L;
         private final int factor;
         private final boolean slow;
@@ -252,7 +252,7 @@ class BenchmarkProgram {
          * @return The scaled frame.
          */
         @Override
-        public Object run(Object in) {
+        public Serializable run(Object in) {
             final UncompressedImage img = (UncompressedImage) in;
 
             if (slow) {
@@ -260,8 +260,7 @@ class BenchmarkProgram {
                 img.scaleUp(factor);
                 img.scaleUp(factor);
             }
-            final Object res = img.scaleUp(factor);
-            return res;
+            return img.scaleUp(factor);
         }
 
         /**
@@ -308,13 +307,13 @@ class BenchmarkProgram {
             }
 
             @Override
-            public Object getResult() {
+            public Serializable getResult() {
                 return UncompressedImage.concatenateImagesVertically(fragments);
             }
 
             @Override
-            public void merge(Serializable id, Object result) {
-                int ix = (Integer) id;
+            public void merge(Serializable id, Serializable result) {
+                final int ix = (Integer) id;
                 fragments[ix] = (UncompressedImage) result;
             }
 
@@ -326,7 +325,7 @@ class BenchmarkProgram {
              */
             @Override
             public boolean resultIsReady() {
-                for (UncompressedImage fragment : fragments) {
+                for (final UncompressedImage fragment : fragments) {
                     if (fragment == null) {
                         return false;
                     }
@@ -335,10 +334,10 @@ class BenchmarkProgram {
             }
 
             @Override
-            public void split(Object input, ParallelJobHandler handler) {
-                UncompressedImage img = (UncompressedImage) input;
+            public void split(Serializable input, ParallelJobHandler handler) {
+                final UncompressedImage img = (UncompressedImage) input;
 
-                UncompressedImage l[] = img.splitVertically(FRAGMENT_COUNT);
+                final UncompressedImage l[] = img.splitVertically(FRAGMENT_COUNT);
                 for (int i = 0; i < l.length; i++) {
                     handler.submit(l[i], this, i, scalerJob);
                 }
@@ -354,7 +353,7 @@ class BenchmarkProgram {
     }
 
     private static final class SharpenFrameJob implements AtomicJob,
-            JobExecutionTimeEstimator {
+    JobExecutionTimeEstimator {
         private static final long serialVersionUID = 54529872253774153L;
         private final boolean slow;
         private final boolean allowed;
@@ -379,7 +378,7 @@ class BenchmarkProgram {
          * @return The scaled frame.
          */
         @Override
-        public Object run(Object in) {
+        public Serializable run(Object in) {
             UncompressedImage img = (UncompressedImage) in;
 
             if (!allowed) {
@@ -432,7 +431,7 @@ class BenchmarkProgram {
          * @return The result of the job.
          */
         @Override
-        public Object run(Object in) {
+        public Serializable run(Object in) {
             final UncompressedImage img = (UncompressedImage) in;
 
             try {
@@ -455,7 +454,7 @@ class BenchmarkProgram {
     }
 
     private static final class SaveFrameJob implements AtomicJob,
-            JobExecutionTimeEstimator {
+    JobExecutionTimeEstimator {
         private static final long serialVersionUID = 54529872253774153L;
         private final File saveDir;
 
@@ -473,7 +472,7 @@ class BenchmarkProgram {
          * @return The scaled frame.
          */
         @Override
-        public Object run(Object in) {
+        public Serializable run(Object in) {
             final Image img = (Image) in;
 
             if (saveDir != null) {
@@ -592,9 +591,9 @@ class BenchmarkProgram {
             final String env = System.getenv(Settings.RANK);
             if (env == null) {
                 System.err
-                        .println("Environment variable "
-                                + Settings.RANK
-                                + " not set, so I don't know if this node is odd or even");
+                .println("Environment variable "
+                        + Settings.RANK
+                        + " not set, so I don't know if this node is odd or even");
                 return false;
             }
             final int rank = Integer.parseInt(env);
@@ -664,11 +663,11 @@ class BenchmarkProgram {
         if (oneJob) {
             if (!allowScale || !allowSharpen) {
                 System.err
-                        .println("Disabling steps is meaningless in a one-job benchmark");
+                .println("Disabling steps is meaningless in a one-job benchmark");
                 System.exit(1);
             }
             System.out.println("One-job benchmark");
-            ProcessFrameJob processFrameJob = new ProcessFrameJob(slowScale,
+            final ProcessFrameJob processFrameJob = new ProcessFrameJob(slowScale,
                     slowSharpen, dir);
             convertJob = new SeriesJob(processFrameJob);
         } else {

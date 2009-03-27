@@ -11,6 +11,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.Serializable;
 
 import javax.imageio.ImageIO;
 
@@ -155,7 +156,7 @@ abstract class UncompressedImage extends Image {
      *             Thrown if there is a read error.
      */
     private static boolean readBuffer(InputStream stream, byte buffer[])
-            throws IOException {
+    throws IOException {
         int offset = 0;
 
         while (true) {
@@ -241,7 +242,7 @@ abstract class UncompressedImage extends Image {
         stream.close();
         return new RGB48Image(frameno, width, height, data);
     }
-    
+
     abstract UncompressedImage getVerticalSlice( int yStart, int yEnd );
 
     /**
@@ -249,28 +250,28 @@ abstract class UncompressedImage extends Image {
      * @param n The number of slices to create.
      * @return An array containing the slices.
      */
-	public UncompressedImage[] splitVertically(int n) {
-		UncompressedImage res[] = new UncompressedImage[n];
-		int yStart = 0;
+    public UncompressedImage[] splitVertically(int n) {
+        final UncompressedImage res[] = new UncompressedImage[n];
+        int yStart = 0;
 
-		for( int i=0; i<n; i++ ){
-			int yNextStart = ((i+1)*height)/n;
-			res[i] = getVerticalSlice( yStart, yNextStart );
-			yStart = yNextStart;
-		}
-		return res;
-	}
+        for( int i=0; i<n; i++ ){
+            final int yNextStart = ((i+1)*height)/n;
+            res[i] = getVerticalSlice( yStart, yNextStart );
+            yStart = yNextStart;
+        }
+        return res;
+    }
 
-	public static Object concatenateImagesVertically(
-			UncompressedImage[] fragments) {
-		// We blindly assume that all images have the same bit depth.
-		if( fragments[0] instanceof RGB24Image ){
-			return RGB24Image.concatenateImagesVertically(fragments);
-		}
-		if( fragments[0] instanceof RGB48Image ){
-			return RGB48Image.concatenateImagesVertically(fragments);
-		}
-		return null;
-	}
+    public static Serializable concatenateImagesVertically(
+            UncompressedImage[] fragments) {
+        // We blindly assume that all images have the same bit depth.
+        if( fragments[0] instanceof RGB24Image ){
+            return RGB24Image.concatenateImagesVertically(fragments);
+        }
+        if( fragments[0] instanceof RGB48Image ){
+            return RGB48Image.concatenateImagesVertically(fragments);
+        }
+        return null;
+    }
 
 }

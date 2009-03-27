@@ -3,11 +3,12 @@ package ibis.videoplayer;
 import ibis.maestro.AtomicJob;
 import ibis.maestro.JobCompletionListener;
 import ibis.maestro.JobList;
-import ibis.maestro.SeriesJob;
 import ibis.maestro.Node;
+import ibis.maestro.SeriesJob;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 
 /**
  * Construct a movie from a directory full of povray scripts.
@@ -20,10 +21,10 @@ public class RenderMovieProgram implements JobCompletionListener {
     static final int HEIGHT = 216 / 2;
     static final int REPEATS = 8;
     static final double RENDER_TIME = 1.0; // Pessimistic estimated time in
-                                           // seconds to render a frame.
+    // seconds to render a frame.
     static final double SHOW_INTERVAL = 0.5; // Time in seconds from the first
-                                             // frame submission until planned
-                                             // show.
+    // frame submission until planned
+    // show.
     static final int FRAMES_PER_SECOND = 25;
 
     private int outstandingJobs = 0;
@@ -62,8 +63,8 @@ public class RenderMovieProgram implements JobCompletionListener {
          * @return THe converted image.
          */
         @Override
-        public Object run(Object in) {
-            UncompressedImage img = (UncompressedImage) in;
+        public Serializable run(Object in) {
+            final UncompressedImage img = (UncompressedImage) in;
 
             System.out.println("Colour-correcting " + img);
             return img.colourCorrect(rr, rg, rb, gr, gg, gb, br, bg, bb);
@@ -89,8 +90,8 @@ public class RenderMovieProgram implements JobCompletionListener {
          * @return The converted image.
          */
         @Override
-        public Object run(Object in) {
-            UncompressedImage img = (UncompressedImage) in;
+        public Serializable run(Object in) {
+            final UncompressedImage img = (UncompressedImage) in;
 
             System.out.println("Downsampling " + img);
             return RGB24Image.convert(img);
@@ -116,13 +117,13 @@ public class RenderMovieProgram implements JobCompletionListener {
          * @return The result of the job.
          */
         @Override
-        public Object run(Object in) {
-            UncompressedImage img = (UncompressedImage) in;
+        public Serializable run(Object in) {
+            final UncompressedImage img = (UncompressedImage) in;
 
             try {
                 System.out.println("Compressing " + img);
                 return JpegCompressedImage.convert(img);
-            } catch (IOException e) {
+            } catch (final IOException e) {
                 System.err.println("Cannot convert image to JPEG: "
                         + e.getLocalizedMessage());
                 e.printStackTrace();
@@ -141,37 +142,37 @@ public class RenderMovieProgram implements JobCompletionListener {
 
     @SuppressWarnings("synthetic-access")
     private void run(File sourceDirectory, File iniFile) throws Exception {
-        JobList jobList = new JobList();
-        SeriesJob convertJob = new SeriesJob(new RenderFrameJob(),
+        final JobList jobList = new JobList();
+        final SeriesJob convertJob = new SeriesJob(new RenderFrameJob(),
                 new ColorCorrectJob(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0,
                         1.0),
-                // new ScaleFrameJob( 2 ),
-                new DownsampleJob(), new CompressFrameJob());
+                        // new ScaleFrameJob( 2 ),
+                        new DownsampleJob(), new CompressFrameJob());
         jobList.registerJob( convertJob );
 
         int frameno = 0;
-        Node node = Node.createNode(jobList, sourceDirectory != null);
+        final Node node = Node.createNode(jobList, sourceDirectory != null);
         System.out.println("Node created");
         if (sourceDirectory != null && node.isMaestro()) {
-            String init = RenderFrameJob.readFile(iniFile);
+            final String init = RenderFrameJob.readFile(iniFile);
             if (init == null) {
                 System.err.println("Cannot read file " + iniFile);
                 return;
             }
-            File files[] = sourceDirectory.listFiles();
+            final File files[] = sourceDirectory.listFiles();
             System.out.println("I am maestro; converting " + files.length
                     + " images");
             for (int iter = 0; iter < REPEATS; iter++) {
-                for (File f : files) {
+                for (final File f : files) {
                     if (!f.getName().equals(".svn")) {
-                        String scene = RenderFrameJob.readFile(f);
+                        final String scene = RenderFrameJob.readFile(f);
                         if (scene == null) {
                             System.err.println("Cannot read scene file " + f);
                         } else {
-                            int n = frameno++;
-                            RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo(
+                            final int n = frameno++;
+                            final RenderFrameJob.RenderInfo info = new RenderFrameJob.RenderInfo(
                                     WIDTH, HEIGHT, 0, WIDTH, 0, HEIGHT, n, init
-                                            + scene);
+                                    + scene);
                             node.submit(info, new Integer(n), this,
                                     convertJob);
                             System.out.println("Submitted frame " + n);
@@ -193,9 +194,9 @@ public class RenderMovieProgram implements JobCompletionListener {
     public static void main(String args[]) {
         if (args.length != 0 && args.length != 3) {
             System.err
-                    .println("Usage: <input-directory> <init-file> <output-directory>");
+            .println("Usage: <input-directory> <init-file> <output-directory>");
             System.err
-                    .println("Or give no parameters at all for a helper node");
+            .println("Or give no parameters at all for a helper node");
             System.exit(1);
         }
         File inputDir = null;
@@ -222,7 +223,7 @@ public class RenderMovieProgram implements JobCompletionListener {
             }
             if (!initFile.isFile()) {
                 System.err
-                        .println("Init file '" + initFile + "' is not a file");
+                .println("Init file '" + initFile + "' is not a file");
                 System.exit(1);
             }
             if (!outputDir.exists()) {
@@ -243,7 +244,7 @@ public class RenderMovieProgram implements JobCompletionListener {
                 + " init=" + initFile + " output=" + outputDir);
         try {
             new RenderMovieProgram(outputDir).run(inputDir, initFile);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace(System.err);
         }
     }
@@ -259,14 +260,14 @@ public class RenderMovieProgram implements JobCompletionListener {
      *            The result of the job.
      */
     @Override
-    public void jobCompleted(Node node, Object id, Object result) {
-        int frameno = (Integer) id;
-        Image img = (Image) result;
+    public void jobCompleted(Node node, Object id, Serializable result) {
+        final int frameno = (Integer) id;
+        final Image img = (Image) result;
 
-        File f = new File(outputDir, String.format("f%06d.jpg", frameno));
+        final File f = new File(outputDir, String.format("f%06d.jpg", frameno));
         try {
             img.write(f);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.out.println("Cannot write result file " + f + ": "
                     + e.getLocalizedMessage());
         }
