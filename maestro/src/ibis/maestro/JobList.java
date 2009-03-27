@@ -46,32 +46,27 @@ public final class JobList {
             t = new JobType(false, true, index);
             todoLists.add(new JobType[] { t });
         } else if (job instanceof SeriesJob) {
-            SeriesJob sjob = (SeriesJob) job;
+            final SeriesJob sjob = (SeriesJob) job;
             final Job jobs[] = sjob.jobs;
 
             boolean unpredictable = false;
-            ArrayList<JobType> todoList = new ArrayList<JobType>();
-            for (Job j : jobs) {
+            final ArrayList<JobType> todoList = new ArrayList<JobType>();
+            for (final Job j : jobs) {
                 final JobType jobType = registerJob(j);
                 unpredictable |= jobType.unpredictable;
-                JobType tl1[] = getTodoList(jobType);
+                final JobType tl1[] = getTodoList(jobType);
 
-                for (JobType e : tl1) {
-                    if (!e.isAtomic) {
-                        Globals.log
-                                .reportInternalError("Todo list element of type "
-                                        + e + " is not atomic");
-                    }
+                for (final JobType e : tl1) {
                     todoList.add(e);
                 }
             }
             index = allJobTypes.size();
             t = new JobType(unpredictable, false, index);
-            JobType todoArray[] = todoList
-                    .toArray(new JobType[todoList.size()]);
+            final JobType todoArray[] = todoList
+            .toArray(new JobType[todoList.size()]);
             todoLists.add(todoArray);
         } else if (job instanceof ParallelJob) {
-            boolean unpredictable = true; // FIXME: allow predictable parallel jobs.
+            final boolean unpredictable = true; // FIXME: allow predictable parallel jobs.
             index = allJobTypes.size();
             t = new JobType(unpredictable, false, index);
             todoLists.add(new JobType[] { t });
@@ -99,7 +94,7 @@ public final class JobList {
     }
 
     JobType[] getTodoList(Job job) {
-        JobType jobType = getJobType(job);
+        final JobType jobType = getJobType(job);
 
         return getTodoList(jobType);
     }
@@ -126,11 +121,11 @@ public final class JobList {
         }
         if (job instanceof AlternativesJob) {
             // We estimate this will be the minimum of all alternatives.
-            AlternativesJob aj = (AlternativesJob) job;
+            final AlternativesJob aj = (AlternativesJob) job;
             double time = Double.POSITIVE_INFINITY;
-    
-            for (Job j : aj.alternatives) {
-                double t1 = initialEstimateJobTime(j);
+
+            for (final Job j : aj.alternatives) {
+                final double t1 = initialEstimateJobTime(j);
                 if (t1 < time) {
                     time = t1;
                 }
@@ -138,12 +133,12 @@ public final class JobList {
             return time;
         }
         if (job instanceof SeriesJob) {
-            SeriesJob l = (SeriesJob) job;
+            final SeriesJob l = (SeriesJob) job;
             double time = 0.0;
-    
-            for (Job j : l.jobs) {
+
+            for (final Job j : l.jobs) {
                 double t1 = initialEstimateJobTime(j);
-    
+
                 if (t1 == Double.POSITIVE_INFINITY) {
                     /*
                      * Yes, this looks weird, but infinity here means we cannot
@@ -165,7 +160,7 @@ public final class JobList {
         int i = 0;
         for (final JobType t : allJobTypes) {
             final Job job = getJob(t);
-            double time = initialEstimateJobTime(job);
+            final double time = initialEstimateJobTime(job);
             res[i++] = time;
         }
         return res;
@@ -179,7 +174,7 @@ public final class JobList {
     }
 
     JobType getStageType(JobType type, int i) {
-        JobType todoList[] = getTodoList(type);
+        final JobType todoList[] = getTodoList(type);
         return todoList[i];
     }
 
