@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.io.Serializable;
+
 /**
  * A message containing the result of an entire job.
  * 
@@ -11,7 +13,7 @@ final class JobResultMessage extends Message {
 
     final JobInstanceIdentifier job;
 
-    final Object result;
+    final Serializable result;
 
     /**
      * Constructs a new result message.
@@ -21,7 +23,7 @@ final class JobResultMessage extends Message {
      * @param result
      *            The result value.
      */
-    protected JobResultMessage(JobInstanceIdentifier job, Object result) {
+    protected JobResultMessage(JobInstanceIdentifier job, Serializable result) {
         this.job = job;
         this.result = result;
     }

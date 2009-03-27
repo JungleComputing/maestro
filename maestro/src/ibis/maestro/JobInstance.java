@@ -13,7 +13,7 @@ class JobInstance implements Serializable {
 
     final JobInstanceIdentifier jobInstance;
 
-    final Object input;
+    final Serializable input;
 
     /** The overall type of job we are executing. */
     final JobType overallType;
@@ -35,7 +35,7 @@ class JobInstance implements Serializable {
      * @param stageNumber
      *            The index in the todo list of the current state of the job
      */
-    JobInstance(JobInstanceIdentifier jii, Object input, JobType overallType,
+    JobInstance(JobInstanceIdentifier jii, Serializable input, JobType overallType,
             int stageNumber) {
         this.jobInstance = jii;
         this.input = input;
@@ -45,7 +45,7 @@ class JobInstance implements Serializable {
 
     String formatJobAndType() {
         return "(jobId=" + jobInstance.id + ",overallType=" + overallType + "stageNumber=" + stageNumber
-                + ")";
+        + ")";
     }
 
     /**
@@ -56,7 +56,7 @@ class JobInstance implements Serializable {
     @Override
     public String toString() {
         return "(job instance=" + jobInstance + " overallType=" + overallType
-                + " stageNumber=" + stageNumber + " input=" + input + ")";
+        + " stageNumber=" + stageNumber + " input=" + input + ")";
     }
 
     String shortLabel() {

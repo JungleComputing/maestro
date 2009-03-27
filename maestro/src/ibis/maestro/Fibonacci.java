@@ -18,7 +18,7 @@ class Fibonacci implements ParallelJob {
 
 
         @Override
-        public void split(Object input, ParallelJobHandler handler) {
+        public void split(Serializable input, ParallelJobHandler handler) {
             final int i = (Integer) input;
 
             if( i<3 ) {
@@ -34,7 +34,7 @@ class Fibonacci implements ParallelJob {
         }
 
         @Override
-        public void merge(Serializable idObject, Object v) {
+        public void merge(Serializable idObject, Serializable v) {
             final int id = (Integer) idObject;
             final int n = (Integer) v;
 
@@ -64,8 +64,8 @@ class Fibonacci implements ParallelJob {
 
 
         @Override
-        public Object getResult() {
-            return result ;
+        public Serializable getResult() {
+            return result;
         }
     }
 
@@ -90,7 +90,7 @@ class Fibonacci implements ParallelJob {
          *            The result of the job.
          */
         @Override
-        public void jobCompleted(Node node, Object id, Object result) {
+        public void jobCompleted(Node node, Object id, Serializable result) {
             if (Settings.traceNodes) {
                 System.out.println("I now have the result: " + result);
             }

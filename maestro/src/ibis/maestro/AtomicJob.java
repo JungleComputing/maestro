@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.io.Serializable;
+
 /**
  * The interface of an atomic (indivisible) job in the Maestro dataflow system.
  * 
@@ -19,5 +21,5 @@ public interface AtomicJob extends Job {
      *             further jobs of this type are sent to the node, although it
      *             may take some time to propagate this information.
      */
-    public Object run(Object input) throws JobFailedException;
+    public Serializable run(Object input) throws JobFailedException;
 }

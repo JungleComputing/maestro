@@ -1,5 +1,8 @@
 package ibis.maestro;
 
+import java.io.Serializable;
+
+
 /**
  * The interface of a Maestro job completion listener.
  * 
@@ -20,5 +23,5 @@ public interface JobCompletionListener {
      * @param result
      *            The result of the job.
      */
-    void jobCompleted(Node node, Object id, Object result);
+    void jobCompleted(Node node, Object id, Serializable result);
 }

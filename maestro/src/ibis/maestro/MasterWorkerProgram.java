@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import java.io.PrintStream;
+import java.io.Serializable;
 import java.util.Random;
 
 /**
@@ -37,14 +38,14 @@ class MasterWorkerProgram {
          *            The result of the job.
          */
         @Override
-        public void jobCompleted(Node node, Object id, Object result) {
+        public void jobCompleted(Node node, Object id, Serializable result) {
             // System.out.println( "result is " + result );
             jobsCompleted++;
             System.out.println("I now have " + jobsCompleted + "/" + jobCount
                     + " jobs");
             if (jobsCompleted >= jobCount) {
                 System.out
-                        .println("I got all job results back; stopping test program");
+                .println("I got all job results back; stopping test program");
                 node.setStopped();
             }
         }
@@ -73,11 +74,11 @@ class MasterWorkerProgram {
                 byte v10, byte v11, byte v12, byte v20, byte v21, byte v22,
                 int k00, int k01, int k02, int k10, int k11, int k12, int k20,
                 int k21, int k22, int weight) {
-            int val = k00 * byteToInt(v00) + k10 * byteToInt(v10) + k20
-                    * byteToInt(v20) + k01 * byteToInt(v01) + k11
-                    * byteToInt(v11) + k21 * byteToInt(v21) + k02
-                    * byteToInt(v02) + k12 * byteToInt(v12) + k22
-                    * byteToInt(v22);
+            final int val = k00 * byteToInt(v00) + k10 * byteToInt(v10) + k20
+            * byteToInt(v20) + k01 * byteToInt(v01) + k11
+            * byteToInt(v11) + k21 * byteToInt(v21) + k02
+            * byteToInt(v02) + k12 * byteToInt(v12) + k22
+            * byteToInt(v22);
             return (byte) Math.min(255, Math
                     .max(0, (val + weight / 2) / weight));
         }
@@ -90,8 +91,8 @@ class MasterWorkerProgram {
          */
         private static long convolution3x3(int k00, int k01, int k02, int k10,
                 int k11, int k12, int k20, int k21, int k22, int weight) {
-            byte res[] = new byte[width * height * BANDS];
-            byte data[] = new byte[width * height * BANDS];
+            final byte res[] = new byte[width * height * BANDS];
+            final byte data[] = new byte[width * height * BANDS];
             final int rowBytes = width * BANDS;
 
             // Copy the top and bottom line into the result image.
@@ -182,7 +183,7 @@ class MasterWorkerProgram {
             }
             long sum = 0;
 
-            for (byte b : res) {
+            for (final byte b : res) {
                 sum += b;
             }
             return sum;
@@ -193,7 +194,7 @@ class MasterWorkerProgram {
         }
 
         private double runBenchmark() {
-            double startTime = Utils.getPreciseTime();
+            final double startTime = Utils.getPreciseTime();
             sharpen();
             return Utils.getPreciseTime() - startTime;
         }
@@ -209,7 +210,7 @@ class MasterWorkerProgram {
          */
         @Override
         public double estimateJobExecutionTime() {
-            double benchmarkTime = runBenchmark();
+            final double benchmarkTime = runBenchmark();
             return MINIMAL_SHARPENS * benchmarkTime;
         }
 
@@ -220,9 +221,9 @@ class MasterWorkerProgram {
          */
         @SuppressWarnings("synthetic-access")
         @Override
-        public Object run(Object obj) {
-            int n = MINIMAL_SHARPENS
-                    + rng.nextInt(MAXIMAL_SHARPENS - MINIMAL_SHARPENS);
+        public Serializable run(Object obj) {
+            final int n = MINIMAL_SHARPENS
+            + rng.nextInt(MAXIMAL_SHARPENS - MINIMAL_SHARPENS);
             long sum = 0;
 
             for (int i = 0; i < n; i++) {
@@ -244,25 +245,25 @@ class MasterWorkerProgram {
 
     @SuppressWarnings("synthetic-access")
     private void run(int jobCount, boolean goForMaestro, int waitNodes)
-            throws Exception {
-        JobList jobs = new JobList();
+    throws Exception {
+        final JobList jobs = new JobList();
 
-        SeriesJob job = new SeriesJob( new SharpenJob());
+        final SeriesJob job = new SeriesJob( new SharpenJob());
         jobs.registerJob( job );
-        Node node = Node.createNode(jobs, goForMaestro);
-        Listener listener = new Listener(node, jobCount);
+        final Node node = Node.createNode(jobs, goForMaestro);
+        final Listener listener = new Listener(node, jobCount);
         System.out.println("Node created");
-        double startTime = Utils.getPreciseTime();
+        final double startTime = Utils.getPreciseTime();
         if (node.isMaestro()) {
             boolean goodToSubmit = true;
             if (waitNodes > 0) {
                 System.out.println("Waiting for " + waitNodes + " ready nodes");
-                int n = node.waitForReadyNodes(waitNodes, 3 * 60 * 1000);
+                final int n = node.waitForReadyNodes(waitNodes, 3 * 60 * 1000);
                 // Wait for maximally 3 minutes for this many nodes.
                 System.out.println("There are now " + n + " nodes available");
                 if (n * 3 < waitNodes) {
                     System.out
-                            .println("That is less than a third of the required nodes; goodbye!");
+                    .println("That is less than a third of the required nodes; goodbye!");
                     goodToSubmit = false;
                 }
             }
@@ -270,7 +271,7 @@ class MasterWorkerProgram {
                 System.out.println("I am maestro; submitting " + jobCount
                         + " jobs");
                 for (int i = 0; i < jobCount; i++) {
-                    Integer length = 12 * i;
+                    final Integer length = 12 * i;
                     node.submit(length, i, listener, job);
                 }
             } else {
@@ -278,18 +279,18 @@ class MasterWorkerProgram {
             }
         }
         node.waitToTerminate();
-        double stopTime = Utils.getPreciseTime();
+        final double stopTime = Utils.getPreciseTime();
         System.out.println("Duration of this run: "
                 + Utils.formatSeconds(stopTime - startTime));
     }
 
     private static void usage(PrintStream printStream) {
         printStream
-                .println("Usage: MasterWorkerProgram [<options>] <jobCount>");
+        .println("Usage: MasterWorkerProgram [<options>] <jobCount>");
         printStream.println(" empty <jobCount> for a worker");
         printStream.println(" -h      Show this help");
         printStream
-                .println(" -w <n>  Wait for at least <n> ready nodes before submitting jobs");
+        .println(" -w <n>  Wait for at least <n> ready nodes before submitting jobs");
     }
 
     /**
@@ -320,7 +321,7 @@ class MasterWorkerProgram {
                 + goForMaestro + "; jobCount=" + jobCount);
         try {
             new MasterWorkerProgram().run(jobCount, goForMaestro, waitNodes);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace(System.err);
         }
     }

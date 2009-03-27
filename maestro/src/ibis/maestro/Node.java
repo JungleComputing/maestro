@@ -411,7 +411,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param result
      *            The job result.
      */
-    private void reportCompletion(JobInstanceIdentifier id, Object result) {
+    private void reportCompletion(JobInstanceIdentifier id, Serializable result) {
         final SubmittedJobInfo job = runningJobList.remove(id);
         if (job != null) {
             job.listener.jobCompleted(this, id.userId, result);
@@ -529,7 +529,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @return <code>true</code> if the message could be sent.
      */
     private boolean sendJobResultMessage(JobInstanceIdentifier id,
-            Object result) {
+            Serializable result) {
         if (deadNodes.contains(id.resultNode)) {
             // We say it has been delivered to avoid error recovery.
             // Think of this as an optimization.
@@ -768,8 +768,8 @@ public final class Node extends Thread implements PacketReceiveListener {
     private void sendJobCompletedMessage(IbisIdentifier source, long jobId) {
         final Message msg = new JobCompletedMessage(jobId);
         boolean ok = sendPort.send(source, msg);
-    
-    
+
+
         if (ok) {
             jobCompletedMessageCount.add();
         }
@@ -799,7 +799,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param runMoment
      *            The moment the job was started.
      */
-    protected void handleJobResult(RunJobMessage message, Object result, double runMoment) {
+    protected void handleJobResult(RunJobMessage message, Serializable result, double runMoment) {
         final double jobCompletionMoment = Utils.getPreciseTime();
         final JobInstance jobInstance = message.jobInstance;
         final JobType todoList[] = jobs.getTodoList(jobInstance.overallType);
@@ -849,22 +849,22 @@ public final class Node extends Thread implements PacketReceiveListener {
             System.out.println("TRACE:workerDwellTime " + completedStageType + " " + now
                     + " " + workerDwellTime);
         }
-        IbisIdentifier source = message.source;
+        final IbisIdentifier source = message.source;
         if (!deadNodes.contains(source)&& !jobs.isParallelJobType(completedStageType)) {
             // If the master node isn't dead, tell it this job
             // is completed.
-            long jobId = message.jobId;
+            final long jobId = message.jobId;
             sendJobCompletedMessage(source, jobId);
         }
         doUpdateRecentMasters.set();
     }
 
-    private void executeJob(RunJobMessage message, Job job, Object input,
+    private void executeJob(RunJobMessage message, Job job, Serializable input,
             double runMoment) {
         if (job instanceof AtomicJob) {
             final AtomicJob at = (AtomicJob) job;
             try {
-                final Object result = at.run(input);
+                final Serializable result = at.run(input);
                 handleJobResult(message, result, runMoment);
             } catch (final JobFailedException x) {
                 failNode(message, x);
@@ -878,7 +878,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             }
             jobInstance.split(input, parallelJobHandler);
             if( jobInstance.resultIsReady() ){
-                final Object result = jobInstance.getResult();
+                final Serializable result = jobInstance.getResult();
                 handleJobResult(message,result, runMoment);
             }
             sendJobCompletedMessage(message.source,  message.jobId);
@@ -974,7 +974,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                                 + "; there are now " + runningJobCount
                                 + " running jobs");
                     }
-                    final Object input = message.jobInstance.input;
+                    final Serializable input = message.jobInstance.input;
                     threadOverhead += Utils.getPreciseTime() - overheadStart;
                     executeJob(message, job, input, runMoment);
                     runningJobCount.down();
@@ -1051,7 +1051,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param job
      *            The job to execute.
      */
-    public void submit(Object input, Serializable userId, JobCompletionListener listener,
+    public void submit(Serializable input, Serializable userId, JobCompletionListener listener,
             Job job) {
         waitForRoom();
         submitAlways(input, userId, listener, job);
@@ -1063,7 +1063,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param listener
      * @param job
      */
-    void submitAlways(Object input, Serializable userId,
+    void submitAlways(Serializable input, Serializable userId,
             JobCompletionListener listener, Job job) {
         final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
         final JobType overallType = jobs.getJobType(job);
@@ -1121,7 +1121,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             NodeInfo worker;
             long jobId;
             IbisIdentifier node;
-            JobInstance job;
+            JobInstance jobInstance;
 
             synchronized (drainLock) {
                 // The entire operation
@@ -1140,19 +1140,19 @@ public final class Node extends Thread implements PacketReceiveListener {
                     break;
                 }
                 node = submission.worker;
-                job = submission.job;
+                jobInstance = submission.jobInstance;
                 worker = nodes.get(node);
                 jobId = nextJobId++;
 
-                worker.registerJobStart(jobs,job, jobId,
+                worker.registerJobStart(jobs,jobInstance, jobId,
                         submission.predictedDuration);
             }
             if (Settings.traceMasterQueue || Settings.traceSubmissions) {
-                Globals.log.reportProgress("Submitting job " + job + " to "
+                Globals.log.reportProgress("Submitting job " + jobInstance + " to "
                         + node);
             }
 
-            final RunJobMessage msg = new RunJobMessage(job, jobId);
+            final RunJobMessage msg = new RunJobMessage(jobInstance, jobId);
             final boolean ok = sendPort.send(node, msg);
             if (ok) {
                 submitMessageCount.add();

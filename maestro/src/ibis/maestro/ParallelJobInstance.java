@@ -19,9 +19,9 @@ public abstract class ParallelJobInstance {
     public ParallelJobInstance(ParallelJobContext context) {
         this.message = context.message;
         this.runMoment = context.runMoment;
-	}
+    }
 
-	void handleJobResult(Node node,Object result)
+    void handleJobResult(Node node,Serializable result)
     {
         node.handleJobResult(message, result, runMoment);
     }
@@ -34,7 +34,7 @@ public abstract class ParallelJobInstance {
      * @param handler
      *            The handler.
      */
-    public abstract void split(Object input, ParallelJobHandler handler);
+    public abstract void split(Serializable input, ParallelJobHandler handler);
 
     /**
      * Merges the result of one part of a split job into the final result. The
@@ -45,7 +45,7 @@ public abstract class ParallelJobInstance {
      * @param result
      *            The result.
      */
-    public abstract void merge(Serializable id, Object result);
+    public abstract void merge(Serializable id, Serializable result);
 
     /**
      * Returns true iff the result is ready.
@@ -62,6 +62,6 @@ public abstract class ParallelJobInstance {
      * 
      * @return The result.
      */
-    public abstract Object getResult();
+    public abstract Serializable getResult();
 
 }

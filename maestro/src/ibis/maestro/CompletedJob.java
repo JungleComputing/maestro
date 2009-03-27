@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.io.Serializable;
+
 /**
  * A completed job.
  * 
@@ -8,7 +10,7 @@ package ibis.maestro;
 class CompletedJob {
     final JobInstanceIdentifier job;
 
-    final Object result;
+    final Serializable result;
 
     /**
      * Constructs a new CompletedJob.
@@ -16,7 +18,7 @@ class CompletedJob {
      * @param job
      * @param result
      */
-    CompletedJob(JobInstanceIdentifier job, Object result) {
+    CompletedJob(JobInstanceIdentifier job, Serializable result) {
         this.job = job;
         this.result = result;
     }

@@ -31,14 +31,14 @@ class OneTestProg {
          *            The result of the job.
          */
         @Override
-        public void jobCompleted(Node node, Object id, Object result) {
+        public void jobCompleted(Node node, Object id, Serializable result) {
             // System.out.println( "result is " + result );
             jobsCompleted++;
             // System.out.println( "I now have " + jobsCompleted + "/" +
             // jobCount + " jobs" );
             if (jobsCompleted >= jobCount) {
                 System.out
-                        .println("I got all job results back; stopping test program");
+                .println("I got all job results back; stopping test program");
                 node.setStopped();
             }
         }
@@ -60,9 +60,9 @@ class OneTestProg {
          */
         @Override
         @SuppressWarnings("synthetic-access")
-        public Object run(Object obj) {
-            int val = (Integer) obj;
-            double a[] = new double[ARRAY_SIZE];
+        public Serializable run(Object obj) {
+            final int val = (Integer) obj;
+            final double a[] = new double[ARRAY_SIZE];
             for (int n = 0; n < ITERATIONS; n++) {
                 for (int i = 0; i < ARRAY_SIZE; i++) {
                     a[i] = i + val;
@@ -84,24 +84,24 @@ class OneTestProg {
 
     @SuppressWarnings("synthetic-access")
     private void run(int jobCount, boolean goForMaestro) throws Exception {
-        Listener listener = new Listener(jobCount);
-        JobList jobs = new JobList();
-        CreateArrayJob job = new CreateArrayJob();
-        
+        final Listener listener = new Listener(jobCount);
+        final JobList jobs = new JobList();
+        final CreateArrayJob job = new CreateArrayJob();
+
         jobs.registerJob( job);
-        Node node = Node.createNode(jobs, goForMaestro);
+        final Node node = Node.createNode(jobs, goForMaestro);
         System.out.println("Node created");
-        double startTime = Utils.getPreciseTime();
+        final double startTime = Utils.getPreciseTime();
         if (node.isMaestro()) {
             System.out.println("I am maestro; submitting " + jobCount
                     + " jobs");
             for (int i = 0; i < jobCount; i++) {
-                Integer length = 12 * i;
+                final Integer length = 12 * i;
                 node.submit(length, i, listener, job);
             }
         }
         node.waitToTerminate();
-        double stopTime = Utils.getPreciseTime();
+        final double stopTime = Utils.getPreciseTime();
         System.out.println("Duration of this run: "
                 + Utils.formatSeconds(stopTime - startTime));
     }
@@ -118,10 +118,10 @@ class OneTestProg {
 
         if (args.length == 0) {
             System.err
-                    .println("Missing parameter: I need a job count, or 'worker'");
+            .println("Missing parameter: I need a job count, or 'worker'");
             System.exit(1);
         }
-        String arg = args[0];
+        final String arg = args[0];
         if (arg.equalsIgnoreCase("worker")) {
             goForMaestro = false;
         } else {
@@ -132,7 +132,7 @@ class OneTestProg {
                 + goForMaestro + "; jobCount=" + jobCount);
         try {
             new OneTestProg().run(jobCount, goForMaestro);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             e.printStackTrace(System.err);
         }
     }

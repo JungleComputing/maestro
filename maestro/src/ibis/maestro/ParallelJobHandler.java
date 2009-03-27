@@ -63,7 +63,7 @@ public class ParallelJobHandler implements JobCompletionListener {
      *            The job to submit to.
      */
     @SuppressWarnings("synthetic-access")
-    public synchronized void submit(Object input, ParallelJobInstance jobInstance, Serializable userId,
+    public synchronized void submit(Serializable input, ParallelJobInstance jobInstance, Serializable userId,
             Job job) {
         final Serializable id = new Id(userId, jobInstance);
         if (Settings.traceParallelJobs) {
@@ -86,7 +86,7 @@ public class ParallelJobHandler implements JobCompletionListener {
      */
     @Override
     public synchronized void jobCompleted(Node node, Object userId,
-            Object result) {
+            Serializable result) {
         if (Settings.traceParallelJobs) {
             Globals.log.reportProgress("ParallelJobHandler: got back " + userId);
         }
@@ -102,7 +102,7 @@ public class ParallelJobHandler implements JobCompletionListener {
         instance.merge(id.userID, result);
 
         if( instance.resultIsReady() ){
-            final Object mergedResult = instance.getResult();
+            final Serializable mergedResult = instance.getResult();
             instance.handleJobResult(node, mergedResult);
         }
     }

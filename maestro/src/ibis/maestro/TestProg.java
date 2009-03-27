@@ -36,7 +36,7 @@ class TestProg {
          *            The result of the job.
          */
         @Override
-        public void jobCompleted(Node node, Object id, Object result) {
+        public void jobCompleted(Node node, Object id, Serializable result) {
             // System.out.println( "result is " + result );
             jobsCompleted++;
             if (Settings.traceNodes) {
@@ -151,7 +151,7 @@ class TestProg {
                 super(context);
             }
 
-            private final Object res[] = new Object[SIZE];
+            private final Serializable res[] = new Serializable[SIZE];
             private int resultCount = 0;
 
 
@@ -166,7 +166,7 @@ class TestProg {
              */
             @SuppressWarnings("synthetic-access")
             @Override
-            public void split(Object input, ParallelJobHandler handler) {
+            public void split(Serializable input, ParallelJobHandler handler) {
                 for (int n = 0; n < SIZE; n++) {
                     final Integer userId = n;
                     handler.submit(input, this, userId, createJob);
@@ -179,7 +179,7 @@ class TestProg {
              * @return The joined result.
              */
             @Override
-            public Object getResult() {
+            public Serializable getResult() {
                 // FIXME: do something more interesting.
                 return res[0];
             }
@@ -195,7 +195,7 @@ class TestProg {
              *            The result.
              */
             @Override
-            public void merge(Serializable id, Object result) {
+            public void merge(Serializable id, Serializable result) {
                 final Integer ix = (Integer) id;
 
                 if( res[ix] == null ){
