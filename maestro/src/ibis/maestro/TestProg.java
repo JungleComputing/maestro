@@ -88,9 +88,10 @@ class TestProg {
          */
         @Override
         @SuppressWarnings("synthetic-access")
-        public AdditionData run(Object obj) {
+        public AdditionData run(Serializable obj) {
             final Integer val = (Integer) obj;
             final double a[] = new double[ARRAY_SIZE];
+
             for (int i = 0; i < ARRAY_SIZE; i++) {
                 a[i] = i + val;
             }
@@ -117,7 +118,7 @@ class TestProg {
          * @return The result of the job.
          */
         @Override
-        public AdditionData run(Object obj) {
+        public AdditionData run(Serializable obj) {
             final AdditionData data = (AdditionData) obj;
             double sum = 0.0;
             for (int i = 0; i < ITERATIONS; i++) {

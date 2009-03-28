@@ -60,7 +60,7 @@ class OneTestProg {
          */
         @Override
         @SuppressWarnings("synthetic-access")
-        public Serializable run(Object obj) {
+        public Serializable run(Serializable obj) {
             final int val = (Integer) obj;
             final double a[] = new double[ARRAY_SIZE];
             for (int n = 0; n < ITERATIONS; n++) {

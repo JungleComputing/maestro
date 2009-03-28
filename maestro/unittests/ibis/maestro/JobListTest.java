@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import java.io.Serializable;
+
 import junit.framework.TestCase;
 
 import org.junit.Test;
@@ -14,7 +16,7 @@ public class JobListTest extends TestCase {
     static class J1 implements AtomicJob {
 
         @Override
-        public Object run(Object input) throws JobFailedException {
+        public Serializable run(Serializable input) throws JobFailedException {
             return input;
         }
 
@@ -27,7 +29,7 @@ public class JobListTest extends TestCase {
     static class J2 implements AtomicJob {
 
         @Override
-        public Object run(Object input) throws JobFailedException {
+        public Serializable run(Serializable input) throws JobFailedException {
             return input;
         }
 

@@ -221,7 +221,7 @@ class MasterWorkerProgram {
          */
         @SuppressWarnings("synthetic-access")
         @Override
-        public Serializable run(Object obj) {
+        public Serializable run(Serializable obj) {
             final int n = MINIMAL_SHARPENS
             + rng.nextInt(MAXIMAL_SHARPENS - MINIMAL_SHARPENS);
             long sum = 0;

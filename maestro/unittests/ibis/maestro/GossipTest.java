@@ -2,6 +2,7 @@ package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
 
+import java.io.Serializable;
 import java.util.HashMap;
 
 import junit.framework.TestCase;
@@ -19,7 +20,7 @@ public class GossipTest extends TestCase {
     private static class J1 implements AtomicJob {
 
         @Override
-        public Object run(Object input) throws JobFailedException {
+        public Serializable run(Serializable input) throws JobFailedException {
             return input;
         }
 
@@ -32,7 +33,7 @@ public class GossipTest extends TestCase {
     private static class J2 implements AtomicJob {
 
         @Override
-        public Object run(Object input) throws JobFailedException {
+        public Serializable run(Serializable input) throws JobFailedException {
             return input;
         }
 

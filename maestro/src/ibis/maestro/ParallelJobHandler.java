@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import java.io.Serializable;
+import java.util.HashMap;
 
 /**
  * Handles the merge phase of parallel (split/merge) jobs. In particular, it
@@ -11,6 +12,16 @@ import java.io.Serializable;
  */
 public class ParallelJobHandler implements JobCompletionListener {
     private final Node localNode;
+    
+    /** The next id to hand out. */
+    private long nextHandlerId = 0;
+
+    /** Table from id to parallel job instance.
+     * We cannot use an array and reuse empty slots because
+     * we are not sure how long duplicate instance will
+     * be circulating in the system.
+     */
+    private HashMap<Long, ParallelJobInstance> runningInstance = new HashMap<Long, ParallelJobInstance>();
 
     /**
      * @param localNode
@@ -31,12 +42,12 @@ public class ParallelJobHandler implements JobCompletionListener {
 
         final Serializable userID;
 
-        final ParallelJobInstance instance;
+        final long serial;
 
-        private Id(final Serializable userID, final ParallelJobInstance jobInstance) {
+        private Id(final Serializable userID, final long serial) {
             super();
             this.userID = userID;
-            this.instance = jobInstance;
+            this.serial = serial;
         }
 
         /**
@@ -44,7 +55,7 @@ public class ParallelJobHandler implements JobCompletionListener {
          */
         @Override
         public String toString() {
-            return "jobInstance=" + instance + " userID=" + userID;
+            return "serial=" + serial + " userID=" + userID;
         }
     }
 
@@ -65,7 +76,9 @@ public class ParallelJobHandler implements JobCompletionListener {
     @SuppressWarnings("synthetic-access")
     public synchronized void submit(Serializable input, ParallelJobInstance jobInstance, Serializable userId,
             Job job) {
-        final Serializable id = new Id(userId, jobInstance);
+        long serial = nextHandlerId++;
+        final Serializable id = new Id(userId, serial);
+        runningInstance.put(serial, jobInstance);
         if (Settings.traceParallelJobs) {
             Globals.log.reportProgress("ParallelJobHandler: Submitting " + id + " to "
                     + job);
@@ -97,13 +110,16 @@ public class ParallelJobHandler implements JobCompletionListener {
             return;
         }
         final Id id = (Id) userId;
-        final ParallelJobInstance instance = id.instance;
+        final ParallelJobInstance instance = runningInstance.get(id.serial);
 
-        instance.merge(id.userID, result);
+        if( instance != null ) {
+            runningInstance.remove(id.serial);
+            instance.merge(id.userID, result);
 
-        if( instance.resultIsReady() ){
-            final Serializable mergedResult = instance.getResult();
-            instance.handleJobResult(node, mergedResult);
+            if( instance.resultIsReady() ){
+                final Serializable mergedResult = instance.getResult();
+                instance.handleJobResult(node, mergedResult);
+            }
         }
     }
 }
