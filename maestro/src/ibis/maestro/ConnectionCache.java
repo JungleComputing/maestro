@@ -31,8 +31,8 @@ class ConnectionCache {
             if (port == null) {
                 // We could not create a connection to this ibis.
                 Globals.log
-                        .reportInternalError("Could not get send port for ibis "
-                                + ibis);
+                .reportInternalError("Could not get send port for ibis "
+                        + ibis);
                 node.setSuspect(ibis);
                 cache.closeSendPort(ibis);
                 return -1;
@@ -42,7 +42,10 @@ class ConnectionCache {
             len = msg.finish();
         } catch (final IOException x) {
             Globals.log.reportInternalError("Could not get send port for ibis "
-                    + ibis + ": " + x);
+                    + ibis + ": " + x.getLocalizedMessage() );
+            final PrintStream printStream = Globals.log.getPrintStream();
+            printStream.print( "------- Original stack trace: --------");
+            x.printStackTrace(printStream);
             node.setSuspect(ibis);
             cache.closeSendPort(ibis);
         }
@@ -60,7 +63,7 @@ class ConnectionCache {
         long len = -1;
         SendPort port = null;
         try {
-            PortType portType = PacketSendPort.portType;
+            final PortType portType = PacketSendPort.portType;
             port = Globals.localIbis.createSendPort(portType);
             port.connect(ibis, Globals.receivePortName,
                     Settings.ESSENTIAL_COMMUNICATION_TIMEOUT, true);
