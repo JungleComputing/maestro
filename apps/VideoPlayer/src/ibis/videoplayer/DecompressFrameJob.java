@@ -26,7 +26,7 @@ public class DecompressFrameJob implements AtomicJob {
      * @return The decompressed frame.
      */
     @Override
-    public Serializable run(Object obj) {
+    public Serializable run(Serializable obj) {
         final RGB48Image frame = (RGB48Image) obj;
         final short in[] = frame.data;
         final short data[] = new short[in.length * REPEAT * REPEAT];

@@ -90,7 +90,7 @@ class ConvertFramesProgram {
          * @return The fetched image.
          */
 
-        public Serializable run(Object in) {
+        public Serializable run(Serializable in) {
             final File f = (File) in;
             try {
                 return Image.load(f, 0);
@@ -139,7 +139,7 @@ class ConvertFramesProgram {
          * @return THe converted image.
          */
         @Override
-        public Serializable run(Object in) {
+        public Serializable run(Serializable in) {
             final UncompressedImage img = (UncompressedImage) in;
 
             return img.colourCorrect(rr, rg, rb, gr, gg, gb, br, bg, bb);
@@ -165,7 +165,7 @@ class ConvertFramesProgram {
          * @return The result of the job.
          */
         @Override
-        public Serializable run(Object in) {
+        public Serializable run(Serializable in) {
             final UncompressedImage img = (UncompressedImage) in;
 
             try {

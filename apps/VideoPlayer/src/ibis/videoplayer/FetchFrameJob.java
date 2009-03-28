@@ -21,7 +21,7 @@ public class FetchFrameJob implements AtomicJob {
      * @return The frame we have fetched.
      */
     @Override
-    public Serializable run(Object obj) {
+    public Serializable run(Serializable obj) {
         final Integer frameno = (Integer) obj;
         final File frameFile = new File(String.format("frame-%04d.ppm"));
         Image frame;

@@ -122,7 +122,7 @@ class BenchmarkProgram {
          *         this job.
          */
         @Override
-        public Serializable run(Object in) {
+        public Serializable run(Serializable in) {
             final int frame = (Integer) in;
 
             UncompressedImage img = RGB24Image.buildGradientImage(frame,
@@ -190,7 +190,8 @@ class BenchmarkProgram {
          *            The input of this job: the frame number.
          * @return The generated image.
          */
-        public Serializable run(Object in) {
+        @Override
+        public Serializable run(Serializable in) {
             final int frame = (Integer) in;
             return generateFrame(frame);
         }
@@ -252,7 +253,7 @@ class BenchmarkProgram {
          * @return The scaled frame.
          */
         @Override
-        public Serializable run(Object in) {
+        public Serializable run(Serializable in) {
             final UncompressedImage img = (UncompressedImage) in;
 
             if (slow) {
@@ -284,7 +285,7 @@ class BenchmarkProgram {
             if (!allowed) {
                 return Double.POSITIVE_INFINITY;
             }
-            final Object frame = GenerateFrameJob.generateFrame(0);
+            final Serializable frame = GenerateFrameJob.generateFrame(0);
             final double startTime = Utils.getPreciseTime();
             run(frame);
             return Utils.getPreciseTime() - startTime;
@@ -378,7 +379,7 @@ class BenchmarkProgram {
          * @return The scaled frame.
          */
         @Override
-        public Serializable run(Object in) {
+        public Serializable run(Serializable in) {
             UncompressedImage img = (UncompressedImage) in;
 
             if (!allowed) {
@@ -413,7 +414,7 @@ class BenchmarkProgram {
             if (!allowed) {
                 return Double.POSITIVE_INFINITY;
             }
-            final Object frame = GenerateFrameJob.generateFrame(0);
+            final Serializable frame = GenerateFrameJob.generateFrame(0);
             final double startTime = Utils.getPreciseTime();
             run(frame);
             return 4 * (Utils.getPreciseTime() - startTime);
@@ -431,7 +432,7 @@ class BenchmarkProgram {
          * @return The result of the job.
          */
         @Override
-        public Serializable run(Object in) {
+        public Serializable run(Serializable in) {
             final UncompressedImage img = (UncompressedImage) in;
 
             try {
@@ -472,7 +473,7 @@ class BenchmarkProgram {
          * @return The scaled frame.
          */
         @Override
-        public Serializable run(Object in) {
+        public Serializable run(Serializable in) {
             final Image img = (Image) in;
 
             if (saveDir != null) {

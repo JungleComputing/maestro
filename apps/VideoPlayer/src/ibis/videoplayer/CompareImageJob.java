@@ -86,7 +86,7 @@ class CompareImageJob implements AtomicJob {
      *         site.
      */
     @Override
-    public Serializable run(Object input) {
+    public Serializable run(Serializable input) {
         final ImageMatches img = (ImageMatches) input;
 
         matchImages(imageDirectory, img);

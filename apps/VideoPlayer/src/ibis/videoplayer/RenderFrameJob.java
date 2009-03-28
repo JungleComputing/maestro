@@ -177,7 +177,7 @@ public class RenderFrameJob implements AtomicJob {
      * @return The rendered frame.
      */
     @Override
-    public Serializable run(Object obj) {
+    public Serializable run(Serializable obj) {
         final RenderInfo info = (RenderInfo) obj;
         return renderImage(info.width, info.height, info.startRow, info.endRow,
                 info.startColumn, info.endColumn, info.frameno, info.scene);

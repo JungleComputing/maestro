@@ -63,7 +63,7 @@ public class RenderMovieProgram implements JobCompletionListener {
          * @return THe converted image.
          */
         @Override
-        public Serializable run(Object in) {
+        public Serializable run(Serializable in) {
             final UncompressedImage img = (UncompressedImage) in;
 
             System.out.println("Colour-correcting " + img);
@@ -90,7 +90,7 @@ public class RenderMovieProgram implements JobCompletionListener {
          * @return The converted image.
          */
         @Override
-        public Serializable run(Object in) {
+        public Serializable run(Serializable in) {
             final UncompressedImage img = (UncompressedImage) in;
 
             System.out.println("Downsampling " + img);
@@ -117,7 +117,7 @@ public class RenderMovieProgram implements JobCompletionListener {
          * @return The result of the job.
          */
         @Override
-        public Serializable run(Object in) {
+        public Serializable run(Serializable in) {
             final UncompressedImage img = (UncompressedImage) in;
 
             try {

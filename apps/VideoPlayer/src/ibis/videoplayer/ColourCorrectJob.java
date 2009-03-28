@@ -20,7 +20,7 @@ public class ColourCorrectJob implements AtomicJob {
      * @return The decompressed frame.
      */
     @Override
-    public Serializable run(Object obj) {
+    public Serializable run(Serializable obj) {
         final RGB48Image frame = (RGB48Image) obj;
         return frame.colourCorrect(0.0, 0.0, 1.0, 0.0, 1.0, 0.0, 1.0, 0.0, 0.0);
 

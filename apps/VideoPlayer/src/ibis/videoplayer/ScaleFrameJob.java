@@ -27,7 +27,7 @@ class ScaleFrameJob implements AtomicJob {
      * @return The scaled image.
      */
     @Override
-    public Serializable run(Object obj) {
+    public Serializable run(Serializable obj) {
         final Image frame = (Image) obj;
         System.out.println("Scaling " + frame);
         return frame.scaleDown(factor);
