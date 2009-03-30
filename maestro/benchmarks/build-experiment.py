@@ -31,6 +31,7 @@ jobs = `p*jobsPerProcessor`
 # Translation table from measurement type to command-line arguments
 args = {
     'plain':[jobs],
+    'parallel':['-parallelscaling',jobs],
     'onejob':['-onejob',jobs],
     'no':['-oddnoscale','-evennosharpen',jobs],
     'slow':['-oddslowscale','-evenslowsharpen',jobs],
