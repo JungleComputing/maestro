@@ -150,7 +150,7 @@ class Settings {
      * The minimal duration in ns of a running job before we consider submitting
      * it again.
      */
-    static final double LATE_JOB_DURATION = 100 * Utils.MILLISECOND;
+    static final double LATE_JOB_DURATION = 300 * Utils.MILLISECOND;
 
     static final int MAXIMAL_QUEUE_FOR_PREDICTABLE = 1;
 }
