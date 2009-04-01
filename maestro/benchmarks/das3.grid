@@ -31,6 +31,7 @@ default.job.adaptor = sshtrilead
 #default.job.uri = 
 default.file.adaptors = commandlinessh,sshtrilead,local
 default.java.path = /usr/local/package/jdk1.6.0/bin/java
+#default.java.path = /var/scratch/jason/JVMs/jrrt-3.0.0-1.6.0/bin/java
 default.job.wrapper.script = ./das3.script
 #default.job.wrapper.script = 
 #default.user.name = 
