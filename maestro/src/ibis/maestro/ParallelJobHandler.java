@@ -12,7 +12,7 @@ import java.util.HashMap;
  */
 public class ParallelJobHandler implements JobCompletionListener {
     private final Node localNode;
-    
+
     /** The next id to hand out. */
     private long nextHandlerId = 0;
 
@@ -83,7 +83,8 @@ public class ParallelJobHandler implements JobCompletionListener {
             Globals.log.reportProgress("ParallelJobHandler: Submitting " + id + " to "
                     + job);
         }
-        localNode.submitAlways(input, id, this,job,false);
+        long prefix[] = jobInstance.getPrefix();
+        localNode.submitSubjob(prefix,input, id, this,job);
     }
 
     /**

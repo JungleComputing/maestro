@@ -3,6 +3,7 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 /**
  * The identifier of a particular job instance.
@@ -16,7 +17,7 @@ class JobInstanceIdentifier implements Serializable {
     private static long serialNo = 0;
 
     /** The identifier issued by the master node. */
-    final long id;
+    final long ids[];
 
     /**
      * The identifier the user has added to the job instance when submitting it.
@@ -39,9 +40,20 @@ class JobInstanceIdentifier implements Serializable {
      *            The node to send the result to.
      */
     JobInstanceIdentifier(long id, Serializable userId, IbisIdentifier resultNode) {
-        this.id = id;
+        this.ids = new long[]{ id };
         this.userId = userId;
         this.resultNode = resultNode;
+    }
+    
+    private long[] buildIds( long prefix[] )
+    {
+    	if( prefix == null ){
+    		return new long[]{ serialNo++ };
+    	}
+    	int sz = prefix.length;
+    	long res[] = Arrays.copyOf(prefix, sz+1);
+    	res[sz-1] = serialNo++;
+    	return res;
     }
 
     /**
@@ -52,8 +64,10 @@ class JobInstanceIdentifier implements Serializable {
      * @param resultNode
      *            The node to send the result to.
      */
-    JobInstanceIdentifier(Serializable userId, IbisIdentifier resultNode) {
-        this(serialNo++, userId, resultNode);
+    JobInstanceIdentifier(long prefix[], Serializable userId, IbisIdentifier resultNode) {
+    	this.ids = buildIds(prefix);
+    	this.userId = userId;
+    	this.resultNode = resultNode;
     }
 
     /**
@@ -63,7 +77,7 @@ class JobInstanceIdentifier implements Serializable {
      */
     @Override
     public String toString() {
-        return "(job instance: id=" + id + " user id=" + userId + " port="
+        return "(job instance: id=" + Utils.deepToString(ids) + " user id=" + userId + " port="
                 + resultNode + ")";
     }
 
@@ -74,7 +88,11 @@ class JobInstanceIdentifier implements Serializable {
      */
     @Override
     public int hashCode() {
-        return (int) (id ^ (id >>> 32));
+    	int res = 0;
+    	for( long v: ids ){
+    		res ^= (v ^ (v >>> 32));
+    	}
+        return res;
     }
 
     /**
@@ -96,7 +114,7 @@ class JobInstanceIdentifier implements Serializable {
             return false;
         }
         final JobInstanceIdentifier other = (JobInstanceIdentifier) obj;
-        return (id == other.id);
+        return Arrays.equals(ids, other.ids);
     }
 
     /**
@@ -105,7 +123,7 @@ class JobInstanceIdentifier implements Serializable {
      * @return
      */
     String label() {
-        return "J" + id;
+        return "J" + Utils.deepToString(ids);
     }
 
 }

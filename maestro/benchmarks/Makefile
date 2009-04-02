@@ -1,7 +1,7 @@
 #
 
 #PLOTFILES=overhead.pdf fault-tolerance.pdf
-PLOTFILES=disturbance.eps learn-plain.eps learn-slow.eps slow-20-2000-counts.eps plain-20-2000-counts.eps fault-tolerance.eps plain5-20-2000-counts.eps
+PLOTFILES=disturbance.eps parallel.eps learn-plain.eps learn-slow.eps slow-20-2000-counts.eps plain-20-2000-counts.eps fault-tolerance.eps plain5-20-2000-counts.eps
 
 VIDEO_PLAYER_JAR = videoplayer-0.0.1.jar
 
@@ -166,6 +166,9 @@ termination-slow-2000.table: $(TERMINATION_SLOW_2000_POINTS)
 
 disturbance.eps: slow-2000.table no-2000.table disturbance-eps.gpl plain-2000.table oneslow-2000.table onejob-2000.table
 	gnuplot disturbance-eps.gpl > $@
+
+parallel.eps: slow-2000.table no-2000.table parallel-eps.gpl plain-2000.table oneslow-2000.table onejob-2000.table parallel-2000.table
+	gnuplot parallel-eps.gpl > $@
 
 homogeneous.eps: onejob-2000.table plain-2000.table homogeneous-eps.gpl
 	gnuplot homogeneous-eps.gpl > $@

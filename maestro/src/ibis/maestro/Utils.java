@@ -171,4 +171,53 @@ public class Utils {
     public static double getPreciseTime() {
         return NANOSECOND*System.nanoTime();
     }
+
+    /**
+     * Given an array of longs, return a string representation
+     * @param l The array.
+     * @return The string representation of the array.
+     */
+	public static String deepToString(long[] l) {
+		StringBuffer buf = new StringBuffer();
+		
+		buf.append(',');
+		boolean first = true;
+		for( long v:l ){
+			if( first ){
+				first = false;
+			}
+			else {
+				buf.append(',');
+			}
+			buf.append(v);
+		}
+		return buf.toString();
+	}
+
+	static final int compareIds( long a[], long b[])
+    {
+    	int sz = Math.min(a.length, b.length);
+    	for( int i=0; i<sz; i++ ){
+    		long va = a[i];
+    		long vb = b[i];
+    		
+    		if( va<vb ){
+    			return -1;
+    		}
+    		if( va>vb ){
+    			return 1;
+    		}
+    	}
+    	// At this point we know the shortest array contains
+    	// the same values as the longest array. Now
+    	// we just make the longest array larger.
+    	if( a.length<b.length ){
+    		return -1;
+    	}
+    	if( a.length>b.length ){
+    		return 1;
+    	}
+    	return 0;
+    }
+
 }

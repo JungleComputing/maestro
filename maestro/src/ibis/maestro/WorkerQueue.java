@@ -62,14 +62,15 @@ final class WorkerQueue {
             // it separately.
             return 0;
         }
-        final long id = msg.jobInstance.jobInstance.id;
+        final long ids[] = msg.jobInstance.jobInstance.ids;
         while (true) {
             final int mid = (start + end) / 2;
             if (mid == start) {
                 break;
             }
-            final long midId = queue.get(mid).jobInstance.jobInstance.id;
-            if (midId < id) {
+            final long midIds[] = queue.get(mid).jobInstance.jobInstance.ids;
+            int cmp = Utils.compareIds( midIds, ids );
+            if (cmp<0) {
                 // Mid should come before us.
                 start = mid;
             } else {
@@ -79,8 +80,9 @@ final class WorkerQueue {
         }
         // This comparison is probably rarely necessary, but corner cases
         // are a pain, so I'm safe rather than sorry.
-        final long startId = queue.get(start).jobInstance.jobInstance.id;
-        if (startId < id) {
+        final long startIds[] = queue.get(start).jobInstance.jobInstance.ids;
+        int cmp = Utils.compareIds(startIds, ids);
+        if (cmp<0) {
             return end;
         }
         return start;

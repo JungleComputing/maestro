@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 import junit.framework.TestCase;
 
@@ -23,13 +24,14 @@ public class MasterQueueTest extends TestCase {
 
     private static void removeFromQueue(MasterQueue queue, Integer... ids) {
         for (Integer id : ids) {
+        	long idl[] = new long[]{ id };
             if (queue.isEmpty()) {
                 fail("Queue is empty, while I expected " + id);
             }
             JobInstance ti = queue.remove();
 
-            if (ti.jobInstance.id != id) {
-                fail("Unexpected task from master queue: " + ti.jobInstance.id
+            if (!Arrays.equals(ti.jobInstance.ids,idl)) {
+                fail("Unexpected task from master queue: " + ti.jobInstance.ids
                         + " instead of " + id);
             }
         }

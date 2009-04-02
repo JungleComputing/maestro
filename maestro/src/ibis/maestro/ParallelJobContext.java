@@ -15,4 +15,8 @@ public class ParallelJobContext {
         this.runMoment = runMoment;
     }
 
+    long [] getPrefix()
+    {
+    	return message.jobInstance.jobInstance.ids;
+    }
 }

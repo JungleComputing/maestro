@@ -44,7 +44,7 @@ class JobInstance implements Serializable {
     }
 
     String formatJobAndType() {
-        return "(jobId=" + jobInstance.id + ",overallType=" + overallType + "stageNumber=" + stageNumber
+        return "(jobId=" + Utils.deepToString(jobInstance.ids) + ",overallType=" + overallType + "stageNumber=" + stageNumber
         + ")";
     }
 

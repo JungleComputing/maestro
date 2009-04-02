@@ -64,4 +64,8 @@ public abstract class ParallelJobInstance {
      */
     public abstract Serializable getResult();
 
+	long[] getPrefix() {
+		return message.jobInstance.jobInstance.ids;
+	}
+
 }

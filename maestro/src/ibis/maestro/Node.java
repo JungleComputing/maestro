@@ -1026,30 +1026,18 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     /**
-     * Builds a new identifier containing the given user identifier.
-     * 
-     * @param userIdentifier
-     *            The user identifier to include in this identifier.
-     * @return The newly constructed identifier.
-     */
-    private JobInstanceIdentifier buildJobInstanceIdentifier(
-            Serializable userIdentifier) {
-        return new JobInstanceIdentifier(userIdentifier, Globals.localIbis
-                .identifier());
-    }
-
-    /**
      * @param input
      * @param userId
      * @param listener
      * @param job
      */
-    void submitAlways(Serializable input, Serializable userId,
-            JobCompletionListener listener, Job job,boolean restart) {
-        final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
+    void submitSubjob(long prefix[],Serializable input, Serializable userId,
+            JobCompletionListener listener, Job job) {
+        final JobInstanceIdentifier tii = new JobInstanceIdentifier(prefix,userId, Globals.localIbis
+		.identifier());
         final JobType overallType = jobs.getJobType(job);
         final JobInstance jobInstance = new JobInstance(tii, input,overallType,0);
-        runningJobList.add(new SubmittedJobInfo(tii, jobInstance, listener,restart));
+        runningJobList.add(new SubmittedJobInfo(tii, jobInstance, listener,false));
         masterQueue.add(jobs,jobInstance);
     }
 
@@ -1069,7 +1057,12 @@ public final class Node extends Thread implements PacketReceiveListener {
     public void submit(Serializable input, Serializable userId, JobCompletionListener listener,
             Job job) {
         waitForRoom();
-        submitAlways(input, userId, listener, job,true);
+        final JobInstanceIdentifier tii = new JobInstanceIdentifier(null,userId, Globals.localIbis
+		.identifier());
+		final JobType overallType = jobs.getJobType(job);
+		final JobInstance jobInstance = new JobInstance(tii, input,overallType,0);
+		runningJobList.add(new SubmittedJobInfo(tii, jobInstance, listener,true));
+		masterQueue.add(jobs,jobInstance);
     }
 
     /**
