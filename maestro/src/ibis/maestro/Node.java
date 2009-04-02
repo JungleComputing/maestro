@@ -1039,6 +1039,21 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     /**
+     * @param input
+     * @param userId
+     * @param listener
+     * @param job
+     */
+    void submitAlways(Serializable input, Serializable userId,
+            JobCompletionListener listener, Job job,boolean restart) {
+        final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
+        final JobType overallType = jobs.getJobType(job);
+        final JobInstance jobInstance = new JobInstance(tii, input,overallType,0);
+        runningJobList.add(new SubmittedJobInfo(tii, jobInstance, listener,restart));
+        masterQueue.add(jobs,jobInstance);
+    }
+
+    /**
      * Given an input and a job to execute, submit this input to the job.
      * If <code>submitIfBusy</code> is set, also submit when all workers
      * are currently busy.
@@ -1054,22 +1069,7 @@ public final class Node extends Thread implements PacketReceiveListener {
     public void submit(Serializable input, Serializable userId, JobCompletionListener listener,
             Job job) {
         waitForRoom();
-        submitAlways(input, userId, listener, job);
-    }
-
-    /**
-     * @param input
-     * @param userId
-     * @param listener
-     * @param job
-     */
-    void submitAlways(Serializable input, Serializable userId,
-            JobCompletionListener listener, Job job) {
-        final JobInstanceIdentifier tii = buildJobInstanceIdentifier(userId);
-        final JobType overallType = jobs.getJobType(job);
-        final JobInstance jobInstance = new JobInstance(tii, input,overallType,0);
-        runningJobList.add(new SubmittedJobInfo(tii, jobInstance, listener));
-        masterQueue.add(jobs,jobInstance);
+        submitAlways(input, userId, listener, job,true);
     }
 
     /**

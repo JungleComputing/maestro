@@ -17,6 +17,8 @@ class SubmittedJobInfo {
 
     final JobInstance jobInstance;
 
+    final boolean restart;
+
     /**
      * Constructs an information class for the given job identifier.
      * 
@@ -29,9 +31,10 @@ class SubmittedJobInfo {
      */
     SubmittedJobInfo(final JobInstanceIdentifier identifier,
             JobInstance jobInstance,
-            final JobCompletionListener listener) {
+            final JobCompletionListener listener,boolean restart) {
         this.identifier = identifier;
         this.jobInstance = jobInstance;
         this.listener = listener;
+        this.restart = restart;
     }
 }

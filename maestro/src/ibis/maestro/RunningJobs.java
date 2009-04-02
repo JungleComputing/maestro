@@ -31,7 +31,7 @@ class RunningJobs {
         for (int i = 0; i < runningJobs.size(); i++) {
             final SubmittedJobInfo job = runningJobs.get(i);
 
-            if (earliest == null || earliest.startTime > job.startTime) {
+            if (job.restart&&(earliest == null || earliest.startTime > job.startTime)) {
                 earliest = job;
             }
         }

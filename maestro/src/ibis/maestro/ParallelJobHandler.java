@@ -83,7 +83,7 @@ public class ParallelJobHandler implements JobCompletionListener {
             Globals.log.reportProgress("ParallelJobHandler: Submitting " + id + " to "
                     + job);
         }
-        localNode.submitAlways(input, id, this,job);
+        localNode.submitAlways(input, id, this,job,false);
     }
 
     /**
