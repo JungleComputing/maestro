@@ -6,13 +6,12 @@ class Fibonacci implements ParallelJob {
     static Fibonacci jobType;
 
     static class FibonacciInstance extends ParallelJobInstance {
-        boolean haveResult0 = false;
-        boolean haveResult1 = false;
+        private boolean haveResult0 = false;
         private int result;
         private int resultCount = 0;
         private int expectedResults;
 
-        public FibonacciInstance(ParallelJobContext context) {
+        protected FibonacciInstance(ParallelJobContext context) {
             super(context);
         }
 
@@ -47,7 +46,6 @@ class Fibonacci implements ParallelJob {
             }
             else if( id == 1 ){
                 result += n;
-                haveResult1 = true;
                 resultCount++;
             }
             else {
