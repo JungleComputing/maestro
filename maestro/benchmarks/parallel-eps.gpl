@@ -1,6 +1,6 @@
 set size 1
 set key bottom left reverse Left
-set term postscript enhanced blacktext color eps 14 solid linewidth 2.5
+set term postscript enhanced color eps 14 blacktext solid linewidth 2.5
 set data style linespoints
 set pointsize 1.8
 set xlabel "Number of nodes"

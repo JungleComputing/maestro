@@ -1,7 +1,7 @@
 #set size 1.3
 set size ratio 2
 set key reverse Right outside
-set term postscript enhanced color eps 12
+set terminal postscript enhanced color eps 12
 #set xlabel "Node"
 set ylabel "Number of frames"
 set yrange [0:*]
@@ -9,7 +9,7 @@ set yrange [0:*]
 #unset ytics
 set xtic scale 0 0
 set xtics border in scale 1,0.5 nomirror rotate by -45  offset character 0, 0, 0
-set xtics   ("Generate" 0.50000, "Scale" 1.50000, "Sharpen" 2.50000, "Compress" 3.50000, "Discard" 4.50000)
+set xtics   ("Generate" 0.00000, "Scale" 1.00000, "Sharpen" 2.00000, "Compress" 3.00000, "Discard" 4.00000)
 set boxwidth 0.85 absolute
 set style fill solid noborder
 set style data histograms
