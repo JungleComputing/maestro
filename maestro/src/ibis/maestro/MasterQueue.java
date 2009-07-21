@@ -19,8 +19,8 @@ import java.util.HashMap;
 final class MasterQueue {
     private int jobCount = 0;
 
-    /** For each known type, some administration about its
-     * presence in the queue.
+    /**
+     * For each known type, some administration about its presence in the queue.
      */
     private final TypeInfo queueTypes[];
 
@@ -56,7 +56,7 @@ final class MasterQueue {
             this.type = type;
         }
 
-        private synchronized void printStatistics(PrintStream s) {
+        private synchronized void printStatistics(final PrintStream s) {
             s.println("master queue for " + type + ": " + jobCount
                     + " jobs; dequeue interval: " + dequeueInterval
                     + "; maximal queue size: " + maxElements);
@@ -118,15 +118,15 @@ final class MasterQueue {
      * @param jobTypes
      *            The supported types.
      */
-    MasterQueue(JobType allTypes[]) {
+    MasterQueue(final JobType allTypes[]) {
         queueTypes = new TypeInfo[allTypes.length];
         for (final JobType type : allTypes) {
             queueTypes[type.index] = new TypeInfo(type);
         }
     }
 
-    private static int findInsertionPoint(ArrayList<JobInstance> queue,
-            JobInstance e) {
+    private static int findInsertionPoint(final ArrayList<JobInstance> queue,
+            final JobInstance e) {
         // Good old binary search.
         int start = 0;
         int end = queue.size();
@@ -143,8 +143,8 @@ final class MasterQueue {
                 break;
             }
             final long midIds[] = queue.get(mid).jobInstance.ids;
-            int cmp = Utils.compareIds(midIds, ids);
-            if (cmp<0) {
+            final int cmp = Utils.compareIds(midIds, ids);
+            if (cmp < 0) {
                 // Mid should come before us.
                 start = mid;
             } else {
@@ -155,8 +155,8 @@ final class MasterQueue {
         // This comparison is probably rarely necessary, but corner cases
         // are a pain, so I'm safe rather than sorry.
         final long startIds[] = queue.get(start).jobInstance.ids;
-        int cmp = Utils.compareIds(startIds, ids);
-        if (cmp<0) {
+        final int cmp = Utils.compareIds(startIds, ids);
+        if (cmp < 0) {
             return end;
         }
         return start;
@@ -171,7 +171,7 @@ final class MasterQueue {
         return queue.isEmpty();
     }
 
-    private void dumpQueue(PrintStream s) {
+    private void dumpQueue(final PrintStream s) {
         for (final JobInstance e : queue) {
             s.print(e.shortLabel());
             s.print(' ');
@@ -187,19 +187,13 @@ final class MasterQueue {
      *            The job to submit.
      */
     @SuppressWarnings("synthetic-access")
-    protected synchronized void add(JobList jobs,JobInstance job) {
+    protected synchronized void add(final JobList jobs, final JobInstance job) {
         jobCount++;
         final int pos = findInsertionPoint(queue, job);
         queue.add(pos, job);
 
         final JobType type = job.getStageType(jobs);
         final TypeInfo info = queueTypes[type.index];
-        if( false ){
-        	// TODO: remove if irrelevant.
-        	if( !type.isAtomic ){
-        		Globals.log.reportInternalError( "Submitted job type " + type + " is not atomic" );
-        	}
-        }
         final int length = info.administrateAdd();
         if (Settings.traceQueuing) {
             Globals.log.reportProgress("Adding " + job.formatJobAndType()
@@ -219,10 +213,10 @@ final class MasterQueue {
      * @param l
      *            The list of job instances to add.
      */
-    void add(JobList jobs,ArrayList<JobInstance> l) {
+    void add(final JobList jobs, final ArrayList<JobInstance> l) {
         if (l != null) {
             for (final JobInstance job : l) {
-                add(jobs,job);
+                add(jobs, job);
             }
         }
     }
@@ -232,7 +226,7 @@ final class MasterQueue {
     }
 
     @SuppressWarnings("synthetic-access")
-    synchronized void printStatistics(PrintStream s) {
+    synchronized void printStatistics(final PrintStream s) {
         for (final TypeInfo t : queueTypes) {
             if (t != null) {
                 t.printStatistics(s);
@@ -246,29 +240,34 @@ final class MasterQueue {
      * slot. In this context 'best' is simply the worker with the shortest
      * overall completion time.
      * 
-     * @param jobs Information about job types.
-     * @param localNodeInfoMap Local information about all nodes
-     * @param tables Globally known information about all nodes
      * @param jobs
-     *     Information about the different  types of jobs we support.
+     *            Information about job types.
+     * @param localNodeInfoMap
+     *            Local information about all nodes
+     * @param tables
+     *            Globally known information about all nodes
+     * @param jobs
+     *            Information about the different types of jobs we support.
      * @param job
      *            The job instance we want a worker for.
-     *
-     * @return The info of the best worker for this job, or <code>null</code>
-     *         if there currently aren't any workers for this job type.
+     * 
+     * @return The info of the best worker for this job, or <code>null</code> if
+     *         there currently aren't any workers for this job type.
      */
     private Submission selectBestWorker(
-            HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
-            NodePerformanceInfo tables[], JobInstance job,JobType stageType) {
+            final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
+            final NodePerformanceInfo tables[], final JobInstance job,
+            final JobType stageType) {
         NodePerformanceInfo best = null;
         double bestInterval = Double.POSITIVE_INFINITY;
 
         for (final NodePerformanceInfo info : tables) {
             final LocalNodeInfoList localNodeInfo = localNodeInfoMap
-            .get(info.source);
+                    .get(info.source);
 
-            final double val = info.estimateJobCompletion(localNodeInfo, job
-                    .overallType, job.stageNumber, stageType,Settings.HARD_ALLOWANCES);
+            final double val = info.estimateJobCompletion(localNodeInfo,
+                    job.overallType, job.stageNumber, stageType,
+                    Settings.HARD_ALLOWANCES);
 
             if (val < bestInterval) {
                 bestInterval = val;
@@ -289,14 +288,17 @@ final class MasterQueue {
             Globals.log.reportProgress("Selected worker " + best.source
                     + " for job of type " + stageType);
         }
-        final LocalNodeInfoList localNodeInfo = localNodeInfoMap.get(best.source);
-        final double predictedDuration = localNodeInfo.getPredictedDuration(stageType);
+        final LocalNodeInfoList localNodeInfo = localNodeInfoMap
+                .get(best.source);
+        final double predictedDuration = localNodeInfo
+                .getPredictedDuration(stageType);
         return new Submission(job, best.source, predictedDuration);
     }
 
     private static void dumpChoices(
-            HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
-            NodePerformanceInfo[] tables, JobInstance job, JobType stageType, double bestInterval) {
+            final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
+            final NodePerformanceInfo[] tables, final JobInstance job,
+            final JobType stageType, final double bestInterval) {
         final PrintStream s = Globals.log.getPrintStream();
         for (final NodePerformanceInfo i : tables) {
             i.print(s);
@@ -304,7 +306,7 @@ final class MasterQueue {
         s.print("Best worker: ");
         for (final NodePerformanceInfo info : tables) {
             final LocalNodeInfoList localNodeInfo = localNodeInfoMap
-            .get(info.source);
+                    .get(info.source);
             final double val = info.estimateJobCompletion(localNodeInfo,
                     job.overallType, job.stageNumber, stageType, true);
             s.print(Utils.formatSeconds(val));
@@ -325,10 +327,9 @@ final class MasterQueue {
      * @return A job submission, or <code>null</code> if there are no free
      *         workers for any of the jobs in the queue.
      */
-    synchronized Submission getSubmission(
-            JobList jobs,
-            HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
-            NodePerformanceInfo[] tables) {
+    synchronized Submission getSubmission(final JobList jobs,
+            final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
+            final NodePerformanceInfo[] tables) {
         int busyTypeIndex = -1; // Don't even consider jobs of this type, all
         // workers are busy.
         int ix = 0;
@@ -342,7 +343,7 @@ final class MasterQueue {
                 }
             } else {
                 final Submission sub = selectBestWorker(localNodeInfoMap,
-                        tables, job,stageType);
+                        tables, job, stageType);
                 if (sub == null) {
                     // This job type is busy, skip all other instances
                     // of the type.
@@ -395,7 +396,7 @@ final class MasterQueue {
      * @param job
      *            The job to remove.
      */
-    synchronized void removeDuplicates(JobInstance job) {
+    synchronized void removeDuplicates(final JobInstance job) {
         while (queue.remove(job)) {
             // Nothing, but repeat until all have been removed.
         }
