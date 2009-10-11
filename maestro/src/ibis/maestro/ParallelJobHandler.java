@@ -16,12 +16,12 @@ public class ParallelJobHandler implements JobCompletionListener {
     /** The next id to hand out. */
     private long nextHandlerId = 0;
 
-    /** Table from id to parallel job instance.
-     * We cannot use an array and reuse empty slots because
-     * we are not sure how long duplicate instance will
-     * be circulating in the system.
+    /**
+     * Table from id to parallel job instance. We cannot use an array and reuse
+     * empty slots because we are not sure how long duplicate instance will be
+     * circulating in the system.
      */
-    private HashMap<Long, ParallelJobInstance> runningInstance = new HashMap<Long, ParallelJobInstance>();
+    private final HashMap<Long, ParallelJobInstance> runningInstance = new HashMap<Long, ParallelJobInstance>();
 
     /**
      * @param localNode
@@ -35,14 +35,14 @@ public class ParallelJobHandler implements JobCompletionListener {
      * The identifier of a job instance for our and the user's administration.
      * 
      * @author Kees van Reeuwijk
-     *
+     * 
      */
     private static final class Id implements Serializable {
         private static final long serialVersionUID = 1L;
 
-        final Serializable userID;
+        private final Serializable userID;
 
-        final long serial;
+        private final long serial;
 
         private Id(final Serializable userID, final long serial) {
             super();
@@ -60,9 +60,9 @@ public class ParallelJobHandler implements JobCompletionListener {
     }
 
     /**
-     * Submits a new job instance with the given input.
-     * Internally we keep track of the number of submitted jobs so that we can
-     * wait for all of them to complete.
+     * Submits a new job instance with the given input. Internally we keep track
+     * of the number of submitted jobs so that we can wait for all of them to
+     * complete.
      * 
      * @param input
      *            Input for the job.
@@ -74,17 +74,17 @@ public class ParallelJobHandler implements JobCompletionListener {
      *            The job to submit to.
      */
     @SuppressWarnings("synthetic-access")
-    public synchronized void submit(Serializable input, ParallelJobInstance jobInstance, Serializable userId,
-            Job job) {
-        long serial = nextHandlerId++;
+    public synchronized void submit(Serializable input,
+            ParallelJobInstance jobInstance, Serializable userId, Job job) {
+        final long serial = nextHandlerId++;
         final Serializable id = new Id(userId, serial);
         runningInstance.put(serial, jobInstance);
         if (Settings.traceParallelJobs) {
-            Globals.log.reportProgress("ParallelJobHandler: Submitting " + id + " to "
-                    + job);
+            Globals.log.reportProgress("ParallelJobHandler: Submitting " + id
+                    + " to " + job);
         }
-        long prefix[] = jobInstance.getPrefix();
-        localNode.submitSubjob(prefix,input, id, this,job);
+        final long prefix[] = jobInstance.getPrefix();
+        localNode.submitSubjob(prefix, input, id, this, job);
     }
 
     /**
@@ -98,26 +98,28 @@ public class ParallelJobHandler implements JobCompletionListener {
      * @param result
      *            The result of the job.
      */
+    @SuppressWarnings("synthetic-access")
     @Override
     public synchronized void jobCompleted(Node node, Object userId,
             Serializable result) {
         if (Settings.traceParallelJobs) {
-            Globals.log.reportProgress("ParallelJobHandler: got back " + userId);
+            Globals.log
+                    .reportProgress("ParallelJobHandler: got back " + userId);
         }
         if (!(userId instanceof Id)) {
             Globals.log
-            .reportInternalError("The identifier is not a ParallelJobHandler.Id but a "
-                    + userId.getClass());
+                    .reportInternalError("The identifier is not a ParallelJobHandler.Id but a "
+                            + userId.getClass());
             return;
         }
         final Id id = (Id) userId;
         final ParallelJobInstance instance = runningInstance.get(id.serial);
 
-        if( instance != null ) {
+        if (instance != null) {
             runningInstance.remove(id.serial);
             instance.merge(id.userID, result);
 
-            if( instance.resultIsReady() ){
+            if (instance.resultIsReady()) {
                 final Serializable mergedResult = instance.getResult();
                 instance.handleJobResult(node, mergedResult);
             }

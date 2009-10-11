@@ -11,24 +11,22 @@ class Fibonacci implements ParallelJob {
         private int resultCount = 0;
         private int expectedResults;
 
-        protected FibonacciInstance(ParallelJobContext context) {
+        private FibonacciInstance(ParallelJobContext context) {
             super(context);
         }
-
 
         @Override
         public void split(Serializable input, ParallelJobHandler handler) {
             final int i = (Integer) input;
 
-            if( i<3 ) {
+            if (i < 3) {
                 result = 1;
                 expectedResults = 0;
-            }
-            else {
+            } else {
                 result = 0;
                 expectedResults = 2;
-                handler.submit( i-1, this, 0, jobType );
-                handler.submit( i-2, this, 1, jobType );
+                handler.submit(i - 1, this, 0, jobType);
+                handler.submit(i - 2, this, 1, jobType);
             }
         }
 
@@ -37,29 +35,24 @@ class Fibonacci implements ParallelJob {
             final int id = (Integer) idObject;
             final int n = (Integer) v;
 
-            if( id == 0 ){
-                if( !haveResult0 ){
+            if (id == 0) {
+                if (!haveResult0) {
                     result += n;
                     haveResult0 = true;
                     resultCount++;
                 }
-            }
-            else if( id == 1 ){
+            } else if (id == 1) {
                 result += n;
                 resultCount++;
-            }
-            else {
-                Globals.log.reportInternalError( "Bad id " + id );
+            } else {
+                Globals.log.reportInternalError("Bad id " + id);
             }
         }
-
 
         @Override
-        public boolean resultIsReady()
-        {
-            return resultCount>=expectedResults;
+        public boolean resultIsReady() {
+            return resultCount >= expectedResults;
         }
-
 
         @Override
         public Serializable getResult() {
@@ -72,6 +65,7 @@ class Fibonacci implements ParallelJob {
         return true;
     }
 
+    @SuppressWarnings("synthetic-access")
     @Override
     public ParallelJobInstance createInstance(ParallelJobContext context) {
         return new FibonacciInstance(context);
@@ -101,13 +95,13 @@ class Fibonacci implements ParallelJob {
         final JobList jobs = new JobList();
 
         jobType = new Fibonacci();
-        jobs.registerJob( jobType );
+        jobs.registerJob(jobType);
         final Node node = Node.createNode(jobs, goForMaestro);
         final Listener listener = new Listener();
         System.out.println("Node created");
         final double startTime = Utils.getPreciseTime();
         if (node.isMaestro()) {
-            System.out.println("I am maestro; submitting value " + value );
+            System.out.println("I am maestro; submitting value " + value);
             node.submit(value, 0, listener, jobType);
         }
         node.waitToTerminate();
@@ -127,7 +121,7 @@ class Fibonacci implements ParallelJob {
 
         if (args.length == 0) {
             System.err
-            .println("Missing parameter: I need a value, or 'worker'");
+                    .println("Missing parameter: I need a value, or 'worker'");
             System.exit(1);
         }
         final String arg = args[0];

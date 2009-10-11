@@ -52,7 +52,7 @@ final class MasterQueue {
         private final TimeEstimate dequeueInterval = new TimeEstimate(
                 1 * Utils.MILLISECOND);
 
-        TypeInfo(final JobType type) {
+        private TypeInfo(final JobType type) {
             this.type = type;
         }
 
@@ -76,7 +76,7 @@ final class MasterQueue {
             return elements;
         }
 
-        void administrateRemove() {
+        private void administrateRemove() {
             final double now = Utils.getPreciseTime();
             synchronized (this) {
                 if (frontChangedTime != 0) {
@@ -101,7 +101,7 @@ final class MasterQueue {
          * @return The estimated time in seconds a new job will spend in the
          *         queue.
          */
-        synchronized double estimateQueueTime() {
+        private synchronized double estimateQueueTime() {
             final double timePerEntry = dequeueInterval.getAverage();
             // Since at least one processor isn't working on a job (or we
             // wouldn't be here), we are only impressed if there is more
@@ -118,6 +118,7 @@ final class MasterQueue {
      * @param jobTypes
      *            The supported types.
      */
+    @SuppressWarnings("synthetic-access")
     MasterQueue(final JobType allTypes[]) {
         queueTypes = new TypeInfo[allTypes.length];
         for (final JobType type : allTypes) {
@@ -219,10 +220,6 @@ final class MasterQueue {
                 add(jobs, job);
             }
         }
-    }
-
-    synchronized JobInstance remove() {
-        return queue.remove(0);
     }
 
     @SuppressWarnings("synthetic-access")
@@ -327,6 +324,7 @@ final class MasterQueue {
      * @return A job submission, or <code>null</code> if there are no free
      *         workers for any of the jobs in the queue.
      */
+    @SuppressWarnings("synthetic-access")
     synchronized Submission getSubmission(final JobList jobs,
             final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
             final NodePerformanceInfo[] tables) {
@@ -372,6 +370,7 @@ final class MasterQueue {
         return null;
     }
 
+    @SuppressWarnings("synthetic-access")
     double[] getQueueIntervals() {
         final double res[] = new double[queueTypes.length];
 

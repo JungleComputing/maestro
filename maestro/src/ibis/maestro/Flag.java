@@ -16,10 +16,6 @@ class Flag {
         set(true);
     }
 
-    void reset() {
-        set(false);
-    }
-
     private synchronized void set(boolean val) {
         final boolean changed = flag != val;
         flag = val;

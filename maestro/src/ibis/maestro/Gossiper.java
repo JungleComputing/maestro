@@ -17,7 +17,7 @@ import java.util.LinkedList;
  * @author Kees van Reeuwijk.
  */
 class Gossiper extends Thread {
-    private boolean stopped = false;
+    private final boolean stopped = false;
 
     private final GossipNodeList nodes = new GossipNodeList();
 
@@ -45,13 +45,14 @@ class Gossiper extends Thread {
 
     private long sentBytes = 0;
 
-    Gossiper(PacketSendPort sendPort, boolean isMaestro, JobList jobs,IbisIdentifier localIbis) {
+    Gossiper(PacketSendPort sendPort, boolean isMaestro, JobList jobs,
+            IbisIdentifier localIbis) {
         super("Maestro gossiper thread");
         this.sendPort = sendPort;
         this.gossipQuotum = new UpDownCounter(isMaestro ? 40 : 4);
         setDaemon(true);
         setPriority(Thread.MAX_PRIORITY);
-        gossip = new Gossip(jobs,localIbis);
+        gossip = new Gossip(jobs, localIbis);
     }
 
     NodePerformanceInfo[] getGossipCopy() {
@@ -178,7 +179,9 @@ class Gossiper extends Thread {
                     }
                 }
                 synchronized (this) {
-                    wait(waittime);
+                    if (!nodesToReplyTo.isEmpty()) {
+                        wait(waittime);
+                    }
                 }
             } catch (final InterruptedException e) {
                 // ignore.
@@ -254,7 +257,7 @@ class Gossiper extends Thread {
         }
     }
 
-    synchronized void printStatistics(PrintStream s,JobList jobs) {
+    synchronized void printStatistics(PrintStream s, JobList jobs) {
         s.println("Sent " + messageCount.get() + " gossip messages, with "
                 + failedGossipMessageCount.get() + " failures, received "
                 + gossipItemCount.get() + " gossip items, "
@@ -262,7 +265,7 @@ class Gossiper extends Thread {
         s.println("Sent " + Utils.formatByteCount(sentBytes) + " in "
                 + Utils.formatSeconds(sendTime) + ", administration time "
                 + Utils.formatSeconds(adminTime));
-        gossip.print(s,jobs);
+        gossip.print(s, jobs);
     }
 
     /**
@@ -298,8 +301,9 @@ class Gossiper extends Thread {
     }
 
     /**
-     * Returns performance info about the local node. Used for rapid
-     * updates for nodes we're directly communicating with.
+     * Returns performance info about the local node. Used for rapid updates for
+     * nodes we're directly communicating with.
+     * 
      * @return The local node performance info.
      */
     NodePerformanceInfo getLocalUpdate() {
@@ -320,11 +324,6 @@ class Gossiper extends Thread {
      */
     int waitForReadyNodes(int n, long maximalWaitTime) {
         return gossip.waitForReadyNodes(n, maximalWaitTime);
-    }
-
-    synchronized void setStopped() {
-        stopped = true;
-        notifyAll();
     }
 
     private synchronized boolean isStopped() {
@@ -348,19 +347,21 @@ class Gossiper extends Thread {
     }
 
     boolean setWorkerQueueLength(JobType type, int queueLength) {
-        boolean changed = gossip.setWorkerQueueLength(type, queueLength);
+        final boolean changed = gossip.setWorkerQueueLength(type, queueLength);
         addQuotum();
         return changed;
     }
 
     /**
      * Register the contents of the given gossip message.
-     * @param m The gossip message to register.
+     * 
+     * @param m
+     *            The gossip message to register.
      * @return True iff this message change the gossip info.
      */
     boolean registerGossipMessage(GossipMessage m) {
         boolean changed = false;
-    
+
         if (Settings.traceNodeProgress || Settings.traceRegistration
                 || Settings.traceGossip) {
             Globals.log.reportProgress("Received gossip message from "

@@ -39,14 +39,15 @@ public final class Node extends Thread implements PacketReceiveListener {
     private final RegistryEventHandler registryEventHandler;
 
     private static final int numberOfProcessors = Runtime.getRuntime()
-    .availableProcessors();
+            .availableProcessors();
 
     private static final int workThreadCount = numberOfProcessors
-    + Settings.EXTRA_WORK_THREADS;
+            + Settings.EXTRA_WORK_THREADS;
 
     private final WorkThread workThreads[] = new WorkThread[workThreadCount];
 
-    private final ParallelJobHandler parallelJobHandler = new ParallelJobHandler( this );
+    private final ParallelJobHandler parallelJobHandler = new ParallelJobHandler(
+            this);
 
     private final Terminator terminator;
 
@@ -115,7 +116,7 @@ public final class Node extends Thread implements PacketReceiveListener {
     private final Counter updateMessageCount = new Counter();
 
     private final class NodeRegistryEventHandler implements
-    RegistryEventHandler {
+            RegistryEventHandler {
         /**
          * A new Ibis joined the computation.
          * 
@@ -188,6 +189,7 @@ public final class Node extends Thread implements PacketReceiveListener {
     /**
      * Constructs a new Maestro node using the given list of jobs. Optionally
      * try to get elected as maestro.
+     * 
      * @param runForMaestro
      *            If true, try to get elected as maestro.
      * @param jobs
@@ -200,11 +202,11 @@ public final class Node extends Thread implements PacketReceiveListener {
      */
     @SuppressWarnings("synthetic-access")
     private Node(boolean runForMaestro, JobList jobs)
-    throws IbisCreationFailedException, IOException {
+            throws IbisCreationFailedException, IOException {
         final Properties ibisProperties = new Properties();
 
         this.jobs = jobs;
-        //final JobType supportedTypes[] = jobs.getSupportedJobTypes();
+        // final JobType supportedTypes[] = jobs.getSupportedJobTypes();
         final JobType[] allTypes = jobs.getAllTypes();
         masterQueue = new MasterQueue(allTypes);
         workerQueue = new WorkerQueue(jobs);
@@ -218,7 +220,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             Globals.log.reportProgress("Created ibis " + localIbis);
         }
         final IbisIdentifier myIbis = localIbis.identifier();
-        nodes.registerNode(myIbis, true,jobs.getTypeCount());
+        nodes.registerNode(myIbis, true, jobs.getTypeCount());
         final Registry registry = localIbis.registry();
         if (runForMaestro) {
             final IbisIdentifier m = registry.elect(MAESTRO_ELECTION_NAME);
@@ -231,18 +233,18 @@ public final class Node extends Thread implements PacketReceiveListener {
             isMaestro = false;
 
         }
-        Globals.log.reportProgress("Started ibis " + myIbis
-                + ": isMaestro=" + isMaestro);
+        Globals.log.reportProgress("Started ibis " + myIbis + ": isMaestro="
+                + isMaestro);
         sendPort = new PacketSendPort(this, myIbis);
         terminator = buildTerminator();
         receivePort = new PacketUpcallReceivePort(localIbis,
                 Globals.receivePortName, this);
         traceStats = System.getProperty("ibis.maestro.traceWorkerStatistics") != null;
-        gossiper = new Gossiper(sendPort, isMaestro(), jobs,myIbis);
+        gossiper = new Gossiper(sendPort, isMaestro(), jobs, myIbis);
         startTime = Utils.getPreciseTime();
         recentMasterList.register(myIbis);
         startThreads();
-        if( Settings.traceNodes ){
+        if (Settings.traceNodes) {
             Globals.log.log("Started a Maestro node");
         }
     }
@@ -265,19 +267,19 @@ public final class Node extends Thread implements PacketReceiveListener {
             return null;
         }
         final String terminatorStartQuotumString = System
-        .getProperty("ibis.maestro.terminatorStartQuotum");
+                .getProperty("ibis.maestro.terminatorStartQuotum");
         final String terminatorNodeQuotumString = System
-        .getProperty("ibis.maestro.terminatorNodeQuotum");
+                .getProperty("ibis.maestro.terminatorNodeQuotum");
         final String terminatorInitialSleepString = System
-        .getProperty("ibis.maestro.terminatorInitialSleepTime");
+                .getProperty("ibis.maestro.terminatorInitialSleepTime");
         final String terminatorSleepString = System
-        .getProperty("ibis.maestro.terminatorSleepTime");
+                .getProperty("ibis.maestro.terminatorSleepTime");
         try {
             if (terminatorInitialSleepString == null) {
                 return null;
             }
             final long initialSleep = Long
-            .parseLong(terminatorInitialSleepString);
+                    .parseLong(terminatorInitialSleepString);
             double startQuotum;
             double nodeQuotum;
             long sleep;
@@ -355,7 +357,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             // Nothing we can do about it.
         }
         printStatistics(Globals.log.getPrintStream());
-        //Globals.log.close();
+        // Globals.log.close();
     }
 
     /**
@@ -391,7 +393,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         } else if (theIbis.equals(Globals.localIbis.identifier())) {
             // The registry has declared us dead. We might as well stop.
             Globals.log
-            .reportProgress("This node has been declared dead, stopping..");
+                    .reportProgress("This node has been declared dead, stopping..");
             setStopped();
         }
         final ArrayList<JobInstance> orphans = nodes.removeNode(theIbis);
@@ -399,7 +401,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             for (final JobInstance ti : orphans) {
                 ti.setOrphan();
             }
-            masterQueue.add(jobs,orphans);
+            masterQueue.add(jobs, orphans);
         }
     }
 
@@ -469,7 +471,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 masterQueueIntervals = masterQueue.getQueueIntervals();
             }
             final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap = nodes
-            .getLocalNodeInfo();
+                    .getLocalNodeInfo();
             gossiper.recomputeCompletionTimes(masterQueueIntervals, jobs,
                     localNodeInfoMap);
         }
@@ -489,12 +491,12 @@ public final class Node extends Thread implements PacketReceiveListener {
         nodes.printStatistics(s);
         s.printf("submit       messages:   %5d sent\n", submitMessageCount
                 .get());
-        s.printf("job received messages:   %5d sent\n",
-                jobReceivedMessageCount.get());
+        s.printf("job received messages:   %5d sent\n", jobReceivedMessageCount
+                .get());
         s.printf("job completed messages:  %5d sent\n",
                 jobCompletedMessageCount.get());
-        s.printf("job result   messages:   %5d sent\n", aggregateResultMessageCount
-                .get());
+        s.printf("job result   messages:   %5d sent\n",
+                aggregateResultMessageCount.get());
         s.printf("job fail     messages:   %5d sent\n", jobFailMessageCount
                 .get());
         if (terminator != null) {
@@ -513,7 +515,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 + String.format(" (%.1f%%)", overheadPercentage));
         masterQueue.printStatistics(s);
         Utils.printThreadStats(s);
-        gossiper.printStatistics(s,jobs);
+        gossiper.printStatistics(s, jobs);
         s.printf("update        messages:   %5d sent\n", updateMessageCount
                 .get());
     }
@@ -582,11 +584,10 @@ public final class Node extends Thread implements PacketReceiveListener {
      */
     private void handleJobCompletedMessage(JobCompletedMessage result) {
         if (Settings.traceNodeProgress) {
-            Globals.log
-            .reportProgress("Received a job completed message "
+            Globals.log.reportProgress("Received a job completed message "
                     + result);
         }
-        final JobInstance job = nodes.registerJobCompleted(jobs,result);
+        final JobInstance job = nodes.registerJobCompleted(jobs, result);
         if (job != null) {
             // This was an outstanding job, remove it from our administration.
             masterQueue.removeDuplicates(job);
@@ -616,15 +617,14 @@ public final class Node extends Thread implements PacketReceiveListener {
      */
     private void handleJobFailMessage(JobFailedMessage msg) {
         if (Settings.traceNodeProgress) {
-            Globals.log.reportProgress("Received a job failed message "
-                    + msg);
+            Globals.log.reportProgress("Received a job failed message " + msg);
         }
         final JobInstance failedJob = nodes.registerJobFailed(msg.source,
                 msg.id);
         Globals.log.reportError("Node " + msg.source
                 + " failed to execute job with id " + msg.id
                 + "; node will no longer get jobs of this type");
-        masterQueue.add(jobs,failedJob);
+        masterQueue.add(jobs, failedJob);
     }
 
     /**
@@ -652,7 +652,8 @@ public final class Node extends Thread implements PacketReceiveListener {
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Received node update message " + m);
         }
-        final boolean isnew = gossiper.registerGossip(m.update, m.update.source);
+        final boolean isnew = gossiper
+                .registerGossip(m.update, m.update.source);
         if (isnew) {
             // TODO: can this be moved to the gossiper?
             recomputeCompletionTimes.set();
@@ -672,11 +673,12 @@ public final class Node extends Thread implements PacketReceiveListener {
             recentMasterList.register(source);
         }
         final JobType stageType = msg.jobInstance.getStageType(jobs);
-        final int length = workerQueue.add(stageType,msg);
+        final int length = workerQueue.add(stageType, msg);
         postJobReceivedMessage(source, msg.jobId);
         if (gossiper != null) {
-            final boolean changed = gossiper.setWorkerQueueLength(stageType, length);
-            if( changed ) {
+            final boolean changed = gossiper.setWorkerQueueLength(stageType,
+                    length);
+            if (changed) {
                 doUpdateRecentMasters.set();
             }
         }
@@ -732,8 +734,8 @@ public final class Node extends Thread implements PacketReceiveListener {
             handleStopNodeMessage((StopNodeMessage) msg);
         } else {
             Globals.log
-            .reportInternalError("the node should handle message of type "
-                    + msg.getClass());
+                    .reportInternalError("the node should handle message of type "
+                            + msg.getClass());
         }
         synchronized (this) {
             this.notifyAll();
@@ -745,7 +747,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             final JobInstance job = runningJobList.getLateJob();
             if (job != null) {
                 Globals.log.reportProgress("Resubmitted late job " + job);
-                masterQueue.add(jobs,job);
+                masterQueue.add(jobs, job);
             }
         }
 
@@ -769,24 +771,21 @@ public final class Node extends Thread implements PacketReceiveListener {
         final Message msg = new JobCompletedMessage(jobId);
         boolean ok = sendPort.send(source, msg);
 
-
         if (ok) {
             jobCompletedMessageCount.add();
-        }
-        else {
+        } else {
             // Could not send the result message. We're desperate.
             // First simply try again.
             ok = sendPort.send(source, msg);
             if (ok) {
                 jobCompletedMessageCount.add();
-            }
-            else {
+            } else {
                 // Unfortunately, that didn't work.
                 // TODO: think up another way to recover from a failed
                 // result report.
                 Globals.log
-                .reportError("Failed to send job completed message to "
-                        + source);
+                        .reportError("Failed to send job completed message to "
+                                + source);
             }
         }
     }
@@ -799,15 +798,16 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param runMoment
      *            The moment the job was started.
      */
-    protected void handleJobResult(RunJobMessage message, Serializable result, double runMoment) {
+    protected void handleJobResult(RunJobMessage message, Serializable result,
+            double runMoment) {
         final double jobCompletionMoment = Utils.getPreciseTime();
         final JobInstance jobInstance = message.jobInstance;
         final JobType todoList[] = jobs.getTodoList(jobInstance.overallType);
         final int stage = jobInstance.stageNumber;
         final JobType completedStageType = todoList[stage];
-        final int nextStageNumber = stage+1;
+        final int nextStageNumber = stage + 1;
 
-        if (nextStageNumber>=todoList.length) {
+        if (nextStageNumber >= todoList.length) {
             // This was the final step. Report back the result.
             final JobInstanceIdentifier identifier = jobInstance.jobInstance;
             boolean ok = sendJobResultMessage(identifier, result);
@@ -818,39 +818,38 @@ public final class Node extends Thread implements PacketReceiveListener {
                 if (!ok) {
                     // Nothing we can do, we give up.
                     Globals.log
-                    .reportError("Could not send job result message to "
-                            + identifier);
+                            .reportError("Could not send job result message to "
+                                    + identifier);
                 }
             }
         } else {
             final JobInstance nextJob = new JobInstance(
-                    jobInstance.jobInstance, result,
-                    jobInstance.overallType,nextStageNumber
-            );
-            masterQueue.add(jobs,nextJob);
+                    jobInstance.jobInstance, result, jobInstance.overallType,
+                    nextStageNumber);
+            masterQueue.add(jobs, nextJob);
         }
 
         // Update statistics.
         final double computeInterval = jobCompletionMoment - runMoment;
-        final double averageComputeTime = workerQueue.countJob(completedStageType,
-                computeInterval);
+        final double averageComputeTime = workerQueue.countJob(
+                completedStageType, computeInterval);
         gossiper.setComputeTime(completedStageType, averageComputeTime);
         if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {
             final double queueInterval = runMoment - message.arrivalMoment;
             Globals.log.reportProgress("Completed " + jobInstance
-                    + "; queueInterval="
-                    + Utils.formatSeconds(queueInterval)
+                    + "; queueInterval=" + Utils.formatSeconds(queueInterval)
                     + "; runningJobs=" + runningJobCount);
         }
         final double workerDwellTime = jobCompletionMoment
-        - message.arrivalMoment;
+                - message.arrivalMoment;
         if (traceStats) {
             final double now = (Utils.getPreciseTime() - startTime);
-            System.out.println("TRACE:workerDwellTime " + completedStageType + " " + now
-                    + " " + workerDwellTime);
+            System.out.println("TRACE:workerDwellTime " + completedStageType
+                    + " " + now + " " + workerDwellTime);
         }
         final IbisIdentifier source = message.source;
-        if (!deadNodes.contains(source)&& !jobs.isParallelJobType(completedStageType)) {
+        if (!deadNodes.contains(source)
+                && !jobs.isParallelJobType(completedStageType)) {
             // If the master node isn't dead, tell it this job
             // is completed.
             final long jobId = message.jobId;
@@ -871,27 +870,31 @@ public final class Node extends Thread implements PacketReceiveListener {
             }
         } else if (job instanceof ParallelJob) {
             final ParallelJob parallelJob = (ParallelJob) job;
-            final ParallelJobContext context = new ParallelJobContext(message, runMoment);
-            final ParallelJobInstance jobInstance = parallelJob.createInstance(context);
-            if( Settings.traceParallelJobs ){
-                System.out.println( "Splitting parallel job " + message.jobInstance );
+            final ParallelJobContext context = new ParallelJobContext(message,
+                    runMoment);
+            final ParallelJobInstance jobInstance = parallelJob
+                    .createInstance(context);
+            if (Settings.traceParallelJobs) {
+                System.out.println("Splitting parallel job "
+                        + message.jobInstance);
             }
             jobInstance.split(input, parallelJobHandler);
-            if( jobInstance.resultIsReady() ){
+            if (jobInstance.resultIsReady()) {
                 final Serializable result = jobInstance.getResult();
-                handleJobResult(message,result, runMoment);
+                handleJobResult(message, result, runMoment);
             }
-            sendJobCompletedMessage(message.source,  message.jobId);
-        } else if (job instanceof SeriesJob ) {
-            Globals.log.reportInternalError( "SeriesJob " + job + " should be handled" );
+            sendJobCompletedMessage(message.source, message.jobId);
+        } else if (job instanceof SeriesJob) {
+            Globals.log.reportInternalError("SeriesJob " + job
+                    + " should be handled");
         } else if (job instanceof AlternativesJob) {
             Globals.log
-            .reportInternalError("AlternativesJob should have been selected by the master "
-                    + job);
+                    .reportInternalError("AlternativesJob should have been selected by the master "
+                            + job);
         } else {
             Globals.log
-            .reportInternalError("Don't know what to do with a job of type "
-                    + job.getClass());
+                    .reportInternalError("Don't know what to do with a job of type "
+                            + job.getClass());
         }
     }
 
@@ -927,7 +930,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 if (runningJobCount.isBelow(numberOfProcessors)) {
                     // Only try to start a new job when there are idle
                     // processors.
-                    message = workerQueue.remove(jobs,gossiper);
+                    message = workerQueue.remove(jobs, gossiper);
                     readyForWork = true;
                 }
                 if (message == null) {
@@ -944,11 +947,15 @@ public final class Node extends Thread implements PacketReceiveListener {
                         }
                         synchronized (this) {
                             final double overhead = Utils.getPreciseTime()
-                            - overheadStart;
+                                    - overheadStart;
                             // Measure the time we spend in this wait,
                             // and add to idle time.
                             if (keepRunning()) {
-                                this.wait(sleepTime);
+                                if (workerQueue.isEmpty()
+                                        || !runningJobCount
+                                                .isBelow(numberOfProcessors)) {
+                                    this.wait(sleepTime);
+                                }
                             }
                             overheadStart = Utils.getPreciseTime();
                             threadOverhead += overhead;
@@ -960,13 +967,14 @@ public final class Node extends Thread implements PacketReceiveListener {
                 } else {
                     // We have a job to execute.
                     final double runMoment = Utils.getPreciseTime();
-                    final JobType stageType = message.jobInstance.getStageType(jobs);
+                    final JobType stageType = message.jobInstance
+                            .getStageType(jobs);
                     final Job job = jobs.getJob(stageType);
 
                     runningJobCount.up();
                     if (Settings.traceNodeProgress) {
                         final double queueInterval = runMoment
-                        - message.arrivalMoment;
+                                - message.arrivalMoment;
                         Globals.log.reportProgress("Worker: handed out job "
                                 + message + " of type " + stageType
                                 + "; it was queued for "
@@ -1031,38 +1039,43 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param listener
      * @param job
      */
-    void submitSubjob(long prefix[],Serializable input, Serializable userId,
+    void submitSubjob(long prefix[], Serializable input, Serializable userId,
             JobCompletionListener listener, Job job) {
-        final JobInstanceIdentifier tii = new JobInstanceIdentifier(prefix,userId, Globals.localIbis
-                .identifier());
+        final JobInstanceIdentifier tii = new JobInstanceIdentifier(prefix,
+                userId, Globals.localIbis.identifier());
         final JobType overallType = jobs.getJobType(job);
-        final JobInstance jobInstance = new JobInstance(tii, input,overallType,0);
-        runningJobList.add(new SubmittedJobInfo(tii, jobInstance, listener,false));
-        masterQueue.add(jobs,jobInstance);
+        final JobInstance jobInstance = new JobInstance(tii, input,
+                overallType, 0);
+        runningJobList.add(new SubmittedJobInfo(tii, jobInstance, listener,
+                false));
+        masterQueue.add(jobs, jobInstance);
     }
 
     /**
-     * Given an input and a job to execute, submit this input to the job.
-     * If <code>submitIfBusy</code> is set, also submit when all workers
-     * are currently busy.
+     * Given an input and a job to execute, submit this input to the job. If
+     * <code>submitIfBusy</code> is set, also submit when all workers are
+     * currently busy.
      * 
      * @param input
      *            The input of the job.
-     * @param userId The user-supplied id of the job.
+     * @param userId
+     *            The user-supplied id of the job.
      * @param listener
      *            The completion listener for this job.
      * @param job
      *            The job to execute.
      */
-    public void submit(Serializable input, Serializable userId, JobCompletionListener listener,
-            Job job) {
+    public void submit(Serializable input, Serializable userId,
+            JobCompletionListener listener, Job job) {
         waitForRoom();
-        final JobInstanceIdentifier tii = new JobInstanceIdentifier(null,userId, Globals.localIbis
-                .identifier());
+        final JobInstanceIdentifier tii = new JobInstanceIdentifier(null,
+                userId, Globals.localIbis.identifier());
         final JobType overallType = jobs.getJobType(job);
-        final JobInstance jobInstance = new JobInstance(tii, input,overallType,0);
-        runningJobList.add(new SubmittedJobInfo(tii, jobInstance, listener,true));
-        masterQueue.add(jobs,jobInstance);
+        final JobInstance jobInstance = new JobInstance(tii, input,
+                overallType, 0);
+        runningJobList.add(new SubmittedJobInfo(tii, jobInstance, listener,
+                true));
+        masterQueue.add(jobs, jobInstance);
     }
 
     /**
@@ -1079,7 +1092,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      *             created.
      */
     public static Node createNode(JobList jobs, boolean goForMaestro)
-    throws IbisCreationFailedException, IOException {
+            throws IbisCreationFailedException, IOException {
         return new Node(goForMaestro, jobs);
     }
 
@@ -1096,7 +1109,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             }
         }
         sendPort.registerDestination(theIbis);
-        nodes.registerNode(theIbis, local,jobs.getTypeCount());
+        nodes.registerNode(theIbis, local, jobs.getTypeCount());
         if (!local) {
             gossiper.registerNode(theIbis);
         }
@@ -1125,9 +1138,8 @@ public final class Node extends Thread implements PacketReceiveListener {
                 // same job type.
                 final NodePerformanceInfo[] tables = gossiper.getGossipCopy();
                 final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap = nodes
-                .getLocalNodeInfo();
-                final Submission submission = masterQueue.getSubmission(
-                        jobs,
+                        .getLocalNodeInfo();
+                final Submission submission = masterQueue.getSubmission(jobs,
                         localNodeInfoMap, tables);
                 if (submission == null) {
                     break;
@@ -1137,12 +1149,12 @@ public final class Node extends Thread implements PacketReceiveListener {
                 worker = nodes.get(node);
                 jobId = nextJobId++;
 
-                worker.registerJobStart(jobs,jobInstance, jobId,
+                worker.registerJobStart(jobs, jobInstance, jobId,
                         submission.predictedDuration);
             }
             if (Settings.traceMasterQueue || Settings.traceSubmissions) {
-                Globals.log.reportProgress("Submitting job " + jobInstance + " to "
-                        + node);
+                Globals.log.reportProgress("Submitting job " + jobInstance
+                        + " to " + node);
             }
 
             final RunJobMessage msg = new RunJobMessage(jobInstance, jobId);
@@ -1152,7 +1164,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             } else {
                 // Try to put the paste back in the tube.
                 // The send port has already registered the trouble.
-                masterQueue.add(jobs,msg.jobInstance);
+                masterQueue.add(jobs, msg.jobInstance);
                 worker.retractJob(jobId);
             }
             changed = true;

@@ -97,7 +97,7 @@ class PacketSendPort {
 
         private final IbisIdentifier ibisIdentifier;
 
-        final boolean local;
+        private final boolean local;
 
         /**
          * Create a new destination info entry.
@@ -119,11 +119,11 @@ class PacketSendPort {
                     .formatByteCount(sentBytes), ibisIdentifier.toString());
         }
 
-        synchronized void incrementSentCount() {
+        private synchronized void incrementSentCount() {
             sentCount++;
         }
 
-        synchronized void addSentBytes(long val) {
+        private synchronized void addSentBytes(long val) {
             sentBytes += val;
         }
     }
@@ -163,6 +163,7 @@ class PacketSendPort {
      *            The data to send.
      * @return <code>true</code> if we managed to send the data.
      */
+    @SuppressWarnings("synthetic-access")
     boolean send(IbisIdentifier theIbis, Message message) {
         long len;
         boolean ok = true;
@@ -213,6 +214,7 @@ class PacketSendPort {
      *            The message to send.
      * @return True iff we managed to send the message.
      */
+    @SuppressWarnings("synthetic-access")
     boolean sendNonessentialMessage(IbisIdentifier target, Message message) {
         DestinationInfo info;
         synchronized (this) {
