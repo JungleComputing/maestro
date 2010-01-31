@@ -124,7 +124,7 @@ public final class Node extends Thread implements PacketReceiveListener {
          *            The ibis that joined the computation.
          */
         @Override
-        public void joined(IbisIdentifier theIbis) {
+        public void joined(final IbisIdentifier theIbis) {
             registerIbisJoined(theIbis);
         }
 
@@ -135,7 +135,7 @@ public final class Node extends Thread implements PacketReceiveListener {
          *            The ibis that died.
          */
         @Override
-        public void died(IbisIdentifier theIbis) {
+        public void died(final IbisIdentifier theIbis) {
             Globals.log.reportProgress("Ibis " + theIbis + " has died");
             registerIbisLeft(theIbis);
         }
@@ -147,7 +147,7 @@ public final class Node extends Thread implements PacketReceiveListener {
          *            The ibis that left.
          */
         @Override
-        public void left(IbisIdentifier theIbis) {
+        public void left(final IbisIdentifier theIbis) {
             registerIbisLeft(theIbis);
         }
 
@@ -161,7 +161,8 @@ public final class Node extends Thread implements PacketReceiveListener {
          */
         @SuppressWarnings("synthetic-access")
         @Override
-        public void electionResult(String name, IbisIdentifier theIbis) {
+        public void electionResult(final String name,
+                final IbisIdentifier theIbis) {
             if (name.equals(MAESTRO_ELECTION_NAME) && theIbis != null) {
                 Globals.log.reportProgress("Ibis " + theIbis
                         + " was elected maestro");
@@ -170,7 +171,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         }
 
         @Override
-        public void gotSignal(String arg0, IbisIdentifier arg1) {
+        public void gotSignal(final String arg0, final IbisIdentifier arg1) {
             // Not interested.
         }
 
@@ -180,7 +181,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         }
 
         @Override
-        public void poolTerminated(IbisIdentifier arg0) {
+        public void poolTerminated(final IbisIdentifier arg0) {
             // TODO: can we do something with the poolTerminated() signal?
 
         }
@@ -201,7 +202,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      *             Thrown if for some reason we cannot communicate.
      */
     @SuppressWarnings("synthetic-access")
-    private Node(boolean runForMaestro, JobList jobs)
+    private Node(final boolean runForMaestro, final JobList jobs)
             throws IbisCreationFailedException, IOException {
         final Properties ibisProperties = new Properties();
 
@@ -231,7 +232,6 @@ public final class Node extends Thread implements PacketReceiveListener {
             }
         } else {
             isMaestro = false;
-
         }
         Globals.log.reportProgress("Started ibis " + myIbis + ": isMaestro="
                 + isMaestro);
@@ -380,7 +380,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param theIbis
      *            The ibis that has left.
      */
-    protected void registerIbisLeft(IbisIdentifier theIbis) {
+    protected void registerIbisLeft(final IbisIdentifier theIbis) {
         gossiper.removeNode(theIbis);
         recentMasterList.remove(theIbis);
         if (terminator != null) {
@@ -413,7 +413,8 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param result
      *            The job result.
      */
-    private void reportCompletion(JobInstanceIdentifier id, Serializable result) {
+    private void reportCompletion(final JobInstanceIdentifier id,
+            final Serializable result) {
         final SubmittedJobInfo job = runningJobList.remove(id);
         if (job != null) {
             job.listener.jobCompleted(this, id.userId, result);
@@ -426,7 +427,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param theIbis
      *            The ibis that may be dead.
      */
-    void setSuspect(IbisIdentifier theIbis) {
+    void setSuspect(final IbisIdentifier theIbis) {
         try {
             Globals.localIbis.registry().assumeDead(theIbis);
         } catch (final IOException e) {
@@ -482,7 +483,7 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     /** Print some statistics about the entire worker run. */
-    private synchronized void printStatistics(PrintStream s) {
+    private synchronized void printStatistics(final PrintStream s) {
         if (stopTime < startTime) {
             Globals.log.reportError("printStatistics(): Node didn't stop yet");
             stopTime = Utils.getPreciseTime();
@@ -509,7 +510,8 @@ public final class Node extends Thread implements PacketReceiveListener {
         s.println("run time        = " + Utils.formatSeconds(workInterval));
         s.println("activated after = "
                 + Utils.formatSeconds(activeTime - startTime));
-        final double overheadPercentage = 100.0 * (overheadDuration / workInterval);
+        final double overheadPercentage = 100.0 * overheadDuration
+                / workInterval;
         s.println("Total overhead time = "
                 + Utils.formatSeconds(overheadDuration)
                 + String.format(" (%.1f%%)", overheadPercentage));
@@ -530,8 +532,8 @@ public final class Node extends Thread implements PacketReceiveListener {
      *            The result to send.
      * @return <code>true</code> if the message could be sent.
      */
-    private boolean sendJobResultMessage(JobInstanceIdentifier id,
-            Serializable result) {
+    private boolean sendJobResultMessage(final JobInstanceIdentifier id,
+            final Serializable result) {
         if (deadNodes.contains(id.resultNode)) {
             // We say it has been delivered to avoid error recovery.
             // Think of this as an optimization.
@@ -551,7 +553,8 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param result
      *            The result to send.
      */
-    private void postJobReceivedMessage(IbisIdentifier master, long id) {
+    private void postJobReceivedMessage(final IbisIdentifier master,
+            final long id) {
         final Message msg = new JobReceivedMessage(id);
         jobReceivedMessageCount.add();
         synchronized (outgoingMessageQueue) {
@@ -567,7 +570,8 @@ public final class Node extends Thread implements PacketReceiveListener {
      *            The job instance that failed.
      * @return <code>true</code> if the message could be sent.
      */
-    private boolean sendJobFailMessage(IbisIdentifier ibis, long jobId) {
+    private boolean sendJobFailMessage(final IbisIdentifier ibis,
+            final long jobId) {
         if (deadNodes.contains(ibis)) {
             return false;
         }
@@ -582,7 +586,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param result
      *            The message.
      */
-    private void handleJobCompletedMessage(JobCompletedMessage result) {
+    private void handleJobCompletedMessage(final JobCompletedMessage result) {
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Received a job completed message "
                     + result);
@@ -601,7 +605,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param result
      *            The message.
      */
-    private void handleJobReceivedMessage(JobReceivedMessage result) {
+    private void handleJobReceivedMessage(final JobReceivedMessage result) {
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Received a job received message "
                     + result);
@@ -615,7 +619,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param msg
      *            The status message.
      */
-    private void handleJobFailMessage(JobFailedMessage msg) {
+    private void handleJobFailMessage(final JobFailedMessage msg) {
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Received a job failed message " + msg);
         }
@@ -633,12 +637,12 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param msg
      *            The status message.
      */
-    private void handleStopNodeMessage(StopNodeMessage msg) {
+    private void handleStopNodeMessage(final StopNodeMessage msg) {
         Globals.log.reportProgress("Node was forced to stop by " + msg.source);
         System.exit(2);
     }
 
-    private void handleJobResultMessage(JobResultMessage m) {
+    private void handleJobResultMessage(final JobResultMessage m) {
         completedJobList.add(new CompletedJob(m.job, m.result));
     }
 
@@ -648,7 +652,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param m
      *            The update message.
      */
-    private void handleNodeUpdateMessage(UpdateNodeMessage m) {
+    private void handleNodeUpdateMessage(final UpdateNodeMessage m) {
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Received node update message " + m);
         }
@@ -666,7 +670,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param msg
      *            The message to handle.
      */
-    private void handleRunJobMessage(RunJobMessage msg) {
+    private void handleRunJobMessage(final RunJobMessage msg) {
         final IbisIdentifier source = msg.source;
         final boolean isDead = nodes.registerAsCommunicating(source);
         if (!isDead && !source.equals(Globals.localIbis.identifier())) {
@@ -690,7 +694,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param m
      *            The gossip message.
      */
-    private void handleGossipMessage(GossipMessage m) {
+    private void handleGossipMessage(final GossipMessage m) {
         final boolean changed = gossiper.registerGossipMessage(m);
         if (changed) {
             recomputeCompletionTimes.set();
@@ -707,12 +711,12 @@ public final class Node extends Thread implements PacketReceiveListener {
      *            The message we received.
      */
     @Override
-    public void messageReceived(Message msg) {
+    public void messageReceived(final Message msg) {
         handleMessage(msg);
     }
 
     /** Handle the given message. */
-    private void handleMessage(Message msg) {
+    private void handleMessage(final Message msg) {
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Received message " + msg);
         }
@@ -767,7 +771,8 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param source
      * @param jobId
      */
-    private void sendJobCompletedMessage(IbisIdentifier source, long jobId) {
+    private void sendJobCompletedMessage(final IbisIdentifier source,
+            final long jobId) {
         final Message msg = new JobCompletedMessage(jobId);
         boolean ok = sendPort.send(source, msg);
 
@@ -798,8 +803,8 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param runMoment
      *            The moment the job was started.
      */
-    protected void handleJobResult(RunJobMessage message, Serializable result,
-            double runMoment) {
+    protected void handleJobResult(final RunJobMessage message,
+            final Serializable result, final double runMoment) {
         final double jobCompletionMoment = Utils.getPreciseTime();
         final JobInstance jobInstance = message.jobInstance;
         final JobType todoList[] = jobs.getTodoList(jobInstance.overallType);
@@ -843,7 +848,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         final double workerDwellTime = jobCompletionMoment
                 - message.arrivalMoment;
         if (traceStats) {
-            final double now = (Utils.getPreciseTime() - startTime);
+            final double now = Utils.getPreciseTime() - startTime;
             System.out.println("TRACE:workerDwellTime " + completedStageType
                     + " " + now + " " + workerDwellTime);
         }
@@ -858,8 +863,8 @@ public final class Node extends Thread implements PacketReceiveListener {
         doUpdateRecentMasters.set();
     }
 
-    private void executeJob(RunJobMessage message, Job job, Serializable input,
-            double runMoment) {
+    private void executeJob(final RunJobMessage message, final Job job,
+            final Serializable input, final double runMoment) {
         if (job instanceof AtomicJob) {
             final AtomicJob at = (AtomicJob) job;
             try {
@@ -1005,7 +1010,7 @@ public final class Node extends Thread implements PacketReceiveListener {
         // threads.
     }
 
-    private void failNode(RunJobMessage message, Throwable t) {
+    private void failNode(final RunJobMessage message, final Throwable t) {
         final JobType stageType = message.jobInstance.getStageType(jobs);
         Globals.log.reportError("Node fails for type " + stageType);
         t.printStackTrace(Globals.log.getPrintStream());
@@ -1029,7 +1034,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @return The actual number of nodes there was information for at the
      *         moment we stopped waiting.
      */
-    public int waitForReadyNodes(int n, long maximalWaitTime) {
+    public int waitForReadyNodes(final int n, final long maximalWaitTime) {
         return gossiper.waitForReadyNodes(n, maximalWaitTime);
     }
 
@@ -1039,8 +1044,9 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param listener
      * @param job
      */
-    void submitSubjob(long prefix[], Serializable input, Serializable userId,
-            JobCompletionListener listener, Job job) {
+    void submitSubjob(final long prefix[], final Serializable input,
+            final Serializable userId, final JobCompletionListener listener,
+            final Job job) {
         final JobInstanceIdentifier tii = new JobInstanceIdentifier(prefix,
                 userId, Globals.localIbis.identifier());
         final JobType overallType = jobs.getJobType(job);
@@ -1065,8 +1071,8 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param job
      *            The job to execute.
      */
-    public void submit(Serializable input, Serializable userId,
-            JobCompletionListener listener, Job job) {
+    public void submit(final Serializable input, final Serializable userId,
+            final JobCompletionListener listener, final Job job) {
         waitForRoom();
         final JobInstanceIdentifier tii = new JobInstanceIdentifier(null,
                 userId, Globals.localIbis.identifier());
@@ -1091,7 +1097,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      *             Thrown if for some reason the ibis of this node could not be
      *             created.
      */
-    public static Node createNode(JobList jobs, boolean goForMaestro)
+    public static Node createNode(final JobList jobs, final boolean goForMaestro)
             throws IbisCreationFailedException, IOException {
         return new Node(goForMaestro, jobs);
     }
@@ -1100,7 +1106,7 @@ public final class Node extends Thread implements PacketReceiveListener {
      * @param theIbis
      *            The ibis that has joined.
      */
-    protected void registerIbisJoined(IbisIdentifier theIbis) {
+    protected void registerIbisJoined(final IbisIdentifier theIbis) {
         final boolean local = theIbis.equals(Globals.localIbis.identifier());
 
         if (!local) {
