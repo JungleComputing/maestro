@@ -4,7 +4,7 @@ import junit.framework.Test;
 import junit.framework.TestSuite;
 
 /**
- * A testsuite for the Maestro code.
+ * A test suite for the Maestro code.
  * 
  * @author Kees van Reeuwijk.
  */
@@ -18,7 +18,6 @@ public class AllTests {
     public static Test suite() {
         TestSuite suite = new TestSuite("Test for ibis.maestro");
         // $JUnit-BEGIN$
-        suite.addTestSuite(CalculationVertexTest.class);
         suite.addTestSuite(MasterQueueTest.class);
         suite.addTestSuite(JobListTest.class);
         suite.addTestSuite(GossipTest.class);
