@@ -45,7 +45,7 @@ final class MasterQueue {
         /** Maximal ever number of elements ever in the queue. */
         private int maxElements = 0;
 
-        /** Last time the fron of the queue changed. */
+        /** Last time the front of the queue changed. */
         private double frontChangedTime = 0;
 
         /** The estimated time interval between jobs being dequeued. */
@@ -324,7 +324,7 @@ final class MasterQueue {
      * @return A job submission, or <code>null</code> if there are no free
      *         workers for any of the jobs in the queue.
      */
-    @SuppressWarnings("synthetic-access")
+    @SuppressWarnings({ "synthetic-access", "unused" })
     synchronized Submission getSubmission(final JobList jobs,
             final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
             final NodePerformanceInfo[] tables) {
@@ -370,7 +370,15 @@ final class MasterQueue {
         return null;
     }
 
-    @SuppressWarnings("synthetic-access")
+    public JobInstance remove() {
+    	if(queue.size()<1){
+    		return null;
+    	}
+        JobInstance res = queue.remove(0);
+        return res;
+	}
+
+	@SuppressWarnings("synthetic-access")
     double[] getQueueIntervals() {
         final double res[] = new double[queueTypes.length];
 
