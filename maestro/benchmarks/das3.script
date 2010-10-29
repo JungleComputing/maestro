@@ -1,5 +1,8 @@
-#!/bin/sh
+#!/bin/sh -x
 set -e
+
+PROF=
+#PROF=-Xprof
 
 export SGE_ROOT=/usr/local/Cluster-Apps/sge
 PRUN=/usr/local/VU/reserve.sge/bin/prun
@@ -25,8 +28,14 @@ elif [ `expr $NR_NODES \* 2` = "$NR_PROCS" ]; then
 fi
 
 source ./settag*.sh
-LOGSDIR=$TAG-`hostname -s`.logs
-mkdir $LOGSDIR
-echo $PRUN -v $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $LOGSDIR/out $JAVA $ARGS
-$PRUN -v $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $LOGSDIR/out $JAVA $ARGS
-sleep 1
+LOGSDIR=$TAG-$ROLE.logs
+LOGSTAR=$TAG-$ROLE.tar
+if [ \! -e $LOGSDIR ]; then
+    mkdir $LOGSDIR
+fi
+echo $PRUN -v $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $LOGSDIR/out $JAVA $PROF $ARGS
+$PRUN -v $OPTION -asocial -t $RUNTIME -np $NR_NODES -o $LOGSDIR/out $JAVA $PROF $ARGS
+tar -cf $LOGSTAR $LOGSDIR
+gzip --best $LOGSTAR
+#cp $LOGSTAR.gz ~
+echo "$TAG $ROLE DONE!"

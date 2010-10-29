@@ -49,7 +49,7 @@ run-$arg.process.count = $p
 run-$arg.cluster.name = VU
 run-$arg.pool.name = $arg-pool
 run-$arg.application.input.files = settag-$arg.sh
-run-$arg.application.output.files = $arg-fs0.logs
+run-$arg.application.output.files = $arg-fs0.tar.gz
 run-$arg.application.arguments = $args
 run-$arg.resource.count = $p
 """ )
