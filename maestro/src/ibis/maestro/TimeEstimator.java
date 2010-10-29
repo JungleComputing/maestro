@@ -5,7 +5,7 @@ package ibis.maestro;
  * 
  * @author Kees van Reeuwijk.
  */
-class TimeEstimate {
+class DecayingEstimator implements EstimatorInterface {
     private double average;
 
     private boolean initial = true;
@@ -16,7 +16,7 @@ class TimeEstimate {
      * @param initial
      *            The initial value of the time estimate.
      */
-    TimeEstimate(double initial) {
+    DecayingEstimator(double initial) {
         setInitialEstimate(initial);
     }
 
@@ -33,7 +33,18 @@ class TimeEstimate {
      * 
      * @return The average time.
      */
-    double getAverage() {
+    @Override
+    public double getAverage() {
+        return average;
+    }
+
+    /**
+     * Returns a reasonable estimate.
+     * 
+     * @return The average time.
+     */
+    @Override
+    public double getLikelyValue() {
         return average;
     }
 
@@ -43,7 +54,8 @@ class TimeEstimate {
      * @param val
      *            The new sample average to add.
      */
-    void addSample(double val) {
+    @Override
+    public void addSample(double val) {
         if (initial) {
             average = val;
             initial = false;
@@ -52,16 +64,17 @@ class TimeEstimate {
         }
     }
 
-    /**
-     * If we don't have a better estimate, use this one.
+    /*
+     * (non-Javadoc)
      * 
-     * @param v
-     *            The new initial time estimate.
+     * @see ibis.maestro.EstimateInterface#setInitialEstimate(double)
      */
+    @Override
     public void setInitialEstimate(double v) {
         if (initial) {
-            average = v / 2; // This estimate is also inaccurate, so
-                                // underestimate a bit.
+            // This estimate is also inaccurate, so
+            // underestimate a bit.
+            average = v / 2;
         }
     }
 }

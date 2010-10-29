@@ -35,12 +35,12 @@ final class WorkerQueueJobInfo {
     private boolean failed = false;
 
     /** The estimated time interval between jobs being dequeued. */
-    private final TimeEstimate dequeueInterval = new TimeEstimate(
+    private final EstimatorInterface dequeueInterval = new DecayingEstimator(
             1 * Utils.MILLISECOND);
 
     private double totalWorkTime = 0.0;
 
-    private final TimeEstimate averageComputeTime = new TimeEstimate(
+    private final EstimatorInterface averageComputeTime = new DecayingEstimator(
             Utils.MILLISECOND);
 
     WorkerQueueJobInfo(JobType type) {
@@ -60,9 +60,7 @@ final class WorkerQueueJobInfo {
                     + Utils.formatSeconds(totalWorkTime)
                     + String.format(" (%.1f%%)", workPercentage));
             out.println("    work time/job        = "
-                    + Utils
-                            .formatSeconds(totalWorkTime
-                                    / outGoingJobCount));
+                    + Utils.formatSeconds(totalWorkTime / outGoingJobCount));
             out.println("    av. dequeue interval = "
                     + Utils.formatSeconds(dequeueInterval.getAverage()));
         } else {
@@ -109,13 +107,13 @@ final class WorkerQueueJobInfo {
         return elements;
     }
 
-    double getDequeueInterval() {
-        return dequeueInterval.getAverage();
+    double getLikelyDequeueInterval() {
+        return dequeueInterval.getLikelyValue();
     }
 
     /**
-     * Registers the completion of a job of this particular type, with the
-     * given queue interval and the given work interval.
+     * Registers the completion of a job of this particular type, with the given
+     * queue interval and the given work interval.
      * 
      * @param workTime
      *            The time it took to execute this job.

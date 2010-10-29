@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-
 import java.io.PrintStream;
 
 /**
@@ -11,9 +10,9 @@ final class NodeJobInfo {
 
     private final NodeInfo nodeInfo;
 
-    private final TimeEstimate transmissionTimeEstimate;
+    private final EstimatorInterface transmissionTimeEstimate;
 
-    private final TimeEstimate roundtripTimeEstimate;
+    private final EstimatorInterface roundtripTimeEstimate;
 
     /** How many instances of this job does this worker currently have? */
     private int outstandingJobs = 0;
@@ -44,8 +43,8 @@ final class NodeJobInfo {
 
         // Totally unfounded guesses, but we should learn soon enough what the
         // real values are...
-        this.transmissionTimeEstimate = new TimeEstimate(pingTime);
-        this.roundtripTimeEstimate = new TimeEstimate(2 * pingTime);
+        this.transmissionTimeEstimate = new DecayingEstimator(pingTime);
+        this.roundtripTimeEstimate = new DecayingEstimator(2 * pingTime);
         if (Settings.traceWorkerList || Settings.traceRemainingJobTime) {
             Globals.log.reportProgress("Created new WorkerJobInfo "
                     + toString());
@@ -58,8 +57,8 @@ final class NodeJobInfo {
     @Override
     public String toString() {
         return "[jobInfo=" + jobInfo + " worker=" + nodeInfo
-        + " transmissionTimeEstimate=" + transmissionTimeEstimate
-        + " outstandingJobs=" + outstandingJobs + "]";
+                + " transmissionTimeEstimate=" + transmissionTimeEstimate
+                + " outstandingJobs=" + outstandingJobs + "]";
     }
 
     /**
@@ -127,14 +126,15 @@ final class NodeJobInfo {
     }
 
     synchronized LocalNodeInfo getLocalNodeInfo() {
-        double transmissionTime = transmissionTimeEstimate.getAverage();
+        final double transmissionTime = transmissionTimeEstimate
+                .getLikelyValue();
         double predictedDuration;
         if (failed) {
             predictedDuration = Double.POSITIVE_INFINITY;
+        } else {
+            predictedDuration = roundtripTimeEstimate.getLikelyValue();
         }
-        else {
-            predictedDuration = roundtripTimeEstimate.getAverage();
-        }
-        return new LocalNodeInfo( outstandingJobs, transmissionTime,predictedDuration);
+        return new LocalNodeInfo(outstandingJobs, transmissionTime,
+                predictedDuration);
     }
 }

@@ -49,7 +49,7 @@ final class MasterQueue {
         private double frontChangedTime = 0;
 
         /** The estimated time interval between jobs being dequeued. */
-        private final TimeEstimate dequeueInterval = new TimeEstimate(
+        private final EstimatorInterface dequeueInterval = new DecayingEstimator(
                 1 * Utils.MILLISECOND);
 
         private TypeInfo(final JobType type) {
@@ -102,7 +102,7 @@ final class MasterQueue {
          *         queue.
          */
         private synchronized double estimateQueueTime() {
-            final double timePerEntry = dequeueInterval.getAverage();
+            final double timePerEntry = dequeueInterval.getLikelyValue();
             // Since at least one processor isn't working on a job (or we
             // wouldn't be here), we are only impressed if there is more
             // than one idle processor.

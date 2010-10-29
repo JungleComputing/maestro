@@ -150,7 +150,7 @@ final class WorkerQueue {
                     + "; " + length + " of type " + type);
         }
         if (gossiper != null) {
-            final double queueTimePerJob = info.getDequeueInterval();
+            final double queueTimePerJob = info.getLikelyDequeueInterval();
             gossiper.setWorkerQueueTimePerJob(type,
                     queueTimePerJob, length);
         }
