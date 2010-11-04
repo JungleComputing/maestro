@@ -33,8 +33,8 @@ class PacketUpcallReceivePort implements MessageUpcall {
      *            The name of the port.
      * @throws IOException
      */
-    PacketUpcallReceivePort(Ibis ibis, String name,
-            PacketReceiveListener listener) throws IOException {
+    PacketUpcallReceivePort(final Ibis ibis, final String name,
+            final PacketReceiveListener listener) throws IOException {
         this.listener = listener;
         port = ibis.createReceivePort(portType, name, this);
     }
@@ -50,7 +50,7 @@ class PacketUpcallReceivePort implements MessageUpcall {
      *             read.
      */
     @Override
-    public void upcall(ReadMessage msg) throws IOException {
+    public void upcall(final ReadMessage msg) throws IOException {
         Message data;
         try {
             data = (Message) msg.readObject();
