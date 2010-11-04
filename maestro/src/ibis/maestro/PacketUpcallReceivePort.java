@@ -49,6 +49,7 @@ class PacketUpcallReceivePort implements MessageUpcall {
      *             Thrown if for some reason the given message could not be
      *             read.
      */
+    @Override
     public void upcall(ReadMessage msg) throws IOException {
         Message data;
         try {

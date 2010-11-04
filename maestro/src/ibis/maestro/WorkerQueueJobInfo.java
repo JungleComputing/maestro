@@ -35,12 +35,12 @@ final class WorkerQueueJobInfo {
     private boolean failed = false;
 
     /** The estimated time interval between jobs being dequeued. */
-    private final EstimatorInterface dequeueInterval = new DecayingEstimator(
+    private final EstimatorInterface dequeueInterval = new ExponentialDecayEstimator(
             1 * Utils.MILLISECOND);
 
     private double totalWorkTime = 0.0;
 
-    private final EstimatorInterface averageComputeTime = new DecayingEstimator(
+    private final EstimatorInterface averageComputeTime = new ExponentialDecayEstimator(
             Utils.MILLISECOND);
 
     WorkerQueueJobInfo(JobType type) {

@@ -49,7 +49,7 @@ final class MasterQueue {
         private double frontChangedTime = 0;
 
         /** The estimated time interval between jobs being dequeued. */
-        private final EstimatorInterface dequeueInterval = new DecayingEstimator(
+        private final EstimatorInterface dequeueInterval = new ExponentialDecayEstimator(
                 1 * Utils.MILLISECOND);
 
         private TypeInfo(final JobType type) {
@@ -324,7 +324,7 @@ final class MasterQueue {
      * @return A job submission, or <code>null</code> if there are no free
      *         workers for any of the jobs in the queue.
      */
-    @SuppressWarnings({ "synthetic-access", "unused" })
+    @SuppressWarnings("synthetic-access")
     synchronized Submission getSubmission(final JobList jobs,
             final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
             final NodePerformanceInfo[] tables) {
@@ -371,14 +371,14 @@ final class MasterQueue {
     }
 
     public JobInstance remove() {
-    	if(queue.size()<1){
-    		return null;
-    	}
-        JobInstance res = queue.remove(0);
+        if (queue.size() < 1) {
+            return null;
+        }
+        final JobInstance res = queue.remove(0);
         return res;
-	}
+    }
 
-	@SuppressWarnings("synthetic-access")
+    @SuppressWarnings("synthetic-access")
     double[] getQueueIntervals() {
         final double res[] = new double[queueTypes.length];
 

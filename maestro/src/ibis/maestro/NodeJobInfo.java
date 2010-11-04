@@ -43,8 +43,8 @@ final class NodeJobInfo {
 
         // Totally unfounded guesses, but we should learn soon enough what the
         // real values are...
-        this.transmissionTimeEstimate = new DecayingEstimator(pingTime);
-        this.roundtripTimeEstimate = new DecayingEstimator(2 * pingTime);
+        this.transmissionTimeEstimate = new ExponentialDecayEstimator(pingTime);
+        this.roundtripTimeEstimate = new ExponentialDecayEstimator(2 * pingTime);
         if (Settings.traceWorkerList || Settings.traceRemainingJobTime) {
             Globals.log.reportProgress("Created new WorkerJobInfo "
                     + toString());
