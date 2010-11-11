@@ -1,8 +1,8 @@
 #!/bin/sh -x
 set -e
 
-VERBOSE=-v
-#VERBOSE=
-KEEP_SANDBOXES=-k
-#KEEP_SANDBOXES=
+#VERBOSE=-v
+VERBOSE=
+#KEEP_SANDBOXES=-k
+KEEP_SANDBOXES=
 java -classpath .:$DEPLOY_HOME/lib/*:$DEPLOY_HOME/lib/javagat/*:$DEPLOY_HOME/lib-server/* -Dibis.deploy.home=$DEPLOY_HOME -Dgat.adaptor.path=$DEPLOY_HOME/lib/adaptors ibis.deploy.cli.CommandLine $KEEP_SANDBOXES $VERBOSE ./das3.grid ./maestro.applications $1 

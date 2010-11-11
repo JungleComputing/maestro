@@ -15,31 +15,38 @@ TABLES=slow-2000.table no-2000.table onejob-2000.table plain-2000.table parallel
 termination-%.experiment: build-termination-experiment.py
 	python build-termination-experiment.py $* > $@
 
-termination-%-fs0.logs: termination-%.experiment run-experiment $(DEPLOYFILES) $(VIDEO_PLAYER_JAR)
+termination-%-fs0.das3.cs.vu.nl.tar.gz: termination-%.experiment run-experiment $(DEPLOYFILES) $(VIDEO_PLAYER_JAR)
 	echo "export TAG=termination-$*" > settag-termination-$*.sh
 	python compute-termination-runtime.py $* >> settag-termination-$*.sh
-	rm -rf termination-$*-fs0.logs
+	rm -rf termination-$*-fs0.das3.cs.vu.nl.tar.gz
 	./run-experiment termination-$*.experiment
 	rm -f settag-termination-$*.sh
 
 %.experiment: build-experiment.py
 	python build-experiment.py $* > $@
 
-%-fs0.logs: %.experiment run-experiment $(DEPLOYFILES) $(VIDEO_PLAYER_JAR)
+%-fs0.das3.cs.vu.nl.tar.gz: %.experiment run-experiment $(DEPLOYFILES) $(VIDEO_PLAYER_JAR)
 	echo "export TAG=$*" > settag-$*.sh
 	python compute-runtime.py $* >> settag-$*.sh
-	rm -rf $*-fs?.logs
+	rm -rf $*-fs*.tar.gz
 	./run-experiment $*.experiment
 	rm -f settag-$*.sh
 
-termination-%.result: termination-%-fs0.logs average-termination-duration.py
-	python average-termination-duration.py $* $@ termination-$*-fs0.logs/out.*
+termination-%.result: termination-%-fs0.das3.cs.vu.nl.tar.gz average-termination-duration.py
+	python average-termination-duration.py $* $@ termination-$*-fs0.das3.cs.vu.nl.logs/out.*
 
-%.counts: %-fs0.logs extract-job-counts.py
-	python extract-job-counts.py $* $@ $*-fs0.logs/out.*
+%.stats: %.tar.gz
+	python extract-stats.py $*.tar.gz > $@
 
-%.result: %-fs0.logs average-duration.py
-	python average-duration.py $* $@ $*-fs0.logs/out.*
+%.counts: %-fs0.das3.cs.vu.nl.tar.gz extract-job-counts.py
+	tar xf $*-fs0.das3.cs.vu.nl.tar.gz
+	python extract-job-counts.py $* $@ $*-fs0.das3.cs.vu.nl.logs/out.*
+	rm -f $*-fs0.das3.cs.vu.nl.tar.gz
+
+%.result: %-fs0.das3.cs.vu.nl.tar.gz average-duration.py
+	tar xf $*-fs0.das3.cs.vu.nl.tar.gz
+	python average-duration.py $* $@ $*-fs0.das3.cs.vu.nl.logs/out.*
+	rm -f $*-fs0.das3.cs.vu.nl.tar.gz
 
 #LEARNRANGE=4000 3000 2000 1500 1000 500 350 200 150 100
 LEARNRANGE=3000 2000 1500 1000 500 350 200 150 100
@@ -86,12 +93,12 @@ TERMINATION_SLOW_2000_POINTS=${patsubst %,termination-slow-%.result,$(TERMINATIO
 
 POINTS=$(PLAIN_2000_POINTS) $(PARALLEL_2000_POINTS) $(ONETASK_2000_POINTS) $(NO_2000_POINTS) $(SLOW_2000_POINTS) $(ONESLOW_2000_POINTS) $(PLAIN_200_POINTS) $(ONETASK_200_POINTS) $(NO_200_POINTS) $(SLOW_200_POINTS) $(TERMINATION_PLAIN_2000_POINTS) $(TERMINATION_SLOW_2000_POINTS)
 SMALLPOINTS=$(SMALLPLAIN_2000_POINTS) $(SMALLPARALLEL_2000_POINTS) $(SMALLONETASK_2000_POINTS) $(SMALLNO_2000_POINTS) $(SMALLSLOW_2000_POINTS) $(SMALLONESLOW_2000_POINTS) $(SMALLPLAIN_200_POINTS) $(SMALLONETASK_200_POINTS) $(SMALLNO_200_POINTS) $(SMALLSLOW_200_POINTS) $(SMALLTERMINATION_PLAIN_2000_POINTS) $(SMALLTERMINATION_SLOW_2000_POINTS)
-LOGFILES=$(POINTS:.result=.logs)
+LOGFILES=$(POINTS:.result=.tar.gz)
 
 .PRECIOUS: $(LOGFILES)
 
 
-PRECIOUSJUNK=*.logs $(PLOTFILES) plain-2000.table parallel-2000.table one.table slow-2000.table no-2000.table
+PRECIOUSJUNK=*.logs *.tar.gz $(PLOTFILES) plain-2000.table parallel-2000.table one.table slow-2000.table no-2000.table
 JUNK=*.experiment *.result *.counts
 
 all: $(PLOTFILES)
@@ -106,11 +113,11 @@ tables: $(TABLES)
 x:
 	echo [$(LEARN_PLAIN_4_POINTS)] 
 
-plain5-20-2000.counts: plain5-20-2000-fs0.logs extract-job-counts.py
-	python extract-job-counts.py plain5-20-2000 plain5-20-2000.counts plain5-20-2000-fs0.logs/out.* plain5-20-2000-fs1.logs/out.* plain5-20-2000-fs2.logs/out.* plain5-20-2000-fs3.logs/out.* plain5-20-2000-fs4.logs/out.*
+plain5-20-2000.counts: plain5-20-2000-fs0.das3.cs.vu.nl.tar.gz extract-job-counts.py
+	python extract-job-counts.py plain5-20-2000 plain5-20-2000.counts plain5-20-2000-fs0.das3.cs.vu.nl.logs/out.* plain5-20-2000-fs1.logs/out.* plain5-20-2000-fs2.logs/out.* plain5-20-2000-fs3.logs/out.* plain5-20-2000-fs4.logs/out.*
 
-slow5-20-2000.counts: slow5-20-2000-fs0.logs extract-job-counts.py
-	python extract-job-counts.py slow5-20-2000 slow5-20-2000.counts slow5-20-2000-fs0.logs/out.* slow5-20-2000-fs1.logs/out.* slow5-20-2000-fs2.logs/out.* slow5-20-2000-fs3.logs/out.* slow5-20-2000-fs4.logs/out.*
+slow5-20-2000.counts: slow5-20-2000-fs0.das3.cs.vu.nl.logs extract-job-counts.py
+	python extract-job-counts.py slow5-20-2000 slow5-20-2000.counts slow5-20-2000-fs0.das3.cs.vu.nl.logs/out.* slow5-20-2000-fs1.logs/out.* slow5-20-2000-fs2.logs/out.* slow5-20-2000-fs3.logs/out.* slow5-20-2000-fs4.logs/out.*
 
 learn-plain-4.table: $(LEARN_PLAIN_4_POINTS)
 	cat $(LEARN_PLAIN_4_POINTS) > $@
