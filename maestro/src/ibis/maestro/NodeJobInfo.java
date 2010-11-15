@@ -126,13 +126,13 @@ final class NodeJobInfo {
     }
 
     synchronized LocalNodeInfo getLocalNodeInfo() {
-        final double transmissionTime = transmissionTimeEstimate
-                .getLikelyValue();
-        double predictedDuration;
+        final TimeEstimate transmissionTime = transmissionTimeEstimate
+                .getEstimate();
+        TimeEstimate predictedDuration;
         if (failed) {
-            predictedDuration = Double.POSITIVE_INFINITY;
+            predictedDuration = null;
         } else {
-            predictedDuration = roundtripTimeEstimate.getLikelyValue();
+            predictedDuration = roundtripTimeEstimate.getEstimate();
         }
         return new LocalNodeInfo(outstandingJobs, transmissionTime,
                 predictedDuration);

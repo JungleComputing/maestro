@@ -101,15 +101,14 @@ final class MasterQueue {
          * @return The estimated time in seconds a new job will spend in the
          *         queue.
          */
-        private synchronized double estimateQueueTime() {
-            final double timePerEntry = dequeueInterval.getLikelyValue();
+        private synchronized TimeEstimate estimateQueueTime() {
+            final TimeEstimate timePerEntry = dequeueInterval.getEstimate();
             // Since at least one processor isn't working on a job (or we
             // wouldn't be here), we are only impressed if there is more
             // than one idle processor.
-            final double res = timePerEntry * (1 + elements);
+            final TimeEstimate res = timePerEntry.multiply(1 + elements);
             return res;
         }
-
     }
 
     /**
@@ -287,8 +286,7 @@ final class MasterQueue {
         }
         final LocalNodeInfoList localNodeInfo = localNodeInfoMap
                 .get(best.source);
-        final double predictedDuration = localNodeInfo
-                .getPredictedDuration(stageType);
+        final double predictedDuration = localNodeInfo.getDeadline(stageType);
         return new Submission(job, best.source, predictedDuration);
     }
 
@@ -379,8 +377,8 @@ final class MasterQueue {
     }
 
     @SuppressWarnings("synthetic-access")
-    double[] getQueueIntervals() {
-        final double res[] = new double[queueTypes.length];
+    TimeEstimate[] getQueueIntervals() {
+        final TimeEstimate[] res = new TimeEstimate[queueTypes.length];
 
         for (int ix = 0; ix < queueTypes.length; ix++) {
             res[ix] = queueTypes[ix].estimateQueueTime();

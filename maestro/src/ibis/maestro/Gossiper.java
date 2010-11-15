@@ -244,7 +244,8 @@ class Gossiper extends Thread {
         return isnew;
     }
 
-    void recomputeCompletionTimes(double masterQueueIntervals[], JobList jobs,
+    void recomputeCompletionTimes(TimeEstimate masterQueueIntervals[],
+            JobList jobs,
             HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap) {
         gossip.recomputeCompletionTimes(masterQueueIntervals, jobs,
                 localNodeInfoMap);
@@ -335,12 +336,12 @@ class Gossiper extends Thread {
         addQuotum();
     }
 
-    void setComputeTime(JobType type, double t) {
+    void setComputeTime(JobType type, TimeEstimate t) {
         gossip.setLocalComputeTime(type, t);
         addQuotum();
     }
 
-    void setWorkerQueueTimePerJob(JobType type, double queueTimePerJob,
+    void setWorkerQueueTimePerJob(JobType type, TimeEstimate queueTimePerJob,
             int queueLength) {
         gossip.setWorkerQueueTimePerJob(type, queueTimePerJob, queueLength);
         addQuotum();

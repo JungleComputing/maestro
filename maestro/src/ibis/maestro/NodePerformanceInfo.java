@@ -18,10 +18,10 @@ class NodePerformanceInfo implements Serializable {
     final IbisIdentifier source;
 
     /**
-     * For each type of job we know, the estimated time it will take to
-     * complete the remaining jobs of this job.
+     * For each type of job we know, the estimated time it will take to complete
+     * the remaining jobs of this job.
      */
-    final double[][] completionInfo;
+    final TimeEstimate[][] completionInfo;
 
     /** For each type of job we know, the queue length on this worker. */
     private final WorkerQueueInfo[] workersQueueInfo;
@@ -31,7 +31,7 @@ class NodePerformanceInfo implements Serializable {
     /** The number of processors on this node. */
     private final int numberOfProcessors;
 
-    NodePerformanceInfo(double[][] completionInfo,
+    NodePerformanceInfo(TimeEstimate[][] completionInfo,
             WorkerQueueInfo[] workerQueueInfo, IbisIdentifier source,
             int numberOfProcessors, long timeStamp) {
         this.completionInfo = completionInfo;
@@ -42,9 +42,9 @@ class NodePerformanceInfo implements Serializable {
     }
 
     NodePerformanceInfo getDeepCopy() {
-        final double completionInfoCopy[][] = new double[completionInfo.length][];
+        final TimeEstimate completionInfoCopy[][] = new TimeEstimate[completionInfo.length][];
 
-        for( int i=0; i<completionInfo.length; i++ ){
+        for (int i = 0; i < completionInfo.length; i++) {
             completionInfoCopy[i] = Arrays.copyOf(completionInfo[i],
                     completionInfo[i].length);
         }
@@ -56,9 +56,9 @@ class NodePerformanceInfo implements Serializable {
 
     private String buildCompletionString() {
         final StringBuilder b = new StringBuilder("[");
-        for( final double l[]: completionInfo){
+        for (final TimeEstimate[] l : completionInfo) {
             char sep = '[';
-            for (final double i : l) {
+            for (final TimeEstimate i : l) {
                 b.append(sep);
                 b.append(Utils.formatSeconds(i));
                 sep = ',';
@@ -81,8 +81,8 @@ class NodePerformanceInfo implements Serializable {
         return "Update @" + timeStamp + " " + workerQueue + " " + completion;
     }
 
-    double estimateJobCompletion(LocalNodeInfoList localNodeInfo, JobType seriesType,int stage,
-            JobType stageType,
+    double estimateJobCompletion(LocalNodeInfoList localNodeInfo,
+            JobType seriesType, int stage, JobType stageType,
             boolean ignoreBusyProcessors) {
         if (localNodeInfo == null) {
             if (Settings.traceRemainingJobTime) {
@@ -106,19 +106,22 @@ class NodePerformanceInfo implements Serializable {
             }
             return Double.POSITIVE_INFINITY;
         }
-        final double completionInterval = completionInfo[seriesType.index][stage];
-        if (completionInterval == Double.POSITIVE_INFINITY) {
+        final TimeEstimate completionInterval = completionInfo[seriesType.index][stage];
+        if (completionInterval == null) {
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportError("Node " + source
-                        + " has infinite completion time for seriesType=" + seriesType + " stage " + stage);
+                        + " has infinite completion time for seriesType="
+                        + seriesType + " stage " + stage);
             }
             return Double.POSITIVE_INFINITY;
         }
-        final LocalNodeInfo performanceInfo = localNodeInfo.getLocalNodeInfo(stageType);
-        int ql = workerQueueInfo.getQueueLength();
+        final LocalNodeInfo performanceInfo = localNodeInfo
+                .getLocalNodeInfo(stageType);
+        final int ql = workerQueueInfo.getQueueLength();
         // The estimated number of jobs on the node. The queue length `ql'
         // from the gossip is the most direct measure, but it might be stale.
-        // We therefore also take our local count of outstanding jobs into account.
+        // We therefore also take our local count of outstanding jobs into
+        // account.
         final int maximalQueueLength = stageType.unpredictable ? 0
                 : Settings.MAXIMAL_QUEUE_FOR_PREDICTABLE;
         if (ignoreBusyProcessors
@@ -126,58 +129,66 @@ class NodePerformanceInfo implements Serializable {
             // Don't submit jobs, there are no idle processors.
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportProgress("Node " + source
-                        + " has no idle processors for stage type " + stageType + ": performanceInfo=" + performanceInfo);
+                        + " has no idle processors for stage type " + stageType
+                        + ": performanceInfo=" + performanceInfo);
             }
             return Double.POSITIVE_INFINITY;
         }
         // Give nodes already running jobs some penalty to encourage
         // spreading the load over nodes.
-        final int currentJobs = Math.max( ql, performanceInfo.currentJobs );
-        final double executionTime = workerQueueInfo.getExecutionTime();
-        double unpredictableOverhead = (currentJobs * executionTime) / 10;
-        final double transmissionTime = performanceInfo.transmissionTime;
-        final int waitingJobs = Math.max( 0, currentJobs-numberOfProcessors);
+        final int currentJobs = Math.max(ql, performanceInfo.currentJobs);
+        final TimeEstimate executionTime = workerQueueInfo.getExecutionTime();
+        final TimeEstimate unpredictableOverhead = executionTime
+                .multiply(currentJobs / 10);
+        final TimeEstimate transmissionTime = performanceInfo.transmissionTime;
+        final int waitingJobs = Math.max(0, currentJobs - numberOfProcessors);
         final double total = transmissionTime + waitingJobs
-        * workerQueueInfo.getDequeueTimePerJob() + workerQueueInfo
-        .getExecutionTime() + completionInterval + unpredictableOverhead;
+                * workerQueueInfo.getDequeueTimePerJob()
+                + workerQueueInfo.getExecutionTime() + completionInterval
+                + unpredictableOverhead;
         if (Settings.traceRemainingJobTime) {
             Globals.log.reportProgress("Estimated completion time for "
-                    + source + " for " + seriesType + " stage " + stage + " " + stageType + " is " + Utils.formatSeconds(total) + ": performanceInfo=" + performanceInfo);
+                    + source + " for " + seriesType + " stage " + stage + " "
+                    + stageType + " is " + Utils.formatSeconds(total)
+                    + ": performanceInfo=" + performanceInfo);
         }
         return total;
     }
 
     /**
-     * Given the index of a type, return the interval in seconds it will
-     * take from the moment a job of this type arrives at the worker queue of
-     * this node, until the entire job it belongs to is completed.
+     * Given the index of a type, return the interval in seconds it will take
+     * from the moment a job of this type arrives at the worker queue of this
+     * node, until the entire job it belongs to is completed.
      * 
-     * @param todoIx The index of the todo list of the overall type.
+     * @param todoIx
+     *            The index of the todo list of the overall type.
      * @param ix
      *            The index of the type we're interested in.
      * @param nextIx
      *            The index of the next type to the one we're interested in, so
      *            that we can get the (already calculated) completion time from
-     *            that one. A value <code>-1</code> means there is no next
-     *            type.
+     *            that one. A value <code>-1</code> means there is no next type.
      */
-    double getCompletionOnWorker(int todoIx, int ix, int nextIx) {
+    TimeEstimate getCompletionOnWorker(int todoIx, int ix, int nextIx) {
         final WorkerQueueInfo info = workersQueueInfo[ix];
-        double nextCompletionInterval;
+        TimeEstimate nextCompletionInterval;
 
         if (info == null) {
             // We don't support this type.
-            return Double.POSITIVE_INFINITY;
+            return null;
         }
         if (nextIx >= 0) {
-            double[] todoList = completionInfo[todoIx];
+            final TimeEstimate[] todoList = completionInfo[todoIx];
             nextCompletionInterval = todoList[nextIx];
         } else {
-            nextCompletionInterval = 0.0;
+            nextCompletionInterval = TimeEstimate.ZERO;
         }
-        return (1 + info.getQueueLength())
-        * info.getDequeueTimePerJob() + info.getExecutionTime() +
-        nextCompletionInterval;
+        final TimeEstimate dequeueTimePerJob = info.getDequeueTimePerJob();
+        final TimeEstimate totalDequeueTime = dequeueTimePerJob
+                .multiply(1 + info.getQueueLength());
+        final TimeEstimate res = totalDequeueTime.addIndependent(
+                info.getExecutionTime()).addIndependent(nextCompletionInterval);
+        return res;
     }
 
     void print(PrintStream s) {
@@ -190,15 +201,14 @@ class NodePerformanceInfo implements Serializable {
             }
         }
         s.print(" | ");
-        for (final double l[]: completionInfo){
+        for (final TimeEstimate l[] : completionInfo) {
             s.print('[');
             boolean first = true;
-            for (final double t : l) {
-                if( first ){
+            for (final TimeEstimate t : l) {
+                if (first) {
                     first = false;
-                }
-                else {
-                    s.print( ' ' );
+                } else {
+                    s.print(' ');
                 }
                 s.printf("%8s", Utils.formatSeconds(t));
             }
@@ -207,7 +217,7 @@ class NodePerformanceInfo implements Serializable {
         s.println(source);
     }
 
-    static void printTopLabel(PrintStream s,JobList jobs) {
+    static void printTopLabel(PrintStream s, JobList jobs) {
         final JobType[] allJobTypes = jobs.getAllTypes();
         for (final JobType t : allJobTypes) {
             s.print(WorkerQueueInfo.topLabelType(t));
@@ -219,7 +229,7 @@ class NodePerformanceInfo implements Serializable {
         }
         s.println();
         for (@SuppressWarnings("unused")
-                final JobType t : allJobTypes) {
+        final JobType t : allJobTypes) {
             s.print(WorkerQueueInfo.topLabel());
             s.print(' ');
         }
@@ -235,7 +245,7 @@ class NodePerformanceInfo implements Serializable {
         }
     }
 
-    void setComputeTime(JobType type, double t) {
+    void setComputeTime(JobType type, TimeEstimate t) {
         final WorkerQueueInfo info = workersQueueInfo[type.index];
         if (info != null) {
             info.setExecutionTime(t);
@@ -243,7 +253,7 @@ class NodePerformanceInfo implements Serializable {
         }
     }
 
-    void setWorkerQueueTimePerJob(JobType type, double queueTimePerJob,
+    void setWorkerQueueTimePerJob(JobType type, TimeEstimate queueTimePerJob,
             int queueLength) {
         final WorkerQueueInfo info = workersQueueInfo[type.index];
         if (info != null) {

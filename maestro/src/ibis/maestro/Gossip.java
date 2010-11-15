@@ -21,31 +21,31 @@ class Gossip {
         return new GossipMessage(target, content, needsReply);
     }
 
-    Gossip(JobList jobs,IbisIdentifier localIbis) {
+    Gossip(JobList jobs, IbisIdentifier localIbis) {
         final int numberOfProcessors = Runtime.getRuntime()
                 .availableProcessors();
         final int sz = jobs.getTypeCount();
-        final double completionInfo[][] = buildCompletionInfo( jobs );
+        final TimeEstimate completionInfo[][] = buildCompletionInfo(jobs);
         final WorkerQueueInfo queueInfo[] = new WorkerQueueInfo[sz];
-        final double jobTimes[] = jobs.getInitialJobTimes();
+        final TimeEstimate jobTimes[] = jobs.getInitialJobTimes();
         for (int i = 0; i < sz; i++) {
-            queueInfo[i] = new WorkerQueueInfo(0, 0, 0.0, jobTimes[i]);
+            queueInfo[i] = new WorkerQueueInfo(0, 0, TimeEstimate.ZERO,
+                    jobTimes[i]);
         }
         localPerformanceInfo = new NodePerformanceInfo(completionInfo,
-                queueInfo, localIbis, numberOfProcessors,
-                System.nanoTime());
+                queueInfo, localIbis, numberOfProcessors, System.nanoTime());
         gossipList.add(localPerformanceInfo);
         localPerformanceInfo.timeStamp = System.nanoTime();
     }
 
-    private double[][] buildCompletionInfo(JobList jobs) {
-        JobType types[] = jobs.getAllTypes();
-        double res[][] = new double[types.length][];
+    private TimeEstimate[][] buildCompletionInfo(JobList jobs) {
+        final JobType types[] = jobs.getAllTypes();
+        final TimeEstimate res[][] = new TimeEstimate[types.length][];
 
-        for( int i=0; i<types.length; i++ ){
-            JobType t = types[i];
-            JobType todoList[] = jobs.getTodoList(t);
-            double l1[] = new double[todoList.length];
+        for (int i = 0; i < types.length; i++) {
+            final JobType t = types[i];
+            final JobType todoList[] = jobs.getTodoList(t);
+            final TimeEstimate l1[] = new TimeEstimate[todoList.length];
 
             res[i] = l1;
         }
@@ -67,26 +67,26 @@ class Gossip {
      * @param localNodeInfoMap
      *            The local knowledge about the nodes in the system.
      */
-    synchronized void recomputeCompletionTimes(double masterQueueIntervals[],
-            JobList jobs,
+    synchronized void recomputeCompletionTimes(
+            TimeEstimate masterQueueIntervals[], JobList jobs,
             HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap) {
-        JobType types[] = jobs.getAllTypes();
-        
-        for( int tix=0; tix<types.length; tix++ ){
-            JobType todoList[] = jobs.getTodoList(types[tix]);
-            
+        final JobType types[] = jobs.getAllTypes();
+
+        for (int tix = 0; tix < types.length; tix++) {
+            final JobType todoList[] = jobs.getTodoList(types[tix]);
+
             int ix = todoList.length;
             int nextIndex = -1;
-            
-            while( ix>0 ){
+
+            while (ix > 0) {
                 ix--;
-                
-                final double masterQueueInterval = masterQueueIntervals == null ? 0.0
+
+                final TimeEstimate masterQueueInterval = masterQueueIntervals == null ? TimeEstimate.ZERO
                         : masterQueueIntervals[ix];
-                final double bestCompletionTimeAfterMasterQueue = getBestCompletionTimeAfterMasterQueue(
+                final TimeEstimate bestCompletionTimeAfterMasterQueue = getBestCompletionTimeAfterMasterQueue(
                         tix, ix, nextIndex, localNodeInfoMap);
-                final double t = masterQueueInterval
-                        + bestCompletionTimeAfterMasterQueue;
+                final TimeEstimate t = masterQueueInterval
+                        .addIndependent(bestCompletionTimeAfterMasterQueue);
                 localPerformanceInfo.completionInfo[tix][ix] = t;
                 nextIndex = ix;
             }
@@ -123,7 +123,8 @@ class Gossip {
      * sent by the master. We compute this by taking the minimum over all our
      * workers.
      * 
-     * @param todoIx The index in the todo list.
+     * @param todoIx
+     *            The index in the todo list.
      * @param ix
      *            The index of the type we're computing the completion time for.
      * @param nextIx
@@ -134,17 +135,18 @@ class Gossip {
      *            nodes.
      * @return The best average completion time of our workers.
      */
-    private double getBestCompletionTimeAfterMasterQueue(int todoIx, int ix, int nextIx,
+    private TimeEstimate getBestCompletionTimeAfterMasterQueue(int todoIx,
+            int ix, int nextIx,
             HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap) {
-        double res = Double.POSITIVE_INFINITY;
+        TimeEstimate res = null;
 
         for (final NodePerformanceInfo node : gossipList) {
             final LocalNodeInfoList info = localNodeInfoMap.get(node.source);
 
             if (info != null) {
-                final double xmitTime = info.getTransmissionTime(ix);
-                final double val = xmitTime
-                        + node.getCompletionOnWorker(todoIx,ix, nextIx);
+                final TimeEstimate xmitTime = info.getTransmissionTime(ix);
+                final TimeEstimate val = xmitTime.addIndependent(node
+                        .getCompletionOnWorker(todoIx, ix, nextIx));
 
                 if (val < res) {
                     res = val;
@@ -200,8 +202,8 @@ class Gossip {
         return localPerformanceInfo.getDeepCopy();
     }
 
-    synchronized void print(PrintStream s,JobList jobs) {
-        NodePerformanceInfo.printTopLabel(s,jobs);
+    synchronized void print(PrintStream s, JobList jobs) {
+        NodePerformanceInfo.printTopLabel(s, jobs);
         for (final NodePerformanceInfo entry : gossipList) {
             entry.print(s);
         }
@@ -252,11 +254,11 @@ class Gossip {
         localPerformanceInfo.failJob(type);
     }
 
-    void setLocalComputeTime(JobType type, double t) {
+    void setLocalComputeTime(JobType type, TimeEstimate t) {
         localPerformanceInfo.setComputeTime(type, t);
     }
 
-    void setWorkerQueueTimePerJob(JobType type, double queueTimePerJob,
+    void setWorkerQueueTimePerJob(JobType type, TimeEstimate queueTimePerJob,
             int queueLength) {
         localPerformanceInfo.setWorkerQueueTimePerJob(type, queueTimePerJob,
                 queueLength);

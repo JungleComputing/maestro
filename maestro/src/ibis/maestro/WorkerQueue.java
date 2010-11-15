@@ -69,8 +69,8 @@ final class WorkerQueue {
                 break;
             }
             final long midIds[] = queue.get(mid).jobInstance.jobInstance.ids;
-            int cmp = Utils.compareIds( midIds, ids );
-            if (cmp<0) {
+            final int cmp = Utils.compareIds(midIds, ids);
+            if (cmp < 0) {
                 // Mid should come before us.
                 start = mid;
             } else {
@@ -81,8 +81,8 @@ final class WorkerQueue {
         // This comparison is probably rarely necessary, but corner cases
         // are a pain, so I'm safe rather than sorry.
         final long startIds[] = queue.get(start).jobInstance.jobInstance.ids;
-        int cmp = Utils.compareIds(startIds, ids);
-        if (cmp<0) {
+        final int cmp = Utils.compareIds(startIds, ids);
+        if (cmp < 0) {
             return end;
         }
         return start;
@@ -104,7 +104,7 @@ final class WorkerQueue {
      * @param msg
      *            The job to add to the queue
      */
-    int add(JobType type,RunJobMessage msg) {
+    int add(JobType type, RunJobMessage msg) {
         final int length;
         final WorkerQueueJobInfo info = queueTypes[type.index];
         final int pos;
@@ -128,7 +128,7 @@ final class WorkerQueue {
         return length;
     }
 
-    RunJobMessage remove(JobList jobs,Gossiper gossiper) {
+    RunJobMessage remove(JobList jobs, Gossiper gossiper) {
         final RunJobMessage res;
         final int length;
         final WorkerQueueJobInfo info;
@@ -150,9 +150,8 @@ final class WorkerQueue {
                     + "; " + length + " of type " + type);
         }
         if (gossiper != null) {
-            final double queueTimePerJob = info.getLikelyDequeueInterval();
-            gossiper.setWorkerQueueTimePerJob(type,
-                    queueTimePerJob, length);
+            final TimeEstimate queueTimePerJob = info.getQueueTimePerJob();
+            gossiper.setWorkerQueueTimePerJob(type, queueTimePerJob, length);
         }
         return res;
     }
@@ -161,7 +160,7 @@ final class WorkerQueue {
         final WorkerQueueJobInfo info = queueTypes[type.index];
         info.failJob();
 
-        synchronized( this ) {
+        synchronized (this) {
             for (final WorkerQueueJobInfo i : queueTypes) {
                 if (i != null && !i.hasFailed()) {
                     return false; // There still is a non-failed job type.
@@ -171,7 +170,7 @@ final class WorkerQueue {
         return true; // All job types have failed.
     }
 
-    double countJob(JobType type, double computeInterval) {
+    TimeEstimate countJob(JobType type, double computeInterval) {
         final WorkerQueueJobInfo info = queueTypes[type.index];
         return info.countJob(computeInterval, type.unpredictable);
     }

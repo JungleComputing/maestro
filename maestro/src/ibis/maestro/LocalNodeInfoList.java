@@ -24,30 +24,29 @@ class LocalNodeInfoList {
      *            The type of job we want the info for.
      * @return The local performance info.
      */
-    LocalNodeInfo getLocalNodeInfo(JobType type)
-    {
+    LocalNodeInfo getLocalNodeInfo(JobType type) {
         return infoPerType[type.index];
     }
 
-    double getTransmissionTime(int ix) {
+    TimeEstimate getTransmissionTime(int ix) {
         return infoPerType[ix].transmissionTime;
     }
 
     /**
-     * Given a job type, returns the predicted duration of the job on the
-     * local node. (Used for scheduling deadlines.)
+     * Given a job type, returns a reasonable deadline for execution on the
+     * local node.
      * 
      * @param type
-     *            The type of job we want the prediction for.
-     * @return The predicted duration of the job in seconds.
+     *            The type of job we want a deadline for.
+     * @return The deadline of the job in seconds.
      */
-    double getPredictedDuration(JobType type) {
-        return infoPerType[type.index].predictedDuration;
+    double getDeadline(JobType type) {
+        return infoPerType[type.index].predictedDuration
+                .getPessimisticEstimate();
     }
-    
+
     @Override
-    public String toString()
-    {
-    	return Arrays.deepToString(infoPerType);
+    public String toString() {
+        return Arrays.deepToString(infoPerType);
     }
 }

@@ -16,7 +16,7 @@ import java.lang.management.ThreadMXBean;
  */
 public class Utils {
     private static final double NANOSECOND = 1e-9;
-    
+
     static final double MICROSECOND = 1e-6;
 
     static final double MILLISECOND = 1e-3;
@@ -24,11 +24,12 @@ public class Utils {
     private static final double SECOND = 1.0;
 
     static boolean areInSameCluster(IbisIdentifier a, IbisIdentifier b) {
-        Location la = a.location();
-        Location lb = b.location();
-        int nodeLevel = Math.min(la.numberOfLevels(), lb.numberOfLevels());
-        int matchingLevels = la.numberOfMatchingLevels(lb);
-        boolean res = matchingLevels >= (nodeLevel - 1);
+        final Location la = a.location();
+        final Location lb = b.location();
+        final int nodeLevel = Math
+                .min(la.numberOfLevels(), lb.numberOfLevels());
+        final int matchingLevels = la.numberOfMatchingLevels(lb);
+        final boolean res = matchingLevels >= (nodeLevel - 1);
         return res;
     }
 
@@ -38,7 +39,7 @@ public class Utils {
      * @return The platform version.
      */
     protected static String getPlatformVersion() {
-        java.util.Properties p = System.getProperties();
+        final java.util.Properties p = System.getProperties();
 
         return "Java " + p.getProperty("java.version") + " ("
                 + p.getProperty("java.vendor") + ") on "
@@ -61,20 +62,20 @@ public class Utils {
             return "0 s";
         }
         if (t < MICROSECOND && t > -MICROSECOND) {
-            return String.format("%4.1f ns", 1e9*t);
+            return String.format("%4.1f ns", 1e9 * t);
         }
         if (t < MILLISECOND && t > -MILLISECOND) {
-            return String.format("%4.1f us", 1e6*t );
+            return String.format("%4.1f us", 1e6 * t);
         }
         if (t < SECOND && t > -SECOND) {
-            return String.format("%4.1f ms", 1e3*t );
+            return String.format("%4.1f ms", 1e3 * t);
         }
-        return String.format("%4.1f s", t );
+        return String.format("%4.1f s", t);
     }
 
     /**
-     * Divide <code>val</code> by <code>divisor</code>, rounding up to the
-     * next integer.
+     * Divide <code>val</code> by <code>divisor</code>, rounding up to the next
+     * integer.
      * 
      * @param val
      *            The nominator of the division.
@@ -116,11 +117,11 @@ public class Utils {
             // No way to compare if we don't know what our local ibis is.
             return 0;
         }
-        Location la = a.location();
-        Location lb = b.location();
-        Location home = local.location();
-        int na = la.numberOfMatchingLevels(home);
-        int nb = lb.numberOfMatchingLevels(home);
+        final Location la = a.location();
+        final Location lb = b.location();
+        final Location home = local.location();
+        final int na = la.numberOfMatchingLevels(home);
+        final int nb = lb.numberOfMatchingLevels(home);
         if (na > nb) {
             return -1;
         }
@@ -134,11 +135,11 @@ public class Utils {
         // Although not particularly meaningful, at least the local
         // node will have distance 0, and every node will have a different
         // notion of local.
-        int hl = home.getLevel(0).hashCode();
-        int ha = la.getLevel(0).hashCode();
-        int hb = lb.getLevel(0).hashCode();
-        int da = Math.abs(hl - ha);
-        int db = Math.abs(hl - hb);
+        final int hl = home.getLevel(0).hashCode();
+        final int ha = la.getLevel(0).hashCode();
+        final int hb = lb.getLevel(0).hashCode();
+        final int da = Math.abs(hl - ha);
+        final int db = Math.abs(hl - hb);
         if (da < db) {
             return -1;
         }
@@ -149,15 +150,15 @@ public class Utils {
     }
 
     static void printThreadStats(PrintStream s) {
-        ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
+        final ThreadMXBean threadBean = ManagementFactory.getThreadMXBean();
 
         s.println("Peak thread count: " + threadBean.getPeakThreadCount());
-        long lockedThreads[] = threadBean.findDeadlockedThreads();
+        final long lockedThreads[] = threadBean.findDeadlockedThreads();
         if (lockedThreads != null && lockedThreads.length > 0) {
             s.println("===== DEADLOCKED threads =====");
-            for (long tid : lockedThreads) {
-                ThreadInfo ti = threadBean
-                        .getThreadInfo(tid, Integer.MAX_VALUE);
+            for (final long tid : lockedThreads) {
+                final ThreadInfo ti = threadBean.getThreadInfo(tid,
+                        Integer.MAX_VALUE);
                 if (ti != null) {
                     s.println(ti.toString());
                 }
@@ -169,55 +170,60 @@ public class Utils {
      * @return Return the precise current time in seconds.
      */
     public static double getPreciseTime() {
-        return NANOSECOND*System.nanoTime();
+        return NANOSECOND * System.nanoTime();
     }
 
     /**
      * Given an array of longs, return a string representation
-     * @param l The array.
+     * 
+     * @param l
+     *            The array.
      * @return The string representation of the array.
      */
-	public static String deepToString(long[] l) {
-		StringBuffer buf = new StringBuffer();
-		
-		buf.append(',');
-		boolean first = true;
-		for( long v:l ){
-			if( first ){
-				first = false;
-			}
-			else {
-				buf.append(',');
-			}
-			buf.append(v);
-		}
-		return buf.toString();
-	}
+    public static String deepToString(long[] l) {
+        final StringBuffer buf = new StringBuffer();
 
-	static final int compareIds( long a[], long b[])
-    {
-    	int sz = Math.min(a.length, b.length);
-    	for( int i=0; i<sz; i++ ){
-    		long va = a[i];
-    		long vb = b[i];
-    		
-    		if( va<vb ){
-    			return -1;
-    		}
-    		if( va>vb ){
-    			return 1;
-    		}
-    	}
-    	// At this point we know the shortest array contains
-    	// the same values as the longest array. Now
-    	// we just make the longest array larger.
-    	if( a.length<b.length ){
-    		return -1;
-    	}
-    	if( a.length>b.length ){
-    		return 1;
-    	}
-    	return 0;
+        buf.append(',');
+        boolean first = true;
+        for (final long v : l) {
+            if (first) {
+                first = false;
+            } else {
+                buf.append(',');
+            }
+            buf.append(v);
+        }
+        return buf.toString();
+    }
+
+    static final int compareIds(long a[], long b[]) {
+        final int sz = Math.min(a.length, b.length);
+        for (int i = 0; i < sz; i++) {
+            final long va = a[i];
+            final long vb = b[i];
+
+            if (va < vb) {
+                return -1;
+            }
+            if (va > vb) {
+                return 1;
+            }
+        }
+        // At this point we know the shortest array contains
+        // the same values as the longest array. Now
+        // we just make the longest array larger.
+        if (a.length < b.length) {
+            return -1;
+        }
+        if (a.length > b.length) {
+            return 1;
+        }
+        return 0;
+    }
+
+    static String formatSeconds(TimeEstimate t) {
+        return formatSeconds(t.mean) + '±'
+                + formatSeconds(Math.sqrt(t.variance));
     }
 
 }

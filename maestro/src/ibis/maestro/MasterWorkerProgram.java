@@ -45,7 +45,7 @@ class MasterWorkerProgram {
                     + " jobs");
             if (jobsCompleted >= jobCount) {
                 System.out
-                .println("I got all job results back; stopping test program");
+                        .println("I got all job results back; stopping test program");
                 node.setStopped();
             }
         }
@@ -75,12 +75,12 @@ class MasterWorkerProgram {
                 int k00, int k01, int k02, int k10, int k11, int k12, int k20,
                 int k21, int k22, int weight) {
             final int val = k00 * byteToInt(v00) + k10 * byteToInt(v10) + k20
-            * byteToInt(v20) + k01 * byteToInt(v01) + k11
-            * byteToInt(v11) + k21 * byteToInt(v21) + k02
-            * byteToInt(v02) + k12 * byteToInt(v12) + k22
-            * byteToInt(v22);
-            return (byte) Math.min(255, Math
-                    .max(0, (val + weight / 2) / weight));
+                    * byteToInt(v20) + k01 * byteToInt(v01) + k11
+                    * byteToInt(v11) + k21 * byteToInt(v21) + k02
+                    * byteToInt(v02) + k12 * byteToInt(v12) + k22
+                    * byteToInt(v22);
+            return (byte) Math.min(255,
+                    Math.max(0, (val + weight / 2) / weight));
         }
 
         /**
@@ -209,9 +209,10 @@ class MasterWorkerProgram {
          * @return The estimated execution time of a job.
          */
         @Override
-        public double estimateJobExecutionTime() {
+        public TimeEstimate estimateJobExecutionTime() {
             final double benchmarkTime = runBenchmark();
-            return MINIMAL_SHARPENS * benchmarkTime;
+            final double mean = MINIMAL_SHARPENS * benchmarkTime;
+            return new TimeEstimate(mean, 0.25 * mean * mean);
         }
 
         /**
@@ -223,7 +224,7 @@ class MasterWorkerProgram {
         @Override
         public Serializable run(Serializable obj) {
             final int n = MINIMAL_SHARPENS
-            + rng.nextInt(MAXIMAL_SHARPENS - MINIMAL_SHARPENS);
+                    + rng.nextInt(MAXIMAL_SHARPENS - MINIMAL_SHARPENS);
             long sum = 0;
 
             for (int i = 0; i < n; i++) {
@@ -245,11 +246,11 @@ class MasterWorkerProgram {
 
     @SuppressWarnings("synthetic-access")
     private void run(int jobCount, boolean goForMaestro, int waitNodes)
-    throws Exception {
+            throws Exception {
         final JobList jobs = new JobList();
 
-        final SeriesJob job = new SeriesJob( new SharpenJob());
-        jobs.registerJob( job );
+        final SeriesJob job = new SeriesJob(new SharpenJob());
+        jobs.registerJob(job);
         final Node node = Node.createNode(jobs, goForMaestro);
         final Listener listener = new Listener(node, jobCount);
         System.out.println("Node created");
@@ -263,7 +264,7 @@ class MasterWorkerProgram {
                 System.out.println("There are now " + n + " nodes available");
                 if (n * 3 < waitNodes) {
                     System.out
-                    .println("That is less than a third of the required nodes; goodbye!");
+                            .println("That is less than a third of the required nodes; goodbye!");
                     goodToSubmit = false;
                 }
             }
@@ -286,11 +287,11 @@ class MasterWorkerProgram {
 
     private static void usage(PrintStream printStream) {
         printStream
-        .println("Usage: MasterWorkerProgram [<options>] <jobCount>");
+                .println("Usage: MasterWorkerProgram [<options>] <jobCount>");
         printStream.println(" empty <jobCount> for a worker");
         printStream.println(" -h      Show this help");
         printStream
-        .println(" -w <n>  Wait for at least <n> ready nodes before submitting jobs");
+                .println(" -w <n>  Wait for at least <n> ready nodes before submitting jobs");
     }
 
     /**

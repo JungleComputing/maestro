@@ -3,9 +3,9 @@ package ibis.maestro;
 import java.io.Serializable;
 
 /**
- * A class containing information about the current worker queue length
- * for the given type.
- *
+ * A class containing information about the current worker queue length for the
+ * given type.
+ * 
  * @author Kees van Reeuwijk
  */
 class WorkerQueueInfo implements Serializable {
@@ -15,9 +15,9 @@ class WorkerQueueInfo implements Serializable {
 
     private int queueLengthSequenceNumber;
 
-    private double dequeueTimePerJob;
+    private TimeEstimate dequeueTimePerJob;
 
-    private double executionTime;
+    private TimeEstimate executionTime;
 
     /**
      * @param queueLength
@@ -33,7 +33,7 @@ class WorkerQueueInfo implements Serializable {
      *            The execution time of a job.
      */
     WorkerQueueInfo(int queueLength, int queueLengthSequenceNumber,
-            double dequeueTimePerJob, double executionTime) {
+            TimeEstimate dequeueTimePerJob, TimeEstimate executionTime) {
         this.queueLength = queueLength;
         this.queueLengthSequenceNumber = queueLengthSequenceNumber;
         this.dequeueTimePerJob = dequeueTimePerJob;
@@ -49,15 +49,14 @@ class WorkerQueueInfo implements Serializable {
     @Override
     public String toString() {
         return "(ql=" + getQueueLength() + ",dq/t="
-                + Utils.formatSeconds(getDequeueTimePerJob())
-                + ",compute=" + Utils.formatSeconds(getExecutionTime())
-                + ")";
+                + Utils.formatSeconds(getDequeueTimePerJob()) + ",compute="
+                + Utils.formatSeconds(getExecutionTime()) + ")";
     }
 
     String format() {
-        return String.format("%3d %9s %9s", getQueueLength(), Utils
-                .formatSeconds(getDequeueTimePerJob()), Utils
-                .formatSeconds(getExecutionTime()));
+        return String.format("%3d %9s %9s", getQueueLength(),
+                Utils.formatSeconds(getDequeueTimePerJob()),
+                Utils.formatSeconds(getExecutionTime()));
     }
 
     static String topLabel() {
@@ -73,14 +72,14 @@ class WorkerQueueInfo implements Serializable {
     }
 
     synchronized void failJob() {
-        this.executionTime = Double.POSITIVE_INFINITY;
+        this.executionTime = null;
     }
 
-    synchronized void setExecutionTime(double t) {
+    synchronized void setExecutionTime(TimeEstimate t) {
         this.executionTime = t;
     }
 
-    synchronized void setQueueTimePerJob(double queueTimePerJob,
+    synchronized void setQueueTimePerJob(TimeEstimate queueTimePerJob,
             int newQueueLength) {
         this.dequeueTimePerJob = queueTimePerJob;
         if (this.queueLength != newQueueLength) {
@@ -100,7 +99,7 @@ class WorkerQueueInfo implements Serializable {
         return changed;
     }
 
-    synchronized double getExecutionTime() {
+    synchronized TimeEstimate getExecutionTime() {
         return executionTime;
     }
 
@@ -108,9 +107,9 @@ class WorkerQueueInfo implements Serializable {
         return queueLength;
     }
 
-    synchronized double getDequeueTimePerJob() {
+    synchronized TimeEstimate getDequeueTimePerJob() {
         if (Settings.IGNORE_QUEUE_TIME) {
-            return 0L;
+            return TimeEstimate.ZERO;
         }
         return dequeueTimePerJob;
     }

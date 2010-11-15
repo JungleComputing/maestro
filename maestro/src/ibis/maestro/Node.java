@@ -467,7 +467,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             updateRecentMasters();
         }
         if (recomputeCompletionTimes.getAndReset()) {
-            double masterQueueIntervals[] = null;
+            TimeEstimate[] masterQueueIntervals = null;
             if (!Settings.IGNORE_QUEUE_TIME) {
                 masterQueueIntervals = masterQueue.getQueueIntervals();
             }
@@ -490,16 +490,16 @@ public final class Node extends Thread implements PacketReceiveListener {
         }
         s.printf("# work threads  = %5d\n", workThreads.length);
         nodes.printStatistics(s);
-        s.printf("submit       messages:   %5d sent\n", submitMessageCount
-                .get());
-        s.printf("job received messages:   %5d sent\n", jobReceivedMessageCount
-                .get());
+        s.printf("submit       messages:   %5d sent\n",
+                submitMessageCount.get());
+        s.printf("job received messages:   %5d sent\n",
+                jobReceivedMessageCount.get());
         s.printf("job completed messages:  %5d sent\n",
                 jobCompletedMessageCount.get());
         s.printf("job result   messages:   %5d sent\n",
                 aggregateResultMessageCount.get());
-        s.printf("job fail     messages:   %5d sent\n", jobFailMessageCount
-                .get());
+        s.printf("job fail     messages:   %5d sent\n",
+                jobFailMessageCount.get());
         if (terminator != null) {
             terminator.printStatistics(s);
         }
@@ -518,8 +518,8 @@ public final class Node extends Thread implements PacketReceiveListener {
         masterQueue.printStatistics(s);
         Utils.printThreadStats(s);
         gossiper.printStatistics(s, jobs);
-        s.printf("update        messages:   %5d sent\n", updateMessageCount
-                .get());
+        s.printf("update        messages:   %5d sent\n",
+                updateMessageCount.get());
     }
 
     /**
@@ -836,7 +836,7 @@ public final class Node extends Thread implements PacketReceiveListener {
 
         // Update statistics.
         final double computeInterval = jobCompletionMoment - runMoment;
-        final double averageComputeTime = workerQueue.countJob(
+        final TimeEstimate averageComputeTime = workerQueue.countJob(
                 completedStageType, computeInterval);
         gossiper.setComputeTime(completedStageType, averageComputeTime);
         if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {

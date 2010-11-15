@@ -118,13 +118,13 @@ final class WorkerQueueJobInfo {
      * @param workTime
      *            The time it took to execute this job.
      */
-    synchronized double countJob(double workTime, boolean unpredictable) {
+    synchronized TimeEstimate countJob(double workTime, boolean unpredictable) {
         outGoingJobCount++;
         totalWorkTime += workTime;
         if (!unpredictable) {
             averageComputeTime.addSample(workTime);
         }
-        return averageComputeTime.getAverage();
+        return averageComputeTime.getEstimate();
     }
 
     /**
@@ -141,11 +141,11 @@ final class WorkerQueueJobInfo {
     /**
      * Sets the initial compute time estimate of this job to the given value.
      * 
-     * @param estimate
+     * @param timeEstimate
      *            The initial estimate.
      */
-    void setInitialComputeTimeEstimate(double estimate) {
-        averageComputeTime.setInitialEstimate(estimate);
+    void setInitialComputeTimeEstimate(TimeEstimate timeEstimate) {
+        averageComputeTime.setInitialEstimate(timeEstimate);
     }
 
     void registerNode(NodeInfo nodeInfo) {
@@ -155,5 +155,9 @@ final class WorkerQueueJobInfo {
                 workers.add(nodeJobInfo);
             }
         }
+    }
+
+    TimeEstimate getQueueTimePerJob() {
+        return dequeueInterval.getEstimate();
     }
 }

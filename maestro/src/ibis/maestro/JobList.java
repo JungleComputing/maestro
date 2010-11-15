@@ -62,11 +62,12 @@ public final class JobList {
             }
             index = allJobTypes.size();
             t = new JobType(unpredictable, false, index);
-            final JobType todoArray[] = todoList
-            .toArray(new JobType[todoList.size()]);
+            final JobType todoArray[] = todoList.toArray(new JobType[todoList
+                    .size()]);
             todoLists.add(todoArray);
         } else if (job instanceof ParallelJob) {
-            final boolean unpredictable = true; // FIXME: allow predictable parallel jobs.
+            final boolean unpredictable = true; // FIXME: allow predictable
+                                                // parallel jobs.
             index = allJobTypes.size();
             t = new JobType(unpredictable, false, index);
             todoLists.add(new JobType[] { t });
@@ -110,10 +111,10 @@ public final class JobList {
      *            The job we want the initial estimate for.
      * @return The initial estimate of the execution time of this job.
      */
-    private double initialEstimateJobTime(final Job job) {
+    private TimeEstimate initialEstimateJobTime(final Job job) {
         if (!job.isSupported()) {
             // Not supported by this node.
-            return Double.POSITIVE_INFINITY;
+            return null;
         }
         if (job instanceof JobExecutionTimeEstimator) {
             final JobExecutionTimeEstimator estimator = (JobExecutionTimeEstimator) job;
@@ -122,10 +123,10 @@ public final class JobList {
         if (job instanceof AlternativesJob) {
             // We estimate this will be the minimum of all alternatives.
             final AlternativesJob aj = (AlternativesJob) job;
-            double time = Double.POSITIVE_INFINITY;
+            TimeEstimate time = null;
 
             for (final Job j : aj.alternatives) {
-                final double t1 = initialEstimateJobTime(j);
+                final TimeEstimate t1 = initialEstimateJobTime(j);
                 if (t1 < time) {
                     time = t1;
                 }
@@ -134,33 +135,33 @@ public final class JobList {
         }
         if (job instanceof SeriesJob) {
             final SeriesJob l = (SeriesJob) job;
-            double time = 0.0;
+            TimeEstimate time = TimeEstimate.ZERO;
 
             for (final Job j : l.jobs) {
-                double t1 = initialEstimateJobTime(j);
+                TimeEstimate t1 = initialEstimateJobTime(j);
 
-                if (t1 == Double.POSITIVE_INFINITY) {
+                if (t1 == null) {
                     /*
                      * Yes, this looks weird, but infinity here means we cannot
                      * execute the job locally. We must assume that it can be
                      * executed remotely, but we don't know the execution time
                      * there.
                      */
-                    t1 = 0.0;
+                    t1 = TimeEstimate.ZERO;
                 }
-                time += t1;
+                time = time.addIndependent(t1);
             }
             return time;
         }
-        return 0.0;
+        return TimeEstimate.ZERO;
     }
 
-    double[] getInitialJobTimes() {
-        final double res[] = new double[allJobTypes.size()];
+    TimeEstimate[] getInitialJobTimes() {
+        final TimeEstimate res[] = new TimeEstimate[allJobTypes.size()];
         int i = 0;
         for (final JobType t : allJobTypes) {
             final Job job = getJob(t);
-            final double time = initialEstimateJobTime(job);
+            final TimeEstimate time = initialEstimateJobTime(job);
             res[i++] = time;
         }
         return res;
@@ -179,7 +180,7 @@ public final class JobList {
     }
 
     boolean isParallelJobType(JobType t) {
-        Job job = indexToJobMap.get(t.index);
+        final Job job = indexToJobMap.get(t.index);
         return job instanceof ParallelJob;
     }
 
