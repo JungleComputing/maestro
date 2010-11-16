@@ -928,27 +928,22 @@ public final class Node extends Thread implements PacketReceiveListener {
         long threadOverhead = 0L;
         try {
             while (keepRunning()) {
-                RunJobMessage message = null;
-                boolean readyForWork = false;
+                RunJobMessage workMessage = null;
 
                 updateAdministration();
                 if (runningJobCount.isBelow(numberOfProcessors)) {
                     // Only try to start a new job when there are idle
                     // processors.
-                    message = workerQueue.remove(jobs, gossiper);
-                    readyForWork = true;
+                    workMessage = workerQueue.remove(jobs, gossiper);
                 }
-                if (message == null) {
-                    idleProcessors.up();
+                if (workMessage == null) {
                     final long sleepTime = 20;
+                    idleProcessors.up();
                     // Wait a little, there is nothing to do.
                     try {
-                        if (readyForWork) {
-                            if (Settings.traceWaits) {
-                                Globals.log.reportProgress("Waiting for "
-                                        + sleepTime
-                                        + "ms for new jobs in queue");
-                            }
+                        if (Settings.traceWaits) {
+                            Globals.log.reportProgress("Waiting for "
+                                    + sleepTime + "ms for new jobs in queue");
                         }
                         synchronized (this) {
                             final double overhead = Utils.getPreciseTime()
@@ -972,29 +967,29 @@ public final class Node extends Thread implements PacketReceiveListener {
                 } else {
                     // We have a job to execute.
                     final double runMoment = Utils.getPreciseTime();
-                    final JobType stageType = message.jobInstance
+                    final JobType stageType = workMessage.jobInstance
                             .getStageType(jobs);
                     final Job job = jobs.getJob(stageType);
 
                     runningJobCount.up();
                     if (Settings.traceNodeProgress) {
                         final double queueInterval = runMoment
-                                - message.arrivalMoment;
+                                - workMessage.arrivalMoment;
                         Globals.log.reportProgress("Worker: handed out job "
-                                + message + " of type " + stageType
+                                + workMessage + " of type " + stageType
                                 + "; it was queued for "
                                 + Utils.formatSeconds(queueInterval)
                                 + "; there are now " + runningJobCount
                                 + " running jobs");
                     }
-                    final Serializable input = message.jobInstance.input;
+                    final Serializable input = workMessage.jobInstance.input;
                     threadOverhead += Utils.getPreciseTime() - overheadStart;
-                    executeJob(message, job, input, runMoment);
+                    executeJob(workMessage, job, input, runMoment);
                     runningJobCount.down();
                     overheadStart = Utils.getPreciseTime();
                     if (Settings.traceNodeProgress) {
                         Globals.log.reportProgress("Work thread: completed "
-                                + message);
+                                + workMessage);
                     }
                 }
             }

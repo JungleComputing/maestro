@@ -40,7 +40,7 @@ final class NodeInfo {
      *            Is this the local node?
      */
     protected NodeInfo(IbisIdentifier ibis, WorkerQueue workerQueue,
-            boolean local,int jobCount) {
+            boolean local, int jobCount) {
         this.ibis = ibis;
         this.local = local;
         nodeJobInfoList = new NodeJobInfo[jobCount];
@@ -49,8 +49,8 @@ final class NodeInfo {
         // long pessimisticPingTime = local?0L:Utils.HOUR_IN_NANOSECONDS;
         double estimatedPingTime = 0.0;
         if (!local) {
-            estimatedPingTime = Utils.MILLISECOND
-            + Utils.MILLISECOND*Globals.rng.nextDouble();
+            estimatedPingTime = Utils.MILLISECOND + Utils.MILLISECOND
+                    * Globals.rng.nextDouble();
             if (!Utils.areInSameCluster(Globals.localIbis.identifier(), ibis)) {
                 // Be more pessimistic if the nodes are not in the same cluster.
                 // TODO: simply look at the number of differing levels.
@@ -124,8 +124,8 @@ final class NodeInfo {
     void setSuspect() {
         if (local) {
             Globals.log
-            .reportInternalError("Cannot communicate with local node "
-                    + ibis + "???");
+                    .reportInternalError("Cannot communicate with local node "
+                            + ibis + "???");
         } else {
             Globals.log.reportError("Cannot communicate with node " + ibis);
             synchronized (this) {
@@ -159,8 +159,8 @@ final class NodeInfo {
     JobInstance registerJobFailed(long id) {
         final ActiveJob job = extractActiveJob(id);
         if (job == null) {
-            Globals.log.reportError("Job with unknown id " + id
-                    + " has failed");
+            Globals.log
+                    .reportError("Job with unknown id " + id + " has failed");
             return null;
         }
         job.nodeJobInfo.registerJobFailed();
@@ -171,7 +171,7 @@ final class NodeInfo {
      * Register the start of a new job.
      * 
      * @param jobs
-     *    Information about the different types of jobs that are known.
+     *            Information about the different types of jobs that are known.
      * @param job
      *            The job that was started.
      * @param id
@@ -179,27 +179,27 @@ final class NodeInfo {
      * @param predictedDuration
      *            The predicted duration in seconds of the job.
      */
-    void registerJobStart(JobList jobs,JobInstance job, long id, double predictedDuration) {
+    void registerJobStart(JobList jobs, JobInstance job, long id,
+            double predictedDuration) {
         final JobType stageType = job.getStageType(jobs);
         final NodeJobInfo workerJobInfo = nodeJobInfoList[stageType.index];
         if (workerJobInfo == null) {
-            Globals.log
-            .reportInternalError("No worker job info for job type "
+            Globals.log.reportInternalError("No worker job info for job type "
                     + stageType);
         } else {
             workerJobInfo.registerJobSubmitted();
         }
         final double now = Utils.getPreciseTime();
         final double allowanceDeadlineInterval = predictedDuration
-        * Settings.ALLOWANCE_DEADLINE_MARGIN;
+                * Settings.ALLOWANCE_DEADLINE_MARGIN;
         // Don't try to enforce a deadline interval below a certain reasonable
         // minimum.
         final double allowanceDeadline = now
-        + Math.max(allowanceDeadlineInterval, Settings.MINIMAL_DEADLINE);
+                + Math.max(allowanceDeadlineInterval, Settings.MINIMAL_DEADLINE);
         final double rescheduleDeadline = now + allowanceDeadlineInterval
-        * Settings.RESCHEDULE_DEADLINE_MULTIPLIER;
+                * Settings.RESCHEDULE_DEADLINE_MULTIPLIER;
         final ActiveJob j = new ActiveJob(job, id, now, workerJobInfo,
-                predictedDuration, allowanceDeadline, rescheduleDeadline);
+                allowanceDeadline, rescheduleDeadline);
         synchronized (this) {
             activeJobs.add(j);
         }
@@ -213,21 +213,22 @@ final class NodeInfo {
      */
     void registerJobReceived(JobReceivedMessage result) {
         final ActiveJob job;
-    
+
         // The identifier of the job, as handed out by us.
         final long id = result.jobId;
         synchronized (this) {
             final int ix = searchActiveJob(id);
-    
+
             if (ix < 0) {
                 // Not in the list of active jobs, presumably because it was
                 // redundantly executed, or the completed message
-            	// was received before the job received message.
+                // was received before the job received message.
                 return;
             }
             job = activeJobs.get(ix);
         }
-        final double transmissionTime = local ? 0.0 : (result.arrivalMoment - job.startTime);
+        final double transmissionTime = local ? 0.0
+                : (result.arrivalMoment - job.startTime);
         final NodeJobInfo nodeJobInfo = job.nodeJobInfo;
         nodeJobInfo.registerJobReceived(transmissionTime);
         if (Settings.traceNodeProgress) {
@@ -242,15 +243,15 @@ final class NodeInfo {
      * 
      * @param result
      *            The job result message that tells about this job.
-     * @return The job instance that was completed if it may have duplicates,
-     *         or <code>null</code>
+     * @return The job instance that was completed if it may have duplicates, or
+     *         <code>null</code>
      */
-    JobInstance registerJobCompleted(JobList jobs,JobCompletedMessage result) {
+    JobInstance registerJobCompleted(JobList jobs, JobCompletedMessage result) {
         final long id = result.jobId; // The identifier of the job, as handed
         // out by us.
-    
+
         final ActiveJob job = extractActiveJob(id);
-    
+
         if (job == null) {
             // Not in the list of active jobs, presumably because it was
             // redundantly executed.
@@ -264,34 +265,31 @@ final class NodeInfo {
             if (Settings.traceMissedDeadlines) {
                 Globals.log.reportProgress("Missed allowance deadline for "
                         + stageType
-                        + " job: " + job
-                        + " predictedDuration="
-                        + Utils.formatSeconds(job.predictedDuration)
+                        + " job: "
+                        + job
                         + " allowanceDuration="
                         + Utils.formatSeconds(job.allowanceDeadline
                                 - job.startTime) + " realDuration="
-                                + Utils.formatSeconds(roundtripTime));
+                        + Utils.formatSeconds(roundtripTime));
             }
         }
         if (job.rescheduleDeadline < result.arrivalMoment) {
             if (Settings.traceMissedDeadlines) {
                 Globals.log.reportProgress("Missed reschedule deadline for "
                         + stageType
-                        + " job: " + job
-                        + " predictedDuration="
-                        + Utils.formatSeconds(job.predictedDuration)
+                        + " job: "
+                        + job
                         + " rescheduleDuration="
                         + Utils.formatSeconds(job.rescheduleDeadline
                                 - job.startTime) + " realDuration="
-                                + Utils.formatSeconds(roundtripTime));
+                        + Utils.formatSeconds(roundtripTime));
             }
             nodeJobInfo.registerMissedRescheduleDeadline();
         }
         nodeJobInfo.registerJobCompleted(roundtripTime);
         if (Settings.traceNodeProgress) {
             Globals.log.reportProgress("Master: retired job " + job
-                    + " roundtripTime="
-                    + Utils.formatSeconds(roundtripTime));
+                    + " roundtripTime=" + Utils.formatSeconds(roundtripTime));
         }
         if (job.jobInstance.isOrphan()) {
             return job.jobInstance;

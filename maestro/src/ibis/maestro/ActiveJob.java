@@ -16,22 +16,18 @@ class ActiveJob {
     /** The time this job was sent to the worker. */
     final double startTime;
 
-    /** The predicted duration of the job. */
-    final double predictedDuration;
-
     final double allowanceDeadline;
 
     /** The moment this job should be completed. */
     final double rescheduleDeadline;
 
     ActiveJob(JobInstance jobInstance, long id, double startTime,
-            NodeJobInfo nodeJobInfo, double predictedDuration,
-            double allowanceDeadline, double rescheduleDeadline) {
+            NodeJobInfo nodeJobInfo, double allowanceDeadline,
+            double rescheduleDeadline) {
         this.jobInstance = jobInstance;
         this.id = id;
         this.nodeJobInfo = nodeJobInfo;
         this.startTime = startTime;
-        this.predictedDuration = predictedDuration;
         this.allowanceDeadline = allowanceDeadline;
         this.rescheduleDeadline = rescheduleDeadline;
     }
