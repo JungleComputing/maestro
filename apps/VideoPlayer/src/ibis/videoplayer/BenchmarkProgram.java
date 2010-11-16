@@ -6,14 +6,15 @@ import ibis.maestro.JobCompletionListener;
 import ibis.maestro.JobExecutionTimeEstimator;
 import ibis.maestro.JobList;
 import ibis.maestro.LabelTracker;
+import ibis.maestro.LabelTracker.Label;
 import ibis.maestro.Node;
 import ibis.maestro.ParallelJob;
 import ibis.maestro.ParallelJobContext;
 import ibis.maestro.ParallelJobHandler;
 import ibis.maestro.ParallelJobInstance;
 import ibis.maestro.SeriesJob;
+import ibis.maestro.TimeEstimate;
 import ibis.maestro.Utils;
-import ibis.maestro.LabelTracker.Label;
 
 import java.io.File;
 import java.io.IOException;
@@ -50,8 +51,8 @@ class BenchmarkProgram {
         public void jobCompleted(Node node, Object id, Serializable result) {
             if (!(id instanceof LabelTracker.Label)) {
                 System.err
-                .println("Internal error: Object id is not a tracker label: "
-                        + id);
+                        .println("Internal error: Object id is not a tracker label: "
+                                + id);
                 System.exit(1);
             }
             labelTracker.returnLabel((LabelTracker.Label) id);
@@ -61,7 +62,7 @@ class BenchmarkProgram {
             }
             if (finished) {
                 System.out
-                .println("I got all job results back; stopping test program");
+                        .println("I got all job results back; stopping test program");
                 node.setStopped();
             }
             final long returned = labelTracker.getReturnedLabels();
@@ -88,7 +89,7 @@ class BenchmarkProgram {
             }
             if (finished) {
                 System.out
-                .println("I got all job results back; stopping test program");
+                        .println("I got all job results back; stopping test program");
                 node.setStopped();
             }
         }
@@ -101,7 +102,7 @@ class BenchmarkProgram {
 
     // Do all the image processing steps in one go. Used as baseline.
     private static final class ProcessFrameJob implements AtomicJob,
-    JobExecutionTimeEstimator {
+            JobExecutionTimeEstimator {
         private static final long serialVersionUID = -7976035811697720295L;
         final boolean slowScale;
         final boolean slowSharpen;
@@ -174,15 +175,16 @@ class BenchmarkProgram {
          * @return The estimated time in ns to execute this job.
          */
         @Override
-        public double estimateJobExecutionTime() {
+        public TimeEstimate estimateJobExecutionTime() {
             final double startTime = Utils.getPreciseTime();
             run(0);
-            return Utils.getPreciseTime() - startTime;
+            final double d = Utils.getPreciseTime() - startTime;
+            return new TimeEstimate(d, 0.25 * d * d);
         }
     }
 
     private static final class GenerateFrameJob implements AtomicJob,
-    JobExecutionTimeEstimator {
+            JobExecutionTimeEstimator {
         private static final long serialVersionUID = -7976035811697720295L;
 
         /**
@@ -217,15 +219,16 @@ class BenchmarkProgram {
          * @return The estimated time in ns to execute this job.
          */
         @Override
-        public double estimateJobExecutionTime() {
+        public TimeEstimate estimateJobExecutionTime() {
             final double startTime = Utils.getPreciseTime();
             generateFrame(0);
-            return Utils.getPreciseTime() - startTime;
+            final double d = Utils.getPreciseTime() - startTime;
+            return new TimeEstimate(d, 0.25 * d * d);
         }
     }
 
     private static final class ScaleUpFrameJob implements AtomicJob,
-    JobExecutionTimeEstimator {
+            JobExecutionTimeEstimator {
         private static final long serialVersionUID = 5452987225377415308L;
         private final int factor;
         private final boolean slow;
@@ -281,14 +284,15 @@ class BenchmarkProgram {
          */
         @SuppressWarnings("synthetic-access")
         @Override
-        public double estimateJobExecutionTime() {
+        public TimeEstimate estimateJobExecutionTime() {
             if (!allowed) {
-                return Double.POSITIVE_INFINITY;
+                return null;
             }
             final Serializable frame = GenerateFrameJob.generateFrame(0);
             final double startTime = Utils.getPreciseTime();
             run(frame);
-            return Utils.getPreciseTime() - startTime;
+            final double d = Utils.getPreciseTime() - startTime;
+            return new TimeEstimate(d, 0.25 * d * d);
         }
     }
 
@@ -338,7 +342,8 @@ class BenchmarkProgram {
             public void split(Serializable input, ParallelJobHandler handler) {
                 final UncompressedImage img = (UncompressedImage) input;
 
-                final UncompressedImage l[] = img.splitVertically(FRAGMENT_COUNT);
+                final UncompressedImage l[] = img
+                        .splitVertically(FRAGMENT_COUNT);
                 for (int i = 0; i < l.length; i++) {
                     handler.submit(l[i], this, i, scalerJob);
                 }
@@ -354,7 +359,7 @@ class BenchmarkProgram {
     }
 
     private static final class SharpenFrameJob implements AtomicJob,
-    JobExecutionTimeEstimator {
+            JobExecutionTimeEstimator {
         private static final long serialVersionUID = 54529872253774153L;
         private final boolean slow;
         private final boolean allowed;
@@ -410,14 +415,15 @@ class BenchmarkProgram {
          */
         @SuppressWarnings("synthetic-access")
         @Override
-        public double estimateJobExecutionTime() {
+        public TimeEstimate estimateJobExecutionTime() {
             if (!allowed) {
-                return Double.POSITIVE_INFINITY;
+                return null;
             }
             final Serializable frame = GenerateFrameJob.generateFrame(0);
             final double startTime = Utils.getPreciseTime();
             run(frame);
-            return 4 * (Utils.getPreciseTime() - startTime);
+            final double d = 4 * (Utils.getPreciseTime() - startTime);
+            return new TimeEstimate(d, 0.25 * d * d);
         }
     }
 
@@ -455,7 +461,7 @@ class BenchmarkProgram {
     }
 
     private static final class SaveFrameJob implements AtomicJob,
-    JobExecutionTimeEstimator {
+            JobExecutionTimeEstimator {
         private static final long serialVersionUID = 54529872253774153L;
         private final File saveDir;
 
@@ -506,14 +512,14 @@ class BenchmarkProgram {
          * @return The estimated time on ns to execute this job.
          */
         @Override
-        public double estimateJobExecutionTime() {
+        public TimeEstimate estimateJobExecutionTime() {
             // Saving a file may take some time, but otherwise the estimate
             // should be zero.
             if (saveDir != null) {
                 // TODO: better estimate for save step.
-                return 10e-3; // 10 ms
+                return new TimeEstimate(10e-3, 0); // 10 ms
             }
-            return 0;
+            return TimeEstimate.ZERO;
         }
     }
 
@@ -592,9 +598,9 @@ class BenchmarkProgram {
             final String env = System.getenv(Settings.RANK);
             if (env == null) {
                 System.err
-                .println("Environment variable "
-                        + Settings.RANK
-                        + " not set, so I don't know if this node is odd or even");
+                        .println("Environment variable "
+                                + Settings.RANK
+                                + " not set, so I don't know if this node is odd or even");
                 return false;
             }
             final int rank = Integer.parseInt(env);
@@ -664,12 +670,12 @@ class BenchmarkProgram {
         if (oneJob) {
             if (!allowScale || !allowSharpen) {
                 System.err
-                .println("Disabling steps is meaningless in a one-job benchmark");
+                        .println("Disabling steps is meaningless in a one-job benchmark");
                 System.exit(1);
             }
             System.out.println("One-job benchmark");
-            final ProcessFrameJob processFrameJob = new ProcessFrameJob(slowScale,
-                    slowSharpen, dir);
+            final ProcessFrameJob processFrameJob = new ProcessFrameJob(
+                    slowScale, slowSharpen, dir);
             convertJob = new SeriesJob(processFrameJob);
         } else {
             Job scaleUpFrameJob;
