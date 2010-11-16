@@ -14,7 +14,9 @@ public class TimeEstimate implements Serializable {
 	}
 
 	public TimeEstimate addIndependent(final TimeEstimate b) {
-		// TODO: can we just add standard deviations?
+		if (b == null) {
+			return null;
+		}
 		return new TimeEstimate(mean + b.mean, variance + b.variance);
 	}
 

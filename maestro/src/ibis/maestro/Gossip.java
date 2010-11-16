@@ -150,10 +150,12 @@ class Gossip {
 				final TimeEstimate val = xmitTime.addIndependent(node
 						.getCompletionOnWorker(todoIx, ix, nextIx));
 
-				final double t = val.getLikelyValue();
-				if (t < minTime) {
-					res = val;
-					minTime = t;
+				if (val != null) {
+					final double t = val.getLikelyValue();
+					if (t < minTime) {
+						res = val;
+						minTime = t;
+					}
 				}
 			}
 		}

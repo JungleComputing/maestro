@@ -222,7 +222,7 @@ public class Utils {
     }
 
     static String formatSeconds(TimeEstimate t) {
-        return formatSeconds(t.mean) + '±'
+        return formatSeconds(t.mean) + '\u00B1'
                 + formatSeconds(Math.sqrt(t.variance));
     }
 
