@@ -1,7 +1,7 @@
 package ibis.maestro;
 
 import ibis.steel.Estimate;
-import ibis.steel.EstimatorInterface;
+import ibis.steel.Estimator;
 import ibis.steel.ExponentialDecayEstimator;
 
 import java.io.PrintStream;
@@ -14,9 +14,9 @@ final class NodeJobInfo {
 
 	private final NodeInfo nodeInfo;
 
-	private final EstimatorInterface transmissionEstimate;
+	private final Estimator transmissionEstimate;
 
-	private final EstimatorInterface roundtripEstimate;
+	private final Estimator roundtripEstimate;
 
 	/** How many instances of this job does this worker currently have? */
 	private int outstandingJobs = 0;

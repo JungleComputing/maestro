@@ -44,7 +44,7 @@ class LocalNodeInfoList {
 	 */
 	double getDeadline(final JobType type) {
 		return infoPerType[type.index].predictedDuration
-				.getPessimisticEstimate();
+				.getHighEstimate();
 	}
 
 	@Override
