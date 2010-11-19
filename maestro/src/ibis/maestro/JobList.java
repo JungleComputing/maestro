@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.steel.Estimate;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -111,7 +113,7 @@ public final class JobList {
 	 *            The job we want the initial estimate for.
 	 * @return The initial estimate of the execution time of this job.
 	 */
-	private TimeEstimate initialEstimateJobTime(final Job job) {
+	private Estimate initialEstimateJobTime(final Job job) {
 		if (!job.isSupported()) {
 			// Not supported by this node.
 			return null;
@@ -123,11 +125,11 @@ public final class JobList {
 		if (job instanceof AlternativesJob) {
 			// We estimate this will be the minimum of all alternatives.
 			final AlternativesJob aj = (AlternativesJob) job;
-			TimeEstimate time = null;
+			Estimate time = null;
 			double bestTime = Double.POSITIVE_INFINITY;
 
 			for (final Job j : aj.alternatives) {
-				final TimeEstimate t1 = initialEstimateJobTime(j);
+				final Estimate t1 = initialEstimateJobTime(j);
 
 				if (t1 != null) {
 					final double v1 = t1.getLikelyValue();
@@ -142,10 +144,10 @@ public final class JobList {
 		}
 		if (job instanceof SeriesJob) {
 			final SeriesJob l = (SeriesJob) job;
-			TimeEstimate time = TimeEstimate.ZERO;
+			Estimate time = Estimate.ZERO;
 
 			for (final Job j : l.jobs) {
-				TimeEstimate t1 = initialEstimateJobTime(j);
+				Estimate t1 = initialEstimateJobTime(j);
 
 				if (t1 == null) {
 					/*
@@ -154,21 +156,21 @@ public final class JobList {
 					 * executed remotely, but we don't know the execution time
 					 * there.
 					 */
-					t1 = TimeEstimate.ZERO;
+					t1 = Estimate.ZERO;
 				}
 				time = time.addIndependent(t1);
 			}
 			return time;
 		}
-		return TimeEstimate.ZERO;
+		return Estimate.ZERO;
 	}
 
-	TimeEstimate[] getInitialJobTimes() {
-		final TimeEstimate res[] = new TimeEstimate[allJobTypes.size()];
+	Estimate[] getInitialJobTimes() {
+		final Estimate res[] = new Estimate[allJobTypes.size()];
 		int i = 0;
 		for (final JobType t : allJobTypes) {
 			final Job job = getJob(t);
-			final TimeEstimate time = initialEstimateJobTime(job);
+			final Estimate time = initialEstimateJobTime(job);
 			res[i++] = time;
 		}
 		return res;

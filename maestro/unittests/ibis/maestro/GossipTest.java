@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
+import ibis.steel.Estimate;
 
 import java.io.Serializable;
 import java.util.HashMap;
@@ -77,17 +78,16 @@ public class GossipTest extends TestCase {
 
 		final Gossip gossip = new Gossip(jobs, null);
 		final JobType tj1 = jobs.getJobType(j1);
-		gossip.setLocalComputeTime(tj1, new TimeEstimate(1.0, 0));
-		gossip.setWorkerQueueTimePerJob(tj1, new TimeEstimate(0.1, 0), 1);
+		gossip.setLocalComputeTime(tj1, new Estimate(1.0, 0));
+		gossip.setWorkerQueueTimePerJob(tj1, new Estimate(0.1, 0), 1);
 		final JobType tj11 = jobs.getJobType(j11);
-		gossip.setLocalComputeTime(tj11, new TimeEstimate(2.0, 0));
-		gossip.setWorkerQueueTimePerJob(tj11, new TimeEstimate(0.2, 0), 2);
+		gossip.setLocalComputeTime(tj11, new Estimate(2.0, 0));
+		gossip.setWorkerQueueTimePerJob(tj11, new Estimate(0.2, 0), 2);
 		final JobType tj2 = jobs.getJobType(j2);
-		gossip.setLocalComputeTime(tj2, new TimeEstimate(3.0, 0));
-		gossip.setWorkerQueueTimePerJob(tj2, new TimeEstimate(0.3, 0), 3);
-		final TimeEstimate v = new TimeEstimate(0.2, 0);
-		final TimeEstimate[] masterQueueIntervals = new TimeEstimate[] { v, v,
-				v, v };
+		gossip.setLocalComputeTime(tj2, new Estimate(3.0, 0));
+		gossip.setWorkerQueueTimePerJob(tj2, new Estimate(0.3, 0), 3);
+		final Estimate v = new Estimate(0.2, 0);
+		final Estimate[] masterQueueIntervals = new Estimate[] { v, v, v, v };
 		final double completionTimes[] = new double[] { 0.5, 0.5, 0.5, 0.5 };
 		final double transmissionTimes[] = new double[] { 0.4, 0.3, 0.2, 0.1 };
 		final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap = new HashMap<IbisIdentifier, LocalNodeInfoList>();
@@ -99,22 +99,22 @@ public class GossipTest extends TestCase {
 		gossip.recomputeCompletionTimes(masterQueueIntervals, jobs,
 				localNodeInfoMap);
 		final NodePerformanceInfo info = gossip.getLocalUpdate();
-		final TimeEstimate[] l = info.completionInfo[3];
-		assertEquals(9.5, l[0].mean, eps);
-		assertEquals(0.0, l[0].variance, eps);
-		assertEquals(7.7, l[1].mean, eps);
-		assertEquals(0.0, l[1].variance, eps);
-		assertEquals(4.6, l[2].mean, eps);
-		assertEquals(0.0, l[2].variance, eps);
+		final Estimate[] l = info.completionInfo[3];
+		assertEquals(9.5, l[0].getMean(), eps);
+		assertEquals(0.0, l[0].getVariance(), eps);
+		assertEquals(7.7, l[1].getMean(), eps);
+		assertEquals(0.0, l[1].getVariance(), eps);
+		assertEquals(4.6, l[2].getMean(), eps);
+		assertEquals(0.0, l[2].getVariance(), eps);
 	}
 
 	private LocalNodeInfo[] buildLocalNodeInfoList(final int[] queueLengths,
 			final double[] transmissionTimes, final double[] completionTimes) {
 		final LocalNodeInfo res[] = new LocalNodeInfo[queueLengths.length];
 		for (int i = 0; i < queueLengths.length; i++) {
-			res[i] = new LocalNodeInfo(queueLengths[i], new TimeEstimate(
-					transmissionTimes[i], 0), new TimeEstimate(
-					completionTimes[i], 0));
+			res[i] = new LocalNodeInfo(queueLengths[i], new Estimate(
+					transmissionTimes[i], 0), new Estimate(completionTimes[i],
+					0));
 		}
 		return res;
 	}

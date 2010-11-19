@@ -5,7 +5,7 @@ package ibis.maestro;
  * 
  * @author Kees van Reeuwijk.
  */
-class PreciseDecayingTimeEstimate {
+class PreciseDecayingEstimate {
     private static final int BUFFER_SIZE = 40;
 
     private int sampleCount = 0;
@@ -20,7 +20,7 @@ class PreciseDecayingTimeEstimate {
 
     private int firstSample = 0;
 
-    PreciseDecayingTimeEstimate(long initial) {
+    PreciseDecayingEstimate(long initial) {
         samples[0] = initial;
         sampleTimes[0] = 0; // A long time ago.
         nextSampleIndex++;

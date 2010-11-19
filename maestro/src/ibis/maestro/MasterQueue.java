@@ -1,6 +1,9 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
+import ibis.steel.Estimate;
+import ibis.steel.EstimatorInterface;
+import ibis.steel.ExponentialDecayEstimator;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -101,12 +104,12 @@ final class MasterQueue {
 		 * @return The estimated time in seconds a new job will spend in the
 		 *         queue.
 		 */
-		private synchronized TimeEstimate estimateQueueTime() {
-			final TimeEstimate timePerEntry = dequeueInterval.getEstimate();
+		private synchronized Estimate estimateQueueTime() {
+			final Estimate timePerEntry = dequeueInterval.getEstimate();
 			// Since at least one processor isn't working on a job (or we
 			// wouldn't be here), we are only impressed if there is more
 			// than one idle processor.
-			final TimeEstimate res = timePerEntry.multiply(1 + elements);
+			final Estimate res = timePerEntry.multiply(1 + elements);
 			return res;
 		}
 	}
@@ -261,7 +264,7 @@ final class MasterQueue {
 			final LocalNodeInfoList localNodeInfo = localNodeInfoMap
 					.get(info.source);
 
-			final TimeEstimate est = info.estimateJobCompletion(localNodeInfo,
+			final Estimate est = info.estimateJobCompletion(localNodeInfo,
 					job.overallType, job.stageNumber, stageType,
 					Settings.HARD_ALLOWANCES);
 			if (est != null) {
@@ -305,7 +308,7 @@ final class MasterQueue {
 		for (final NodePerformanceInfo info : tables) {
 			final LocalNodeInfoList localNodeInfo = localNodeInfoMap
 					.get(info.source);
-			final TimeEstimate val = info.estimateJobCompletion(localNodeInfo,
+			final Estimate val = info.estimateJobCompletion(localNodeInfo,
 					job.overallType, job.stageNumber, stageType, true);
 			s.print(Utils.formatSeconds(val));
 			s.print(' ');
@@ -378,8 +381,8 @@ final class MasterQueue {
 	}
 
 	@SuppressWarnings("synthetic-access")
-	TimeEstimate[] getQueueIntervals() {
-		final TimeEstimate[] res = new TimeEstimate[queueTypes.length];
+	Estimate[] getQueueIntervals() {
+		final Estimate[] res = new Estimate[queueTypes.length];
 
 		for (int ix = 0; ix < queueTypes.length; ix++) {
 			res[ix] = queueTypes[ix].estimateQueueTime();

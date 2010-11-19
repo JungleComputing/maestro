@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
+import ibis.steel.Estimate;
 
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -21,7 +22,7 @@ class NodePerformanceInfo implements Serializable {
 	 * For each type of job we know, the estimated time it will take to complete
 	 * the remaining jobs of this job.
 	 */
-	final TimeEstimate[][] completionInfo;
+	final Estimate[][] completionInfo;
 
 	/** For each type of job we know, the queue length on this worker. */
 	private final WorkerQueueInfo[] workersQueueInfo;
@@ -31,7 +32,7 @@ class NodePerformanceInfo implements Serializable {
 	/** The number of processors on this node. */
 	private final int numberOfProcessors;
 
-	NodePerformanceInfo(final TimeEstimate[][] completionInfo,
+	NodePerformanceInfo(final Estimate[][] completionInfo,
 			final WorkerQueueInfo[] workerQueueInfo,
 			final IbisIdentifier source, final int numberOfProcessors,
 			final long timeStamp) {
@@ -43,7 +44,7 @@ class NodePerformanceInfo implements Serializable {
 	}
 
 	NodePerformanceInfo getDeepCopy() {
-		final TimeEstimate completionInfoCopy[][] = new TimeEstimate[completionInfo.length][];
+		final Estimate completionInfoCopy[][] = new Estimate[completionInfo.length][];
 
 		for (int i = 0; i < completionInfo.length; i++) {
 			completionInfoCopy[i] = Arrays.copyOf(completionInfo[i],
@@ -57,9 +58,9 @@ class NodePerformanceInfo implements Serializable {
 
 	private String buildCompletionString() {
 		final StringBuilder b = new StringBuilder("[");
-		for (final TimeEstimate[] l : completionInfo) {
+		for (final Estimate[] l : completionInfo) {
 			char sep = '[';
-			for (final TimeEstimate i : l) {
+			for (final Estimate i : l) {
 				b.append(sep);
 				b.append(Utils.formatSeconds(i));
 				sep = ',';
@@ -82,7 +83,7 @@ class NodePerformanceInfo implements Serializable {
 		return "Update @" + timeStamp + " " + workerQueue + " " + completion;
 	}
 
-	TimeEstimate estimateJobCompletion(final LocalNodeInfoList localNodeInfo,
+	Estimate estimateJobCompletion(final LocalNodeInfoList localNodeInfo,
 			final JobType seriesType, final int stage, final JobType stageType,
 			final boolean ignoreBusyProcessors) {
 		if (localNodeInfo == null) {
@@ -107,7 +108,7 @@ class NodePerformanceInfo implements Serializable {
 			}
 			return null;
 		}
-		final TimeEstimate completionInterval = completionInfo[seriesType.index][stage];
+		final Estimate completionInterval = completionInfo[seriesType.index][stage];
 		if (completionInterval == null) {
 			if (Settings.traceRemainingJobTime) {
 				Globals.log.reportError("Node " + source
@@ -139,21 +140,21 @@ class NodePerformanceInfo implements Serializable {
 		// Give nodes already running jobs some penalty to encourage
 		// spreading the load over nodes.
 		final int currentJobs = Math.max(ql, performanceInfo.currentJobs);
-		final TimeEstimate executionTime = workerQueueInfo.getExecutionTime();
-		final TimeEstimate unpredictableOverhead = executionTime
+		final Estimate executionTime = workerQueueInfo.getExecutionTime();
+		final Estimate unpredictableOverhead = executionTime
 				.multiply(currentJobs / 10);
-		final TimeEstimate transmissionTime = performanceInfo.transmissionTime;
+		final Estimate transmissionTime = performanceInfo.transmissionTime;
 		final int waitingJobs = Math.max(0, currentJobs - numberOfProcessors);
-		final TimeEstimate dequeueTimePerJob = workerQueueInfo
+		final Estimate dequeueTimePerJob = workerQueueInfo
 				.getDequeueTimePerJob();
-		final TimeEstimate queueTime = dequeueTimePerJob.multiply(waitingJobs);
-		final TimeEstimate transmissionAndQueueTime = transmissionTime
+		final Estimate queueTime = dequeueTimePerJob.multiply(waitingJobs);
+		final Estimate transmissionAndQueueTime = transmissionTime
 				.addIndependent(queueTime);
-		final TimeEstimate transmissionQueueAndExecutionTime = transmissionAndQueueTime
+		final Estimate transmissionQueueAndExecutionTime = transmissionAndQueueTime
 				.addIndependent(workerQueueInfo.getExecutionTime());
-		final TimeEstimate t1 = transmissionQueueAndExecutionTime
+		final Estimate t1 = transmissionQueueAndExecutionTime
 				.addIndependent(completionInterval);
-		final TimeEstimate total = t1.addIndependent(unpredictableOverhead);
+		final Estimate total = t1.addIndependent(unpredictableOverhead);
 		if (Settings.traceRemainingJobTime) {
 			Globals.log.reportProgress("Estimated completion time for "
 					+ source + " for " + seriesType + " stage " + stage + " "
@@ -177,25 +178,25 @@ class NodePerformanceInfo implements Serializable {
 	 *            that we can get the (already calculated) completion time from
 	 *            that one. A value <code>-1</code> means there is no next type.
 	 */
-	TimeEstimate getCompletionOnWorker(final int todoIx, final int ix,
+	Estimate getCompletionOnWorker(final int todoIx, final int ix,
 			final int nextIx) {
 		final WorkerQueueInfo info = workersQueueInfo[ix];
-		TimeEstimate nextCompletionInterval;
+		Estimate nextCompletionInterval;
 
 		if (info == null) {
 			// We don't support this type.
 			return null;
 		}
 		if (nextIx >= 0) {
-			final TimeEstimate[] todoList = completionInfo[todoIx];
+			final Estimate[] todoList = completionInfo[todoIx];
 			nextCompletionInterval = todoList[nextIx];
 		} else {
-			nextCompletionInterval = TimeEstimate.ZERO;
+			nextCompletionInterval = Estimate.ZERO;
 		}
-		final TimeEstimate dequeueTimePerJob = info.getDequeueTimePerJob();
-		final TimeEstimate totalDequeueTime = dequeueTimePerJob
-				.multiply(1 + info.getQueueLength());
-		final TimeEstimate res = totalDequeueTime.addIndependent(
+		final Estimate dequeueTimePerJob = info.getDequeueTimePerJob();
+		final Estimate totalDequeueTime = dequeueTimePerJob.multiply(1 + info
+				.getQueueLength());
+		final Estimate res = totalDequeueTime.addIndependent(
 				info.getExecutionTime()).addIndependent(nextCompletionInterval);
 		return res;
 	}
@@ -210,10 +211,10 @@ class NodePerformanceInfo implements Serializable {
 			}
 		}
 		s.print(" | ");
-		for (final TimeEstimate l[] : completionInfo) {
+		for (final Estimate l[] : completionInfo) {
 			s.print('[');
 			boolean first = true;
-			for (final TimeEstimate t : l) {
+			for (final Estimate t : l) {
 				if (first) {
 					first = false;
 				} else {
@@ -254,7 +255,7 @@ class NodePerformanceInfo implements Serializable {
 		}
 	}
 
-	void setComputeTime(final JobType type, final TimeEstimate t) {
+	void setComputeTime(final JobType type, final Estimate t) {
 		final WorkerQueueInfo info = workersQueueInfo[type.index];
 		if (info != null) {
 			info.setExecutionTime(t);
@@ -263,7 +264,7 @@ class NodePerformanceInfo implements Serializable {
 	}
 
 	void setWorkerQueueTimePerJob(final JobType type,
-			final TimeEstimate queueTimePerJob, final int queueLength) {
+			final Estimate queueTimePerJob, final int queueLength) {
 		final WorkerQueueInfo info = workersQueueInfo[type.index];
 		if (info != null) {
 			info.setQueueTimePerJob(queueTimePerJob, queueLength);
