@@ -3,7 +3,7 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.SendPort;
 import ibis.ipl.WriteMessage;
-import ibis.steel.Estimate;
+import ibis.steel.Estimator;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -248,7 +248,7 @@ class Gossiper extends Thread {
 		return isnew;
 	}
 
-	void recomputeCompletionTimes(final Estimate masterQueueIntervals[],
+	void recomputeCompletionTimes(final Estimator masterQueueIntervals[],
 			final JobList jobs,
 			final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap) {
 		gossip.recomputeCompletionTimes(masterQueueIntervals, jobs,
@@ -340,13 +340,13 @@ class Gossiper extends Thread {
 		addQuotum();
 	}
 
-	void setComputeTime(final JobType type, final Estimate t) {
+	void setComputeTime(final JobType type, final Estimator t) {
 		gossip.setLocalComputeTime(type, t);
 		addQuotum();
 	}
 
 	void setWorkerQueueTimePerJob(final JobType type,
-			final Estimate queueTimePerJob, final int queueLength) {
+			final Estimator queueTimePerJob, final int queueLength) {
 		gossip.setWorkerQueueTimePerJob(type, queueTimePerJob, queueLength);
 		addQuotum();
 	}

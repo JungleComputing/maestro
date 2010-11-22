@@ -1,6 +1,6 @@
 package ibis.maestro;
 
-import ibis.steel.Estimate;
+import ibis.steel.Estimator;
 
 import java.util.Arrays;
 
@@ -30,7 +30,7 @@ class LocalNodeInfoList {
 		return infoPerType[type.index];
 	}
 
-	Estimate getTransmissionTime(final int ix) {
+	Estimator getTransmissionTime(final int ix) {
 		return infoPerType[ix].transmissionTime;
 	}
 
@@ -43,8 +43,7 @@ class LocalNodeInfoList {
 	 * @return The deadline of the job in seconds.
 	 */
 	double getDeadline(final JobType type) {
-		return infoPerType[type.index].predictedDuration
-				.getHighEstimate();
+		return infoPerType[type.index].predictedDuration.getHighEstimate();
 	}
 
 	@Override

@@ -3,22 +3,22 @@
  */
 package ibis.maestro;
 
-import ibis.steel.Estimate;
+import ibis.steel.Estimator;
 
 class LocalNodeInfo {
 	final int currentJobs;
-	final Estimate transmissionTime;
-	final Estimate predictedDuration;
+	final Estimator transmissionTime;
+	final Estimator predictedDuration;
 
 	/**
 	 * @param currentJobs
-	 * @param transmissionTime
+	 * @param transmissionTime2
 	 * @param predictedDuration
 	 */
-	LocalNodeInfo(final int currentJobs, final Estimate transmissionTime,
-			final Estimate predictedDuration) {
+	LocalNodeInfo(final int currentJobs, final Estimator transmissionTime2,
+			final Estimator predictedDuration) {
 		this.currentJobs = currentJobs;
-		this.transmissionTime = transmissionTime;
+		this.transmissionTime = transmissionTime2;
 		this.predictedDuration = predictedDuration;
 	}
 

@@ -1,6 +1,6 @@
 package ibis.maestro;
 
-import ibis.steel.Estimate;
+import ibis.steel.Estimator;
 
 import java.io.Serializable;
 
@@ -17,9 +17,9 @@ class WorkerQueueInfo implements Serializable {
 
 	private int queueLengthSequenceNumber;
 
-	private Estimate dequeueTimePerJob;
+	private Estimator dequeueTimePerJob;
 
-	private Estimate executionTime;
+	private Estimator executionTime;
 
 	/**
 	 * @param queueLength
@@ -28,17 +28,17 @@ class WorkerQueueInfo implements Serializable {
 	 *            The sequence number of this queue length. Used to avoid
 	 *            multiple updates to the worker allowance on multiple
 	 *            transmissions of the same WoekrQueueInfo instance.
-	 * @param dequeueTimePerJob
+	 * @param zero
 	 *            The current wait time in the worker queue divided by the queue
 	 *            length.
 	 * @param executionTime
 	 *            The execution time of a job.
 	 */
 	WorkerQueueInfo(final int queueLength, final int queueLengthSequenceNumber,
-			final Estimate dequeueTimePerJob, final Estimate executionTime) {
+			final Estimator zero, final Estimator executionTime) {
 		this.queueLength = queueLength;
 		this.queueLengthSequenceNumber = queueLengthSequenceNumber;
-		this.dequeueTimePerJob = dequeueTimePerJob;
+		this.dequeueTimePerJob = zero;
 		this.executionTime = executionTime;
 	}
 
@@ -77,11 +77,11 @@ class WorkerQueueInfo implements Serializable {
 		this.executionTime = null;
 	}
 
-	synchronized void setExecutionTime(final Estimate t) {
+	synchronized void setExecutionTime(final Estimator t) {
 		this.executionTime = t;
 	}
 
-	synchronized void setQueueTimePerJob(final Estimate queueTimePerJob,
+	synchronized void setQueueTimePerJob(final Estimator queueTimePerJob,
 			final int newQueueLength) {
 		this.dequeueTimePerJob = queueTimePerJob;
 		if (this.queueLength != newQueueLength) {
@@ -101,7 +101,7 @@ class WorkerQueueInfo implements Serializable {
 		return changed;
 	}
 
-	synchronized Estimate getExecutionTime() {
+	synchronized Estimator getExecutionTime() {
 		return executionTime;
 	}
 
@@ -109,9 +109,9 @@ class WorkerQueueInfo implements Serializable {
 		return queueLength;
 	}
 
-	synchronized Estimate getDequeueTimePerJob() {
+	synchronized Estimator getDequeueTimePerJob() {
 		if (Settings.IGNORE_QUEUE_TIME) {
-			return Estimate.ZERO;
+			return Estimator.ZERO;
 		}
 		return dequeueTimePerJob;
 	}

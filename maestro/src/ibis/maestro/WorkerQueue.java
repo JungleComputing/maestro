@@ -1,6 +1,6 @@
 package ibis.maestro;
 
-import ibis.steel.Estimate;
+import ibis.steel.Estimator;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -152,7 +152,7 @@ final class WorkerQueue {
 					+ "; " + length + " of type " + type);
 		}
 		if (gossiper != null) {
-			final Estimate queueTimePerJob = info.getQueueTimePerJob();
+			final Estimator queueTimePerJob = info.getQueueTimePerJob();
 			gossiper.setWorkerQueueTimePerJob(type, queueTimePerJob, length);
 		}
 		return res;
@@ -172,7 +172,7 @@ final class WorkerQueue {
 		return true; // All job types have failed.
 	}
 
-	Estimate countJob(final JobType type, final double computeInterval) {
+	Estimator countJob(final JobType type, final double computeInterval) {
 		final WorkerQueueJobInfo info = queueTypes[type.index];
 		return info.countJob(computeInterval, type.unpredictable);
 	}

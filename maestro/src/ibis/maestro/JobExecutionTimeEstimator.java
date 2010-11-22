@@ -1,6 +1,6 @@
 package ibis.maestro;
 
-import ibis.steel.Estimate;
+import ibis.steel.Estimator;
 
 /**
  * Jobs implementing this interface provide an initial estimate of their
@@ -14,5 +14,5 @@ public interface JobExecutionTimeEstimator {
 	 * 
 	 * @return The estimated compute time of this job in seconds.
 	 */
-	public Estimate estimateJobExecutionTime();
+	public Estimator estimateJobExecutionTime();
 }

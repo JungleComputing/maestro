@@ -1,6 +1,7 @@
 package ibis.maestro;
 
-import ibis.steel.Estimate;
+import ibis.steel.Estimator;
+import ibis.steel.GaussianEstimator;
 
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -215,10 +216,11 @@ class MasterWorkerProgram {
 		 * @return The estimated execution time of a job.
 		 */
 		@Override
-		public Estimate estimateJobExecutionTime() {
+		public Estimator estimateJobExecutionTime() {
 			final double benchmarkTime = runBenchmark();
 			final double mean = MINIMAL_SHARPENS * benchmarkTime;
-			return new Estimate(mean, 0.25 * mean * mean);
+			// TODO: use a log-gaussian estimator.
+			return new GaussianEstimator(mean, 0.25 * mean * mean);
 		}
 
 		/**

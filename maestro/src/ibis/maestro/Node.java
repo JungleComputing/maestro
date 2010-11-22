@@ -7,7 +7,7 @@ import ibis.ipl.IbisFactory;
 import ibis.ipl.IbisIdentifier;
 import ibis.ipl.Registry;
 import ibis.ipl.RegistryEventHandler;
-import ibis.steel.Estimate;
+import ibis.steel.Estimator;
 
 import java.io.IOException;
 import java.io.PrintStream;
@@ -468,7 +468,7 @@ public final class Node extends Thread implements PacketReceiveListener {
 			updateRecentMasters();
 		}
 		if (recomputeCompletionTimes.getAndReset()) {
-			Estimate[] masterQueueIntervals = null;
+			Estimator[] masterQueueIntervals = null;
 			if (!Settings.IGNORE_QUEUE_TIME) {
 				masterQueueIntervals = masterQueue.getQueueIntervals();
 			}
@@ -837,7 +837,7 @@ public final class Node extends Thread implements PacketReceiveListener {
 
 		// Update statistics.
 		final double computeInterval = jobCompletionMoment - runMoment;
-		final Estimate averageComputeTime = workerQueue.countJob(
+		final Estimator averageComputeTime = workerQueue.countJob(
 				completedStageType, computeInterval);
 		gossiper.setComputeTime(completedStageType, averageComputeTime);
 		if (Settings.traceNodeProgress || Settings.traceRemainingJobTime) {

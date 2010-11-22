@@ -1,6 +1,5 @@
 package ibis.maestro;
 
-import ibis.steel.Estimate;
 import ibis.steel.Estimator;
 import ibis.steel.ExponentialDecayEstimator;
 
@@ -131,8 +130,8 @@ final class NodeJobInfo {
 	}
 
 	synchronized LocalNodeInfo getLocalNodeInfo() {
-		final Estimate transmissionTime = transmissionEstimate.getEstimate();
-		Estimate predictedDuration;
+		final Estimator transmissionTime = transmissionEstimate.getEstimate();
+		Estimator predictedDuration;
 		if (failed) {
 			predictedDuration = null;
 		} else {
