@@ -54,13 +54,14 @@ class PacketUpcallReceivePort implements MessageUpcall {
         Message data;
         try {
             data = (Message) msg.readObject();
+            data.source = msg.origin().ibisIdentifier();
+            data.arrivalMoment = Utils.getPreciseTime();
         } catch (final ClassNotFoundException e) {
             Globals.log
                     .reportInternalError("Cannot read message in upcall: class not found: "
                             + e.getLocalizedMessage());
             return;
         }
-        data.arrivalMoment = Utils.getPreciseTime();
         // msg.finish();
         listener.messageReceived(data);
     }

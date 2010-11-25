@@ -1,7 +1,5 @@
 package ibis.maestro;
 
-import ibis.ipl.IbisIdentifier;
-
 /**
  * A message from the worker to the master, telling the master that the worker
  * has completed the given job.
@@ -15,16 +13,13 @@ final class JobCompletedMessage extends Message {
     /** The identifier of the job. */
     final long jobId;
 
-    final IbisIdentifier source;
-
     /**
      * Constructs a job-completed message for the master of a job.
      * 
      * @param jobId
      *            The identifier of the job, as handed out by the master.
      */
-    JobCompletedMessage(long jobId) {
-        source = Globals.localIbis.identifier();
+    JobCompletedMessage(final long jobId) {
         this.jobId = jobId;
     }
 

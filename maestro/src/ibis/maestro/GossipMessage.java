@@ -10,14 +10,12 @@ import ibis.ipl.IbisIdentifier;
 final class GossipMessage extends NonEssentialMessage {
     private static final long serialVersionUID = 1L;
 
-    final IbisIdentifier source = Globals.localIbis.identifier();
-
     final NodePerformanceInfo gossip[];
 
     final boolean needsReply;
 
-    GossipMessage(IbisIdentifier target, NodePerformanceInfo gossip[],
-            boolean needsReply) {
+    GossipMessage(final IbisIdentifier target,
+            final NodePerformanceInfo gossip[], final boolean needsReply) {
         super(target);
         this.gossip = gossip;
         this.needsReply = needsReply;

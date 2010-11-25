@@ -1,7 +1,5 @@
 package ibis.maestro;
 
-import ibis.ipl.IbisIdentifier;
-
 /**
  * A message telling the master that a worker failed to execute the given job.
  * It also contains information to let the master update its administration, so
@@ -13,8 +11,6 @@ import ibis.ipl.IbisIdentifier;
 final class JobFailedMessage extends Message {
     private static final long serialVersionUID = 5158569253342276404L;
 
-    final IbisIdentifier source;
-
     final long id;
 
     /**
@@ -23,8 +19,7 @@ final class JobFailedMessage extends Message {
      * @param id
      *            The identifier of the job this is a result for.
      */
-    protected JobFailedMessage(long id) {
-        this.source = Globals.localIbis.identifier();
+    protected JobFailedMessage(final long id) {
         this.id = id;
     }
 

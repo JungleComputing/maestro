@@ -1,5 +1,7 @@
 package ibis.maestro;
 
+import ibis.ipl.IbisIdentifier;
+
 import java.io.Serializable;
 
 /**
@@ -16,5 +18,7 @@ abstract class Message implements Serializable {
     /** Contractual obligation. */
     private static final long serialVersionUID = 1547379144090317151L;
 
-    double arrivalMoment;
+    transient double arrivalMoment;
+
+    transient IbisIdentifier source;
 }

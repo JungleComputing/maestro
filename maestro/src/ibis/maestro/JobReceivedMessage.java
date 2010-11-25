@@ -1,7 +1,5 @@
 package ibis.maestro;
 
-import ibis.ipl.IbisIdentifier;
-
 /**
  * A message from the worker to the master, telling the master that the worker
  * has received the given job.
@@ -16,16 +14,13 @@ final class JobReceivedMessage extends Message {
     /** The identifier of the job. */
     final long jobId;
 
-    final IbisIdentifier source;
-
     /**
      * Constructs a job-received message from the worker to the master of a job.
      * 
      * @param jobId
      *            The identifier of the job, as handed out by the master.
      */
-    JobReceivedMessage(long jobId) {
-        source = Globals.localIbis.identifier();
+    JobReceivedMessage(final long jobId) {
         this.jobId = jobId;
     }
 

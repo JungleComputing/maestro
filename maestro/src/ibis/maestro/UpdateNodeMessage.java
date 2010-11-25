@@ -14,13 +14,10 @@ final class UpdateNodeMessage extends Message {
     final NodePerformanceInfo update;
 
     /**
-     * Constructs a new work request message.
+     * Constructs a new performance update request message.
      * 
-     * @param identifier
-     *            The identifier to use.
-     * @param masterHasWork
      */
-    UpdateNodeMessage(NodePerformanceInfo update) {
+    UpdateNodeMessage(final NodePerformanceInfo update) {
         this.update = update;
     }
 

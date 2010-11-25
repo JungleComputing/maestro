@@ -1,7 +1,5 @@
 package ibis.maestro;
 
-import ibis.ipl.IbisIdentifier;
-
 /**
  * Tell the worker to execute the job contained in this message.
  * 
@@ -16,8 +14,6 @@ final class RunJobMessage extends Message {
 
     final long jobId;
 
-    final IbisIdentifier source;
-
     /**
      * Given a job and its source, constructs a new RunJobMessage.
      * 
@@ -25,10 +21,10 @@ final class RunJobMessage extends Message {
      *            The job to run.
      * @param jobId
      *            The identifier of the job.
-     *            @param todoList The list of subsequent jobs to do.
+     * @param todoList
+     *            The list of subsequent jobs to do.
      */
-    RunJobMessage(JobInstance jobInstance, long jobId) {
-        this.source = Globals.localIbis.identifier();
+    RunJobMessage(final JobInstance jobInstance, final long jobId) {
         this.jobInstance = jobInstance;
         this.jobId = jobId;
     }
