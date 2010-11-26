@@ -13,8 +13,10 @@ import ibis.maestro.ParallelJobContext;
 import ibis.maestro.ParallelJobHandler;
 import ibis.maestro.ParallelJobInstance;
 import ibis.maestro.SeriesJob;
-import ibis.maestro.TimeEstimate;
 import ibis.maestro.Utils;
+import ibis.steel.ConstantEstimator;
+import ibis.steel.Estimator;
+import ibis.steel.ExponentialDecayLogEstimator;
 
 import java.io.File;
 import java.io.IOException;
@@ -48,7 +50,8 @@ class BenchmarkProgram {
          *            The result of the job.
          */
         @Override
-        public void jobCompleted(Node node, Object id, Serializable result) {
+        public void jobCompleted(final Node node, final Object id,
+                final Serializable result) {
             if (!(id instanceof LabelTracker.Label)) {
                 System.err
                         .println("Internal error: Object id is not a tracker label: "
@@ -81,7 +84,7 @@ class BenchmarkProgram {
             return labelTracker.nextLabel();
         }
 
-        void setFinished(Node node) {
+        void setFinished(final Node node) {
             boolean finished;
             synchronized (this) {
                 sentFinal = true;
@@ -123,7 +126,7 @@ class BenchmarkProgram {
          *         this job.
          */
         @Override
-        public Serializable run(Serializable in) {
+        public Serializable run(final Serializable in) {
             final int frame = (Integer) in;
 
             UncompressedImage img = RGB24Image.buildGradientImage(frame,
@@ -175,11 +178,11 @@ class BenchmarkProgram {
          * @return The estimated time in ns to execute this job.
          */
         @Override
-        public TimeEstimate estimateJobExecutionTime() {
+        public Estimator estimateJobExecutionTime() {
             final double startTime = Utils.getPreciseTime();
             run(0);
             final double d = Utils.getPreciseTime() - startTime;
-            return new TimeEstimate(d, 0.25 * d * d);
+            return new ExponentialDecayLogEstimator(d, 0.25 * d);
         }
     }
 
@@ -193,12 +196,12 @@ class BenchmarkProgram {
          * @return The generated image.
          */
         @Override
-        public Serializable run(Serializable in) {
+        public Serializable run(final Serializable in) {
             final int frame = (Integer) in;
             return generateFrame(frame);
         }
 
-        private static Serializable generateFrame(int frame) {
+        private static Serializable generateFrame(final int frame) {
             return RGB24Image.buildGradientImage(frame, DVD_WIDTH, DVD_HEIGHT,
                     (byte) frame, (byte) (frame / 10), (byte) (frame / 100));
         }
@@ -219,11 +222,11 @@ class BenchmarkProgram {
          * @return The estimated time in ns to execute this job.
          */
         @Override
-        public TimeEstimate estimateJobExecutionTime() {
+        public Estimator estimateJobExecutionTime() {
             final double startTime = Utils.getPreciseTime();
             generateFrame(0);
             final double d = Utils.getPreciseTime() - startTime;
-            return new TimeEstimate(d, 0.25 * d * d);
+            return new ExponentialDecayLogEstimator(d, 0.25 * d);
         }
     }
 
@@ -234,7 +237,8 @@ class BenchmarkProgram {
         private final boolean slow;
         private final boolean allowed;
 
-        ScaleUpFrameJob(int factor, boolean slow, boolean allowed) {
+        ScaleUpFrameJob(final int factor, final boolean slow,
+                final boolean allowed) {
             this.factor = factor;
 
             this.slow = slow;
@@ -256,7 +260,7 @@ class BenchmarkProgram {
          * @return The scaled frame.
          */
         @Override
-        public Serializable run(Serializable in) {
+        public Serializable run(final Serializable in) {
             final UncompressedImage img = (UncompressedImage) in;
 
             if (slow) {
@@ -284,7 +288,7 @@ class BenchmarkProgram {
          */
         @SuppressWarnings("synthetic-access")
         @Override
-        public TimeEstimate estimateJobExecutionTime() {
+        public Estimator estimateJobExecutionTime() {
             if (!allowed) {
                 return null;
             }
@@ -292,7 +296,7 @@ class BenchmarkProgram {
             final double startTime = Utils.getPreciseTime();
             run(frame);
             final double d = Utils.getPreciseTime() - startTime;
-            return new TimeEstimate(d, 0.25 * d * d);
+            return new ExponentialDecayLogEstimator(d, 0.25 * d);
         }
     }
 
@@ -307,7 +311,7 @@ class BenchmarkProgram {
         static class ParallelScalerInstance extends ParallelJobInstance {
             UncompressedImage fragments[] = new UncompressedImage[FRAGMENT_COUNT];
 
-            ParallelScalerInstance(ParallelJobContext context) {
+            ParallelScalerInstance(final ParallelJobContext context) {
                 super(context);
             }
 
@@ -317,7 +321,7 @@ class BenchmarkProgram {
             }
 
             @Override
-            public void merge(Serializable id, Serializable result) {
+            public void merge(final Serializable id, final Serializable result) {
                 final int ix = (Integer) id;
                 fragments[ix] = (UncompressedImage) result;
             }
@@ -339,7 +343,8 @@ class BenchmarkProgram {
             }
 
             @Override
-            public void split(Serializable input, ParallelJobHandler handler) {
+            public void split(final Serializable input,
+                    final ParallelJobHandler handler) {
                 final UncompressedImage img = (UncompressedImage) input;
 
                 final UncompressedImage l[] = img
@@ -352,7 +357,8 @@ class BenchmarkProgram {
         }
 
         @Override
-        public ParallelJobInstance createInstance(ParallelJobContext context) {
+        public ParallelJobInstance createInstance(
+                final ParallelJobContext context) {
             return new ParallelScalerInstance(context);
         }
 
@@ -364,7 +370,7 @@ class BenchmarkProgram {
         private final boolean slow;
         private final boolean allowed;
 
-        SharpenFrameJob(boolean slow, boolean allowed) {
+        SharpenFrameJob(final boolean slow, final boolean allowed) {
             this.slow = slow;
             this.allowed = allowed;
             if (allowed) {
@@ -384,7 +390,7 @@ class BenchmarkProgram {
          * @return The scaled frame.
          */
         @Override
-        public Serializable run(Serializable in) {
+        public Serializable run(final Serializable in) {
             UncompressedImage img = (UncompressedImage) in;
 
             if (!allowed) {
@@ -415,7 +421,7 @@ class BenchmarkProgram {
          */
         @SuppressWarnings("synthetic-access")
         @Override
-        public TimeEstimate estimateJobExecutionTime() {
+        public Estimator estimateJobExecutionTime() {
             if (!allowed) {
                 return null;
             }
@@ -423,7 +429,7 @@ class BenchmarkProgram {
             final double startTime = Utils.getPreciseTime();
             run(frame);
             final double d = 4 * (Utils.getPreciseTime() - startTime);
-            return new TimeEstimate(d, 0.25 * d * d);
+            return new ExponentialDecayLogEstimator(d, 0.25 * d);
         }
     }
 
@@ -438,7 +444,7 @@ class BenchmarkProgram {
          * @return The result of the job.
          */
         @Override
-        public Serializable run(Serializable in) {
+        public Serializable run(final Serializable in) {
             final UncompressedImage img = (UncompressedImage) in;
 
             try {
@@ -465,7 +471,7 @@ class BenchmarkProgram {
         private static final long serialVersionUID = 54529872253774153L;
         private final File saveDir;
 
-        SaveFrameJob(File saveDir) {
+        SaveFrameJob(final File saveDir) {
             this.saveDir = saveDir;
         }
 
@@ -479,7 +485,7 @@ class BenchmarkProgram {
          * @return The scaled frame.
          */
         @Override
-        public Serializable run(Serializable in) {
+        public Serializable run(final Serializable in) {
             final Image img = (Image) in;
 
             if (saveDir != null) {
@@ -512,14 +518,14 @@ class BenchmarkProgram {
          * @return The estimated time on ns to execute this job.
          */
         @Override
-        public TimeEstimate estimateJobExecutionTime() {
+        public Estimator estimateJobExecutionTime() {
             // Saving a file may take some time, but otherwise the estimate
             // should be zero.
             if (saveDir != null) {
                 // TODO: better estimate for save step.
-                return new TimeEstimate(10e-3, 0); // 10 ms
+                return new ExponentialDecayLogEstimator(10e-3, 10e-3); // 10 ms
             }
-            return TimeEstimate.ZERO;
+            return ConstantEstimator.ZERO;
         }
     }
 
@@ -538,7 +544,7 @@ class BenchmarkProgram {
         System.out.println("Usage: [<flags>] <frame-count>");
     }
 
-    private boolean parseArgs(String args[]) {
+    private boolean parseArgs(final String args[]) {
         String frameCount = null;
         boolean oddNoSharpen = false;
         boolean evenNoSharpen = false;
@@ -639,7 +645,7 @@ class BenchmarkProgram {
         return true;
     }
 
-    private static void removeDirectory(File f) {
+    private static void removeDirectory(final File f) {
         if (f == null) {
             return;
         }
@@ -654,7 +660,7 @@ class BenchmarkProgram {
     }
 
     @SuppressWarnings("synthetic-access")
-    private void run(String args[]) throws Exception {
+    private void run(final String args[]) throws Exception {
         if (!parseArgs(args)) {
             System.err.println("Parsing command line failed. Goodbye!");
             System.exit(1);
@@ -716,7 +722,7 @@ class BenchmarkProgram {
      * @param args
      *            The list of command-line parameters.
      */
-    public static void main(String args[]) {
+    public static void main(final String args[]) {
         try {
             new BenchmarkProgram().run(args);
         } catch (final Exception e) {
