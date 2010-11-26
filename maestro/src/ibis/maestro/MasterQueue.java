@@ -2,7 +2,7 @@ package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
 import ibis.steel.Estimator;
-import ibis.steel.ExponentialDecayEstimator;
+import ibis.steel.ExponentialDecayLogEstimator;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -51,8 +51,8 @@ final class MasterQueue {
         private double frontChangedTime = 0;
 
         /** The estimated time interval between jobs being dequeued. */
-        private final Estimator dequeueInterval = new ExponentialDecayEstimator(
-                1 * Utils.MILLISECOND);
+        private final Estimator dequeueInterval = new ExponentialDecayLogEstimator(
+                1 * Utils.MILLISECOND, 1 * Utils.MILLISECOND, 0.1);
 
         private TypeInfo(final JobType type) {
             this.type = type;

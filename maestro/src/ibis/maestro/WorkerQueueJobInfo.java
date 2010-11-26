@@ -1,7 +1,7 @@
 package ibis.maestro;
 
 import ibis.steel.Estimator;
-import ibis.steel.ExponentialDecayEstimator;
+import ibis.steel.ExponentialDecayLogEstimator;
 
 import java.io.PrintStream;
 import java.util.LinkedList;
@@ -38,13 +38,13 @@ final class WorkerQueueJobInfo {
     private boolean failed = false;
 
     /** The estimated time interval between jobs being dequeued. */
-    private final Estimator dequeueInterval = new ExponentialDecayEstimator(
-            1 * Utils.MILLISECOND);
+    private final Estimator dequeueInterval = new ExponentialDecayLogEstimator(
+            1 * Utils.MILLISECOND, 10 * Utils.MILLISECOND);
 
     private double totalWorkTime = 0.0;
 
-    private Estimator averageComputeTime = new ExponentialDecayEstimator(
-            Utils.MILLISECOND);
+    private Estimator averageComputeTime = new ExponentialDecayLogEstimator(
+            Utils.MILLISECOND, 10 * Utils.MILLISECOND);
 
     WorkerQueueJobInfo(final JobType type) {
         this.type = type;

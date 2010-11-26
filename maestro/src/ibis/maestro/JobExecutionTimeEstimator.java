@@ -9,10 +9,10 @@ import ibis.steel.Estimator;
  * @author Kees van Reeuwijk.
  */
 public interface JobExecutionTimeEstimator {
-	/**
-	 * Returns an estimate in seconds of the compute time of this job.
-	 * 
-	 * @return The estimated compute time of this job in seconds.
-	 */
-	public Estimator estimateJobExecutionTime();
+    /**
+     * Returns an estimate in seconds of the compute time of this job.
+     * 
+     * @return The estimated compute time of this job in seconds.
+     */
+    public Estimator estimateJobExecutionTime();
 }
