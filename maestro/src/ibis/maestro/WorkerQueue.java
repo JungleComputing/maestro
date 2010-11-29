@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import ibis.steel.Estimate;
+import ibis.steel.GaussianEstimate;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -32,14 +33,18 @@ final class WorkerQueue {
         final JobType[] jobTypes = jobs.getAllTypes();
         queueTypes = new WorkerQueueJobInfo[jobTypes.length];
         for (final JobType t : jobTypes) {
-            final WorkerQueueJobInfo queueTypeInfo = new WorkerQueueJobInfo(t);
-            queueTypes[t.index] = queueTypeInfo;
             final Job job = jobs.getJob(t);
+            Estimate est;
             if (job instanceof JobExecutionTimeEstimator) {
                 final JobExecutionTimeEstimator estimator = (JobExecutionTimeEstimator) job;
-                queueTypeInfo.setInitialComputeEstimate(estimator
-                        .estimateJobExecutionTime());
+                est = estimator.estimateJobExecutionTime();
+            } else {
+                est = new GaussianEstimate(1 * Utils.MILLISECOND,
+                        1 * Utils.MILLISECOND, 1);
             }
+            final WorkerQueueJobInfo queueTypeInfo = new WorkerQueueJobInfo(t,
+                    est);
+            queueTypes[t.index] = queueTypeInfo;
 
         }
     }

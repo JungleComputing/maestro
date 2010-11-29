@@ -49,9 +49,9 @@ final class NodeJobInfo {
         // Totally unfounded guesses, but we should learn soon enough what the
         // real values are...
         transmissionEstimate = new ExponentialDecayLogEstimator(pingTime,
-                pingTime);
+                pingTime, 1);
         roundtripEstimate = new ExponentialDecayLogEstimator(2 * pingTime,
-                2 * pingTime);
+                2 * pingTime, 1);
         if (Settings.traceWorkerList || Settings.traceRemainingJobTime) {
             Globals.log.reportProgress("Created new WorkerJobInfo "
                     + toString());

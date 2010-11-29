@@ -220,7 +220,7 @@ class MasterWorkerProgram {
             final double benchmarkTime = runBenchmark();
             final double mean = MINIMAL_SHARPENS * benchmarkTime;
             // TODO: use a log-gaussian estimator.
-            return new GaussianEstimate(mean, 0.25 * mean * mean);
+            return new GaussianEstimate(mean, 0.25 * mean * mean, 1);
         }
 
         /**

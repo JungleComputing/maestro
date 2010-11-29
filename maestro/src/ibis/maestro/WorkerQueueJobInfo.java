@@ -40,15 +40,15 @@ final class WorkerQueueJobInfo {
 
     /** The estimated time interval between jobs being dequeued. */
     private final Estimator dequeueInterval = new ExponentialDecayLogEstimator(
-            1 * Utils.MILLISECOND, 10 * Utils.MILLISECOND);
+            1 * Utils.MILLISECOND, 10 * Utils.MILLISECOND, 0.2);
 
     private double totalWorkTime = 0.0;
 
-    private final Estimator averageComputeTime = new ExponentialDecayLogEstimator(
-            Utils.MILLISECOND, 10 * Utils.MILLISECOND);
+    private final Estimator averageComputeTime;
 
-    WorkerQueueJobInfo(final JobType type) {
+    WorkerQueueJobInfo(final JobType type, final Estimate est) {
         this.type = type;
+        averageComputeTime = new ExponentialDecayLogEstimator(est, 0.2);
     }
 
     synchronized void printStatistics(final PrintStream s, final double workTime) {
@@ -141,16 +141,6 @@ final class WorkerQueueJobInfo {
 
     synchronized boolean hasFailed() {
         return failed;
-    }
-
-    /**
-     * Sets the initial compute time estimate of this job to the given value.
-     * 
-     * @param estimate
-     *            The initial estimate.
-     */
-    void setInitialComputeEstimate(final Estimate estimate) {
-        averageComputeTime.setInitialValue(estimate);
     }
 
     void registerNode(final NodeInfo nodeInfo) {
