@@ -1,6 +1,7 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
+import ibis.steel.Estimate;
 import ibis.steel.Estimator;
 import ibis.steel.ExponentialDecayLogEstimator;
 
@@ -103,12 +104,12 @@ final class MasterQueue {
          * @return The estimated time in seconds a new job will spend in the
          *         queue.
          */
-        private synchronized Estimator estimateQueueTime() {
-            final Estimator timePerEntry = dequeueInterval.getEstimate();
+        private synchronized Estimate estimateQueueTime() {
+            final Estimate timePerEntry = dequeueInterval.getEstimate();
             // Since at least one processor isn't working on a job (or we
             // wouldn't be here), we are only impressed if there is more
             // than one idle processor.
-            final Estimator res = timePerEntry.multiply(1 + elements);
+            final Estimate res = timePerEntry.multiply(1 + elements);
             return res;
         }
     }
@@ -263,7 +264,7 @@ final class MasterQueue {
             final LocalNodeInfoList localNodeInfo = localNodeInfoMap
                     .get(info.source);
 
-            final Estimator est = info.estimateJobCompletion(localNodeInfo,
+            final Estimate est = info.estimateJobCompletion(localNodeInfo,
                     job.overallType, job.stageNumber, stageType,
                     Settings.HARD_ALLOWANCES);
             if (est != null) {
@@ -307,7 +308,7 @@ final class MasterQueue {
         for (final NodePerformanceInfo info : tables) {
             final LocalNodeInfoList localNodeInfo = localNodeInfoMap
                     .get(info.source);
-            final Estimator val = info.estimateJobCompletion(localNodeInfo,
+            final Estimate val = info.estimateJobCompletion(localNodeInfo,
                     job.overallType, job.stageNumber, stageType, true);
             if (info == bestInterval) {
                 s.print('#');
@@ -383,8 +384,8 @@ final class MasterQueue {
     }
 
     @SuppressWarnings("synthetic-access")
-    Estimator[] getQueueIntervals() {
-        final Estimator[] res = new Estimator[queueTypes.length];
+    Estimate[] getQueueIntervals() {
+        final Estimate[] res = new Estimate[queueTypes.length];
 
         for (int ix = 0; ix < queueTypes.length; ix++) {
             res[ix] = queueTypes[ix].estimateQueueTime();

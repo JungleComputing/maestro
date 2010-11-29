@@ -1,7 +1,7 @@
 package ibis.maestro;
 
-import ibis.steel.ConstantEstimator;
-import ibis.steel.Estimator;
+import ibis.steel.ConstantEstimate;
+import ibis.steel.Estimate;
 
 import java.io.Serializable;
 
@@ -18,9 +18,9 @@ class WorkerQueueInfo implements Serializable {
 
     private int queueLengthSequenceNumber;
 
-    private Estimator dequeueTimePerJob;
+    private Estimate dequeueTimePerJob;
 
-    private Estimator executionTime;
+    private Estimate executionTime;
 
     /**
      * @param queueLength
@@ -36,7 +36,7 @@ class WorkerQueueInfo implements Serializable {
      *            The execution time of a job.
      */
     WorkerQueueInfo(final int queueLength, final int queueLengthSequenceNumber,
-            final Estimator zero, final Estimator executionTime) {
+            final Estimate zero, final Estimate executionTime) {
         this.queueLength = queueLength;
         this.queueLengthSequenceNumber = queueLengthSequenceNumber;
         this.dequeueTimePerJob = zero;
@@ -78,11 +78,11 @@ class WorkerQueueInfo implements Serializable {
         this.executionTime = null;
     }
 
-    synchronized void setExecutionTime(final Estimator t) {
+    synchronized void setExecutionTime(final Estimate t) {
         this.executionTime = t;
     }
 
-    synchronized void setQueueTimePerJob(final Estimator queueTimePerJob,
+    synchronized void setQueueTimePerJob(final Estimate queueTimePerJob,
             final int newQueueLength) {
         this.dequeueTimePerJob = queueTimePerJob;
         if (this.queueLength != newQueueLength) {
@@ -102,7 +102,7 @@ class WorkerQueueInfo implements Serializable {
         return changed;
     }
 
-    synchronized Estimator getExecutionTime() {
+    synchronized Estimate getExecutionTime() {
         return executionTime;
     }
 
@@ -110,9 +110,9 @@ class WorkerQueueInfo implements Serializable {
         return queueLength;
     }
 
-    synchronized Estimator getDequeueTimePerJob() {
+    synchronized Estimate getDequeueTimePerJob() {
         if (Settings.IGNORE_QUEUE_TIME) {
-            return ConstantEstimator.ZERO;
+            return ConstantEstimate.ZERO;
         }
         return dequeueTimePerJob;
     }

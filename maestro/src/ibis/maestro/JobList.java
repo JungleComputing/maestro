@@ -1,7 +1,7 @@
 package ibis.maestro;
 
-import ibis.steel.ConstantEstimator;
-import ibis.steel.Estimator;
+import ibis.steel.ConstantEstimate;
+import ibis.steel.Estimate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -114,7 +114,7 @@ public final class JobList {
      *            The job we want the initial estimate for.
      * @return The initial estimate of the execution time of this job.
      */
-    private Estimator initialEstimateJobTime(final Job job) {
+    private Estimate initialEstimateJobTime(final Job job) {
         if (!job.isSupported()) {
             // Not supported by this node.
             return null;
@@ -126,11 +126,11 @@ public final class JobList {
         if (job instanceof AlternativesJob) {
             // We estimate this will be the minimum of all alternatives.
             final AlternativesJob aj = (AlternativesJob) job;
-            Estimator time = null;
+            Estimate time = null;
             double bestTime = Double.POSITIVE_INFINITY;
 
             for (final Job j : aj.alternatives) {
-                final Estimator t1 = initialEstimateJobTime(j);
+                final Estimate t1 = initialEstimateJobTime(j);
 
                 if (t1 != null) {
                     final double v1 = t1.getLikelyValue();
@@ -145,10 +145,10 @@ public final class JobList {
         }
         if (job instanceof SeriesJob) {
             final SeriesJob l = (SeriesJob) job;
-            Estimator time = ConstantEstimator.ZERO;
+            Estimate time = ConstantEstimate.ZERO;
 
             for (final Job j : l.jobs) {
-                Estimator t1 = initialEstimateJobTime(j);
+                Estimate t1 = initialEstimateJobTime(j);
 
                 if (t1 == null) {
                     /*
@@ -157,21 +157,21 @@ public final class JobList {
                      * executed remotely, but we don't know the execution time
                      * there.
                      */
-                    t1 = ConstantEstimator.ZERO;
+                    t1 = ConstantEstimate.ZERO;
                 }
                 time = time.addIndependent(t1);
             }
             return time;
         }
-        return ConstantEstimator.ZERO;
+        return ConstantEstimate.ZERO;
     }
 
-    Estimator[] getInitialJobTimes() {
-        final Estimator res[] = new Estimator[allJobTypes.size()];
+    Estimate[] getInitialJobTimes() {
+        final Estimate res[] = new Estimate[allJobTypes.size()];
         int i = 0;
         for (final JobType t : allJobTypes) {
             final Job job = getJob(t);
-            final Estimator time = initialEstimateJobTime(job);
+            final Estimate time = initialEstimateJobTime(job);
             res[i++] = time;
         }
         return res;

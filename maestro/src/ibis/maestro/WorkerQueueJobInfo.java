@@ -1,5 +1,6 @@
 package ibis.maestro;
 
+import ibis.steel.Estimate;
 import ibis.steel.Estimator;
 import ibis.steel.ExponentialDecayLogEstimator;
 
@@ -43,7 +44,7 @@ final class WorkerQueueJobInfo {
 
     private double totalWorkTime = 0.0;
 
-    private Estimator averageComputeTime = new ExponentialDecayLogEstimator(
+    private final Estimator averageComputeTime = new ExponentialDecayLogEstimator(
             Utils.MILLISECOND, 10 * Utils.MILLISECOND);
 
     WorkerQueueJobInfo(final JobType type) {
@@ -121,7 +122,7 @@ final class WorkerQueueJobInfo {
      * @param workTime
      *            The time it took to execute this job.
      */
-    synchronized Estimator countJob(final double workTime,
+    synchronized Estimate countJob(final double workTime,
             final boolean unpredictable) {
         outGoingJobCount++;
         totalWorkTime += workTime;
@@ -145,11 +146,11 @@ final class WorkerQueueJobInfo {
     /**
      * Sets the initial compute time estimate of this job to the given value.
      * 
-     * @param timeEstimate
+     * @param estimate
      *            The initial estimate.
      */
-    void setInitialComputeEstimate(final Estimator timeEstimate) {
-        averageComputeTime = timeEstimate;
+    void setInitialComputeEstimate(final Estimate estimate) {
+        averageComputeTime.setInitialValue(estimate);
     }
 
     void registerNode(final NodeInfo nodeInfo) {
@@ -161,7 +162,7 @@ final class WorkerQueueJobInfo {
         }
     }
 
-    Estimator getQueueTimePerJob() {
+    Estimate getQueueTimePerJob() {
         return dequeueInterval.getEstimate();
     }
 }

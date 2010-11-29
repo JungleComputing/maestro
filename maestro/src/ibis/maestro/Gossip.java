@@ -1,8 +1,8 @@
 package ibis.maestro;
 
 import ibis.ipl.IbisIdentifier;
-import ibis.steel.ConstantEstimator;
-import ibis.steel.Estimator;
+import ibis.steel.ConstantEstimate;
+import ibis.steel.Estimate;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -28,11 +28,11 @@ class Gossip {
         final int numberOfProcessors = Runtime.getRuntime()
                 .availableProcessors();
         final int sz = jobs.getTypeCount();
-        final Estimator completionInfo[][] = buildCompletionInfo(jobs);
+        final Estimate completionInfo[][] = buildCompletionInfo(jobs);
         final WorkerQueueInfo queueInfo[] = new WorkerQueueInfo[sz];
-        final Estimator jobTimes[] = jobs.getInitialJobTimes();
+        final Estimate jobTimes[] = jobs.getInitialJobTimes();
         for (int i = 0; i < sz; i++) {
-            queueInfo[i] = new WorkerQueueInfo(0, 0, ConstantEstimator.ZERO,
+            queueInfo[i] = new WorkerQueueInfo(0, 0, ConstantEstimate.ZERO,
                     jobTimes[i]);
         }
         localPerformanceInfo = new NodePerformanceInfo(completionInfo,
@@ -41,14 +41,14 @@ class Gossip {
         localPerformanceInfo.timeStamp = System.nanoTime();
     }
 
-    private Estimator[][] buildCompletionInfo(final JobList jobs) {
+    private Estimate[][] buildCompletionInfo(final JobList jobs) {
         final JobType types[] = jobs.getAllTypes();
-        final Estimator res[][] = new Estimator[types.length][];
+        final Estimate res[][] = new Estimate[types.length][];
 
         for (int i = 0; i < types.length; i++) {
             final JobType t = types[i];
             final JobType todoList[] = jobs.getTodoList(t);
-            final Estimator l1[] = new Estimator[todoList.length];
+            final Estimate l1[] = new Estimate[todoList.length];
 
             res[i] = l1;
         }
@@ -71,7 +71,7 @@ class Gossip {
      *            The local knowledge about the nodes in the system.
      */
     synchronized void recomputeCompletionTimes(
-            final Estimator masterQueueIntervals[], final JobList jobs,
+            final Estimate masterQueueIntervals[], final JobList jobs,
             final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap) {
         final JobType types[] = jobs.getAllTypes();
 
@@ -84,11 +84,11 @@ class Gossip {
             while (ix > 0) {
                 ix--;
 
-                final Estimator masterQueueInterval = masterQueueIntervals == null ? ConstantEstimator.ZERO
+                final Estimate masterQueueInterval = masterQueueIntervals == null ? ConstantEstimate.ZERO
                         : masterQueueIntervals[ix];
-                final Estimator bestCompletionTimeAfterMasterQueue = getBestCompletionTimeAfterMasterQueue(
+                final Estimate bestCompletionTimeAfterMasterQueue = getBestCompletionTimeAfterMasterQueue(
                         tix, ix, nextIndex, localNodeInfoMap);
-                final Estimator t = masterQueueInterval
+                final Estimate t = masterQueueInterval
                         .addIndependent(bestCompletionTimeAfterMasterQueue);
                 localPerformanceInfo.completionInfo[tix][ix] = t;
                 nextIndex = ix;
@@ -138,18 +138,18 @@ class Gossip {
      *            nodes.
      * @return The best average completion time of our workers.
      */
-    private Estimator getBestCompletionTimeAfterMasterQueue(final int todoIx,
+    private Estimate getBestCompletionTimeAfterMasterQueue(final int todoIx,
             final int ix, final int nextIx,
             final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap) {
-        Estimator res = null;
+        Estimate res = null;
         double minTime = Double.POSITIVE_INFINITY;
 
         for (final NodePerformanceInfo node : gossipList) {
             final LocalNodeInfoList info = localNodeInfoMap.get(node.source);
 
             if (info != null) {
-                final Estimator xmitTime = info.getTransmissionTime(ix);
-                final Estimator val = xmitTime.addIndependent(node
+                final Estimate xmitTime = info.getTransmissionTime(ix);
+                final Estimate val = xmitTime.addIndependent(node
                         .getCompletionOnWorker(todoIx, ix, nextIx));
 
                 if (val != null) {
@@ -262,12 +262,12 @@ class Gossip {
         localPerformanceInfo.failJob(type);
     }
 
-    void setLocalComputeTime(final JobType type, final Estimator t) {
+    void setLocalComputeTime(final JobType type, final Estimate t) {
         localPerformanceInfo.setComputeTime(type, t);
     }
 
     void setWorkerQueueTimePerJob(final JobType type,
-            final Estimator queueTimePerJob, final int queueLength) {
+            final Estimate queueTimePerJob, final int queueLength) {
         localPerformanceInfo.setWorkerQueueTimePerJob(type, queueTimePerJob,
                 queueLength);
     }
