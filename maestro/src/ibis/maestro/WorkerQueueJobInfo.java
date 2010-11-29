@@ -111,10 +111,6 @@ final class WorkerQueueJobInfo {
         return elements;
     }
 
-    double getLikelyDequeueInterval() {
-        return dequeueInterval.getLikelyValue();
-    }
-
     /**
      * Registers the completion of a job of this particular type, with the given
      * queue interval and the given work interval.

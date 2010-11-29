@@ -143,7 +143,7 @@ class NodePerformanceInfo implements Serializable {
         final int currentJobs = Math.max(ql, performanceInfo.currentJobs);
         final Estimate executionTime = workerQueueInfo.getExecutionTime();
         final Estimate unpredictableOverhead = executionTime
-                .multiply(currentJobs / 10);
+                .multiply(currentJobs / 10.);
         final Estimate transmissionTime = performanceInfo.transmissionTime;
         final int waitingJobs = Math.max(0, currentJobs - numberOfProcessors);
         final Estimate dequeueTimePerJob = workerQueueInfo

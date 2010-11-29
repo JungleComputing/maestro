@@ -97,12 +97,6 @@ public final class JobList {
         return todoLists.get(type.index);
     }
 
-    JobType[] getTodoList(final Job job) {
-        final JobType jobType = getJobType(job);
-
-        return getTodoList(jobType);
-    }
-
     JobType[] getAllTypes() {
         return allJobTypes.toArray(new JobType[allJobTypes.size()]);
     }

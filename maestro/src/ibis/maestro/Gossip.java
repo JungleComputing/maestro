@@ -18,12 +18,6 @@ class Gossip {
 
     private final NodePerformanceInfo localPerformanceInfo;
 
-    GossipMessage constructMessage(final IbisIdentifier target,
-            final boolean needsReply) {
-        final NodePerformanceInfo content[] = getCopy();
-        return new GossipMessage(target, content, needsReply);
-    }
-
     Gossip(final JobList jobs, final IbisIdentifier localIbis) {
         final int numberOfProcessors = Runtime.getRuntime()
                 .availableProcessors();
@@ -39,6 +33,12 @@ class Gossip {
                 queueInfo, localIbis, numberOfProcessors, System.nanoTime());
         gossipList.add(localPerformanceInfo);
         localPerformanceInfo.timeStamp = System.nanoTime();
+    }
+
+    GossipMessage constructMessage(final IbisIdentifier target,
+            final boolean needsReply) {
+        final NodePerformanceInfo content[] = getCopy();
+        return new GossipMessage(target, content, needsReply);
     }
 
     private Estimate[][] buildCompletionInfo(final JobList jobs) {
@@ -112,9 +112,9 @@ class Gossip {
 
     private int searchInfo(final IbisIdentifier ibis) {
         for (int ix = 0; ix < gossipList.size(); ix++) {
-            final NodePerformanceInfo i = gossipList.get(ix);
+            final NodePerformanceInfo info = gossipList.get(ix);
 
-            if (i.source.equals(ibis)) {
+            if (info.source.equals(ibis)) {
                 return ix;
             }
         }
@@ -153,6 +153,9 @@ class Gossip {
                         .getCompletionOnWorker(todoIx, ix, nextIx));
 
                 if (val != null) {
+                    // Draw a random likely value from the estimate, and
+                    // use that as a representative value for the performance
+                    // of this node.
                     final double t = val.getLikelyValue();
                     if (t < minTime) {
                         res = val;
@@ -174,7 +177,7 @@ class Gossip {
     synchronized boolean register(final NodePerformanceInfo update) {
         final int ix = searchInfo(update.source);
         if (ix >= 0) {
-            // This is an update for the same node.
+            // This is an update for existing performance info.
             final NodePerformanceInfo i = gossipList.get(ix);
 
             if (update.timeStamp > i.timeStamp) {
@@ -186,13 +189,15 @@ class Gossip {
                 gossipList.set(ix, update);
                 return true;
             }
+            // At this point we know the update is at least as old as
+            // the info we have. We haven't learned anything new.
             return false;
         }
         if (Settings.traceGossip) {
             Globals.log.reportProgress("Got info about new node "
                     + update.source);
         }
-        // If we reach this point, we didn't have info about this node.
+        // If we reach this point, we didn't have info about this node yet.
         gossipList.add(update);
         this.notifyAll(); // Wake any waiters for ready nodes
         return true;

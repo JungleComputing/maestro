@@ -16,7 +16,9 @@ class CompletedJob {
      * Constructs a new CompletedJob.
      * 
      * @param job
+     *            The identifier of the job that was completed.
      * @param result
+     *            The result of the completed job.
      */
     CompletedJob(JobInstanceIdentifier job, Serializable result) {
         this.job = job;

@@ -18,8 +18,6 @@ import java.util.LinkedList;
  * @author Kees van Reeuwijk.
  */
 class Gossiper extends Thread {
-    private final boolean stopped = false;
-
     private final GossipNodeList nodes = new GossipNodeList();
 
     private final IbisSet deadNodes = new IbisSet();
@@ -143,9 +141,6 @@ class Gossiper extends Thread {
                 // Nobody to gossip. Stop.
                 break;
             }
-            if (isStopped()) {
-                return;
-            }
             sendGossip(target, true);
         }
     }
@@ -160,7 +155,7 @@ class Gossiper extends Thread {
     /** Runs this thread. */
     @Override
     public void run() {
-        while (!isStopped()) {
+        while (true) {
             drainReplyQueue();
             sendCurrentGossipMessages();
             final long waittime = computeWaitTimeInMilliseconds();
@@ -189,10 +184,6 @@ class Gossiper extends Thread {
             } catch (final InterruptedException e) {
                 // ignore.
             }
-        }
-        if (Settings.traceGossip) {
-            Globals.log
-                    .reportProgress("Gossiper: has stopped, thread ends now");
         }
     }
 
@@ -329,10 +320,6 @@ class Gossiper extends Thread {
      */
     int waitForReadyNodes(final int n, final long maximalWaitTime) {
         return gossip.waitForReadyNodes(n, maximalWaitTime);
-    }
-
-    private synchronized boolean isStopped() {
-        return stopped;
     }
 
     void failJob(final JobType type) {

@@ -2,6 +2,12 @@ package ibis.maestro;
 
 import java.io.Serializable;
 
+/**
+ * Simple but tricky case of a parallel job instance: divide-and-conquer.
+ * 
+ * @author Kees van Reeuwijk
+ * 
+ */
 class Fibonacci implements ParallelJob {
     static Fibonacci jobType;
 

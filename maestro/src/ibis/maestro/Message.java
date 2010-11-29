@@ -20,5 +20,5 @@ abstract class Message implements Serializable {
 
     transient double arrivalMoment;
 
-    transient IbisIdentifier source;
+    transient IbisIdentifier source = null;
 }

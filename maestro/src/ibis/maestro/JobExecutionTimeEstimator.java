@@ -12,7 +12,8 @@ public interface JobExecutionTimeEstimator {
     /**
      * Returns an estimate in seconds of the compute time of this job.
      * 
-     * @return The estimated compute time of this job in seconds.
+     * @return The estimated compute time of this job in seconds, as a
+     *         statistical estimate.
      */
     public Estimate estimateJobExecutionTime();
 }

@@ -1,7 +1,7 @@
 package ibis.maestro;
 
 /**
- * An entry in the list of outstanding jobs of a master.
+ * An entry in the list of active jobs of a master.
  * 
  * @author Kees van Reeuwijk
  * 
