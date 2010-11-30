@@ -63,7 +63,7 @@ class NodePerformanceInfo implements Serializable {
             char sep = '[';
             for (final Estimate i : l) {
                 b.append(sep);
-                b.append(Utils.formatSeconds(i.getAverage()));
+                b.append(i.format());
                 sep = ',';
             }
             b.append(']');
@@ -221,7 +221,7 @@ class NodePerformanceInfo implements Serializable {
                 } else {
                     s.print(' ');
                 }
-                s.printf("%8s", Utils.formatSeconds(t.getAverage()));
+                s.printf("%8s", t.format());
             }
             s.print(']');
         }

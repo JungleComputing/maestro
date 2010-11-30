@@ -58,8 +58,7 @@ class WorkerQueueInfo implements Serializable {
 
     String format() {
         return String.format("%3d %9s %9s", getQueueLength(),
-                Utils.formatSeconds(getDequeueTimePerJob().getAverage()),
-                Utils.formatSeconds(getExecutionTime().getAverage()));
+                getDequeueTimePerJob().format(), getExecutionTime().format());
     }
 
     static String topLabel() {
