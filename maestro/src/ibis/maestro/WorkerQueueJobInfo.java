@@ -77,8 +77,8 @@ final class WorkerQueueJobInfo {
         if (elements > maxElements) {
             maxElements = elements;
         }
-        if (frontChangedTime == 0) {
-            // This entry is the front of the queue,
+        if (elements == 1) {
+            // The new entry is the front of the queue,
             // record the time it became this.
             frontChangedTime = Utils.getPreciseTime();
         }
@@ -89,10 +89,10 @@ final class WorkerQueueJobInfo {
 
     int registerRemove() {
         final double now = Utils.getPreciseTime();
-        if (frontChangedTime != 0) {
-            // We know when this entry became the front of the queue.
-            final double i = now - frontChangedTime;
-            dequeueInterval.addSample(i);
+        if (frontChangedTime == 0) {
+            Globals.log.reportInternalError("Variable frontChangedTime is 0??");
+        } else {
+            dequeueInterval.addSample(now - frontChangedTime);
         }
         elements--;
         sequenceNumber++;
@@ -101,13 +101,7 @@ final class WorkerQueueJobInfo {
                     .reportInternalError("Number of elements in worker queue is now negative?? type="
                             + type + " elements=" + elements);
         }
-        if (elements == 0) {
-            // Don't take the next dequeuing into account,
-            // since the queue is now empty.
-            frontChangedTime = 0l;
-        } else {
-            frontChangedTime = now;
-        }
+        frontChangedTime = now;
         return elements;
     }
 
@@ -117,6 +111,9 @@ final class WorkerQueueJobInfo {
      * 
      * @param workTime
      *            The time it took to execute this job.
+     * @param unpredictable
+     *            If <code>true</code>, job statistics for this job type are
+     *            meaningless, use the initial benchmark estimate instead.
      */
     synchronized Estimate countJob(final double workTime,
             final boolean unpredictable) {

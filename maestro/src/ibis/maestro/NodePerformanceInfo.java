@@ -143,19 +143,18 @@ class NodePerformanceInfo implements Serializable {
         final int currentJobs = Math.max(ql, performanceInfo.currentJobs);
         final Estimate executionTime = workerQueueInfo.getExecutionTime();
         final Estimate unpredictableOverhead = executionTime
-                .multiply(currentJobs / 10.);
-        final Estimate transmissionTime = performanceInfo.transmissionTime;
+                .multiply(0.1 * currentJobs);
+        Estimate total = performanceInfo.transmissionTime;
         final int waitingJobs = Math.max(0, currentJobs - numberOfProcessors);
-        final Estimate dequeueTimePerJob = workerQueueInfo
-                .getDequeueTimePerJob();
-        final Estimate queueTime = dequeueTimePerJob.multiply(waitingJobs);
-        final Estimate transmissionAndQueueTime = transmissionTime
-                .addIndependent(queueTime);
-        final Estimate transmissionQueueAndExecutionTime = transmissionAndQueueTime
-                .addIndependent(workerQueueInfo.getExecutionTime());
-        final Estimate t1 = transmissionQueueAndExecutionTime
-                .addIndependent(completionInterval);
-        final Estimate total = t1.addIndependent(unpredictableOverhead);
+        if (waitingJobs > 0) {
+            final Estimate dequeueTimePerJob = workerQueueInfo
+                    .getDequeueTimePerJob();
+            final Estimate queueTime = dequeueTimePerJob.multiply(waitingJobs);
+            total = total.addIndependent(queueTime);
+        }
+        total = total.addIndependent(executionTime);
+        total = total.addIndependent(completionInterval);
+        total = total.addIndependent(unpredictableOverhead);
         if (Settings.traceRemainingJobTime) {
             Globals.log.reportProgress("Estimated completion time for "
                     + source + " for " + seriesType + " stage " + stage + " "
@@ -197,8 +196,8 @@ class NodePerformanceInfo implements Serializable {
         final Estimate dequeueTimePerJob = info.getDequeueTimePerJob();
         final Estimate totalDequeueTime = dequeueTimePerJob.multiply(1 + info
                 .getQueueLength());
-        final Estimate res = totalDequeueTime.addIndependent(
-                info.getExecutionTime()).addIndependent(nextCompletionInterval);
+        Estimate res = totalDequeueTime.addIndependent(info.getExecutionTime());
+        res = res.addIndependent(nextCompletionInterval);
         return res;
     }
 

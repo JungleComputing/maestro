@@ -29,17 +29,17 @@ class WorkerQueueInfo implements Serializable {
      *            The sequence number of this queue length. Used to avoid
      *            multiple updates to the worker allowance on multiple
      *            transmissions of the same WoekrQueueInfo instance.
-     * @param zero
+     * @param dequeueTimePerJob
      *            The current wait time in the worker queue divided by the queue
      *            length.
      * @param executionTime
      *            The execution time of a job.
      */
     WorkerQueueInfo(final int queueLength, final int queueLengthSequenceNumber,
-            final Estimate zero, final Estimate executionTime) {
+            final Estimate dequeueTimePerJob, final Estimate executionTime) {
         this.queueLength = queueLength;
         this.queueLengthSequenceNumber = queueLengthSequenceNumber;
-        this.dequeueTimePerJob = zero;
+        this.dequeueTimePerJob = dequeueTimePerJob;
         this.executionTime = executionTime;
     }
 
