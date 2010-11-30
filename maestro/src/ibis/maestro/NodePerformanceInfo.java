@@ -63,7 +63,7 @@ class NodePerformanceInfo implements Serializable {
             char sep = '[';
             for (final Estimate i : l) {
                 b.append(sep);
-                b.append(i.format());
+                b.append(i == null ? "null" : i.toString());
                 sep = ',';
             }
             b.append(']');
@@ -159,8 +159,8 @@ class NodePerformanceInfo implements Serializable {
         if (Settings.traceRemainingJobTime) {
             Globals.log.reportProgress("Estimated completion time for "
                     + source + " for " + seriesType + " stage " + stage + " "
-                    + stageType + " is " + total.format()
-                    + ": performanceInfo=" + performanceInfo);
+                    + stageType + " is " + total + ": performanceInfo="
+                    + performanceInfo);
         }
         return total;
     }
@@ -221,7 +221,8 @@ class NodePerformanceInfo implements Serializable {
                 } else {
                     s.print(' ');
                 }
-                s.printf("%8s", t.format());
+
+                s.printf("%8s", t == null ? "null" : t.toString());
             }
             s.print(']');
         }

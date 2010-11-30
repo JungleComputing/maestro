@@ -90,6 +90,10 @@ class Gossip {
                         tix, ix, nextIndex, localNodeInfoMap);
                 final Estimate t = masterQueueInterval
                         .addIndependent(bestCompletionTimeAfterMasterQueue);
+                Globals.log.reportProgress("masterQueueInterval="
+                        + masterQueueInterval
+                        + " bestCompletionTimeAfterMasterQueue="
+                        + bestCompletionTimeAfterMasterQueue + " t=" + t);
                 localPerformanceInfo.completionInfo[tix][ix] = t;
                 nextIndex = ix;
             }

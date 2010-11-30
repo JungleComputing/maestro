@@ -25,8 +25,8 @@ class LocalNodeInfo {
     @Override
     public String toString() {
         return "(currentJobs=" + currentJobs + ",transmissionTime="
-                + transmissionTime.format() + ",predictedDuration="
-                + predictedDuration.format() + ")";
+                + transmissionTime + ",predictedDuration=" + predictedDuration
+                + ")";
 
     }
 }

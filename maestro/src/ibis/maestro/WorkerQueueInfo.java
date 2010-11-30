@@ -51,14 +51,14 @@ class WorkerQueueInfo implements Serializable {
      */
     @Override
     public String toString() {
-        return "(ql=" + getQueueLength() + ",dq/t="
-                + getDequeueTimePerJob().format() + ",compute="
-                + getExecutionTime().format() + ")";
+        return "(ql=" + getQueueLength() + ",dq/t=" + getDequeueTimePerJob()
+                + ",compute=" + getExecutionTime() + ")";
     }
 
     String format() {
         return String.format("%3d %9s %9s", getQueueLength(),
-                getDequeueTimePerJob().format(), getExecutionTime().format());
+                getDequeueTimePerJob().toString(), getExecutionTime()
+                        .toString());
     }
 
     static String topLabel() {

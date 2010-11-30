@@ -354,8 +354,7 @@ class Gossiper extends Thread {
     boolean registerGossipMessage(final GossipMessage m) {
         boolean changed = false;
 
-        if (Settings.traceNodeProgress || Settings.traceRegistration
-                || Settings.traceGossip) {
+        if (Settings.traceNodeProgress | Settings.traceGossip) {
             Globals.log.reportProgress("Received gossip message from "
                     + m.source + " with " + m.gossip.length + " items");
         }

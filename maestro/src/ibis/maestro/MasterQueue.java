@@ -175,6 +175,7 @@ final class MasterQueue {
     }
 
     private void dumpQueue(final PrintStream s) {
+        s.print("Jobs in master queue: ");
         for (final JobInstance e : queue) {
             s.print(e.shortLabel());
             s.print(' ');
@@ -313,7 +314,7 @@ final class MasterQueue {
             if (info == bestInterval) {
                 s.print('#');
             }
-            s.print(val.format());
+            s.print(val == null ? "null" : val.toString());
             s.print(' ');
         }
         s.println();

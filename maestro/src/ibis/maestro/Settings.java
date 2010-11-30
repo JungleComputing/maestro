@@ -27,16 +27,16 @@ class Settings {
     // Debugging flags.
 
     /** Trace the progress of the worker lists of masters. */
-    static final boolean traceWorkerList = false;
+    static final boolean traceWorkerList = true;
 
     /** Trace the creation and destruction of Nodes. */
-    static final boolean traceNodes = false;
+    static final boolean traceNodes = true;
 
     /** Trace the events in the master queue? */
-    static final boolean traceMasterQueue = false;
+    static final boolean traceMasterQueue = true;
 
     /** Trace the administration of remaining job time. */
-    static final boolean traceRemainingJobTime = false;
+    static final boolean traceRemainingJobTime = true;
 
     /** Trace the progress of masters? */
     static final boolean traceNodeProgress = false;
@@ -45,7 +45,7 @@ class Settings {
     static final boolean traceSends = false;
 
     /** Trace all missed deadlines. */
-    static final boolean traceMissedDeadlines = false;
+    static final boolean traceMissedDeadlines = true;
 
     /** Trace all queuing and dequeuing. */
     static final boolean traceQueuing = false;
@@ -54,38 +54,38 @@ class Settings {
     static final boolean traceWaits = false;
 
     /** Print the reason a particular worker was selected. */
-    static final boolean traceWorkerSelection = false;
+    static final boolean traceWorkerSelection = true;
 
     /** Trace the adventures of the map/reduce handler. */
-    static final boolean traceParallelJobs = false;
+    static final boolean traceParallelJobs = true;
 
     /** Trace registration of the nodes with each other. */
     static final boolean traceRegistration = false;
 
     /** Trace all sent update messages. */
-    static final boolean traceUpdateMessages = false;
+    static final boolean traceUpdateMessages = true;
 
     /** Trace the adventures of the gossip engine? */
     static final boolean traceGossip = false;
 
     /** Dump the master queue after each change? */
-    static final boolean dumpMasterQueue = false;
+    static final boolean dumpMasterQueue = true;
 
     /** Dump the worker queue after each change? */
-    static final boolean dumpWorkerQueue = false;
+    static final boolean dumpWorkerQueue = true;
 
     /** Announce all submissions? */
-    static final boolean traceSubmissions = false;
+    static final boolean traceSubmissions = true;
 
     /** Trace the adventures of the terminator thread? */
-    static final boolean traceTerminator = false;
+    static final boolean traceTerminator = true;
 
     // --- Configuration (tuning) constants. ----
     // Unfortunately we still need some magic numbers.
 
     /**
-     * Deadlines below this value in seconds are meaningless because they
-     * are too short to be measured with reasonable accuracy.
+     * Deadlines below this value in seconds are meaningless because they are
+     * too short to be measured with reasonable accuracy.
      */
     static final double MINIMAL_DEADLINE = 100 * Utils.MICROSECOND;
 
@@ -108,8 +108,8 @@ class Settings {
     static final long GOSSIP_EXPIRATION_BETWEEN_CLUSTERS = 5 * GOSSIP_EXPIRATION_IN_CLUSTER;
 
     /**
-     * This many nodes that recently sent a job will be kept directly up to
-     * date with our state changes (instead of through the gossip system).
+     * This many nodes that recently sent a job will be kept directly up to date
+     * with our state changes (instead of through the gossip system).
      */
     static final int MAXIMAL_RECENT_MASTERS = 4;
 
