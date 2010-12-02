@@ -39,8 +39,7 @@ final class WorkerQueueJobInfo {
     private boolean failed = false;
 
     /** The estimated time interval between jobs being dequeued. */
-    private final Estimator dequeueInterval = new ExponentialDecayLogEstimator(
-            1 * Utils.MILLISECOND, 10 * Utils.MILLISECOND, 0.2);
+    private final Estimator dequeueInterval;
 
     private double totalWorkTime = 0.0;
 
@@ -49,6 +48,10 @@ final class WorkerQueueJobInfo {
     WorkerQueueJobInfo(final JobType type, final Estimate est) {
         this.type = type;
         averageComputeTime = new ExponentialDecayLogEstimator(est, 0.2);
+        final double logAverage = Math.log(1 * Utils.MILLISECOND);
+        final double logStdDev = Math.log(10 * Utils.MILLISECOND);
+        dequeueInterval = new ExponentialDecayLogEstimator(logAverage,
+                logStdDev * logStdDev, 0.2);
     }
 
     synchronized void printStatistics(final PrintStream s, final double workTime) {

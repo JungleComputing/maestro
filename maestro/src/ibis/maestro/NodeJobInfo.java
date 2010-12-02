@@ -43,16 +43,21 @@ final class NodeJobInfo {
      *            The ping time of this worker.
      */
     NodeJobInfo(final WorkerQueueJobInfo jobInfo, final WorkerInfo worker,
-            final double pingTime) {
+            double pingTime) {
         this.jobInfo = jobInfo;
         nodeInfo = worker;
 
         // Totally unfounded guesses, but we should learn soon enough what the
         // real values are...
-        transmissionEstimate = new ExponentialDecayLogEstimator(pingTime,
-                pingTime, 1);
-        roundtripEstimate = new ExponentialDecayLogEstimator(2 * pingTime,
-                2 * pingTime, 1);
+        if (pingTime <= 0) {
+            pingTime = 1e-12;
+        }
+        final double logPingTime = Math.log(pingTime);
+        final double log2PingTime = Math.log(2 * pingTime);
+        transmissionEstimate = new ExponentialDecayLogEstimator(logPingTime,
+                logPingTime * logPingTime, 1);
+        roundtripEstimate = new ExponentialDecayLogEstimator(log2PingTime,
+                log2PingTime * log2PingTime, 1);
         if (Settings.traceWorkerList || Settings.traceRemainingJobTime) {
             Globals.log.reportProgress("Created new WorkerJobInfo "
                     + toString());

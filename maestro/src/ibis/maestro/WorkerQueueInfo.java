@@ -2,6 +2,7 @@ package ibis.maestro;
 
 import ibis.steel.ConstantEstimate;
 import ibis.steel.Estimate;
+import ibis.steel.InfiniteEstimate;
 
 import java.io.Serializable;
 
@@ -41,6 +42,8 @@ class WorkerQueueInfo implements Serializable {
         this.queueLengthSequenceNumber = queueLengthSequenceNumber;
         this.dequeueTimePerJob = dequeueTimePerJob;
         this.executionTime = executionTime;
+        assert executionTime != null;
+        assert dequeueTimePerJob != null;
     }
 
     /**
@@ -74,15 +77,17 @@ class WorkerQueueInfo implements Serializable {
     }
 
     synchronized void failJob() {
-        this.executionTime = null;
+        this.executionTime = InfiniteEstimate.INFINITE;
     }
 
     synchronized void setExecutionTime(final Estimate t) {
+        assert t != null;
         this.executionTime = t;
     }
 
     synchronized void setQueueTimePerJob(final Estimate queueTimePerJob,
             final int newQueueLength) {
+        assert queueTimePerJob != null;
         this.dequeueTimePerJob = queueTimePerJob;
         if (this.queueLength != newQueueLength) {
             this.queueLength = newQueueLength;

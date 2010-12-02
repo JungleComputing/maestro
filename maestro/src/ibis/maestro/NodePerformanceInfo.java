@@ -114,6 +114,7 @@ class NodePerformanceInfo implements Serializable {
             return null;
         }
         final Estimate completionInterval = completionInfo[seriesType.index][stage];
+        assert completionInterval != null;
         if (completionInterval == InfiniteEstimate.INFINITE) {
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportError("Node " + source

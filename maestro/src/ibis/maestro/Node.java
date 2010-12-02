@@ -242,6 +242,7 @@ public final class Node extends Thread implements PacketReceiveListener {
                 Globals.receivePortName, this);
         traceStats = System.getProperty("ibis.maestro.traceWorkerStatistics") != null;
         gossiper = new Gossiper(sendPort, isMaestro(), jobs, myIbis);
+        recomputeCompletionTimes.set();
         startTime = Utils.getPreciseTime();
         recentMasterList.register(myIbis);
         startThreads();

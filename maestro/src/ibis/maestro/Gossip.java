@@ -7,6 +7,7 @@ import ibis.steel.InfiniteEstimate;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 
 /**
@@ -49,7 +50,7 @@ class Gossip {
             final JobType t = types[i];
             final JobType todoList[] = jobs.getTodoList(t);
             final Estimate l1[] = new Estimate[todoList.length];
-
+            Arrays.fill(l1, InfiniteEstimate.INFINITE);
             res[i] = l1;
         }
         return res;
@@ -78,6 +79,8 @@ class Gossip {
         for (int tix = 0; tix < types.length; tix++) {
             final JobType todoList[] = jobs.getTodoList(types[tix]);
 
+            Globals.log.reportProgress("Job " + types[tix] + ": todoList="
+                    + Arrays.deepToString(todoList));
             int ix = todoList.length;
             int nextIndex = -1;
 
@@ -90,8 +93,8 @@ class Gossip {
                         tix, ix, nextIndex, localNodeInfoMap);
                 final Estimate t = masterQueueInterval
                         .addIndependent(bestCompletionTimeAfterMasterQueue);
-                Globals.log.reportProgress("masterQueueInterval="
-                        + masterQueueInterval
+                Globals.log.reportProgress("JobType=" + todoList[ix]
+                        + " masterQueueInterval=" + masterQueueInterval
                         + " bestCompletionTimeAfterMasterQueue="
                         + bestCompletionTimeAfterMasterQueue + " t=" + t);
                 localPerformanceInfo.completionInfo[tix][ix] = t;
@@ -151,11 +154,19 @@ class Gossip {
         for (final NodePerformanceInfo node : gossipList) {
             final LocalNodeInfoList info = localNodeInfoMap.get(node.source);
 
-            if (info != null) {
+            if (info == null) {
+                Globals.log.reportProgress("No LocalNodeInfoList for "
+                        + node.source);
+            } else {
                 final Estimate xmitTime = info.getTransmissionTime(ix);
-                final Estimate val = xmitTime.addIndependent(node
-                        .getCompletionOnWorker(todoIx, ix, nextIx));
+                final Estimate completionOnWorker = node.getCompletionOnWorker(
+                        todoIx, ix, nextIx);
+                final Estimate val = xmitTime
+                        .addIndependent(completionOnWorker);
 
+                Globals.log.reportProgress("xmitTime=" + xmitTime
+                        + " completionOnWorker=" + completionOnWorker + " val="
+                        + val);
                 // Draw a random likely value from the estimate, and
                 // use that as a representative value for the performance
                 // of this node.
@@ -164,6 +175,9 @@ class Gossip {
                     res = val;
                     minTime = t;
                 }
+                Globals.log.reportProgress("xmitTime=" + xmitTime
+                        + " completionOnWorker=" + completionOnWorker + " val="
+                        + val + " t=" + t + " res=" + res);
             }
         }
         return res;

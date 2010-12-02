@@ -52,11 +52,12 @@ final class MasterQueue {
         private double frontChangedTime = 0;
 
         /** The estimated time interval between jobs being dequeued. */
-        private final Estimator dequeueInterval = new ExponentialDecayLogEstimator(
-                1 * Utils.MILLISECOND, 1 * Utils.MILLISECOND, 0.1);
+        private final Estimator dequeueInterval;
 
         private TypeInfo(final JobType type) {
             this.type = type;
+            final double av = Math.log(1 * Utils.MILLISECOND);
+            dequeueInterval = new ExponentialDecayLogEstimator(av, av * av, 0.1);
         }
 
         private synchronized void printStatistics(final PrintStream s) {
@@ -332,45 +333,35 @@ final class MasterQueue {
     synchronized Submission getSubmission(final JobList jobs,
             final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
             final NodePerformanceInfo[] tables) {
-        int busyTypeIndex = -1; // Don't even consider jobs of this type, all
-        // workers are busy.
+
         int ix = 0;
         while (ix < queue.size()) {
             final JobInstance job = queue.get(ix);
             final JobType stageType = job.getStageType(jobs);
-            if (stageType.index == busyTypeIndex) {
+            final Submission sub = selectBestWorker(localNodeInfoMap, tables,
+                    job, stageType);
+            if (sub != null) {
+                queue.remove(ix);
+                final TypeInfo queueTypeInfo = queueTypes[stageType.index];
+                queueTypeInfo.administrateRemove();
                 if (Settings.traceMasterQueue || Settings.traceQueuing) {
-                    Globals.log.reportProgress("Type " + stageType
-                            + " has no ready workers, don't bother");
-                }
-            } else {
-                final Submission sub = selectBestWorker(localNodeInfoMap,
-                        tables, job, stageType);
-                if (sub == null) {
-                    // This job type is busy, skip all other instances
-                    // of the type.
-                    busyTypeIndex = stageType.index;
-                } else {
-                    queue.remove(ix);
-                    final TypeInfo queueTypeInfo = queueTypes[stageType.index];
-                    queueTypeInfo.administrateRemove();
-                    if (Settings.traceMasterQueue || Settings.traceQueuing) {
-                        final int length = queueTypeInfo.elements;
-                        Globals.log.reportProgress("Removing "
-                                + job.formatJobAndType()
-                                + " from master queue; length is now "
-                                + queue.size() + "; " + length + " of type "
-                                + stageType);
-                    }
-                    return sub;
-                }
-                if (Settings.traceMasterQueue) {
-                    Globals.log.reportProgress("No ready worker for job type "
+                    final int length = queueTypeInfo.elements;
+
+                    Globals.log.reportProgress("Removing "
+                            + job.formatJobAndType()
+                            + " from master queue; length is now "
+                            + queue.size() + "; " + length + " of type "
                             + stageType);
                 }
+                return sub;
+            }
+            if (Settings.traceMasterQueue) {
+                Globals.log.reportProgress("No ready worker for job type "
+                        + stageType);
             }
             ix++;
         }
+
         return null;
     }
 
