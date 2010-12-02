@@ -2,6 +2,7 @@ package ibis.maestro;
 
 import ibis.steel.ConstantEstimate;
 import ibis.steel.Estimate;
+import ibis.steel.InfiniteEstimate;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -111,7 +112,7 @@ public final class JobList {
     private Estimate initialEstimateJobTime(final Job job) {
         if (!job.isSupported()) {
             // Not supported by this node.
-            return null;
+            return InfiniteEstimate.INFINITE;
         }
         if (job instanceof JobExecutionTimeEstimator) {
             final JobExecutionTimeEstimator estimator = (JobExecutionTimeEstimator) job;
@@ -120,7 +121,7 @@ public final class JobList {
         if (job instanceof AlternativesJob) {
             // We estimate this will be the minimum of all alternatives.
             final AlternativesJob aj = (AlternativesJob) job;
-            Estimate time = null;
+            Estimate time = InfiniteEstimate.INFINITE;
             double bestTime = Double.POSITIVE_INFINITY;
 
             for (final Job j : aj.alternatives) {

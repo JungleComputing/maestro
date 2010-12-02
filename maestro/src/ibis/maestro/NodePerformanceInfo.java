@@ -3,6 +3,7 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 import ibis.steel.ConstantEstimate;
 import ibis.steel.Estimate;
+import ibis.steel.InfiniteEstimate;
 
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -28,6 +29,9 @@ class NodePerformanceInfo implements Serializable {
     /** For each type of job we know, the queue length on this worker. */
     private final WorkerQueueInfo[] workersQueueInfo;
 
+    /**
+     * The time stamp of this info.
+     */
     long timeStamp;
 
     /** The number of processors on this node. */
@@ -63,7 +67,7 @@ class NodePerformanceInfo implements Serializable {
             char sep = '[';
             for (final Estimate i : l) {
                 b.append(sep);
-                b.append(i == null ? "null" : i.toString());
+                b.append(i.toString());
                 sep = ',';
             }
             b.append(']');
@@ -110,13 +114,13 @@ class NodePerformanceInfo implements Serializable {
             return null;
         }
         final Estimate completionInterval = completionInfo[seriesType.index][stage];
-        if (completionInterval == null) {
+        if (completionInterval == InfiniteEstimate.INFINITE) {
             if (Settings.traceRemainingJobTime) {
                 Globals.log.reportError("Node " + source
                         + " has infinite completion time for seriesType="
                         + seriesType + " stage " + stage);
             }
-            return null;
+            return completionInterval;
         }
         final LocalNodeInfo performanceInfo = localNodeInfo
                 .getLocalNodeInfo(stageType);
@@ -185,7 +189,7 @@ class NodePerformanceInfo implements Serializable {
 
         if (info == null) {
             // We don't support this type.
-            return null;
+            return InfiniteEstimate.INFINITE;
         }
         if (nextIx >= 0) {
             final Estimate[] todoList = completionInfo[todoIx];
@@ -221,7 +225,7 @@ class NodePerformanceInfo implements Serializable {
                     s.print(' ');
                 }
 
-                s.printf("%8s", t == null ? "null" : t.toString());
+                s.printf("%8s", t.toString());
             }
             s.print(']');
         }

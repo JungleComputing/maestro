@@ -3,6 +3,7 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 import ibis.steel.ConstantEstimate;
 import ibis.steel.Estimate;
+import ibis.steel.InfiniteEstimate;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -32,7 +33,6 @@ class Gossip {
         localPerformanceInfo = new NodePerformanceInfo(completionInfo,
                 queueInfo, localIbis, numberOfProcessors, System.nanoTime());
         gossipList.add(localPerformanceInfo);
-        localPerformanceInfo.timeStamp = System.nanoTime();
     }
 
     GossipMessage constructMessage(final IbisIdentifier target,
@@ -145,7 +145,7 @@ class Gossip {
     private Estimate getBestCompletionTimeAfterMasterQueue(final int todoIx,
             final int ix, final int nextIx,
             final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap) {
-        Estimate res = null;
+        Estimate res = InfiniteEstimate.INFINITE;
         double minTime = Double.POSITIVE_INFINITY;
 
         for (final NodePerformanceInfo node : gossipList) {
@@ -156,15 +156,13 @@ class Gossip {
                 final Estimate val = xmitTime.addIndependent(node
                         .getCompletionOnWorker(todoIx, ix, nextIx));
 
-                if (val != null) {
-                    // Draw a random likely value from the estimate, and
-                    // use that as a representative value for the performance
-                    // of this node.
-                    final double t = val.getLikelyValue();
-                    if (t < minTime) {
-                        res = val;
-                        minTime = t;
-                    }
+                // Draw a random likely value from the estimate, and
+                // use that as a representative value for the performance
+                // of this node.
+                final double t = val.getLikelyValue();
+                if (t < minTime) {
+                    res = val;
+                    minTime = t;
                 }
             }
         }

@@ -468,8 +468,10 @@ public final class Node extends Thread implements PacketReceiveListener {
             updateRecentMasters();
         }
         if (recomputeCompletionTimes.getAndReset()) {
-            Estimate[] masterQueueIntervals = null;
-            if (!Settings.IGNORE_QUEUE_TIME) {
+            Estimate[] masterQueueIntervals;
+            if (Settings.IGNORE_QUEUE_TIME) {
+                masterQueueIntervals = null;
+            } else {
                 masterQueueIntervals = masterQueue.getQueueIntervals();
             }
             final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap = nodes
@@ -1126,7 +1128,7 @@ public final class Node extends Thread implements PacketReceiveListener {
             return;
         }
         while (true) {
-            NodeInfo worker;
+            WorkerInfo worker;
             long jobId;
             IbisIdentifier node;
             JobInstance jobInstance;

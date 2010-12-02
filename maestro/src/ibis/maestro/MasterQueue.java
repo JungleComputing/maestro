@@ -268,13 +268,11 @@ final class MasterQueue {
             final Estimate est = info.estimateJobCompletion(localNodeInfo,
                     job.overallType, job.stageNumber, stageType,
                     Settings.HARD_ALLOWANCES);
-            if (est != null) {
-                final double val = est.getLikelyValue();
+            final double val = est.getLikelyValue();
 
-                if (val < bestInterval) {
-                    bestInterval = val;
-                    best = info;
-                }
+            if (val < bestInterval) {
+                bestInterval = val;
+                best = info;
             }
         }
         if (Settings.traceWorkerSelection) {
@@ -314,7 +312,7 @@ final class MasterQueue {
             if (info == bestInterval) {
                 s.print('#');
             }
-            s.print(val == null ? "null" : val.toString());
+            s.print(val.toString());
             s.print(' ');
         }
         s.println();

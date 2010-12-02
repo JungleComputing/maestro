@@ -3,6 +3,7 @@ package ibis.maestro;
 import ibis.steel.Estimate;
 import ibis.steel.Estimator;
 import ibis.steel.ExponentialDecayLogEstimator;
+import ibis.steel.InfiniteEstimate;
 
 import java.io.PrintStream;
 
@@ -12,7 +13,7 @@ import java.io.PrintStream;
 final class NodeJobInfo {
     private final WorkerQueueJobInfo jobInfo;
 
-    private final NodeInfo nodeInfo;
+    private final WorkerInfo nodeInfo;
 
     private final Estimator transmissionEstimate;
 
@@ -41,7 +42,7 @@ final class NodeJobInfo {
      * @param pingTime
      *            The ping time of this worker.
      */
-    NodeJobInfo(final WorkerQueueJobInfo jobInfo, final NodeInfo worker,
+    NodeJobInfo(final WorkerQueueJobInfo jobInfo, final WorkerInfo worker,
             final double pingTime) {
         this.jobInfo = jobInfo;
         nodeInfo = worker;
@@ -136,7 +137,7 @@ final class NodeJobInfo {
         final Estimate transmissionTime = transmissionEstimate.getEstimate();
         Estimate predictedDuration;
         if (failed) {
-            predictedDuration = null;
+            predictedDuration = InfiniteEstimate.INFINITE;
         } else {
             predictedDuration = roundtripEstimate.getEstimate();
         }

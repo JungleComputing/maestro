@@ -136,7 +136,7 @@ final class WorkerQueueJobInfo {
         return failed;
     }
 
-    void registerNode(final NodeInfo nodeInfo) {
+    void registerNode(final WorkerInfo nodeInfo) {
         final NodeJobInfo nodeJobInfo = nodeInfo.get(type);
         synchronized (this) {
             if (nodeJobInfo != null) {

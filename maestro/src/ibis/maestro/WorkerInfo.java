@@ -7,12 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Information that the worker maintains for a master.
+ * Information that a master maintains for each worker.
  * 
  * @author Kees van Reeuwijk
  * 
  */
-final class NodeInfo {
+final class WorkerInfo {
     /** The active jobs of this worker. */
     private final List<ActiveJob> activeJobs = new ArrayList<ActiveJob>();
 
@@ -21,11 +21,19 @@ final class NodeInfo {
 
     private boolean suspect = false;
 
-    private boolean dead = false; // This node is known to be dead.
+    /**
+     * This node is known to be dead.
+     */
+    private boolean dead = false;
 
+    /**
+     * <code>true</code> iff this is the local node.
+     */
     private final boolean local;
 
-    /** The ibis this nodes lives on. */
+    /**
+     * The ibis this nodes lives on.
+     */
     private final IbisIdentifier ibis;
 
     /**
@@ -39,14 +47,13 @@ final class NodeInfo {
      * @param local
      *            Is this the local node?
      */
-    protected NodeInfo(IbisIdentifier ibis, WorkerQueue workerQueue,
+    protected WorkerInfo(IbisIdentifier ibis, WorkerQueue workerQueue,
             boolean local, int jobCount) {
         this.ibis = ibis;
         this.local = local;
         nodeJobInfoList = new NodeJobInfo[jobCount];
-        // For non-local nodes, start with a very pessimistic ping time.
+        // For non-local nodes, start with a rather pessimistic ping time.
         // This means that only if we really need another node, we use it.
-        // long pessimisticPingTime = local?0L:Utils.HOUR_IN_NANOSECONDS;
         double estimatedPingTime = 0.0;
         if (!local) {
             estimatedPingTime = Utils.MILLISECOND + Utils.MILLISECOND
@@ -143,7 +150,7 @@ final class NodeInfo {
     }
 
     /**
-     * We failed to send the job to the destined worker, rectract it from the
+     * We failed to send the job to the destined worker, retract it from the
      * list of active jobs.
      * 
      * @param jobId
@@ -151,8 +158,7 @@ final class NodeInfo {
      */
     void retractJob(long jobId) {
         // We ignore the result of the extract: it doesn't really matter if the
-        // job was
-        // in our list of not.
+        // job was in our list of not.
         extractActiveJob(jobId);
     }
 

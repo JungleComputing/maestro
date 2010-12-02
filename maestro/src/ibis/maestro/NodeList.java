@@ -13,7 +13,7 @@ import java.util.Map;
  * @author Kees van Reeuwijk
  */
 final class NodeList {
-	private final HashMap<IbisIdentifier, NodeInfo> ibisToNodeMap = new HashMap<IbisIdentifier, NodeInfo>();
+	private final HashMap<IbisIdentifier, WorkerInfo> ibisToNodeMap = new HashMap<IbisIdentifier, WorkerInfo>();
 
 	private final WorkerQueue workerQueue;
 
@@ -33,7 +33,7 @@ final class NodeList {
 			Globals.log.reportProgress("remove node " + theIbis);
 		}
 		ArrayList<JobInstance> orphans = null;
-		final NodeInfo node;
+		final WorkerInfo node;
 		synchronized (this) {
 			node = ibisToNodeMap.get(theIbis);
 		}
@@ -55,13 +55,13 @@ final class NodeList {
 	 *            The total number of known job types.
 	 * @return The newly created Node info for this node.
 	 */
-	synchronized NodeInfo registerNode(IbisIdentifier theIbis, boolean local,
+	synchronized WorkerInfo registerNode(IbisIdentifier theIbis, boolean local,
 			int jobTypeCount) {
-		NodeInfo info = ibisToNodeMap.get(theIbis);
+		WorkerInfo info = ibisToNodeMap.get(theIbis);
 		if (info != null) {
 			return info;
 		}
-		info = new NodeInfo(theIbis, workerQueue, local, jobTypeCount);
+		info = new WorkerInfo(theIbis, workerQueue, local, jobTypeCount);
 		workerQueue.registerNode(info);
 		ibisToNodeMap.put(theIbis, info);
 		return info;
@@ -76,7 +76,7 @@ final class NodeList {
 	 *         <code>null</code>
 	 */
 	JobInstance registerJobCompleted(JobList jobs, JobCompletedMessage result) {
-		final NodeInfo node;
+		final WorkerInfo node;
 		synchronized (this) {
 			node = ibisToNodeMap.get(result.source);
 		}
@@ -97,7 +97,7 @@ final class NodeList {
 	 *            The message.
 	 */
 	void registerJobReceived(JobReceivedMessage msg) {
-		final NodeInfo node;
+		final WorkerInfo node;
 		synchronized (this) {
 			node = ibisToNodeMap.get(msg.source);
 		}
@@ -121,7 +121,7 @@ final class NodeList {
 	 * @return The job instance that was executed.
 	 */
 	JobInstance registerJobFailed(IbisIdentifier ibis, long jobId) {
-		final NodeInfo node;
+		final WorkerInfo node;
 		synchronized (this) {
 			node = ibisToNodeMap.get(ibis);
 		}
@@ -142,9 +142,9 @@ final class NodeList {
 	 *            The stream to print to.
 	 */
 	void printStatistics(PrintStream out) {
-		for (final Map.Entry<IbisIdentifier, NodeInfo> entry : ibisToNodeMap
+		for (final Map.Entry<IbisIdentifier, WorkerInfo> entry : ibisToNodeMap
 				.entrySet()) {
-			final NodeInfo wi = entry.getValue();
+			final WorkerInfo wi = entry.getValue();
 			if (wi != null) {
 				wi.printStatistics(out);
 			}
@@ -152,7 +152,7 @@ final class NodeList {
 	}
 
 	protected void setSuspect(IbisIdentifier theIbis) {
-		final NodeInfo wi = get(theIbis);
+		final WorkerInfo wi = get(theIbis);
 
 		if (wi != null) {
 			wi.setSuspect();
@@ -166,7 +166,7 @@ final class NodeList {
 	 *            The ibis.
 	 * @return Its NodeInfo.
 	 */
-	private NodeInfo getNodeInfo(IbisIdentifier source) {
+	private WorkerInfo getNodeInfo(IbisIdentifier source) {
 		return ibisToNodeMap.get(source);
 	}
 
@@ -178,12 +178,12 @@ final class NodeList {
 	 *            The ibis.
 	 * @return Its NodeInfo.
 	 */
-	synchronized NodeInfo get(IbisIdentifier id) {
+	synchronized WorkerInfo get(IbisIdentifier id) {
 		return getNodeInfo(id);
 	}
 
 	boolean registerAsCommunicating(IbisIdentifier ibisIdentifier) {
-		final NodeInfo nodeInfo = get(ibisIdentifier);
+		final WorkerInfo nodeInfo = get(ibisIdentifier);
 		return nodeInfo.registerAsCommunicating();
 	}
 
@@ -194,9 +194,9 @@ final class NodeList {
 	 */
 	synchronized HashMap<IbisIdentifier, LocalNodeInfoList> getLocalNodeInfo() {
 		final HashMap<IbisIdentifier, LocalNodeInfoList> res = new HashMap<IbisIdentifier, LocalNodeInfoList>();
-		for (final Map.Entry<IbisIdentifier, NodeInfo> entry : ibisToNodeMap
+		for (final Map.Entry<IbisIdentifier, WorkerInfo> entry : ibisToNodeMap
 				.entrySet()) {
-			final NodeInfo nodeInfo = entry.getValue();
+			final WorkerInfo nodeInfo = entry.getValue();
 
 			res.put(entry.getKey(), nodeInfo.getLocalInfo());
 		}

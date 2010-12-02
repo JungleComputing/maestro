@@ -1,7 +1,7 @@
 package ibis.maestro;
 
 import ibis.steel.Estimate;
-import ibis.steel.GaussianEstimate;
+import ibis.steel.LogGaussianEstimate;
 
 import java.io.PrintStream;
 import java.io.Serializable;
@@ -220,7 +220,8 @@ class MasterWorkerProgram {
             final double benchmarkTime = runBenchmark();
             final double mean = MINIMAL_SHARPENS * benchmarkTime;
             // TODO: use a log-gaussian estimator.
-            return new GaussianEstimate(mean, 0.25 * mean * mean, 1);
+            return new LogGaussianEstimate(Math.log(mean), 2 * Math.log(mean),
+                    1);
         }
 
         /**
