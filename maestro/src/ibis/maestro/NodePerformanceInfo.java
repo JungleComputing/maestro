@@ -156,10 +156,23 @@ class NodePerformanceInfo implements Serializable {
                     .getDequeueTimePerJob();
             final Estimate queueTime = dequeueTimePerJob.multiply(waitingJobs);
             total = total.addIndependent(queueTime);
+            if (Settings.traceStochasticComputations) {
+                Globals.log.reportProgress("dequeueTimePerJob="
+                        + dequeueTimePerJob + " waitingJobs=" + waitingJobs
+                        + " queueTime=" + queueTime + " executionTime="
+                        + executionTime);
+            }
         }
         total = total.addIndependent(executionTime);
         total = total.addIndependent(completionInterval);
         total = total.addIndependent(unpredictableOverhead);
+        if (Settings.traceStochasticComputations) {
+            Globals.log.reportProgress("transmissionTime="
+                    + performanceInfo.transmissionTime + " executionTime="
+                    + executionTime + " completionInterval"
+                    + completionInterval + " unpredictableOverhead="
+                    + unpredictableOverhead + " total=" + total);
+        }
         if (Settings.traceRemainingJobTime) {
             Globals.log.reportProgress("Estimated completion time for "
                     + source + " for " + seriesType + " stage " + stage + " "
@@ -199,10 +212,24 @@ class NodePerformanceInfo implements Serializable {
             nextCompletionInterval = ConstantEstimate.ZERO;
         }
         final Estimate dequeueTimePerJob = info.getDequeueTimePerJob();
-        final Estimate totalDequeueTime = dequeueTimePerJob.multiply(1 + info
-                .getQueueLength());
-        Estimate res = totalDequeueTime.addIndependent(info.getExecutionTime());
+        final int len = 1 + info.getQueueLength();
+        final Estimate totalDequeueTime = dequeueTimePerJob.multiply(len);
+        final Estimate executionTime = info.getExecutionTime();
+        Estimate res = totalDequeueTime.addIndependent(executionTime);
         res = res.addIndependent(nextCompletionInterval);
+        if (Settings.traceStochasticComputations) {
+            Globals.log
+                    .reportProgress("getCompletionOnWorker(): dequeueTimePerJob="
+                            + dequeueTimePerJob
+                            + " len="
+                            + len
+                            + " totalDequeueTime="
+                            + totalDequeueTime
+                            + " executionTime="
+                            + executionTime
+                            + " nextCompletionInterval="
+                            + nextCompletionInterval + " res=" + res);
+        }
         return res;
     }
 

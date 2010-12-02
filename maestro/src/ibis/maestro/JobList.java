@@ -145,7 +145,7 @@ public final class JobList {
             for (final Job j : l.jobs) {
                 Estimate t1 = initialEstimateJobTime(j);
 
-                if (t1 == null) {
+                if (t1 == InfiniteEstimate.INFINITE) {
                     /*
                      * Yes, this looks weird, but infinity here means we cannot
                      * execute the job locally. We must assume that it can be

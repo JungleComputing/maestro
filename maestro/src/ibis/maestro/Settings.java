@@ -68,6 +68,9 @@ class Settings {
     /** Trace the adventures of the gossip engine? */
     static final boolean traceGossip = false;
 
+    /** Trace stochastic computations (additions, multiplications). */
+    static final boolean traceStochasticComputations = false;
+
     /** Dump the master queue after each change? */
     static final boolean dumpMasterQueue = true;
 

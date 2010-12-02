@@ -93,10 +93,12 @@ class Gossip {
                         tix, ix, nextIndex, localNodeInfoMap);
                 final Estimate t = masterQueueInterval
                         .addIndependent(bestCompletionTimeAfterMasterQueue);
-                Globals.log.reportProgress("JobType=" + todoList[ix]
-                        + " masterQueueInterval=" + masterQueueInterval
-                        + " bestCompletionTimeAfterMasterQueue="
-                        + bestCompletionTimeAfterMasterQueue + " t=" + t);
+                if (Settings.traceStochasticComputations) {
+                    Globals.log.reportProgress("JobType=" + todoList[ix]
+                            + " masterQueueInterval=" + masterQueueInterval
+                            + " bestCompletionTimeAfterMasterQueue="
+                            + bestCompletionTimeAfterMasterQueue + " t=" + t);
+                }
                 localPerformanceInfo.completionInfo[tix][ix] = t;
                 nextIndex = ix;
             }
@@ -164,9 +166,6 @@ class Gossip {
                 final Estimate val = xmitTime
                         .addIndependent(completionOnWorker);
 
-                Globals.log.reportProgress("xmitTime=" + xmitTime
-                        + " completionOnWorker=" + completionOnWorker + " val="
-                        + val);
                 // Draw a random likely value from the estimate, and
                 // use that as a representative value for the performance
                 // of this node.
@@ -175,9 +174,11 @@ class Gossip {
                     res = val;
                     minTime = t;
                 }
-                Globals.log.reportProgress("xmitTime=" + xmitTime
-                        + " completionOnWorker=" + completionOnWorker + " val="
-                        + val + " t=" + t + " res=" + res);
+                if (Settings.traceStochasticComputations) {
+                    Globals.log.reportProgress("xmitTime=" + xmitTime
+                            + " completionOnWorker=" + completionOnWorker
+                            + " val=" + val + " t=" + t + " res=" + res);
+                }
             }
         }
         return res;
