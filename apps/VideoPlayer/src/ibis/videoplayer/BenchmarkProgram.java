@@ -14,9 +14,9 @@ import ibis.maestro.ParallelJobHandler;
 import ibis.maestro.ParallelJobInstance;
 import ibis.maestro.SeriesJob;
 import ibis.maestro.Utils;
-import ibis.steel.ConstantEstimator;
-import ibis.steel.Estimator;
-import ibis.steel.ExponentialDecayLogEstimator;
+import ibis.steel.ConstantEstimate;
+import ibis.steel.Estimate;
+import ibis.steel.LogGaussianEstimate;
 
 import java.io.File;
 import java.io.IOException;
@@ -70,11 +70,11 @@ class BenchmarkProgram {
             }
             final long returned = labelTracker.getReturnedLabels();
             final long issued = labelTracker.getIssuedLabels();
-            if ((returned % 500) == 0) {
+            if (returned % 500 == 0) {
                 System.out.println("Now " + returned + " of " + issued
                         + " frames returned");
             }
-            if ((issued - returned) < 5) {
+            if (issued - returned < 5) {
                 final Label[] l = labelTracker.listOutstandingLabels();
                 System.out.println("Waiting for " + Arrays.deepToString(l));
             }
@@ -178,11 +178,11 @@ class BenchmarkProgram {
          * @return The estimated time in ns to execute this job.
          */
         @Override
-        public Estimator estimateJobExecutionTime() {
+        public Estimate estimateJobExecutionTime() {
             final double startTime = Utils.getPreciseTime();
             run(0);
             final double d = Utils.getPreciseTime() - startTime;
-            return new ExponentialDecayLogEstimator(d, 0.25 * d);
+            return new LogGaussianEstimate(d, 0.25 * d, 1);
         }
     }
 
@@ -222,11 +222,11 @@ class BenchmarkProgram {
          * @return The estimated time in ns to execute this job.
          */
         @Override
-        public Estimator estimateJobExecutionTime() {
+        public Estimate estimateJobExecutionTime() {
             final double startTime = Utils.getPreciseTime();
             generateFrame(0);
             final double d = Utils.getPreciseTime() - startTime;
-            return new ExponentialDecayLogEstimator(d, 0.25 * d);
+            return new LogGaussianEstimate(d, 0.25 * d, 1);
         }
     }
 
@@ -288,7 +288,7 @@ class BenchmarkProgram {
          */
         @SuppressWarnings("synthetic-access")
         @Override
-        public Estimator estimateJobExecutionTime() {
+        public Estimate estimateJobExecutionTime() {
             if (!allowed) {
                 return null;
             }
@@ -296,7 +296,7 @@ class BenchmarkProgram {
             final double startTime = Utils.getPreciseTime();
             run(frame);
             final double d = Utils.getPreciseTime() - startTime;
-            return new ExponentialDecayLogEstimator(d, 0.25 * d);
+            return new LogGaussianEstimate(d, 0.25 * d, 1);
         }
     }
 
@@ -421,7 +421,7 @@ class BenchmarkProgram {
          */
         @SuppressWarnings("synthetic-access")
         @Override
-        public Estimator estimateJobExecutionTime() {
+        public Estimate estimateJobExecutionTime() {
             if (!allowed) {
                 return null;
             }
@@ -429,7 +429,7 @@ class BenchmarkProgram {
             final double startTime = Utils.getPreciseTime();
             run(frame);
             final double d = 4 * (Utils.getPreciseTime() - startTime);
-            return new ExponentialDecayLogEstimator(d, 0.25 * d);
+            return new LogGaussianEstimate(d, 0.25 * d, 1);
         }
     }
 
@@ -518,14 +518,14 @@ class BenchmarkProgram {
          * @return The estimated time on ns to execute this job.
          */
         @Override
-        public Estimator estimateJobExecutionTime() {
+        public Estimate estimateJobExecutionTime() {
             // Saving a file may take some time, but otherwise the estimate
             // should be zero.
             if (saveDir != null) {
                 // TODO: better estimate for save step.
-                return new ExponentialDecayLogEstimator(10e-3, 10e-3); // 10 ms
+                return new LogGaussianEstimate(10e-3, 10e-3, 1); // 10 ms
             }
-            return ConstantEstimator.ZERO;
+            return ConstantEstimate.ZERO;
         }
     }
 
@@ -610,7 +610,7 @@ class BenchmarkProgram {
                 return false;
             }
             final int rank = Integer.parseInt(env);
-            if ((rank % 2) == 0) {
+            if (rank % 2 == 0) {
                 if (evenNoScale) {
                     allowScale = false;
                 }
