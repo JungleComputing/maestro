@@ -14,7 +14,6 @@ import ibis.maestro.ParallelJobHandler;
 import ibis.maestro.ParallelJobInstance;
 import ibis.maestro.SeriesJob;
 import ibis.maestro.Utils;
-import ibis.steel.ConstantEstimate;
 import ibis.steel.Estimate;
 import ibis.steel.LogGaussianEstimate;
 
@@ -526,7 +525,7 @@ class BenchmarkProgram {
                 // TODO: better estimate for save step.
                 return new LogGaussianEstimate(Math.log(10e-3), Math.log(10), 1);
             }
-            return ConstantEstimate.ZERO;
+            return new LogGaussianEstimate(Math.log(10e-9), Math.log(10), 1);
         }
     }
 
