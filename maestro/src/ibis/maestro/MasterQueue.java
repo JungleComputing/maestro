@@ -316,7 +316,7 @@ final class MasterQueue {
             if (info == bestInterval) {
                 s.print('#');
             }
-            s.print(val.toString());
+            s.print(val == null ? "(busy)" : val.toString());
             s.print(' ');
         }
         s.println();
