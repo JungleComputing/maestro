@@ -219,9 +219,7 @@ class MasterWorkerProgram {
         public Estimate estimateJobExecutionTime() {
             final double benchmarkTime = runBenchmark();
             final double mean = MINIMAL_SHARPENS * benchmarkTime;
-            // TODO: use a log-gaussian estimator.
-            return new LogGaussianEstimate(Math.log(mean), 2 * Math.log(mean),
-                    1);
+            return new LogGaussianEstimate(Math.log(mean), Math.log(100), 1);
         }
 
         /**
