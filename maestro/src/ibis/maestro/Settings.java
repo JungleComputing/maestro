@@ -51,19 +51,19 @@ class Settings {
     static final boolean traceQueuing = false;
 
     /** Print a reason for every wait() that we do. */
-    static final boolean traceWaits = false;
+    static final boolean traceWaits = true;
 
     /** Print the reason a particular worker was selected. */
-    static final boolean traceWorkerSelection = true;
+    static final boolean traceWorkerSelection = false;
 
     /** Trace the adventures of the map/reduce handler. */
-    static final boolean traceParallelJobs = true;
+    static final boolean traceParallelJobs = false;
 
     /** Trace registration of the nodes with each other. */
     static final boolean traceRegistration = false;
 
     /** Trace all sent update messages. */
-    static final boolean traceUpdateMessages = true;
+    static final boolean traceUpdateMessages = false;
 
     /** Trace the adventures of the gossip engine? */
     static final boolean traceGossip = false;
@@ -72,10 +72,10 @@ class Settings {
     static final boolean traceStochasticComputations = false;
 
     /** Dump the master queue after each change? */
-    static final boolean dumpMasterQueue = true;
+    static final boolean dumpMasterQueue = false;
 
     /** Dump the worker queue after each change? */
-    static final boolean dumpWorkerQueue = true;
+    static final boolean dumpWorkerQueue = false;
 
     /** Announce all submissions? */
     static final boolean traceSubmissions = true;
