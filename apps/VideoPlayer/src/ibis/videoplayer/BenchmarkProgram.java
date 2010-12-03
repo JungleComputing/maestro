@@ -181,8 +181,8 @@ class BenchmarkProgram {
         public Estimate estimateJobExecutionTime() {
             final double startTime = Utils.getPreciseTime();
             run(0);
-            final double d = Utils.getPreciseTime() - startTime;
-            return new LogGaussianEstimate(d, 0.25 * d, 1);
+            final double d = Math.max(1e-9, Utils.getPreciseTime() - startTime);
+            return new LogGaussianEstimate(Math.log(d), Math.log(10), 1);
         }
     }
 
@@ -225,8 +225,8 @@ class BenchmarkProgram {
         public Estimate estimateJobExecutionTime() {
             final double startTime = Utils.getPreciseTime();
             generateFrame(0);
-            final double d = Utils.getPreciseTime() - startTime;
-            return new LogGaussianEstimate(d, 0.25 * d, 1);
+            final double d = Math.max(1e-9, Utils.getPreciseTime() - startTime);
+            return new LogGaussianEstimate(Math.log(d), Math.log(10), 1);
         }
     }
 
@@ -295,8 +295,8 @@ class BenchmarkProgram {
             final Serializable frame = GenerateFrameJob.generateFrame(0);
             final double startTime = Utils.getPreciseTime();
             run(frame);
-            final double d = Utils.getPreciseTime() - startTime;
-            return new LogGaussianEstimate(d, 0.25 * d, 1);
+            final double d = Math.max(1e-9, Utils.getPreciseTime() - startTime);
+            return new LogGaussianEstimate(Math.log(d), Math.log(10), 1);
         }
     }
 
@@ -428,8 +428,9 @@ class BenchmarkProgram {
             final Serializable frame = GenerateFrameJob.generateFrame(0);
             final double startTime = Utils.getPreciseTime();
             run(frame);
-            final double d = 4 * (Utils.getPreciseTime() - startTime);
-            return new LogGaussianEstimate(d, 0.25 * d, 1);
+            final double d = Math.max(1e-9,
+                    4 * (Utils.getPreciseTime() - startTime));
+            return new LogGaussianEstimate(Math.log(d), Math.log(10), 1);
         }
     }
 
@@ -523,7 +524,7 @@ class BenchmarkProgram {
             // should be zero.
             if (saveDir != null) {
                 // TODO: better estimate for save step.
-                return new LogGaussianEstimate(10e-3, 10e-3, 1); // 10 ms
+                return new LogGaussianEstimate(Math.log(10e-3), Math.log(10), 1);
             }
             return ConstantEstimate.ZERO;
         }
