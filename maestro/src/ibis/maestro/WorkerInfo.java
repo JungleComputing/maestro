@@ -47,8 +47,9 @@ final class WorkerInfo {
      * @param local
      *            Is this the local node?
      */
-    protected WorkerInfo(IbisIdentifier ibis, WorkerQueue workerQueue,
-            boolean local, int jobCount) {
+    protected WorkerInfo(final IbisIdentifier ibis,
+            final WorkerQueue workerQueue, final boolean local,
+            final int jobCount) {
         this.ibis = ibis;
         this.local = local;
         nodeJobInfoList = new NodeJobInfo[jobCount];
@@ -76,7 +77,7 @@ final class WorkerInfo {
         return ibis.toString();
     }
 
-    NodeJobInfo get(JobType t) {
+    NodeJobInfo get(final JobType t) {
         return nodeJobInfoList[t.index];
     }
 
@@ -89,7 +90,7 @@ final class WorkerInfo {
      * @return The index of the ActiveJob with this id, or -1 if there isn't
      *         one.
      */
-    private int searchActiveJob(long id) {
+    private int searchActiveJob(final long id) {
         // Note that we blindly assume that there is only one entry with
         // the given id. Reasonable, because we hand out the ids ourselves,
         // and we never make mistakes...
@@ -141,7 +142,7 @@ final class WorkerInfo {
         }
     }
 
-    private synchronized ActiveJob extractActiveJob(long id) {
+    private synchronized ActiveJob extractActiveJob(final long id) {
         final int ix = searchActiveJob(id);
         if (ix < 0) {
             return null;
@@ -156,13 +157,13 @@ final class WorkerInfo {
      * @param jobId
      *            The job to retract.
      */
-    void retractJob(long jobId) {
+    void retractJob(final long jobId) {
         // We ignore the result of the extract: it doesn't really matter if the
         // job was in our list of not.
         extractActiveJob(jobId);
     }
 
-    JobInstance registerJobFailed(long id) {
+    JobInstance registerJobFailed(final long id) {
         final ActiveJob job = extractActiveJob(id);
         if (job == null) {
             Globals.log
@@ -185,8 +186,8 @@ final class WorkerInfo {
      * @param predictedDuration
      *            The predicted duration in seconds of the job.
      */
-    void registerJobStart(JobList jobs, JobInstance job, long id,
-            double predictedDuration) {
+    void registerJobStart(final JobList jobs, final JobInstance job,
+            final long id, final double predictedDuration) {
         final JobType stageType = job.getStageType(jobs);
         final NodeJobInfo workerJobInfo = nodeJobInfoList[stageType.index];
         if (workerJobInfo == null) {
@@ -217,7 +218,7 @@ final class WorkerInfo {
      * @param result
      *            The job received message that tells about this job.
      */
-    void registerJobReceived(JobReceivedMessage result) {
+    void registerJobReceived(final JobReceivedMessage result) {
         final ActiveJob job;
 
         // The identifier of the job, as handed out by us.
@@ -233,7 +234,7 @@ final class WorkerInfo {
             }
             job = activeJobs.get(ix);
         }
-        final double transmissionTime = local ? 0.0
+        final double transmissionTime = local ? 1e-15
                 : (result.arrivalMoment - job.startTime);
         final NodeJobInfo nodeJobInfo = job.nodeJobInfo;
         nodeJobInfo.registerJobReceived(transmissionTime);
@@ -252,7 +253,8 @@ final class WorkerInfo {
      * @return The job instance that was completed if it may have duplicates, or
      *         <code>null</code>
      */
-    JobInstance registerJobCompleted(JobList jobs, JobCompletedMessage result) {
+    JobInstance registerJobCompleted(final JobList jobs,
+            final JobCompletedMessage result) {
         final long id = result.jobId; // The identifier of the job, as handed
         // out by us.
 
@@ -309,7 +311,7 @@ final class WorkerInfo {
      * @param s
      *            The stream to print to.
      */
-    synchronized void printStatistics(PrintStream s) {
+    synchronized void printStatistics(final PrintStream s) {
         s.println("Node " + ibis + (local ? " (local)" : ""));
 
         for (final NodeJobInfo info : nodeJobInfoList) {
