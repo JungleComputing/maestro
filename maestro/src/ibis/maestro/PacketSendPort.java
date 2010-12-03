@@ -67,7 +67,7 @@ class PacketSendPort {
              */
             @SuppressWarnings("synthetic-access")
             @Override
-            public int compare(DestinationInfo a, DestinationInfo b) {
+            public int compare(final DestinationInfo a, final DestinationInfo b) {
                 if (a.sentCount < b.sentCount) {
                     return 1;
                 }
@@ -107,29 +107,30 @@ class PacketSendPort {
          * @param local
          *            True iff this destination represents the local node.
          */
-        private DestinationInfo(IbisIdentifier ibisIdentifier, boolean local) {
+        private DestinationInfo(final IbisIdentifier ibisIdentifier,
+                final boolean local) {
             this.ibisIdentifier = ibisIdentifier;
             this.local = local;
         }
 
         /** Print statistics for this destination. */
-        private synchronized void printStatistics(PrintStream s) {
+        private synchronized void printStatistics(final PrintStream s) {
             final char dest = local ? 'L' : 'R';
-            s.format(" %c %5d messages %5s   node %s\n", dest, sentCount, Utils
-                    .formatByteCount(sentBytes), ibisIdentifier.toString());
+            s.format(" %c %5d messages %5s   node %s\n", dest, sentCount,
+                    Utils.formatByteCount(sentBytes), ibisIdentifier.toString());
         }
 
         private synchronized void incrementSentCount() {
             sentCount++;
         }
 
-        private synchronized void addSentBytes(long val) {
+        private synchronized void addSentBytes(final long val) {
             sentBytes += val;
         }
     }
 
     @SuppressWarnings("synthetic-access")
-    PacketSendPort(Node node, IbisIdentifier localIbis) {
+    PacketSendPort(final Node node, final IbisIdentifier localIbis) {
         connectionCache = new ConnectionCache(node);
         this.node = node;
         destinations.put(localIbis, new DestinationInfo(localIbis, true));
@@ -143,7 +144,8 @@ class PacketSendPort {
      *            The port to register.
      */
     @SuppressWarnings("synthetic-access")
-    synchronized DestinationInfo registerDestination(IbisIdentifier theIbis) {
+    synchronized DestinationInfo registerDestination(
+            final IbisIdentifier theIbis) {
         DestinationInfo destinationInfo = destinations.get(theIbis);
         if (destinationInfo != null) {
             // Already registered.
@@ -164,7 +166,7 @@ class PacketSendPort {
      * @return <code>true</code> if we managed to send the data.
      */
     @SuppressWarnings("synthetic-access")
-    boolean send(IbisIdentifier theIbis, Message message) {
+    boolean send(final IbisIdentifier theIbis, final Message message) {
         long len;
         boolean ok = true;
         final DestinationInfo info = registerDestination(theIbis);
@@ -173,6 +175,7 @@ class PacketSendPort {
             // This is the local destination. Use the back door to get
             // the info to the destination.
             message.arrivalMoment = Utils.getPreciseTime();
+            message.source = theIbis;
             node.messageReceived(message);
             len = 0; // We're not going to compute a size just for the
             // statistics.
@@ -215,7 +218,8 @@ class PacketSendPort {
      * @return True iff we managed to send the message.
      */
     @SuppressWarnings("synthetic-access")
-    boolean sendNonessentialMessage(IbisIdentifier target, Message message) {
+    boolean sendNonessentialMessage(final IbisIdentifier target,
+            final Message message) {
         DestinationInfo info;
         synchronized (this) {
             info = destinations.get(target);
@@ -264,7 +268,7 @@ class PacketSendPort {
      *            The name of the port.
      */
     @SuppressWarnings("synthetic-access")
-    synchronized void printStatistics(PrintStream s, String portname) {
+    synchronized void printStatistics(final PrintStream s, final String portname) {
         s.println(portname + ": sent " + Utils.formatByteCount(sentBytes)
                 + " in " + sentCount + " remote messages; "
                 + localSentCount.get() + " local sends");
