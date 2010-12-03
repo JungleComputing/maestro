@@ -39,7 +39,7 @@ class Settings {
     static final boolean traceRemainingJobTime = true;
 
     /** Trace the progress of masters? */
-    static final boolean traceNodeProgress = false;
+    static final boolean traceNodeProgress = true;
 
     /** Trace all send events. */
     static final boolean traceSends = false;

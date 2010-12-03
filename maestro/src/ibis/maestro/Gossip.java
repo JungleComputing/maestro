@@ -79,8 +79,6 @@ class Gossip {
         for (int tix = 0; tix < types.length; tix++) {
             final JobType todoList[] = jobs.getTodoList(types[tix]);
 
-            Globals.log.reportProgress("Job " + types[tix] + ": todoList="
-                    + Arrays.deepToString(todoList));
             int ix = todoList.length;
             int nextIndex = -1;
 
@@ -216,7 +214,7 @@ class Gossip {
         }
         // If we reach this point, we didn't have info about this node yet.
         gossipList.add(update);
-        this.notifyAll(); // Wake any waiters for ready nodes
+        notifyAll(); // Wake any waiters for ready nodes
         return true;
     }
 
