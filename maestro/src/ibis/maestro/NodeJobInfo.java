@@ -52,12 +52,10 @@ final class NodeJobInfo {
         if (pingTime <= 0) {
             pingTime = 1e-12;
         }
-        final double logPingTime = Math.log(pingTime);
-        final double log2PingTime = Math.log(2 * pingTime);
-        transmissionEstimate = new ExponentialDecayLogEstimator(logPingTime,
-                logPingTime * logPingTime, 1);
-        roundtripEstimate = new ExponentialDecayLogEstimator(log2PingTime,
-                log2PingTime * log2PingTime, 1);
+        transmissionEstimate = new ExponentialDecayLogEstimator(Math.log(pingTime),
+                Math.log(pingTime * pingTime), 1);
+        roundtripEstimate = new ExponentialDecayLogEstimator(Math.log(2 * pingTime),
+                Math.log(4 * pingTime * pingTime), 1);
         if (Settings.traceWorkerList || Settings.traceRemainingJobTime) {
             Globals.log.reportProgress("Created new WorkerJobInfo "
                     + toString());
