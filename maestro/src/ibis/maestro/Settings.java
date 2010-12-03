@@ -78,7 +78,7 @@ class Settings {
     static final boolean dumpWorkerQueue = false;
 
     /** Announce all submissions? */
-    static final boolean traceSubmissions = true;
+    static final boolean traceSubmissions = false;
 
     /** Trace the adventures of the terminator thread? */
     static final boolean traceTerminator = true;
