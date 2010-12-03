@@ -44,7 +44,7 @@ final class WorkerQueue {
                                     + job.getClass());
                 }
             } else {
-                est = new LogGaussianEstimate(1 * Utils.MILLISECOND,
+                est = new LogGaussianEstimate(Math.log(1 * Utils.MILLISECOND),
                         Math.log(100), 1);
             }
             final WorkerQueueJobInfo queueTypeInfo = new WorkerQueueJobInfo(t,
