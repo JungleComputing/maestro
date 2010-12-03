@@ -337,27 +337,32 @@ final class MasterQueue {
             final HashMap<IbisIdentifier, LocalNodeInfoList> localNodeInfoMap,
             final NodePerformanceInfo[] tables) {
 
+        final boolean skip[] = new boolean[queueTypes.length];
         int ix = 0;
         while (ix < queue.size()) {
             final JobInstance job = queue.get(ix);
             final JobType stageType = job.getStageType(jobs);
-            final Submission sub = selectBestWorker(localNodeInfoMap, tables,
-                    job, stageType);
-            if (sub != null) {
-                queue.remove(ix);
-                final TypeInfo queueTypeInfo = queueTypes[stageType.index];
-                queueTypeInfo.administrateRemove();
-                if (Settings.traceMasterQueue || Settings.traceQueuing) {
-                    final int length = queueTypeInfo.elements;
+            final int typeIndex = stageType.index;
+            if (!skip[typeIndex]) {
+                final Submission sub = selectBestWorker(localNodeInfoMap,
+                        tables, job, stageType);
+                if (sub != null) {
+                    queue.remove(ix);
+                    final TypeInfo queueTypeInfo = queueTypes[stageType.index];
+                    queueTypeInfo.administrateRemove();
+                    if (Settings.traceMasterQueue || Settings.traceQueuing) {
+                        final int length = queueTypeInfo.elements;
 
-                    Globals.log.reportProgress("Removing "
-                            + job.formatJobAndType()
-                            + " from master queue; length is now "
-                            + queue.size() + "; " + length + " of type "
-                            + stageType);
+                        Globals.log.reportProgress("Removing "
+                                + job.formatJobAndType()
+                                + " from master queue; length is now "
+                                + queue.size() + "; " + length + " of type "
+                                + stageType);
+                    }
+                    return sub;
                 }
-                return sub;
             }
+            skip[typeIndex] = true;
             if (Settings.traceMasterQueue) {
                 Globals.log.reportProgress("No ready worker for job type "
                         + stageType);
