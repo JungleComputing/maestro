@@ -27,16 +27,16 @@ class Settings {
     // Debugging flags.
 
     /** Trace the progress of the worker lists of masters. */
-    static final boolean traceWorkerList = true;
+    static final boolean traceWorkerList = false;
 
     /** Trace the creation and destruction of Nodes. */
     static final boolean traceNodes = true;
 
     /** Trace the events in the master queue? */
-    static final boolean traceMasterQueue = true;
+    static final boolean traceMasterQueue = false;
 
     /** Trace the administration of remaining job time. */
-    static final boolean traceRemainingJobTime = true;
+    static final boolean traceRemainingJobTime = false;
 
     /** Trace the progress of masters? */
     static final boolean traceNodeProgress = true;
@@ -51,7 +51,7 @@ class Settings {
     static final boolean traceQueuing = false;
 
     /** Print a reason for every wait() that we do. */
-    static final boolean traceWaits = true;
+    static final boolean traceWaits = false;
 
     /** Print the reason a particular worker was selected. */
     static final boolean traceWorkerSelection = false;
