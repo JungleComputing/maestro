@@ -57,7 +57,8 @@ final class MasterQueue {
         private TypeInfo(final JobType type) {
             this.type = type;
             final double av = Math.log(1 * Utils.MILLISECOND);
-            dequeueInterval = new ExponentialDecayLogEstimator(av, av * av, 0.1);
+            dequeueInterval = new ExponentialDecayLogEstimator(av,
+                    Math.log(10), 0.1);
         }
 
         private synchronized void printStatistics(final PrintStream s) {

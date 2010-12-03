@@ -49,9 +49,8 @@ final class WorkerQueueJobInfo {
         this.type = type;
         averageComputeTime = new ExponentialDecayLogEstimator(est, 0.2);
         final double logAverage = Math.log(1 * Utils.MILLISECOND);
-        final double logStdDev = Math.log(10 * Utils.MILLISECOND);
         dequeueInterval = new ExponentialDecayLogEstimator(logAverage,
-                logStdDev * logStdDev, 0.2);
+                Math.log(10), 0.2);
     }
 
     synchronized void printStatistics(final PrintStream s, final double workTime) {
