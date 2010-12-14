@@ -96,16 +96,16 @@ class RGB48Image extends UncompressedImage {
         if (!checkFactor(height, "height", factor)) {
             return null;
         }
-        int weight = factor * factor;
-        int swidth = width / factor;
-        int sheight = height / factor;
-        short res[] = new short[swidth * sheight * BANDS];
+        final int weight = factor * factor;
+        final int swidth = width / factor;
+        final int sheight = height / factor;
+        final short res[] = new short[swidth * sheight * BANDS];
 
         int ix = 0;
         for (int y = 0; y < sheight; y++) {
-            int oldY = y * factor;
+            final int oldY = y * factor;
             for (int x = 0; x < swidth; x++) {
-                int oldX = x * factor;
+                final int oldX = x * factor;
                 // The sum of the values we're going to average.
                 int redValues = 0;
                 int greenValues = 0;
@@ -116,11 +116,11 @@ class RGB48Image extends UncompressedImage {
                 for (int ypix = 0; ypix < factor; ypix++) {
                     for (int xpix = 0; xpix < factor; xpix += BANDS) {
                         // Convert to unsigned and add to the average.
-                        int vr = data[offset + xpix];
+                        final int vr = data[offset + xpix];
                         redValues += (0xFFFF & vr);
-                        int vg = data[offset + xpix + 1];
+                        final int vg = data[offset + xpix + 1];
                         greenValues += (0xFFFF & vg);
-                        int vb = data[offset + xpix + 2];
+                        final int vb = data[offset + xpix + 2];
                         blueValues += (0xFFFF & vb);
                     }
                     offset += width * BANDS;
@@ -137,13 +137,16 @@ class RGB48Image extends UncompressedImage {
     @Override
     Image colourCorrect(double frr, double frg, double frb, double fgr,
             double fgg, double fgb, double fbr, double fbg, double fbb) {
-        short res[] = new short[width * height * BANDS];
+        final short res[] = new short[width * height * BANDS];
 
         // Apply the color correction matrix
         for (int i = 0; i < data.length; i += BANDS) {
-            double vr = frr * data[i] + frg * data[i + 1] + frb * data[i + 2];
-            double vg = fgr * data[i] + fgg * data[i + 1] + fgb * data[i + 2];
-            double vb = fbr * data[i] + fbg * data[i + 1] + fbb * data[i + 2];
+            final double vr = frr * data[i] + frg * data[i + 1] + frb
+                    * data[i + 2];
+            final double vg = fgr * data[i] + fgg * data[i + 1] + fgb
+                    * data[i + 2];
+            final double vb = fbr * data[i] + fbg * data[i + 1] + fbb
+                    * data[i + 2];
 
             res[i] = (short) vr;
             res[i + 1] = (short) vg;
@@ -165,15 +168,15 @@ class RGB48Image extends UncompressedImage {
      */
     @Override
     void write(File f) throws IOException {
-        FileOutputStream stream = new FileOutputStream(f);
-        String header = "P6\n" + width + ' ' + height + "\n65535\n";
+        final FileOutputStream stream = new FileOutputStream(f);
+        final String header = "P6\n" + width + ' ' + height + "\n65535\n";
         stream.write(header.getBytes());
-        byte buffer[] = new byte[2 * BANDS * width];
+        final byte buffer[] = new byte[2 * BANDS * width];
         int ix = 0;
         for (int h = 0; h < height; h++) {
             int bufix = 0;
             for (int w = 0; w < width * BANDS; w++) {
-                int v = data[ix++];
+                final int v = data[ix++];
                 buffer[bufix++] = (byte) ((v >> 8) & 0xFF);
                 buffer[bufix++] = (byte) (v & 0xFF);
             }
@@ -192,7 +195,7 @@ class RGB48Image extends UncompressedImage {
      */
     @Override
     void print(File f) throws IOException {
-        PrintStream stream = new PrintStream(new FileOutputStream(f));
+        final PrintStream stream = new PrintStream(new FileOutputStream(f));
         stream.println("RGB48 " + width + "x" + height + " frame " + frameno);
         int ix = 0;
         for (int h = 0; h < height; h++) {
@@ -207,7 +210,7 @@ class RGB48Image extends UncompressedImage {
 
     static RGB48Image buildConstantImage(int frameno, int width, int height,
             int vr, int vg, int vb) {
-        short res[] = new short[width * height * BANDS];
+        final short res[] = new short[width * height * BANDS];
 
         int ix = 0;
         for (int h = 0; h < height; h++) {
@@ -221,7 +224,7 @@ class RGB48Image extends UncompressedImage {
     }
 
     static RGB48Image buildGradientImage(int frameno, int width, int height) {
-        short res[] = new short[width * height * BANDS];
+        final short res[] = new short[width * height * BANDS];
         int ix = 0;
         short vg = 0;
 
@@ -239,17 +242,17 @@ class RGB48Image extends UncompressedImage {
     }
 
     private static byte[] makeByteSamples(short a[]) {
-        byte res[] = new byte[a.length];
+        final byte res[] = new byte[a.length];
 
         for (int i = 0; i < a.length; i++) {
-            int val = (a[i] & 0xFFFF);
+            final int val = (a[i] & 0xFFFF);
             res[i] = (byte) (val / 256);
         }
         return res;
     }
 
     RGB24Image buildRGB24Image() {
-        byte res[] = makeByteSamples(data);
+        final byte res[] = makeByteSamples(data);
 
         return new RGB24Image(frameno, width, height, res);
     }
@@ -272,7 +275,7 @@ class RGB48Image extends UncompressedImage {
 
     @Override
     UncompressedImage scaleUp(int factor) {
-        // FIXME Auto-generated method stub
+        // TODO: scale up RGB48Image.
         return null;
     }
 
@@ -283,22 +286,22 @@ class RGB48Image extends UncompressedImage {
 
     @Override
     UncompressedImage sharpen() {
-        // FIXME Auto-generated method stub
+        // TODO: sharpen RGB48Image.
         return null;
     }
 
-	@Override
-	UncompressedImage getVerticalSlice(int start, int end) {
-        int fromByte = start * BANDS * width;
-        int toByte = end * BANDS * width;
-        short res[] = Arrays.copyOfRange(data, fromByte, toByte);
-        return new RGB48Image(frameno, width, end-start, res);
-	}
+    @Override
+    UncompressedImage getVerticalSlice(int start, int end) {
+        final int fromByte = start * BANDS * width;
+        final int toByte = end * BANDS * width;
+        final short res[] = Arrays.copyOfRange(data, fromByte, toByte);
+        return new RGB48Image(frameno, width, end - start, res);
+    }
 
-	public static RGB48Image concatenateImagesVertically(
-			UncompressedImage[] fragments) {
-		// FIXME: implement this
-		return null;
-	}
+    public static RGB48Image concatenateImagesVertically(
+            UncompressedImage[] fragments) {
+        // FIXME: implement vertical image concatenation on RGB48Image
+        return null;
+    }
 
 }

@@ -68,9 +68,7 @@ final class BuildFragmentJob implements ParallelJob {
             for (int i = 0; i < frames.length; i++) {
                 final RGB48Image frame = frames[i];
                 if (frame != null) {
-                    System
-                    .arraycopy(frame.data, 0, data, ix,
-                            frame.data.length);
+                    System.arraycopy(frame.data, 0, data, ix, frame.data.length);
                     ix += frame.data.length;
                 }
             }
@@ -99,8 +97,14 @@ final class BuildFragmentJob implements ParallelJob {
 
         @Override
         public boolean resultIsReady() {
-            // TODO Auto-generated method stub
-            return false;
+            for (final RGB48Image i : frames) {
+                if (i == null) {
+                    // Frame is not filled in yet, so no.
+                    return false;
+                }
+            }
+            // All frames are filled in, we're ready.
+            return true;
         }
 
         /**

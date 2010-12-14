@@ -39,7 +39,7 @@ class JpegCompressedImage extends CompressedImage {
      */
     @Override
     void write(File f) throws IOException {
-        FileOutputStream out = new FileOutputStream(f);
+        final FileOutputStream out = new FileOutputStream(f);
         out.write(data);
         out.close();
     }
@@ -54,7 +54,7 @@ class JpegCompressedImage extends CompressedImage {
      */
     @Override
     void print(File f) throws IOException {
-        PrintStream stream = new PrintStream(new FileOutputStream(f));
+        final PrintStream stream = new PrintStream(new FileOutputStream(f));
         stream.println("JPEG " + width + "x" + height + " frame " + frameno);
 
         for (int i = 0; i < data.length; i++) {
@@ -89,10 +89,10 @@ class JpegCompressedImage extends CompressedImage {
     static JpegCompressedImage read(int width, int height, int frameno, File f)
             throws IOException {
         // FIXME: get the width and height of the image from the file.
-        InputStream is = new FileInputStream(f);
+        final InputStream is = new FileInputStream(f);
 
         // Get the size of the file
-        long length = f.length();
+        final long length = f.length();
 
         // You cannot create an array using a long type.
         // It needs to be an int type.
@@ -108,7 +108,7 @@ class JpegCompressedImage extends CompressedImage {
         }
 
         // Create the byte array to hold the data
-        byte[] bytes = new byte[(int) length];
+        final byte[] bytes = new byte[(int) length];
 
         // Read in the bytes
         int offset = 0;
@@ -117,10 +117,10 @@ class JpegCompressedImage extends CompressedImage {
                 && (numRead = is.read(bytes, offset, bytes.length - offset)) >= 0) {
             offset += numRead;
         }
- 
+
         // Close the input stream and return bytes
         is.close();
- 
+
         // Ensure all the bytes have been read in
         if (offset < bytes.length) {
             throw new IOException("Could not completely read file "
@@ -136,12 +136,12 @@ class JpegCompressedImage extends CompressedImage {
             return (JpegCompressedImage) img;
         }
         if (img instanceof RGB24Image) {
-            RGB24Image img24 = (RGB24Image) img;
+            final RGB24Image img24 = (RGB24Image) img;
 
             return img24.toJpegImage();
         }
         if (img instanceof RGB48Image) {
-            RGB24Image img24 = RGB24Image.convert(img);
+            final RGB24Image img24 = RGB24Image.convert(img);
 
             return img24.toJpegImage();
         }
