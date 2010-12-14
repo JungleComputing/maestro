@@ -40,13 +40,12 @@ public final class JobList {
             return jobTypeMap.get(job);
         }
         JobType t;
-        int index;
         if (job instanceof UnpredictableAtomicJob) {
-            index = allJobTypes.size();
+            final int index = allJobTypes.size();
             t = new JobType(true, true, index);
             todoLists.add(new JobType[] { t });
         } else if (job instanceof AtomicJob) {
-            index = allJobTypes.size();
+            final int index = allJobTypes.size();
             t = new JobType(false, true, index);
             todoLists.add(new JobType[] { t });
         } else if (job instanceof SeriesJob) {
@@ -64,15 +63,17 @@ public final class JobList {
                     todoList.add(e);
                 }
             }
-            index = allJobTypes.size();
+            final int index = allJobTypes.size();
             t = new JobType(unpredictable, false, index);
             final JobType todoArray[] = todoList.toArray(new JobType[todoList
                     .size()]);
             todoLists.add(todoArray);
         } else if (job instanceof ParallelJob) {
-            final boolean unpredictable = true; // FIXME: allow predictable
-                                                // parallel jobs.
-            index = allJobTypes.size();
+            /*
+             * FIXME: allow predictable parallel jobs.
+             */
+            final boolean unpredictable = true;
+            final int index = allJobTypes.size();
             t = new JobType(unpredictable, false, index);
             todoLists.add(new JobType[] { t });
         } else {

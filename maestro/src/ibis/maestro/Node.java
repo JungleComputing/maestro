@@ -178,13 +178,12 @@ public final class Node extends Thread implements PacketReceiveListener {
 
         @Override
         public void poolClosed() {
-            // TODO: can we do something with the poolClosed() signal?
+            // Ignore
         }
 
         @Override
         public void poolTerminated(final IbisIdentifier arg0) {
-            // TODO: can we do something with the poolTerminated() signal?
-
+            // TODO: what should we do with a poolTerminated event?
         }
     }
 
@@ -772,29 +771,35 @@ public final class Node extends Thread implements PacketReceiveListener {
     }
 
     /**
-     * @param source
+     * Tell the given master that the given job has completed.
+     * 
+     * @param master
+     *            Who to tell the job has completed.
      * @param jobId
+     *            The identifier of the completed job.
      */
-    private void sendJobCompletedMessage(final IbisIdentifier source,
+    private void sendJobCompletedMessage(final IbisIdentifier master,
             final long jobId) {
         final Message msg = new JobCompletedMessage(jobId);
-        boolean ok = sendPort.send(source, msg);
+        boolean ok = sendPort.send(master, msg);
 
         if (ok) {
             jobCompletedMessageCount.add();
         } else {
             // Could not send the result message. We're desperate.
             // First simply try again.
-            ok = sendPort.send(source, msg);
+            ok = sendPort.send(master, msg);
             if (ok) {
                 jobCompletedMessageCount.add();
             } else {
                 // Unfortunately, that didn't work.
-                // TODO: think up another way to recover from a failed
-                // result report.
+                /*
+                 * TODO: think up another way to recover from a failed result
+                 * report.
+                 */
                 Globals.log
                         .reportError("Failed to send job completed message to "
-                                + source);
+                                + master);
             }
         }
     }

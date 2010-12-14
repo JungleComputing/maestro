@@ -45,7 +45,7 @@ class TestProg {
             }
             if (jobsCompleted >= jobCount) {
                 System.out
-                .println("I got all job results back; stopping test program");
+                        .println("I got all job results back; stopping test program");
                 node.setStopped();
             }
         }
@@ -71,7 +71,7 @@ class TestProg {
                 return "(AdditionData [<empty>])";
             }
             return "(AdditionData [" + data[0] + ",...,"
-            + data[data.length - 1] + "])";
+                    + data[data.length - 1] + "])";
         }
 
     }
@@ -140,98 +140,9 @@ class TestProg {
         }
     }
 
-    private static class AssembleArrayJob implements ParallelJob {
-        private static final long serialVersionUID = 1L;
-
-        private static Job createJob;
-
-        private static final int SIZE = 4;
-
-        static class AssembleArrayJobInstance extends ParallelJobInstance {
-            public AssembleArrayJobInstance(ParallelJobContext context) {
-                super(context);
-            }
-
-            private final Serializable res[] = new Serializable[SIZE];
-            private int resultCount = 0;
-
-
-            /**
-             * Generate jobs to compute different components for this job.
-             * (Overrides method in superclass.)
-             * 
-             * @param input
-             *            The input
-             * @param handler
-             *            The handler for this map/reduce job
-             */
-            @SuppressWarnings("synthetic-access")
-            @Override
-            public void split(Serializable input, ParallelJobHandler handler) {
-                for (int n = 0; n < SIZE; n++) {
-                    final Integer userId = n;
-                    handler.submit(input, this, userId, createJob);
-                }
-            }
-
-            /**
-             * Returns the result of this split/join computation.
-             * 
-             * @return The joined result.
-             */
-            @Override
-            public Serializable getResult() {
-                // FIXME: do something more interesting.
-                return res[0];
-            }
-
-
-            /**
-             * Add a given result to the collected result. (Overrides method in
-             * superclass.)
-             * 
-             * @param id
-             *            The identifier of the result.
-             * @param result
-             *            The result.
-             */
-            @Override
-            public void merge(Serializable id, Serializable result) {
-                final Integer ix = (Integer) id;
-
-                if( res[ix] == null ){
-                    res[ix] = result;
-                    resultCount++;
-                }
-            }
-
-            @Override
-            public boolean resultIsReady()
-            {
-                return resultCount >= SIZE;
-            }
-        }
-
-        /**
-         * Is this job supported on this node?
-         * 
-         * @return <code>true</code> since all nodes support this job.
-         */
-        @Override
-        public boolean isSupported() {
-            return true;
-        }
-
-        @Override
-        public ParallelJobInstance createInstance(ParallelJobContext context) {
-            // FIXME Auto-generated method stub
-            return null;
-        }
-
-    }
-
     @SuppressWarnings("synthetic-access")
-    private static void run(int jobCount, boolean goForMaestro) throws Exception {
+    private static void run(int jobCount, boolean goForMaestro)
+            throws Exception {
         final JobList jobs = new JobList();
 
         // createJob = jobs.createJob("createarray", new CreateArrayJob()
@@ -240,14 +151,14 @@ class TestProg {
                 // new AssembleArrayJob( createJob ),
                 new CreateArrayJob(), new AdditionJob(), new AdditionJob(),
                 new AdditionJob(), new AdditionJob());
-        jobs.registerJob( job );
+        jobs.registerJob(job);
         final Node node = Node.createNode(jobs, goForMaestro);
         final Listener listener = new Listener(node, jobCount);
         System.out.println("Node created");
         final double startTime = Utils.getPreciseTime();
         if (node.isMaestro()) {
-            System.out.println("I am maestro; submitting " + jobCount
-                    + " jobs");
+            System.out
+                    .println("I am maestro; submitting " + jobCount + " jobs");
             for (int i = 0; i < jobCount; i++) {
                 final Integer length = 12 * i;
                 node.submit(length, i, listener, job);
@@ -270,7 +181,7 @@ class TestProg {
 
         if (args.length == 0) {
             System.err
-            .println("Missing parameter: I need a job count, or 'worker'");
+                    .println("Missing parameter: I need a job count, or 'worker'");
             System.exit(1);
         }
         final String arg = args[0];
