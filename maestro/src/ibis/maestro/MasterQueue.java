@@ -3,7 +3,7 @@ package ibis.maestro;
 import ibis.ipl.IbisIdentifier;
 import ibis.steel.Estimate;
 import ibis.steel.Estimator;
-import ibis.steel.ExponentialDecayLogEstimator;
+import ibis.steel.LogGaussianDecayingEstimator;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -57,7 +57,7 @@ final class MasterQueue {
         private TypeInfo(final JobType type) {
             this.type = type;
             final double av = Math.log(1 * Utils.MILLISECOND);
-            dequeueInterval = new ExponentialDecayLogEstimator(av,
+            dequeueInterval = new LogGaussianDecayingEstimator(av,
                     Math.log(10), 0.1);
         }
 

@@ -2,7 +2,7 @@ package ibis.maestro;
 
 import ibis.steel.Estimate;
 import ibis.steel.Estimator;
-import ibis.steel.ExponentialDecayLogEstimator;
+import ibis.steel.LogGaussianDecayingEstimator;
 
 import java.io.PrintStream;
 import java.util.LinkedList;
@@ -47,9 +47,9 @@ final class WorkerQueueJobInfo {
 
     WorkerQueueJobInfo(final JobType type, final Estimate est) {
         this.type = type;
-        averageComputeTime = new ExponentialDecayLogEstimator(est, 0.2);
+        averageComputeTime = new LogGaussianDecayingEstimator(est, 0.2);
         final double logAverage = Math.log(1 * Utils.MILLISECOND);
-        dequeueInterval = new ExponentialDecayLogEstimator(logAverage,
+        dequeueInterval = new LogGaussianDecayingEstimator(logAverage,
                 Math.log(10), 0.2);
     }
 

@@ -182,7 +182,8 @@ class Gossiper extends Thread {
                     }
                 }
             } catch (final InterruptedException e) {
-                // ignore.
+                // Somebody wants us to stop.
+                break;
             }
         }
     }

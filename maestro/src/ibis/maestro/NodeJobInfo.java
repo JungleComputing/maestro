@@ -2,8 +2,8 @@ package ibis.maestro;
 
 import ibis.steel.Estimate;
 import ibis.steel.Estimator;
-import ibis.steel.ExponentialDecayLogEstimator;
 import ibis.steel.InfiniteEstimate;
+import ibis.steel.LogGaussianDecayingEstimator;
 
 import java.io.PrintStream;
 
@@ -52,9 +52,9 @@ final class NodeJobInfo {
         if (pingTime <= 0) {
             pingTime = 1e-12;
         }
-        transmissionEstimate = new ExponentialDecayLogEstimator(
+        transmissionEstimate = new LogGaussianDecayingEstimator(
                 Math.log(pingTime), Math.log(10), 1);
-        roundtripEstimate = new ExponentialDecayLogEstimator(
+        roundtripEstimate = new LogGaussianDecayingEstimator(
                 Math.log(2 * pingTime), Math.log(10), 1);
         if (Settings.traceWorkerList || Settings.traceRemainingJobTime) {
             Globals.log.reportProgress("Created new WorkerJobInfo "

@@ -31,8 +31,8 @@ class Terminator extends Thread {
     // message.
     private final long sleepTime; // Time in ms between stop messages.
 
-    Terminator(double startQuotum, double nodeQuotum, long initialSleepTime,
-            long sleepTime) {
+    Terminator(final double startQuotum, final double nodeQuotum,
+            final long initialSleepTime, final long sleepTime) {
         super("Maestro Terminator");
         this.terminationQuotum = startQuotum;
         this.nodeQuotum = nodeQuotum;
@@ -41,10 +41,10 @@ class Terminator extends Thread {
         setDaemon(true);
     }
 
-    private void sendStopMessage(IbisIdentifier target) {
+    private void sendStopMessage(final IbisIdentifier target) {
         long len;
         SendPort port = null;
-        StopNodeMessage msg = new StopNodeMessage();
+        final StopNodeMessage msg = new StopNodeMessage();
         if (Settings.traceTerminator) {
             Globals.log.reportProgress("Sending stop message to " + target);
         }
@@ -52,7 +52,7 @@ class Terminator extends Thread {
             port = Globals.localIbis.createSendPort(PacketSendPort.portType);
             port.connect(target, Globals.receivePortName,
                     Settings.ESSENTIAL_COMMUNICATION_TIMEOUT, true);
-            WriteMessage writeMessage = port.newMessage();
+            final WriteMessage writeMessage = port.newMessage();
             try {
                 writeMessage.writeObject(msg);
             } finally {
@@ -62,14 +62,14 @@ class Terminator extends Thread {
                 Globals.log.reportProgress("Sent stop message of " + len
                         + " bytes: " + msg);
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             failedMessageCount++;
         } finally {
             try {
                 if (port != null) {
                     port.close();
                 }
-            } catch (Throwable x) {
+            } catch (final Throwable x) {
                 // Nothing we can do.
             }
         }
@@ -85,7 +85,7 @@ class Terminator extends Thread {
                 return false;
             }
             // Draw a random victim from the list.
-            int ix = Globals.rng.nextInt(victims.size());
+            final int ix = Globals.rng.nextInt(victims.size());
             victim = victims.remove(ix);
         }
         sendStopMessage(victim);
@@ -105,11 +105,11 @@ class Terminator extends Thread {
                             + " ms");
         }
         while (true) {
-            long deadline = System.currentTimeMillis() + ourSleepTime;
+            final long deadline = System.currentTimeMillis() + ourSleepTime;
             long now;
 
             do {
-                long waitTime = deadline - System.currentTimeMillis();
+                final long waitTime = deadline - System.currentTimeMillis();
                 try {
                     if (Settings.traceTerminator) {
                         Globals.log.reportProgress("Terminator: waiting "
@@ -119,8 +119,9 @@ class Terminator extends Thread {
                     synchronized (this) {
                         this.wait(waitTime);
                     }
-                } catch (InterruptedException e) {
-                    // ignore.
+                } catch (final InterruptedException e) {
+                    // Somebody wants us to stop.
+                    break;
                 }
                 now = System.currentTimeMillis();
             } while (now < deadline);
@@ -131,18 +132,18 @@ class Terminator extends Thread {
         }
     }
 
-    synchronized void registerNode(IbisIdentifier ibis) {
+    synchronized void registerNode(final IbisIdentifier ibis) {
         if (!ibis.equals(Globals.localIbis.identifier())) {
             victims.add(ibis);
         }
         terminationQuotum += nodeQuotum;
     }
 
-    synchronized void removeNode(IbisIdentifier ibis) {
+    synchronized void removeNode(final IbisIdentifier ibis) {
         victims.remove(ibis);
     }
 
-    void printStatistics(PrintStream s) {
+    void printStatistics(final PrintStream s) {
         s.println("Sent " + messageCount + " stop messages, with "
                 + failedMessageCount + " failures");
     }
